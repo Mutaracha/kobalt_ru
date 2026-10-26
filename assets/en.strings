@@ -23,7 +23,9 @@
 "library.title" = "Library";
 /* Arguments: %1 */
 "library.count" = "%1 books";
-"library.count_one" = "1 book";
+"library.count_one" = "%1 book";
+"library.count_few" = "%1 books";
+"library.count_many" = "%1 books";
 "library.search" = "Search library";
 "library.search_placeholder" = "Title, author or series";
 "library.close_search" = "Close search";
@@ -684,7 +686,9 @@
 "acknowledgments.projects" = "%1 projects";
 /* Arguments: %1 */
 "chapter_contents.summary" = "Contents · %1 chapters";
-"chapter_contents.summary_one" = "Contents · 1 chapter";
+"chapter_contents.summary_one" = "Contents · %1 chapter";
+"chapter_contents.summary_few" = "Contents · %1 chapters";
+"chapter_contents.summary_many" = "Contents · %1 chapters";
 "chapter_contents.page" = "Page";
 "chapter_contents.chapters" = "Chapters";
 "chapter_contents.close" = "Close chapters";
@@ -833,6 +837,8 @@
 "annotations.empty_hint" = "Use Annotate in the reading menu to save a passage.";
 /* Arguments: %1 */
 "annotations.summary" = "%1 annotations";
+"annotations.summary_few" = "%1 annotations";
+"annotations.summary_many" = "%1 annotations";
 "annotations.edit" = "Adjust";
 "annotations.remove" = "Delete";
 "annotations.save_failed" = "Could not save the highlight. Your selection is kept.";
@@ -929,7 +935,7 @@
 "settings.landscape_columns_description" = "Portrait uses one column. Applies to all books.";
 
 "annotations.mode" = "Annotation mode";
-"annotations.summary_one" = "1 annotation";
+"annotations.summary_one" = "%1 annotation";
 "error.saved_data_unavailable" = "Saved data could not be loaded. The original files have been preserved.";
 "marks.sort_button" = "Sort";
 "marks.sort_newest" = "Newest first";

@@ -34,7 +34,7 @@ This fork follows `FB2_FORK_PLAN.md` in the repository root. Keep that plan curr
 
 Always commit completed work and push it to the current working branch (`git push origin <current-branch>`). The local repository and sandbox can be cleared at any time, so unpushed work is not considered safe. Never switch, create or push to another branch.
 
-The priority target is the Kobo **Qt5** package (`Kobalt-qt5.zip`, firmware 4.x). Desktop (mac) and Android are not priorities for this fork: do not block Kobo work on them, but keep shared code portable and avoid knowingly breaking their builds. Section 6 of `FB2_FORK_PLAN.md` (Russian interface localization) stays as a planned stage only until explicitly scheduled; do not implement it ahead of the other stages.
+The priority target is the Kobo **Qt5** package (`Kobalt-qt5.zip`, firmware 4.x). Desktop (mac) and Android are not priorities for this fork: do not block Kobo work on them, but keep shared code portable and avoid knowingly breaking their builds. Section 6 of `FB2_FORK_PLAN.md` (Russian interface localization) is implemented as a second compiled string table with an English fallback: when touching UI strings, update both `assets/en.strings` and `assets/ru.strings` — the build fails on any key or `%n` slot mismatch.
 
 ## Repository practice
 

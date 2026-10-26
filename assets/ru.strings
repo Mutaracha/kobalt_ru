@@ -1,0 +1,947 @@
+/* Kobalt UI strings. Edit values; keep keys and Arguments comments unchanged. */
+
+/* acknowledgments */
+"acknowledgments.acknowledgments" = "Благодарности";
+"acknowledgments.kobalt_is_distributed_under_the_gnu_agpl_v3_without_any_warranty" = "Kobalt распространяется по лицензии GNU AGPL v3 без каких-либо гарантий.";
+"acknowledgments.group_author" = "Также от автора";
+"acknowledgments.group_engine" = "Движок";
+"acknowledgments.group_fonts" = "Шрифты";
+"acknowledgments.group_icons" = "Значки";
+"acknowledgments.group_kobalt" = "Kobalt";
+"acknowledgments.group_nickel" = "Nickel";
+"acknowledgments.license_text_is_unavailable" = "Текст лицензии недоступен.";
+"acknowledgments.thanks_to_the_open_source_projects_that_make_this_reader_possible" = "Благодарим проекты с открытым исходным кодом, благодаря которым возможен этот ридер. Выберите проект, чтобы прочитать уведомления и условия лицензии.";
+
+/* app */
+"app.name" = "Kobalt";
+"app.wordmark" = "Kobalt";
+
+/* android */
+"android.return" = "Kobalt";
+
+/* library */
+"library.title" = "Библиотека";
+/* Arguments: %1 */
+"library.count" = "%1 книг";
+"library.count_one" = "%1 книга";
+"library.count_few" = "%1 книги";
+"library.count_many" = "%1 книг";
+"library.search" = "Поиск по библиотеке";
+"library.search_placeholder" = "Название, автор или серия";
+"library.close_search" = "Закрыть поиск";
+"library.add_folder" = "Добавить папку";
+"library.more" = "Ещё";
+"library.view_home" = "Главная";
+"library.view_list" = "Список";
+"library.view_grid" = "Сетка обложек";
+"library.sort_opened" = "Недавно открытые";
+"library.sort_added" = "Недавно добавленные";
+"library.sort_title" = "Название";
+"library.sort_author" = "Автор";
+"library.sort_series" = "Серия";
+"library.sort_heading" = "Сортировать по";
+"library.show_heading" = "Показать";
+"library.show_all" = "Все книги";
+"library.hide_finished" = "Скрыть прочитанные";
+"library.cover_heading" = "Размер обложки";
+"library.cover_small" = "Маленький";
+"library.cover_medium" = "Средний";
+"library.cover_large" = "Большой";
+/* Arguments: %1, %2 */
+"library.series_number" = "%1 №%2";
+"library.progress_heading" = "Прогресс";
+"library.title_heading" = "Название";
+"library.status_new" = "Новая";
+"library.status_done" = "Прочитана";
+/* Arguments: %1 */
+"library.scanning" = "Сканирование · найдено: %1";
+"library.no_matches" = "По вашему запросу книги не найдены.";
+"library.nothing_shown" = "Все книги здесь уже прочитаны.";
+"library.home_empty" = "Здесь появятся книги, которые вы читаете.";
+"library.now_reading" = "Сейчас читается";
+"library.empty_title" = "Добавьте первую книгу";
+"library.empty_body" = "Откройте книгу, чтобы добавить её в библиотеку и начать чтение. Или выберите папку, чтобы найти EPUB в ней и во вложенных папках.";
+"library.empty_folders" = "В ваших папках пока не найдено книг.";
+"library.choose_folder" = "Выбрать папку";
+"library.open_book" = "Открыть один файл";
+"library.folders" = "Папки библиотеки";
+/* Arguments: %1 */
+"library.folders_summary" = "Папки · %1";
+"library.books_heading" = "Книги";
+"library.remove_folder" = "Удалить папку";
+"library.check_at_start" = "Проверять новые книги при запуске";
+"library.check_at_start_description" = "Ищет добавленные, изменённые и удалённые файлы.";
+"library.rescan" = "Пересканировать все папки";
+"library.folders_description" = "Удаление папки убирает её книги из библиотеки. Файлы и прогресс чтения остаются на устройстве.";
+"library.continue_reading" = "Продолжить чтение";
+"library.start_reading" = "Начать чтение";
+"library.mark_finished" = "Отметить прочитанной";
+"library.mark_unread" = "Отметить непрочитанной";
+"library.remove_book" = "Убрать из библиотеки";
+"library.remove_book_title" = "Убрать из библиотеки?";
+"library.remove_book_description" = "Файл книги и прогресс чтения остаются на устройстве. Книга из папки библиотеки вернётся при повторном сканировании папки.";
+"library.remove_copy_description" = "Копия книги в Kobalt будет удалена. Прогресс чтения остаётся на устройстве.";
+"library.remove" = "Удалить";
+"library.back" = "Назад в библиотеку";
+"library.open_failed" = "Не удалось открыть книгу.";
+"library.folder_unavailable" = "Эту папку не удаётся прочитать. Добавьте её заново, чтобы вернуть доступ Kobalt.";
+
+/* about */
+"about.description" = "Альтернативный ридер EPUB на движке CREngine с интерфейсом чтения на Qt, с упором на скорость и превосходный пользовательский опыт.";
+/* Arguments: %1, %2 */
+"about.version" = "Версия %1 (Qt%2)";
+
+/* chapter_contents */
+"chapter_contents.chapter_destination_unavailable" = "Назначение главы недоступно";
+"chapter_contents.current_chapter" = "Текущая глава";
+"chapter_contents.next_chapters" = "Следующие главы";
+"chapter_contents.no_chapters_available" = "Главы недоступны";
+"chapter_contents.previous_chapters" = "Предыдущие главы";
+
+/* chapter_graph */
+/* Arguments: %1 */
+"chapter_graph.book_progress" = "Прогресс книги: %1%";
+"chapter_graph.chapter_lengths_are_unavailable" = "Длины глав недоступны";
+/* Arguments: %1 */
+"chapter_graph.chapter_progress" = "Прогресс главы: %1%";
+/* Arguments: %1, %2, %3 */
+"chapter_graph.chapters_to_of" = "Главы с %1 по %2 из %3";
+/* Arguments: %1 */
+"chapter_graph.current_chapter" = "Текущая глава: %1";
+/* Arguments: %1, %2 */
+"chapter_graph.next_chapter" = "Следующая глава: %1 %2";
+"chapter_graph.no_chapter_lengths_available" = "Длины глав недоступны";
+
+/* common */
+"common.auto" = "Авто";
+"common.back" = "Назад";
+"common.cancel" = "Отмена";
+"common.ok" = "ОК";
+"common.image" = "Изображение";
+"common.next_page" = "Следующая страница";
+/* Arguments: %1, %2 */
+"common.numbered_title" = "%1. %2";
+"common.off" = "Выкл.";
+"common.on" = "Вкл.";
+"common.page" = "стр.";
+/* Arguments: %1, %2 */
+"common.page_fraction" = "%1 / %2";
+"common.pages" = "стр.";
+/* Arguments: %1 */
+"common.percent" = "%1%";
+"common.previous_page" = "Предыдущая страница";
+"common.size_large" = "Большой";
+"common.size_large_short" = "Б";
+"common.size_medium" = "Средний";
+"common.size_medium_short" = "С";
+"common.size_small" = "Маленький";
+"common.size_small_short" = "М";
+
+/* components */
+"components.battery_level_unavailable" = "Уровень заряда недоступен";
+/* Arguments: %1, %2 */
+"components.battery_percent" = "Заряд %1 процент%2";
+"components.battery_unknown" = "--%";
+"components.charging" = ", идёт зарядка";
+"components.bluetooth_enabled" = "Bluetooth включён";
+
+/* controls */
+"controls.currently" = "Сейчас:";
+/* Arguments: %1 */
+"controls.decrease" = "Уменьшить: %1";
+/* Arguments: %1 */
+"controls.increase" = "Увеличить: %1";
+"controls.publisher_default" = "По умолчанию издателя";
+
+/* dictionary_panel */
+"dictionary_panel.choose_dictionary" = "Выбрать словарь";
+"dictionary_panel.close_definition" = "Закрыть определение";
+/* Arguments: %1 */
+"dictionary_panel.definition_for" = "Определение для %1";
+"dictionary_panel.dictionary_unavailable" = "Словарь недоступен";
+
+/* error */
+"error.a_book_resource_changed_during_reading" = "Ресурс книги изменился во время чтения";
+"error.a_book_resource_exceeds_the_32_mib_limit" = "Ресурс книги превышает лимит 32 МиБ";
+"error.ambiguous_native_chapter_path" = "Неоднозначный путь к системной главе";
+"error.ambiguous_publication_member_path" = "Неоднозначный путь к элементу публикации";
+"error.cannot_compare_the_reading_positions" = "Не удалось сравнить позиции чтения";
+"error.cannot_create_the_native_publication_service" = "Не удалось создать системную службу публикации";
+"error.cannot_read_publication_directory" = "Не удалось прочитать каталог публикации";
+"error.cannot_read_the_publication" = "Не удалось прочитать публикацию";
+"error.cannot_request_native_publication_resource" = "Не удалось запросить ресурс системной публикации";
+"error.cannot_restore_the_retained_appearance" = "Не удалось восстановить сохранённый внешний вид";
+"error.cannot_restore_the_retained_position" = "Не удалось восстановить сохранённую позицию";
+"error.cannot_select_the_native_text_position" = "Не удалось выбрать системную текстовую позицию";
+"error.cannot_start_the_native_publication_service" = "Не удалось запустить системную службу публикации";
+"error.cannot_verify_persisted_nickel_progress" = "Не удалось проверить сохранённый прогресс Nickel";
+"error.could_not_find_that_passage" = "Не удалось найти этот фрагмент";
+"error.could_not_isolate_the_current_section" = "Не удалось изолировать текущую секцию";
+"error.could_not_load_a_book_resource" = "Не удалось загрузить ресурс книги";
+"error.could_not_locate_the_current_section" = "Не удалось определить текущую секцию";
+"error.could_not_read_the_section_metadata" = "Не удалось прочитать метаданные секции";
+"error.could_not_update_text" = "Не удалось обновить текст";
+"error.dictionary_lookup_could_not_connect" = "Не удалось подключиться к словарю.";
+"error.dictionary_lookup_did_not_return_a_definition" = "Словарь не вернул определение.";
+"error.dictionary_lookup_has_an_unsupported_thread" = "У словарного запроса неподдерживаемый поток.";
+"error.dictionary_lookup_is_busy" = "Словарь занят.";
+"error.dictionary_lookup_is_unavailable_on_this_firmware" = "Словарный поиск недоступен в этой версии прошивки.";
+"error.dictionary_selection_is_unavailable" = "Выбор словаря недоступен.";
+"error.dictionary_state_could_not_be_restored" = "Не удалось восстановить состояние словаря.";
+"error.encrypted_or_unsupported_epub" = "Зашифрованный или неподдерживаемый EPUB";
+"error.expanded_publication_is_too_large" = "Распакованная публикация слишком велика";
+"error.explicit_native_bookmark_is_unsupported" = "Явная системная закладка не поддерживается";
+"error.incomplete_publication_directory" = "Неполный каталог публикации";
+"error.invalid_epub_directory" = "Некорректный каталог EPUB";
+"error.invalid_native_chapter_position" = "Некорректная системная позиция главы";
+"error.invalid_publication_directory" = "Некорректный каталог публикации";
+"error.invalid_publication_resource_response" = "Некорректный ответ ресурса публикации";
+"error.invalid_source_element_offset" = "Некорректное смещение элемента источника";
+"error.invalid_source_position" = "Некорректная позиция источника";
+"error.invalid_source_text_offset" = "Некорректное текстовое смещение источника";
+"error.missing_epub_container" = "Отсутствует контейнер EPUB";
+"error.missing_publication_body" = "Отсутствует тело публикации";
+"error.missing_publication_container" = "Отсутствует контейнер публикации";
+"error.native_chapter_is_not_in_the_publication_spine" = "Системная глава отсутствует в корешке публикации";
+"error.native_chapter_source_is_incomplete" = "Источник системной главы неполон";
+"error.native_chapter_source_is_unavailable" = "Источник системной главы недоступен";
+"error.native_offset_splits_a_unicode_character" = "Системное смещение разрезает символ Unicode";
+"error.native_opening_position_cannot_be_converted" = "Не удалось преобразовать системную позицию открытия";
+"error.native_progress_api_is_unavailable" = "Системный API прогресса недоступен";
+"error.native_progress_writeback_is_unsupported_on_this_firmware_mode" = "Запись системного прогресса не поддерживается в этом режиме прошивки";
+"error.native_publication_api_is_unavailable" = "Системный API публикации недоступен";
+"error.native_publication_directory_is_unavailable" = "Системный каталог публикации недоступен";
+"error.native_publication_identity_is_unavailable" = "Идентификатор системной публикации недоступен";
+"error.native_publication_identity_is_unsupported" = "Идентификатор системной публикации не поддерживается";
+"error.native_publication_is_closed" = "Системная публикация закрыта";
+"error.native_publication_port_is_ambiguous" = "Порт системной публикации неоднозначен";
+"error.native_publication_response_has_extra_data" = "Ответ системной публикации содержит лишние данные";
+"error.native_publication_response_header_is_too_large" = "Заголовок ответа системной публикации слишком велик";
+"error.native_publication_service_is_not_listening" = "Служба системной публикации не слушает порт";
+"error.native_publication_service_is_unavailable" = "Служба системной публикации недоступна";
+"error.native_publication_transfer_failed" = "Сбой передачи системной публикации";
+"error.native_publication_transfer_timed_out" = "Истекло время передачи системной публикации";
+"error.native_saved_position_cannot_be_converted" = "Не удалось преобразовать сохранённую системную позицию";
+"error.native_saved_position_is_unsupported" = "Сохранённая системная позиция не поддерживается";
+"error.native_text_anchor_cannot_be_mapped_without_changing_its_text" = "Системный текстовый якорь нельзя сопоставить, не изменив его текст";
+"error.native_text_anchor_is_not_in_the_publication" = "Системный текстовый якорь отсутствует в публикации";
+"error.native_text_offset_exceeds_its_anchor" = "Системное текстовое смещение выходит за пределы якоря";
+"error.native_text_position_was_not_found" = "Системная текстовая позиция не найдена";
+"error.nickel_cannot_store_this_reading_position" = "Nickel не может сохранить эту позицию чтения";
+"error.nickel_could_not_commit_progress_local_position_was_retained" = "Nickel не смог зафиксировать прогресс; локальная позиция сохранена";
+"error.nickel_database_is_busy_local_position_was_retained" = "База данных Nickel занята; локальная позиция сохранена";
+"error.nickel_database_is_unavailable" = "База данных Nickel недоступна";
+"error.nickel_did_not_supply_readable_publication_text" = "Nickel не предоставил читаемый текст публикации";
+"error.nickel_did_not_supply_readable_publication_xml" = "Nickel не предоставил читаемый XML публикации";
+"error.nickel_persistence_could_not_be_verified_local_position_was_retain" = "Не удалось проверить сохранение в Nickel; локальная позиция сохранена";
+"error.nickel_progress_changed_before_exit" = "Прогресс Nickel изменился перед выходом";
+"error.nickel_progress_changed_before_saving" = "Прогресс Nickel изменился перед сохранением";
+"error.nickel_reading_position_could_not_be_decoded" = "Не удалось декодировать позицию чтения Nickel";
+"error.nickel_rejected_the_exact_reading_position" = "Nickel отклонил точную позицию чтения";
+"error.nickel_s_cached_progress_is_not_current" = "Кэшированный прогресс Nickel устарел";
+"error.nickel_save_deferred_while_progress_or_device_state_is_unresolved" = "Сохранение в Nickel отложено: состояние прогресса или устройства не определено";
+"error.no_definition_found" = "Определение не найдено.";
+"error.no_dictionary_is_available_for_this_book" = "Для этой книги нет доступного словаря.";
+"error.no_reading_position" = "Позиция чтения отсутствует";
+"error.no_section_to_preview" = "Нет секции для предпросмотра";
+"error.no_supported_native_reading_position" = "Поддерживаемая системная позиция чтения отсутствует";
+"error.opening_interrupted" = "Открытие прервано";
+"error.position_has_no_source_chapter" = "У позиции нет исходной главы";
+"error.position_has_no_source_path" = "У позиции нет исходного пути";
+"error.publication_declares_vertical_writing" = "В книге используется неподдерживаемый режим письма.";
+"error.publication_exceeds_the_memory_limit" = "Публикация превышает лимит памяти";
+"error.publication_layout_inspection_is_incomplete" = "Проверка вёрстки публикации не завершена";
+"error.publication_member_name_is_not_utf_8" = "Имя элемента публикации не в кодировке UTF-8";
+"error.publication_package_xml_is_invalid" = "Пакет EPUB содержит некорректный XML.";
+"error.publication_requires_right_to_left_page_navigation" = "Публикация требует постраничной навигации справа налево";
+"error.publication_session_resource_mismatch" = "Несоответствие ресурсов сессии публикации";
+"error.publication_transfer_is_incomplete" = "Передача публикации не завершена";
+"error.reading_session_closed" = "Сессия чтения закрыта";
+"error.resource_exceeds_inspection_limit" = "Ресурс превышает лимит проверки";
+"error.saved_reading_position_no_longer_exists" = "Сохранённая позиция чтения больше не существует";
+"error.select_a_word_to_look_up" = "Выделите слово для поиска.";
+"error.source_position_is_outside_its_anchor" = "Позиция источника вне его якоря";
+"error.that_dictionary_is_no_longer_installed" = "Этот словарь больше не установлен.";
+"error.the_book_is_no_longer_available" = "Книга больше недоступна.";
+"error.the_current_section_is_not_in_the_manifest" = "Текущая секция отсутствует в манифесте";
+"error.the_dictionary_could_not_be_loaded" = "Не удалось загрузить словарь.";
+"error.the_publication_has_no_pages" = "В публикации нет страниц";
+"error.the_publication_is_not_an_epub" = "Публикация не является EPUB";
+"error.the_publication_package_is_unavailable" = "Пакет публикации недоступен";
+"error.the_reading_engine_could_not_open_this_epub" = "Движок чтения не смог открыть этот EPUB";
+"error.the_reading_font_is_unavailable" = "Шрифт чтения недоступен";
+"error.the_section_resources_are_unavailable" = "Ресурсы секции недоступны";
+"error.the_selected_dictionary_is_not_installed" = "Выбранный словарь не установлен.";
+"error.this_note_has_no_separate_preview" = "У этой сноски нет отдельного предпросмотра.";
+"error.this_note_has_no_text_to_preview" = "У этой сноски нет текста для предпросмотра.";
+"error.this_note_is_too_long_to_preview" = "Эта сноска слишком длинная для предпросмотра.";
+"error.this_passage_is_unavailable" = "Этот фрагмент недоступен.";
+"error.this_publication_is_lcp_protected" = "Публикация защищена LCP и открывается во встроенном ридере";
+"error.this_publication_needs_unsupported_font_or_resource_handling" = "Публикации требуется неподдерживаемая обработка шрифтов или ресурсов";
+"error.unsupported_epub_archive" = "Неподдерживаемый архив EPUB";
+"error.unsupported_epub_directory" = "Неподдерживаемый каталог EPUB";
+"error.unsupported_native_publication_response" = "Неподдерживаемый ответ системной публикации";
+"error.unsupported_native_text_offset" = "Неподдерживаемое системное текстовое смещение";
+"error.unsupported_publication_directory" = "Неподдерживаемый каталог публикации";
+"error.unsupported_publication_directory_size" = "Неподдерживаемый размер каталога публикации";
+"error.unsupported_publication_member" = "Неподдерживаемый элемент публикации";
+"error.unsupported_publication_size" = "Неподдерживаемый размер публикации";
+
+/* graph */
+
+/* header_footer */
+"header_footer.title" = "Верхний и нижний колонтитулы";
+"header_footer.customize_title" = "Настроить колонтитулы";
+/* Arguments: %1 */
+"header_footer.customize_slot" = "Настроить слот: %1";
+"header_footer.custom_hint" = "Доступно шесть слотов: нажмите на слот, чтобы настроить его. Учтите, что эти изменения сохраняются в пресете «Свой» и применяются ко всем книгам, которые его используют!";
+/* Arguments: %1, %2 */
+"header_footer.slot_value" = "%1: %2";
+"header_footer.close" = "Закрыть настройку колонтитулов";
+"header_footer.close_fields" = "Закрыть поля";
+"header_footer.fields" = "Поля";
+"header_footer.previous_fields" = "Предыдущие поля";
+"header_footer.next_fields" = "Следующие поля";
+"header_footer.shows" = "Показывает";
+"header_footer.empty" = "Пусто";
+"header_footer.unavailable" = "—";
+"header_footer.uppercase" = "Заглавные";
+"header_footer.progress_bar" = "Полоса прогресса";
+/* Arguments: %1 */
+"header_footer.time_left" = "осталось %1";
+"header_footer.learning_pace" = "Определение скорости чтения";
+/* Arguments: %1, %2 */
+"header_footer.pages_left" = "осталось %1 %2";
+"header_footer.preset.default" = "Kobalt";
+"header_footer.preset.alternative_a" = "Книжный";
+"header_footer.preset.alternative_b" = "Уголь";
+"header_footer.preset.custom" = "Свой";
+/* Arguments: %1, %2 */
+"header_footer.page_of" = "%1 из %2";
+/* Arguments: %1 */
+"header_footer.preset.modified" = "%1 *";
+/* Arguments: %1 */
+"header_footer.preset.modified_name" = "%1, изменён";
+"header_footer.replace_custom_prompt" = "Заменить вашу собственную раскладку?";
+/* Arguments: %1 */
+"header_footer.replace_custom_detail" = "Настройка «%1» заменит раскладку, сохранённую как «Свой».";
+"header_footer.replace_custom" = "Заменить";
+"header_footer.slot.top_left" = "Сверху слева";
+"header_footer.slot.top_center" = "Сверху по центру";
+"header_footer.slot.top_right" = "Сверху справа";
+"header_footer.slot.bottom_left" = "Снизу слева";
+"header_footer.slot.bottom_center" = "Снизу по центру";
+"header_footer.slot.bottom_right" = "Снизу справа";
+"header_footer.field.nothing" = "Ничего";
+"header_footer.field.title" = "Название книги";
+"header_footer.field.author" = "Автор";
+"header_footer.field.chapter" = "Глава";
+"header_footer.field.chapter_page" = "Страница в главе";
+"header_footer.field.book_page" = "Страница в книге";
+"header_footer.field.chapter_pages_left" = "Страниц до конца главы";
+"header_footer.field.chapter_and_page" = "Глава и страница в главе";
+"header_footer.field.title_and_page" = "Название и страница в книге";
+"header_footer.field.battery_percent" = "Батарея с процентом";
+"header_footer.field.battery" = "Батарея";
+"header_footer.field.time" = "Время";
+"header_footer.field.chapter_time_left" = "Времени до конца главы";
+"header_footer.field.book_time_left" = "Времени до конца книги";
+"header_footer.field.chapter_percent" = "Процент главы";
+"header_footer.field.book_percent" = "Процент книги";
+"header_footer.field.battery_warning" = "Предупреждение о заряде";
+/* Arguments: %1 */
+"header_footer.field_description.battery_warning" = "Показывает батарею только ниже %1%.";
+"header_footer.field_description.time_left" = "Оценивается по вашей скорости чтения.";
+
+/* image */
+"image.unavailable" = "Не удалось загрузить изображение";
+
+/* light_panel */
+"light_panel.automatic_brightness" = "Автоматическая яркость";
+"light_panel.automatic_brightness_description" = "Использует датчик внешнего освещения. Ручная регулировка отключает этот режим.";
+"light_panel.automatic_warmth" = "Следовать расписанию тёплого света Kobo";
+"light_panel.automatic_warmth_description" = "Использует время отхода ко сну, заданное в настройках Kobo. Ручная регулировка тёплого света отключает этот режим.";
+"light_panel.brightness" = "Яркость";
+"light_panel.warmth" = "Тёплый свет";
+"light_panel.swipe_hint" = "Проводите вверх или вниз вдоль краёв для быстрой регулировки.";
+"light_panel.brightness_swipe_hint" = "Проводите вверх или вниз вдоль левого края для регулировки яркости.";
+
+/* link_panel */
+"link_panel.close_footnote_or_link" = "Закрыть сноску или ссылку";
+"link_panel.footnote" = "Сноска";
+"link_panel.link" = "Ссылка";
+"link_panel.show_in_book" = "Показать в книге";
+/* Arguments: %1 = chapter title */
+"link_panel.in_chapter" = "В главе «%1»";
+
+/* native_ui */
+/* Arguments: %1 is the installed Kobalt version. */
+"native_ui.missing_assets_message" = "Некоторые необходимые ресурсы не были скопированы корректно. Переустановите Kobalt.\n\nУстановленная версия: %1";
+"native_ui.missing_assets_title" = "Kobalt не может запуститься";
+"native_ui.could_not_save_reader_preference" = "Не удалось сохранить настройку ридера.";
+"native_ui.open_books_in_kobalt" = "Открывать книги в Kobalt";
+"native_ui.read_with_kobalt" = "Читать в Kobalt";
+"native_ui.read_with_nickel" = "Читать в Nickel";
+
+/* opening */
+"opening.loading" = "Открытие книги";
+"opening.may_take_a_while" = "Это может занять некоторое время";
+
+/* reader */
+"reader.align_left" = "По левому краю";
+"reader.alignment" = "Выравнивание";
+"reader.applying_appearance_changes" = "Применение изменений оформления...";
+"reader.enabling_bold_reading" = "Включение жирного чтения...";
+"reader.disabling_bold_reading" = "Выключение жирного чтения...";
+"reader.updating_page_layout" = "Обновление вёрстки страницы...";
+"reader.auto_alignment" = "Автовыравнивание";
+"reader.automatic_rotation" = "Автоповорот";
+"reader.book_marked_finished" = "Книга отмечена прочитанной";
+"reader.book_position" = "Позиция в книге";
+"reader.zoom_in" = "Приблизить шкалу";
+"reader.zoom_out" = "Отдалить шкалу";
+"reader.zoom_overview" = "Провести увеличенный фрагмент по всей книге";
+"reader.whole_book" = "Вся книга";
+"reader.expand_book_map" = "Развернуть карту всей книги";
+"reader.collapse_book_map" = "Свернуть карту всей книги";
+/* Arguments: %1 */
+"reader.zoom_scale" = "Масштаб %1×";
+/* Arguments: %1, %2, %3 */
+"reader.zoom_range" = "Страницы с %1 по %2 из %3";
+"reader.previous_chapter" = "Предыдущая глава";
+"reader.next_chapter" = "Следующая глава";
+/* Arguments: %1 */
+"reader.brightness" = "Яркость %1%";
+"reader.brightness_and_warmth" = "Яркость и тёплый свет";
+"reader.built_in_fonts" = "Встроенные шрифты";
+"reader.chapter_lengths" = "Длины глав";
+/* Arguments: %1, %2 */
+"reader.chapter_position" = "%1 · %2";
+"reader.contents" = "Содержание";
+/* Arguments: %1 */
+"reader.contents_detail" = "Содержание: %1";
+"reader.could_not_change_dark_mode" = "Не удалось переключить тёмную тему";
+"reader.could_not_save_reader_settings" = "Не удалось сохранить настройки ридера";
+"reader.settings_write_error" = "Ошибка записи на диск";
+"reader.settings_write_error_description" = "Kobalt не смог сохранить настройки ридера. Проверьте свободное место и попробуйте снова.";
+"reader.could_not_save_reading_position" = "Не удалось сохранить позицию чтения";
+"reader.dark_mode" = "Тёмная тема";
+"reader.debug_progress" = "Отладочный прогресс";
+"reader.defaults_selected" = "Выбраны значения по умолчанию";
+"reader.duplicate_current_update" = "Продублировать текущее обновление";
+"reader.edge_light" = "Проводите вдоль краёв для регулировки подсветки";
+"reader.enable_page_animations" = "Анимация перелистывания";
+"reader.exit" = "Выйти из Kobalt";
+"reader.fail_next_native_save" = "Сбой следующего системного сохранения";
+"reader.font" = "Шрифт";
+"reader.close_fonts" = "Закрыть шрифты";
+"reader.default_font" = "Шрифт по умолчанию";
+"reader.set_default_font" = "Задать шрифт по умолчанию";
+"reader.one_embedded_font" = "1 встроенный шрифт";
+/* Arguments: %1 */
+"reader.embedded_fonts" = "Встроенных шрифтов: %1";
+"reader.no_embedded_fonts" = "Нет встроенных шрифтов";
+/* Arguments: %1 */
+"reader.uses_default_font" = "Использует %1";
+"reader.your_default_font" = "Ваш шрифт по умолчанию";
+/* Arguments: %1 */
+"reader.make_default_font" = "Сделать %1 шрифтом по умолчанию?";
+"reader.make_default" = "Сделать по умолчанию";
+"reader.default_font_instructions" = "Нажмите и удерживайте другой шрифт, чтобы сделать его переопределением по умолчанию для новых книг. У выбранного шрифта под названием появится пометка «Шрифт по умолчанию». Издательские шрифты сохраняют свои автоматические запасные варианты.";
+/* Arguments: %1 */
+"reader.already_default_font" = "%1 уже является вашим шрифтом по умолчанию.";
+"reader.make_default_font_description" = "Под его названием появится пометка «Шрифт по умолчанию», и он станет исходным переопределением шрифта для новых книг. Издательские шрифты сохраняют свои автоматические запасные варианты.";
+"reader.restore_default_font_description" = "Libron станет исходным переопределением шрифта для новых книг. Пометка «Шрифт по умолчанию» появится под Libron.";
+"reader.font_weight" = "Вариативная насыщенность:";
+"reader.font_thickness" = "Толщина: +";
+"reader.footer" = "Нижний колонтитул";
+"reader.front_matter" = "Авантитул";
+"reader.go_to_synced_position" = "Перейти к синхронизированной позиции";
+"reader.header" = "Верхний колонтитул";
+"reader.columns" = "Колонки";
+"reader.column_spacing" = "Межколоночный интервал";
+"reader.hyphenation" = "Переносы";
+"reader.justify" = "По ширине";
+"reader.keep_reading_here" = "Продолжить читать здесь";
+"reader.landscape" = "Альбомная";
+"reader.landscape_upside_down" = "Альбомная, вверх ногами";
+"reader.line_spacing" = "Межстрочный интервал: ";
+"reader.margins" = "Горизонтальные поля: ";
+"reader.vertical_margins" = "Вертикальные поля: ";
+/* Arguments: %1, %2 */
+"reader.menu_page_of" = "СТР. %1 ИЗ %2";
+"reader.new_synced_position" = "Новая синхронизированная позиция";
+"reader.older_synced_position" = "Более ранняя синхронизированная позиция";
+"reader.page_layout" = "Раскладка страницы";
+"reader.portrait" = "Книжная";
+"reader.portrait_upside_down" = "Книжная, вверх ногами";
+"reader.publisher_fonts" = "Шрифты издателя";
+"reader.reader_settings" = "Настройки ридера";
+"reader.reading" = "Чтение";
+"reader.recommended_fonts" = "Рекомендуемые шрифты";
+"reader.refresh_the_screen" = "Обновить экран";
+"reader.bookmarks" = "Аннотации и закладки";
+"reader.restore_appearance_defaults" = "Восстановить оформление по умолчанию";
+"reader.restore_appearance_defaults_prompt" = "Восстановить оформление по умолчанию?";
+"reader.restore_defaults" = "Восстановить значения по умолчанию";
+"reader.return_to_passage" = "Вернуться к фрагменту";
+"reader.follow_link" = "Перейти по ссылке";
+"reader.link_dictionary" = "Словарь";
+"reader.dismiss_link" = "Закрыть";
+"reader.stay_here" = "Остаться здесь и забыть позицию возврата";
+/* Arguments: %1 */
+"reader.return_page" = "Вернуться на страницу %1";
+/* Arguments: %1 */
+"reader.jumped_from_chapter" = "Вы перешли из главы «%1»";
+"reader.rotation" = "Поворот";
+"reader.search_book" = "Поиск по книге";
+/* Arguments: %1 */
+"reader.session_minutes" = "Вы читаете уже %1 мин";
+"reader.sideloaded_fonts" = "Загруженные шрифты";
+"reader.simulate_nickel_progress_these_controls_change_only_the_synthetic" = "Симуляция прогресса Nickel. Эти элементы меняют только синтетическую тестовую книгу прогресса. Синхронизация с сервером не выполняется.";
+"reader.optical_size" = "Оптический размер";
+"reader.text_size" = "Размер текста: ";
+/* Arguments: %1 */
+"reader.text_size_value" = "%1 pt";
+"reader.the_orientation_sensor_is_unavailable" = "Датчик ориентации недоступен";
+"reader.the_simulation_failed_no_successful_update_was_reported" = "Симуляция не удалась. Успешное обновление не зафиксировано.";
+"reader.typography" = "Типографика";
+"reader.untitled_chapter" = "Глава без названия";
+/* Arguments: %1 */
+"reader.warmth" = "Тёплый свет %1%";
+/* Arguments: %1 */
+"reader.weight_value" = "+%1";
+"reader.your_reading_position_stays_the_same_the_defaults_apply_when_you_c" = "Настройки шрифта, раскладки и экрана будут сброшены к значениям по умолчанию. Позиция чтения не изменится. Значения по умолчанию применятся после закрытия настроек.";
+
+/* reader_controller */
+"reader_controller.native_authorization_is_unavailable" = "Системная авторизация недоступна";
+"reader_controller.native_publication_does_not_match_the_opening_request" = "Системная публикация не соответствует запросу на открытие";
+"reader_controller.native_publication_service_closed" = "Служба системной публикации закрыта";
+
+/* search_panel */
+"search_panel.clear_search" = "Очистить поиск";
+"search_panel.find_a_word_or_phrase" = "Найдите слово или фразу";
+/* Arguments: %1 */
+"search_panel.matches" = "Совпадений: %1";
+/* Arguments: %1, %2 */
+"search_panel.matches_searching" = "Совпадений: %1 · поиск: %2%";
+"search_panel.no_matches_found" = "Совпадений нет";
+/* Arguments: %1, %2 */
+"search_panel.page_detail" = "Страница %1: %2";
+"search_panel.return_to_original_position" = "Вернуться к исходной позиции";
+"search_panel.search" = "Найти";
+/* Arguments: %1 */
+"search_panel.search_stopped_matches" = "Поиск остановлен · совпадений: %1";
+"search_panel.searching" = "Поиск…";
+
+/* settings */
+"settings.animations_description" = "Анимировать перелистывание на поддерживаемых устройствах. Изображения обновляются после пролистывания.";
+"settings.unsupported_caption" = "Выключено: не поддерживается этим устройством.";
+"settings.unsupported_description" = "Выключено, поскольку эта опция не поддерживается данным устройством.";
+"settings.dark_description" = "Светлый текст на тёмном фоне.";
+"settings.display" = "Экран";
+"settings.controls" = "Управление";
+"settings.defaults" = "По умолчанию";
+"settings.styling" = "Стили";
+"settings.font_families" = "Запасные шрифты";
+/* Arguments: %1 */
+"settings.font_default_value" = "По умолчанию · %1";
+"settings.serif_font" = "Шрифт с засечками";
+"settings.sans_font" = "Шрифт без засечек";
+"settings.mono_font" = "Моноширинный шрифт";
+"settings.system" = "Системный";
+"settings.automatic_book_opening" = "Автоматически открывать книги в Kobalt";
+"settings.automatic_book_opening_description" = "Использовать Kobalt при открытии поддерживаемых книг из библиотеки. Это та же настройка, что и в параметрах чтения Kobo.";
+"settings.sleep_screen" = "Экран сна";
+"settings.page_navigation" = "Навигация по страницам";
+"settings.section_navigation_bar" = "Панель навигации";
+"settings.navigation_bar_buttons" = "Действие кнопок";
+"settings.navigation_bar_hint" = "Выберите, как стрелки рядом с ползунком перемещают предпросмотр страницы.";
+"settings.navigation_bar_pages" = "Переходы по страницам";
+"settings.navigation_bar_pages_description" = "Предпросмотр предыдущей или следующей страницы.";
+"settings.navigation_bar_chapters" = "Переходы по главам";
+"settings.navigation_bar_chapters_description" = "Предпросмотр предыдущей или следующей главы. По умолчанию.";
+"settings.tap_zones" = "Зоны касаний";
+"settings.tap_left_right" = "Слева / справа";
+"settings.tap_reversed" = "Перевёрнутые";
+"settings.tap_top_bottom" = "Сверху / снизу";
+"settings.tap_one_handed" = "Для одной руки";
+"settings.tap_zones_hint" = "Выберите, куда касаться для перелистывания. Выделенная центральная зона всегда открывает меню.";
+"settings.tap_one_handed_hint" = "Для одной руки: касание — вперёд, проведение — назад или вперёд.";
+"settings.navigation_needs_swipes" = "Выберите другой пресет зон касаний, чтобы отключить проведение.";
+"settings.section_appearance" = "Оформление";
+"settings.section_screen" = "Обновление экрана";
+"settings.section_navigation" = "Навигация";
+"settings.section_frontlight" = "Подсветка";
+"settings.section_new_books" = "Новая книга";
+"settings.section_book_content" = "Содержимое книги";
+"settings.advanced_text" = "Расширенная типографика";
+"settings.justification_tracking" = "Трекинг выключки";
+/* Arguments: %1 (Justify icon) */
+"settings.justification_tracking_description" = "Влияет только на текст по ширине. Выберите %1 в разделе «Текст > Выравнивание». Распределяет свободное место между буквами, уменьшая большие пробелы между словами.";
+"settings.justification_tracking_off" = "Выкл.";
+"settings.justification_tracking_subtle" = "Лёгкий";
+"settings.justification_tracking_more" = "Сильный";
+"settings.widows_orphans" = "Висячие строки";
+"settings.widows_orphans_description" = "Убирает одиночные строки абзаца с краёв страницы. Их избегание может оставлять больше пустого места на предыдущей странице. Применяется ко всем книгам.";
+"settings.widows_orphans_publisher" = "Издательский";
+"settings.widows_orphans_avoid" = "Избегать обоих случаев";
+"settings.widows_orphans_allow" = "Разрешать оба случая";
+"settings.section_reading_menu" = "Меню чтения";
+"settings.section_reader" = "Ридер";
+"settings.section_sleep" = "Сон и пробуждение";
+"settings.section_window" = "Окно";
+"settings.navigation_taps_and_swipes" = "Проведения и касания";
+"settings.navigation_taps_and_swipes_description" = "По умолчанию";
+"settings.navigation_taps_only" = "Только касания";
+"settings.navigation_taps_only_description" = "Касайтесь зон перелистывания, чтобы переворачивать страницы.";
+"settings.navigation_swipes_only" = "Только проведения";
+"settings.navigation_swipes_only_description" = "Проводите влево и вправо для перелистывания.";
+"settings.navigation_buttons_only" = "Только аппаратные кнопки перелистывания";
+"settings.navigation_buttons_only_description" = "Используйте кнопки устройства для перелистывания.";
+"settings.navigation_menu_hint" = "Коснитесь центра страницы, чтобы открыть меню в любом режиме.";
+"settings.sleep_stock" = "Встроенный экран сна Kobo";
+"settings.sleep_stock_description" = "По умолчанию";
+"settings.sleep_cover" = "Kobalt с обложкой книги";
+"settings.sleep_cover_description" = "Показывает обложку книги с прогрессом чтения и статусом батареи.";
+"settings.sleep_page" = "Kobalt с читаемой страницей";
+"settings.sleep_page_description" = "Затемняет текущую страницу и показывает прогресс чтения и статус батареи.";
+"sleep.sleeping" = "Сон";
+"sleep.charging" = "Зарядка";
+"sleep.charged" = "Заряжено";
+/* Arguments: %1 */
+"sleep.percent_read" = "прочитано %1%";
+/* Arguments: %1 */
+"sleep.time_left" = "осталось %1";
+"settings.about" = "О приложении";
+"settings.ui" = "Интерфейс";
+"settings.hide_status_bar" = "Скрыть строку состояния";
+"settings.hide_status_bar_description" = "Скрывает строку состояния с часами, батареей и меню на этом Mac.";
+"settings.edge_light_description" = "Проводите вверх или вниз вдоль левого края для яркости и вдоль правого края — для тёплого света.";
+"settings.edge_brightness_description" = "Проводите вверх или вниз вдоль левого края для регулировки яркости.";
+
+/* finish */
+"finish.prompt" = "Вы закончили эту книгу?";
+"finish.still_reading" = "Ещё читаю";
+"finish.mark_finished" = "Отметить прочитанной";
+
+/* sync */
+"sync.title" = "Синхронизированная позиция чтения";
+"sync.after" = "Ваше устройство только что завершило синхронизацию. В прошлый раз при синхронизации прогресса вы читали дальше этой точки. Перейти к той позиции?";
+"sync.before" = "Ваше устройство только что завершило синхронизацию. В прошлый раз при синхронизации прогресса вы читали раньше текущей позиции. Вернуться к той позиции?";
+"sync.finished" = "Синхронизированное состояние чтения отмечает эту книгу как прочитанную.";
+"sync.position_unavailable" = "Не удалось найти синхронизированную позицию. Позиция чтения не изменилась.";
+"sync.same" = "Синхронизированное место совпадает с текущей позицией чтения. Использовать это синхронизированное состояние чтения?";
+"sync.unlocated" = "Доступна более новая синхронизированная позиция чтения, но её расположение не удалось сравнить с текущей позицией.";
+
+
+"navigation.chapters" = "ГЛАВЫ";
+"navigation.seek" = "НАВИГАЦИЯ";
+"navigation.text" = "ТЕКСТ";
+"navigation.layout" = "РАСКЛАДКА";
+"navigation.light" = "СВЕТ";
+"navigation.stats" = "СТАТИСТИКА";
+
+/* Arguments: %1, %2 */
+"navigation.page_count" = "%1 из %2";
+
+/* search_panel */
+"search_panel.edit" = "Изменить поиск";
+/* Arguments: %1 */
+"search_panel.empty_query" = "Нет совпадений для «%1»";
+/* Arguments: %1 */
+"search_panel.limited" = "Совпадений: %1 · достигнут лимит";
+/* Arguments: %1, %2 */
+"search_panel.result_range" = "Результаты %1–%2";
+/* Arguments: %1 */
+"search_panel.page_number" = "Страница %1";
+
+"settings.asks_first" = "СПРОСИТЬ СНАЧАЛА";
+"bookmarks.title" = "Закладки";
+"bookmarks.close" = "Закрыть закладки";
+"bookmarks.empty" = "Закладок пока нет";
+"bookmarks.empty_hint" = "Коснитесь правого верхнего угла страницы, чтобы добавить закладку.";
+"bookmarks.load_failed" = "Не удалось прочитать сохранённые закладки. Редактирование отключено, чтобы сохранить файл в целости. Проверьте сохранённые закладки и снова откройте книгу.";
+"bookmarks.save_failed" = "Не удалось сохранить закладки. Закладки не изменились. Проверьте свободное место и попробуйте снова.";
+"bookmarks.previous" = "Предыдущие закладки";
+"bookmarks.next" = "Следующие закладки";
+"bookmarks.remove" = "Удалить";
+"bookmarks.remove_prompt" = "Удалить эту закладку?";
+/* Arguments: %1, %2 */
+"bookmarks.remove_detail" = "Страница %1 · %2";
+"settings.refresh_smart" = "Умное";
+/* Arguments: %1 */
+"settings.refresh_smart_description" = "В начале глав, не чаще одного раза в %1 перелистываний.";
+"settings.refresh_every_page" = "Каждую страницу";
+"settings.refresh_every_chapter" = "Каждую главу";
+/* Arguments: %1 */
+"settings.refresh_every_pages" = "Каждые %1 стр.";
+"settings.refresh_manually" = "Вручную";
+"settings.refresh_manually_description" = "Дважды коснитесь центра страницы: один раз, чтобы открыть меню, и ещё раз, чтобы закрыть.";
+
+/* Kobalt views. Captions are drawn in capitals, so these values use sentence case. */
+/* Arguments: %1 */
+"bookmarks.summary" = "Закладки · %1";
+/* Arguments: %1 */
+"acknowledgments.projects" = "Проектов: %1";
+/* Arguments: %1 */
+"chapter_contents.summary" = "Содержание · глав: %1";
+"chapter_contents.summary_one" = "Содержание · %1 глава";
+"chapter_contents.summary_few" = "Содержание · главы: %1";
+"chapter_contents.summary_many" = "Содержание · глав: %1";
+"chapter_contents.page" = "Страница";
+"chapter_contents.chapters" = "Главы";
+"chapter_contents.close" = "Закрыть главы";
+/* Arguments: %1 */
+"dictionary_panel.no_definition_for" = "Определение для «%1» не найдено.";
+"dictionary_panel.try_another_dictionary" = "Выберите другой словарь выше или выделите другое слово.";
+"dictionary_panel.try_another_word" = "Выделите другое слово для поиска.";
+"dictionary_panel.source" = "Источник";
+"search_panel.search_this_book" = "Искать в этой книге";
+"search_panel.search_hint" = "Поиск не учитывает регистр. Нажмите «Найти» на клавиатуре, чтобы начать.";
+"search_panel.no_matches_hint" = "Проверьте написание или попробуйте более короткую фразу.";
+/* Arguments: %1, %2 */
+"search_panel.page_chapter" = "Страница %1 · %2";
+/* Arguments: %1, %2 */
+"stats.contents_position" = "Содержание · %1 из %2";
+/* Arguments: %1, %2 */
+"stats.page_of" = "Страница %1 из %2";
+"stats.chapter" = "Глава";
+"stats.book" = "Книга";
+"stats.session" = "Сессия";
+"stats.pages_left" = "стр. осталось";
+"stats.page_left" = "стр. осталась";
+"stats.minutes" = "мин";
+"stats.since_opening" = "С момента открытия";
+/* Arguments: %1 */
+"stats.words" = "Слов: %1";
+"stats.last_chapter" = "Последняя глава";
+"stats.counting" = "Подсчёт слов…";
+"reader.dense_graph" = "Компактные графики глав";
+"settings.dense_graph_description" = "При включении панель статистики показывает больше глав сразу. Если хотите более широкие полосы — выключите.";
+/* Arguments: %1 */
+"stats.time_left" = "≈ осталось %1";
+/* Arguments: %1 */
+"stats.duration_minutes" = "%1 мин";
+/* Arguments: %1 */
+"stats.approximate_time" = "≈ %1";
+/* Arguments: %1, %2 */
+"stats.duration_hours" = "%1 ч %2 мин";
+/* Arguments: %1, %2 */
+"stats.duration_clock" = "%1:%2";
+
+"opening.native" = "Открытие в ридере Kobo";
+"opening.protected" = "Книга защищена.";
+"opening.continuing" = "Продолжаем автоматически";
+"opening.failed" = "Не удалось открыть книгу";
+"opening.failed_detail" = "Kobalt не смог прочитать этот EPUB. Можете попробовать открыть его во встроенном ридере Kobo.";
+"opening.try_native" = "Попробовать встроенный ридер";
+"opening.go_back" = "Назад";
+
+"opening.remembered" = "Эта книга открывается во встроенном ридере.";
+
+"reader.supplemental_fonts" = "Дополнительные шрифты";
+
+/* dictionaries */
+"settings.dictionaries" = "Словари";
+"link_panel.browser_confirmation" = "Открыть эту ссылку в браузере?";
+"link_panel.browser_unavailable" = "Браузер недоступен.";
+"link_panel.open_browser" = "Открыть";
+"dictionaries.remove" = "Удалить";
+"dictionaries.stop" = "Остановить";
+"dictionaries.get" = "Получить";
+"dictionaries.section_installed" = "Установленные";
+"dictionaries.section_available" = "Доступные";
+/* Arguments: %1 */
+"dictionaries.installed_book" = "Установлен для этой книги · %1";
+"dictionaries.installed_other" = "Установка · другие языки";
+/* Arguments: %1 */
+"dictionaries.available_book" = "Доступен для этой книги · %1";
+"dictionaries.available_other" = "Доступно · другие языки";
+/* Arguments: %1 */
+"dictionaries.storage_used" = "Занято: %1";
+/* Arguments: %1 */
+"dictionaries.storage_free" = "Свободно: %1";
+/* Arguments: %1 */
+"dictionaries.remove_title" = "Удалить %1?";
+/* Arguments: %1 */
+"dictionaries.remove_description" = "Будет освобождено %1. Его можно снова получить из этого списка.";
+/* Arguments: %1, %2 */
+"dictionaries.downloading" = "Загрузка · %1 из %2";
+"dictionaries.installing" = "Установка";
+"dictionaries.download_failed" = "Сбой загрузки. Попробуйте снова.";
+/* Arguments: %1 */
+"dictionary_panel.for_language" = "Для языка: %1";
+
+"reader.show_link_indicator" = "Показывать индикатор ссылок при чтении";
+"reader.link_indicator_description" = "Показывает индикатор на страницах со ссылками. Нажмите на него, чтобы показать ссылки.";
+/* Arguments: %1 = number of links */
+"reader.highlight_links" = "Подсветить ссылки · %1";
+"reader.long_press_link" = "Нажмите и удерживайте ссылку, чтобы увидеть её опции.";
+"reader.tap_revealed_link" = "Нажмите на подсвеченную ссылку, чтобы перейти по ней";
+"reader.tap_elsewhere_to_exit" = "Коснитесь в другом месте, чтобы выйти";
+
+"reader.bold_reading" = "Жирное чтение";
+"reader.bionic_description" = "Выделяет начала слов жирным. Толщина и вариативная насыщенность недоступны, пока режим включён.";
+"reader.bionic_weight_locked" = "Жирное чтение";
+
+/* Arguments: %1 installed version */
+"native_ui.recovered_assets_message" = "Обнаружено повреждение файловой системы или файл был передан некорректно. Переустановите Kobalt и попробуйте снова.\n\nУстановленная версия: %1";
+
+"native_ui.removing_kobalt" = "Удаление Kobalt";
+"native_ui.restarting_device" = "Перезапуск устройства...";
+
+"reader.lock_portrait" = "Закрепить книжную ориентацию";
+"reader.lock_landscape" = "Закрепить альбомную ориентацию";
+
+"reader.both" = "Оба";
+"reader.formatting_warning" = "Предупреждение о форматировании";
+"reader.formatting_warning_description" = "В этой книге возможны проблемы с форматированием. Можно продолжить чтение, но часть текста или вёрстки может отображаться не так, как задумано.";
+
+"reader.hide_nonlinear_fragments" = "Скрывать нелинейные фрагменты";
+"settings.hide_nonlinear_fragments_description" = "Пропускать нелинейные секции при перелистывании. Ссылки, оглавление и номера страниц по-прежнему могут их открывать.";
+"settings.inherit_text_layout" = "Наследовать стиль текста от последней книги";
+"settings.inherit_text_layout_description" = "Новые книги начинают с текстового стиля последней книги. Настройки раскладки применяются ко всем книгам.";
+"settings.inherit_header_footer" = "Наследовать колонтитулы от последней книги";
+"settings.inherit_header_footer_description" = "Новые книги начинают с колонтитулов последней книги. Книги с сохранёнными настройками сохраняют свои.";
+
+"settings.avoid_wasteful_styling" = "Умные стили";
+"settings.avoid_wasteful_styling_description" = "Kobalt автоматически улучшает внешний вид книги. Если предпочитаете исходный CSS книги — отключите.";
+
+"settings.minimal_annotation_mode" = "Минимальный режим аннотаций";
+"settings.minimal_annotation_mode_description" = "Скрывает панель аннотаций. Коснитесь текста или пустого места, затем выберите «Завершить выделение», чтобы выйти.";
+
+/* annotations */
+"annotations.style_section" = "Стиль";
+"annotations.actions_section" = "Действия";
+"annotations.title" = "Аннотация";
+"annotations.tab" = "Аннотации";
+"annotations.close" = "Закрыть аннотации";
+"annotations.mode_active" = "РЕЖИМ ВЫДЕЛЕНИЯ АКТИВЕН";
+"annotations.tap_start" = "Коснитесь слова или нажмите и протяните для выделения.";
+"annotations.tap_end" = "Коснитесь другого слова или потяните любой маркер.";
+"annotations.tap_boundary" = "Коснитесь текста или потяните маркер для корректировки.";
+"annotations.overlap" = "Выделения не могут пересекаться. Скорректируйте выделение и попробуйте снова.";
+"annotations.ready" = "Потяните маркеры для корректировки. Коснитесь выделения, чтобы выбрать пометку.";
+"annotations.highlight_word" = "Выделить слово";
+"annotations.mark_text" = "Пометить текст";
+"annotations.apply_changes" = "Применить изменения";
+"annotations.end_here" = "Выделить до этого места";
+"annotations.retry_save" = "Повторить сохранение";
+"annotations.cancel_selection" = "Снять выделение";
+"annotations.discard_and_stop" = "Снять выделение и завершить";
+"annotations.stop" = "Завершить выделение";
+"annotations.empty" = "Аннотаций пока нет";
+"annotations.loading" = "Поиск страниц…";
+"annotations.load_failed" = "Не удалось прочитать сохранённые аннотации. Редактирование отключено. Снова откройте книгу, чтобы попробовать.";
+"annotations.empty_hint" = "Используйте «Аннотация» в меню чтения, чтобы сохранить фрагмент.";
+/* Arguments: %1 */
+"annotations.summary" = "Аннотаций: %1";
+"annotations.summary_one" = "%1 аннотация";
+"annotations.summary_few" = "Аннотации: %1";
+"annotations.summary_many" = "Аннотаций: %1";
+"annotations.edit" = "Изменить";
+"annotations.remove" = "Удалить";
+"annotations.save_failed" = "Не удалось сохранить выделение. Ваше выделение сохранено.";
+"annotations.remove_prompt" = "Удалить это выделение?";
+"annotations.remove_detail" = "Сохранённый фрагмент будет удалён из этой книги.";
+"annotations.dismiss" = "Закрыть";
+"annotations.previous_matches" = "Предыдущие выделения";
+"annotations.next_matches" = "Следующие выделения";
+"annotations.save_then_edit" = "Сохранить выделение и изменить пометку";
+"annotations.discard_then_edit" = "Снять выделение и изменить пометку";
+
+"annotations.color_yellow" = "Жёлтый";
+"annotations.color_green" = "Зелёный";
+"annotations.color_blue" = "Синий";
+"annotations.color_pink" = "Розовый";
+"annotations.color_gray" = "Серый";
+"annotations.color_section" = "Цвет";
+
+"annotations.color_failed" = "Не удалось сохранить цвет. Попробуйте снова.";
+
+"settings.default_menu_view" = "Стиль меню по умолчанию";
+"settings.default_menu_view_description" = "Выберите вид, который показывается при открытии меню чтения.";
+"settings.menu_view_none" = "По умолчанию";
+"settings.menu_view_seek" = "Режим навигации";
+"settings.menu_view_stats" = "Режим статистики";
+"settings.menu_view_none_description" = "Касание центра экрана просто открывает базовое меню чтения. Ничего особенного. Поведение Kobalt по умолчанию.";
+"settings.menu_view_seek_description" = "Показывает миниатюры страниц и расширенные элементы навигации по книге. Для тех, кто обычно использует вкладку «Навигация».";
+"settings.menu_view_stats_description" = "Показывает статистику книги и глав над панелью вкладок, как при открытии вкладки «Статистика».";
+
+"settings.section_default_global_font" = "Глобальный шрифт по умолчанию";
+"settings.section_user_interface" = "Пользовательский интерфейс";
+"settings.ui_font" = "Шрифт интерфейса без засечек";
+"settings.header_footer_font" = "Шрифт интерфейса колонтитулов";
+"settings.ui_mono_font" = "Моноширинный шрифт интерфейса";
+
+"settings.header_footer_weight" = "Насыщенность шрифта колонтитулов";
+"settings.section_graphs" = "Графики";
+
+"settings.header_footer_weight_lighter" = "Тоньше · 0";
+/* Arguments: %1 */
+"settings.header_footer_weight_heavier" = "Жирнее · +%1";
+
+"settings.hide_tab_labels" = "Скрыть подписи вкладок";
+"settings.hide_tab_labels_description" = "Вкладки внизу экрана показывают только значок выбранной вкладки.";
+
+"settings.justification_tracking_summary" = "Уменьшает большие пробелы между словами за счёт межбуквенного интервала. Влияет только на текст по ширине (Текст > Выравнивание > По ширине).";
+
+"settings.widows_orphans_summary" = "Не даёт одиночным строкам абзаца оставаться одними вверху или внизу страницы.";
+
+
+
+
+"settings.justification_tracking_off_description" = "Сохраняет обычный межбуквенный интервал.";
+
+"settings.justification_tracking_subtle_description" = "Разрешает небольшой дополнительный межбуквенный интервал.";
+
+"settings.justification_tracking_more_description" = "Разрешает больший дополнительный межбуквенный интервал.";
+
+"settings.widows_orphans_publisher_description" = "Использовать правила книги.";
+
+"settings.widows_orphans_avoid_description" = "Держать вместе как минимум две строки.";
+
+"settings.widows_orphans_allow_description" = "Разрешать одиночные строки на границах страницы.";
+"settings.word_spacing" = "Межсловный интервал";
+"settings.word_spacing_summary" = "Настройка обычной ширины пробелов между словами.";
+"settings.word_spacing_description" = "Меняет ширину пробела относительно обычного интервала шрифта. Это может изменить переносы строк и число страниц. Строки по ширине всё равно могут растягивать пробелы. Применяется ко всем книгам.";
+"settings.word_spacing_narrow" = "Узкий";
+"settings.word_spacing_normal" = "Обычный";
+"settings.word_spacing_wide" = "Широкий";
+"settings.word_spacing_narrow_description" = "Использовать 80% обычной ширины пробела.";
+"settings.word_spacing_normal_description" = "Сохранять обычную ширину пробела шрифта (100%).";
+"settings.word_spacing_wide_description" = "Использовать 120% обычной ширины пробела.";
+"settings.close" = "Закрыть настройки";
+"settings.title" = "Настройки";
+"common.more_next_page" = "Подробнее на следующей странице";
+"annotations.style_shaded" = "Заливка";
+"annotations.style_underline" = "Сплошное подчёркивание";
+"annotations.style_dotted" = "Пунктирное подчёркивание";
+"annotations.help_title" = "Режим выделения включён";
+"annotations.help_text" = "Нажмите и удерживайте слово, чтобы начать выделение. Коснитесь выделения, чтобы пометить текст.";
+
+
+"settings.justification_tracking_current_justified" = "Сейчас текст выровнен по ширине, поэтому эта настройка может повлиять на межбуквенный интервал. Она влияет на все книги.";
+"settings.justification_tracking_current_left" = "Сейчас текст выровнен по левому краю, поэтому прямо сейчас эта настройка ничего не изменит, но она влияет на все книги.";
+"settings.justification_tracking_current_other" = "Сейчас текст не выровнен по ширине, поэтому прямо сейчас эта настройка ничего не изменит, но она влияет на все книги.";
+"settings.justification_tracking_current_publisher" = "Текст следует выравниванию книги. Эта настройка влияет только на текст по ширине, но применяется ко всем книгам.";
+
+"reader.one_column" = "Одна колонка";
+"reader.two_columns" = "Две колонки";
+
+"settings.column_spacing_default" = "1,5× (по умолчанию)";
+"settings.column_spacing_description" = "Промежуток между колонками, кратный текущему размеру текста. Применяется ко всем книгам.";
+"settings.landscape_columns" = "Две колонки в альбомной ориентации";
+"settings.landscape_columns_description" = "В книжной ориентации используется одна колонка. Применяется ко всем книгам.";
+
+"annotations.mode" = "Режим аннотаций";
+"error.saved_data_unavailable" = "Не удалось загрузить сохранённые данные. Исходные файлы сохранены.";
+"marks.sort_button" = "Сортировать";
+"marks.sort_newest" = "Сначала новые";
+"marks.sort_newest_description" = "Сначала идут недавно созданные элементы.";
+"marks.sort_oldest" = "Сначала старые";
+"marks.sort_oldest_description" = "Сначала идут элементы, созданные раньше всех.";
+"marks.sort_position" = "По порядку в книге";
+"marks.sort_position_description" = "Сначала идут более ранние фрагменты книги.";
+"marks.sort_title" = "Сортировать по";

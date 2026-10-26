@@ -379,7 +379,7 @@ if(BUILD_TESTING)
         layout_cache resource_cache layout_compatibility reading_pace reading_speed engine_activity
         local_resources zip_resource diagnostics dictionary_store image_damage page_pixels
         logical_word_counter brightness_gesture qt_compat page_refresh_regions screen_refresh plain_archive reading_progress
-        library)
+        library strings_locale)
     kobalt_regressions(model font_axes touch_rotation)
     kobalt_regressions(platform reader_orientation font_sources system_fonts nickel_dictionary_selection
         nickel_reading_pace_cache nickel_session_calls nickel_book_menu native_progress usb_removal page_transition_native)

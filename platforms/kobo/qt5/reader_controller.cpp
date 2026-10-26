@@ -10,6 +10,7 @@
 #include "platforms/kobo/common/native_progress.h"
 #include "platforms/kobo/common/native_ui.h"
 #include "support/diagnostics.h"
+#include "support/locale.h"
 #include "platforms/kobo/common/native_startup.h"
 #include "platforms/kobo/common/reader_environment.h"
 #include "platforms/kobo/common/reader_coordinator.h"
@@ -352,6 +353,8 @@ private:
 };
 
 int initialize() {
+    // Pick the interface language before any UI string is read.
+    kobalt::strings::setLocale(kobalt::resolveLocale());
 #ifdef KOBALT_READER_HARDWARE
     if (kobalt::diagnosticsRequested(QString::fromLatin1(configDir)))
         kobalt::initializeDiagnostics(QString::fromLatin1(configDir) + "/diagnostics");

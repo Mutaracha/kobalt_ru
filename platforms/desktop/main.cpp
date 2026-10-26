@@ -4,6 +4,7 @@
 #include "interfaces/reader/ui/style/fonts.h"
 #include "reading/reading_density.h"
 #include "support/diagnostics.h"
+#include "support/locale.h"
 #include <QApplication>
 #include <QFileOpenEvent>
 #include <QFontDatabase>
@@ -39,6 +40,7 @@ int main(int argc, char **argv) {
 #endif
     FontCopies copies;
     Application app(argc, argv);
+    strings::setLocale(resolveLocale());
     app.setApplicationName(QStringLiteral(KOBALT_PROFILE_NAME));
     app.setOrganizationName("Kobalt");
     app.setStyle("Fusion");

@@ -15,6 +15,7 @@
 #include "interfaces/reader/views/reading_page.h"
 #include "interfaces/reader/ui/style/fonts.h"
 #include "support/diagnostics.h"
+#include "support/locale.h"
 #include "support/strings.h"
 #include "reading/reading_density.h"
 #include <QApplication>
@@ -415,6 +416,7 @@ int main(int argc, char **argv) {
     if (onyx("MANUFACTURER") || onyx("BRAND"))
         qputenv("QT_ANDROID_SURFACE_CONTAINER_TYPE", "0");
     QApplication app(argc, argv);
+    strings::setLocale(resolveLocale());
     app.setApplicationName("Kobalt");
     app.setOrganizationName("Kobalt");
     app.setQuitOnLastWindowClosed(false);

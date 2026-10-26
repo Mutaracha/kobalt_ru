@@ -364,8 +364,9 @@ void BookmarkList::redraw() {
     emptyHint->setVisible(items.isEmpty() && !loading);
     sortButton->setEnabled(!loading);
     pageHeading->setVisible(!items.isEmpty());
-    const auto caption = annotations && items.size() == 1 ? strings::get("annotations.summary_one")
-        : strings::get(annotations ? "annotations.summary" : "bookmarks.summary").arg(items.size());
+    const auto caption = annotations
+        ? strings::plural(items.size(), "annotations.summary")
+        : strings::get("bookmarks.summary").arg(items.size());
     listHeader->setCaptions(loading ? QString() : caption,
                             items.isEmpty() ? QString() : strings::get("chapter_contents.page"));
     pager->setVisible(pageCount() > 1);

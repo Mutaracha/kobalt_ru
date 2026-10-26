@@ -61,7 +61,7 @@ int minimumListRowHeight() {
     return qMax<int>(ui::metrics::list::threeLines, lm::thumbHeight + 2 * lm::thumbPadding);
 }
 QString countText(int count) {
-    return count == 1 ? strings::get("library.count_one") : strings::get("library.count").arg(count);
+    return strings::plural(count, "library.count");
 }
 QString statusText(const Book &book) {
     switch (book.status()) {

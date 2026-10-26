@@ -110,8 +110,7 @@ void ChapterContents::arrange() {
 void ChapterContents::redraw() {
     page = qBound(0, page, pageCount() - 1);
     empty->setVisible(items.isEmpty());
-    summary->setText(items.size() == 1 ? strings::get("chapter_contents.summary_one")
-                                       : strings::get("chapter_contents.summary").arg(items.size()));
+    summary->setText(strings::plural(items.size(), "chapter_contents.summary"));
     int lastPage = -1;
     for (const auto &item : items)
         lastPage = qMax(lastPage, item.page);

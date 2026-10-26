@@ -17,7 +17,7 @@ file(WRITE "${scratch}/used.cpp" [=[strings::get(
     "a.key"); strings::key("z.key");]=])
 kobalt_generate_strings("${scratch}/valid.strings" "${scratch}/generated.inc" "${scratch}/used.cpp")
 file(READ "${scratch}/generated.inc" actual)
-set(expected [=[// Generated from assets/en.strings. Do not edit.
+set(expected [=[// Generated from assets/valid.strings. Do not edit.
     {"a.key", "Élan; 1.5× @key@ ${key}"},
     {"z.key", "Quotes: \"yes\"; path: C:\\books\nnext\tcolumn\rreturn"},
 ]=])
@@ -63,6 +63,42 @@ endif()
 file(READ "${scratch}/build/strings.inc" rebuilt)
 if(NOT rebuilt MATCHES "new.key")
     message(FATAL_ERROR "Editing canonical strings did not regenerate the compiled table")
+endif()
+# Locale parity: every translation must keep the same keys and %n slots.
+file(WRITE "${scratch}/en-pair.strings" [=[
+"shared.one" = "One";
+"shared.two" = "Two %1 books";
+]=])
+file(WRITE "${scratch}/ru-pair.strings" [=[
+"shared.one" = "Один";
+"shared.two" = "Две %1 книги";
+]=])
+file(WRITE "${scratch}/parity-ok.cmake"
+    "include(\"${CMAKE_CURRENT_LIST_DIR}/strings.cmake\")\n"
+    "kobalt_check_string_parity(\"${scratch}/en-pair.strings\" \"${scratch}/ru-pair.strings\")\n")
+execute_process(COMMAND "${CMAKE_COMMAND}" -P "${scratch}/parity-ok.cmake"
+    RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+if(NOT result EQUAL 0)
+    message(FATAL_ERROR "Matching locale pair was rejected: ${output}${error}")
+endif()
+file(WRITE "${scratch}/ru-missing.strings" "\"shared.one\" = \"Один\";\n")
+file(WRITE "${scratch}/parity-missing.cmake"
+    "include(\"${CMAKE_CURRENT_LIST_DIR}/strings.cmake\")\n"
+    "kobalt_check_string_parity(\"${scratch}/en-pair.strings\" \"${scratch}/ru-missing.strings\")\n")
+execute_process(COMMAND "${CMAKE_COMMAND}" -P "${scratch}/parity-missing.cmake"
+    RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+if(result EQUAL 0 OR NOT error MATCHES "UI string key mismatch")
+    message(FATAL_ERROR "Locale key mismatch was not rejected: ${output}${error}")
+endif()
+file(WRITE "${scratch}/ru-slots.strings"
+    "\"shared.one\" = \"Один\";\n\"shared.two\" = \"Две книги\";\n")
+file(WRITE "${scratch}/parity-slots.cmake"
+    "include(\"${CMAKE_CURRENT_LIST_DIR}/strings.cmake\")\n"
+    "kobalt_check_string_parity(\"${scratch}/en-pair.strings\" \"${scratch}/ru-slots.strings\")\n")
+execute_process(COMMAND "${CMAKE_COMMAND}" -P "${scratch}/parity-slots.cmake"
+    RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+if(result EQUAL 0 OR NOT error MATCHES "UI string argument mismatch")
+    message(FATAL_ERROR "Locale slot mismatch was not rejected: ${output}${error}")
 endif()
 file(REMOVE_RECURSE "${scratch}")
 message(STATUS "UI strings generation and rebuild checks passed")
