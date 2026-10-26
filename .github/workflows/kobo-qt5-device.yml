@@ -30,7 +30,21 @@ jobs:
           persist-credentials: false
 
       - name: Offline release checks
-        run: bash platforms/ci/test.sh
+        run: |
+          log="$RUNNER_TEMP/offline-checks.log"
+          if ! bash platforms/ci/test.sh >"$log" 2>&1; then
+            {
+              echo "### Offline release checks failed"
+              echo
+              echo '```'
+              tail -120 "$log"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            grep -E "Error|error|FATAL" "$log" | head -40 | while IFS= read -r line; do
+              echo "::error::${line}"
+            done
+            exit 1
+          fi
 
       - name: Build and verify Kobalt-qt5 package
         run: |
