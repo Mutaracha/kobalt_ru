@@ -447,7 +447,7 @@ bool ReaderModel::openSource(std::shared_ptr<ReaderSource> source, QSize size, c
             LVStreamRef documentStream;
             if (!source_->container.isNull()) {
                 documentStream = source_->container->OpenStream(
-                    cre(QString::fromLatin1(Publication::singleFb2ResourceName)), LVOM_READ);
+                    cre(QString::fromLatin1(Publication::singleFb2ResourceName)).c_str(), LVOM_READ);
             } else if (!source_->bytes.isEmpty()) {
                 documentStream =
                     LVCreateMemoryStream(source_->bytes.data(), source_->bytes.size(), false, LVOM_READ);
