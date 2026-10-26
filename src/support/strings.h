@@ -1,7 +1,6 @@
 #pragma once
 #include <QString>
 #include <QStringList>
-#include <QStringView>
 #include <QRegularExpression>
 #include <algorithm>
 #include <atomic>
@@ -67,8 +66,8 @@ inline Locale locale() {
 }
 // Nickel stores codes such as "ru", "ru_RU" and occasionally "ru-RU". Only the
 // language prefix matters; an unknown language safely resolves to English.
-inline Locale normalizeLocaleCode(QStringView code) {
-    return code.toString().left(2).toLower() == QLatin1String("ru") ? Locale::Russian : Locale::English;
+inline Locale normalizeLocaleCode(const QString &code) {
+    return code.left(2).toLower() == QLatin1String("ru") ? Locale::Russian : Locale::English;
 }
 // Mark deferred display-copy keys without translating them at the producer.
 inline constexpr const char *key(const char *value) {

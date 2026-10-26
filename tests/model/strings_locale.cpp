@@ -6,21 +6,20 @@
 #include <QFile>
 #include <QTemporaryDir>
 #include <QTextStream>
-#include <QStringView>
 
 using namespace kobalt;
 
 namespace {
 void normalizeCodes() {
     using strings::Locale;
-    require(strings::normalizeLocaleCode(QStringView(u"ru")) == Locale::Russian, "ru must select Russian");
-    require(strings::normalizeLocaleCode(QStringView(u"ru_RU")) == Locale::Russian, "ru_RU must select Russian");
-    require(strings::normalizeLocaleCode(QStringView(u"ru-RU")) == Locale::Russian, "ru-RU must select Russian");
-    require(strings::normalizeLocaleCode(QStringView(u"RU")) == Locale::Russian, "RU must select Russian");
-    require(strings::normalizeLocaleCode(QStringView(u"en")) == Locale::English, "en must select English");
-    require(strings::normalizeLocaleCode(QStringView(u"en_GB")) == Locale::English, "en_GB must select English");
-    require(strings::normalizeLocaleCode(QStringView(u"fr_FR")) == Locale::English, "unknown locale falls back to English");
-    require(strings::normalizeLocaleCode(QStringView()) == Locale::English, "empty locale falls back to English");
+    require(strings::normalizeLocaleCode(QStringLiteral("ru")) == Locale::Russian, "ru must select Russian");
+    require(strings::normalizeLocaleCode(QStringLiteral("ru_RU")) == Locale::Russian, "ru_RU must select Russian");
+    require(strings::normalizeLocaleCode(QStringLiteral("ru-RU")) == Locale::Russian, "ru-RU must select Russian");
+    require(strings::normalizeLocaleCode(QStringLiteral("RU")) == Locale::Russian, "RU must select Russian");
+    require(strings::normalizeLocaleCode(QStringLiteral("en")) == Locale::English, "en must select English");
+    require(strings::normalizeLocaleCode(QStringLiteral("en_GB")) == Locale::English, "en_GB must select English");
+    require(strings::normalizeLocaleCode(QStringLiteral("fr_FR")) == Locale::English, "unknown locale falls back to English");
+    require(strings::normalizeLocaleCode(QString()) == Locale::English, "empty locale falls back to English");
 }
 
 void translatedLookup() {

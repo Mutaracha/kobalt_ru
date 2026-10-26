@@ -4,7 +4,6 @@
 #include <QLocale>
 #include <QSettings>
 #include <QString>
-#include <QStringView>
 
 namespace kobalt {
 namespace {
@@ -19,7 +18,7 @@ strings::Locale localeFromKoboConfig(const QString &confPath) {
     const auto code = settings.value("ApplicationPreferences/CurrentLocale").toString();
     if (code.isEmpty())
         return strings::Locale::English;
-    return strings::normalizeLocaleCode(QStringView(code));
+    return strings::normalizeLocaleCode(code);
 }
 
 strings::Locale resolveLocale() {
@@ -30,6 +29,6 @@ strings::Locale resolveLocale() {
     // and Android builds have no such file and follow the system locale.
     if (QFileInfo::exists(QString::fromLatin1(koboReaderConf)))
         return localeFromKoboConfig(QString::fromLatin1(koboReaderConf));
-    return strings::normalizeLocaleCode(QStringView(QLocale::system().name()));
+    return strings::normalizeLocaleCode(QLocale::system().name());
 }
 } // namespace kobalt
