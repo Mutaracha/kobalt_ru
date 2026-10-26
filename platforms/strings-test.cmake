@@ -74,6 +74,7 @@ file(WRITE "${scratch}/ru-pair.strings" [=[
 "shared.two" = "Две %1 книги";
 ]=])
 file(WRITE "${scratch}/parity-ok.cmake"
+    "cmake_minimum_required(VERSION 3.22)\n"
     "include(\"${CMAKE_CURRENT_LIST_DIR}/strings.cmake\")\n"
     "kobalt_check_string_parity(\"${scratch}/en-pair.strings\" \"${scratch}/ru-pair.strings\")\n")
 execute_process(COMMAND "${CMAKE_COMMAND}" -P "${scratch}/parity-ok.cmake"
@@ -83,6 +84,7 @@ if(NOT result EQUAL 0)
 endif()
 file(WRITE "${scratch}/ru-missing.strings" "\"shared.one\" = \"Один\";\n")
 file(WRITE "${scratch}/parity-missing.cmake"
+    "cmake_minimum_required(VERSION 3.22)\n"
     "include(\"${CMAKE_CURRENT_LIST_DIR}/strings.cmake\")\n"
     "kobalt_check_string_parity(\"${scratch}/en-pair.strings\" \"${scratch}/ru-missing.strings\")\n")
 execute_process(COMMAND "${CMAKE_COMMAND}" -P "${scratch}/parity-missing.cmake"
@@ -93,6 +95,7 @@ endif()
 file(WRITE "${scratch}/ru-slots.strings"
     "\"shared.one\" = \"Один\";\n\"shared.two\" = \"Две книги\";\n")
 file(WRITE "${scratch}/parity-slots.cmake"
+    "cmake_minimum_required(VERSION 3.22)\n"
     "include(\"${CMAKE_CURRENT_LIST_DIR}/strings.cmake\")\n"
     "kobalt_check_string_parity(\"${scratch}/en-pair.strings\" \"${scratch}/ru-slots.strings\")\n")
 execute_process(COMMAND "${CMAKE_COMMAND}" -P "${scratch}/parity-slots.cmake"
