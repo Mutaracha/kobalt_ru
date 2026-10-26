@@ -35,21 +35,23 @@ jobs:
       - name: Build and verify Kobalt-qt5 package
         run: |
           log="$RUNNER_TEMP/build-qt5.log"
-          if ! bash platforms/ci/build.sh qt5 2>&1 | tee "$log"; then
-            # Surface compiler diagnostics as check-run annotations so failures
-            # remain readable without downloading the archived step log.
-            matches=$(grep -c -E "^[^:]+:[0-9]+:[0-9]+: (fatal )?error:" "$log" || true)
-            if [ "$matches" -gt 0 ]; then
-              grep -E "^[^:]+:[0-9]+:[0-9]+: (fatal )?error:" "$log" | head -50 | while IFS= read -r line; do
-                file=${line%%:*}
-                rest=${line#*:}; lno=${rest%%:*}; rest=${rest#*:}
-                col=${rest%%:*}; msg=${rest#*:}
-                file=${file#"$GITHUB_WORKSPACE"/}
-                echo "::error file=${file},line=${lno},col=${col}::${msg# }"
-              done
-            else
-              tail -40 "$log" | while IFS= read -r line; do echo "::error::${line}"; done
-            fi
+          set +e
+          bash platforms/ci/build.sh qt5 >"$log" 2>&1
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ]; then
+            # The step summary is readable through the check-runs API, which
+            # keeps the failure diagnosable when archived logs are unreachable.
+            {
+              echo "### Kobalt-qt5 build failed"
+              echo
+              echo '```'
+              tail -150 "$log"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            grep -E "error:|Error|FAILED|fatal" "$log" | head -40 | while IFS= read -r line; do
+              echo "::error::${line}"
+            done
             exit 1
           fi
 
