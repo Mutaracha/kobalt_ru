@@ -290,11 +290,11 @@
 /* graph */
 
 /* header_footer */
-"header_footer.title" = "Верхний и нижний колонтитулы";
+"header_footer.title" = "Колонтитулы";
 "header_footer.customize_title" = "Настроить колонтитулы";
 /* Arguments: %1 */
 "header_footer.customize_slot" = "Настроить слот: %1";
-"header_footer.custom_hint" = "Доступно шесть слотов: нажмите на слот, чтобы настроить его. Учтите, что эти изменения сохраняются в пресете «Свой» и применяются ко всем книгам, которые его используют!";
+"header_footer.custom_hint" = "Пресет «Свой» позволяет настроить все шесть ячеек верхнего и нижнего колонтитула — результат сразу виден на схеме выше. Нажмите на ячейку, чтобы изменить её содержимое.";
 /* Arguments: %1, %2 */
 "header_footer.slot_value" = "%1: %2";
 "header_footer.close" = "Закрыть настройку колонтитулов";
@@ -391,8 +391,8 @@
 "reader.align_left" = "По левому краю";
 "reader.alignment" = "Выравнивание";
 "reader.applying_appearance_changes" = "Применение изменений оформления...";
-"reader.enabling_bold_reading" = "Включение жирного чтения...";
-"reader.disabling_bold_reading" = "Выключение жирного чтения...";
+"reader.enabling_bold_reading" = "Включение бионического чтения...";
+"reader.disabling_bold_reading" = "Выключение бионического чтения...";
 "reader.updating_page_layout" = "Обновление вёрстки страницы...";
 "reader.auto_alignment" = "Автовыравнивание";
 "reader.automatic_rotation" = "Автоповорот";
@@ -454,10 +454,10 @@
 "reader.restore_default_font_description" = "Libron станет исходным переопределением шрифта для новых книг. Пометка «Шрифт по умолчанию» появится под Libron.";
 "reader.font_weight" = "Вариативная насыщенность:";
 "reader.font_thickness" = "Толщина: +";
-"reader.footer" = "Нижний колонтитул";
+"reader.footer" = "Нижний";
 "reader.front_matter" = "Авантитул";
 "reader.go_to_synced_position" = "Перейти к синхронизированной позиции";
-"reader.header" = "Верхний колонтитул";
+"reader.header" = "Верхний";
 "reader.columns" = "Колонки";
 "reader.column_spacing" = "Межколоночный интервал";
 "reader.hyphenation" = "Переносы";
@@ -479,7 +479,7 @@
 "reader.reader_settings" = "Настройки ридера";
 "reader.reading" = "Чтение";
 "reader.recommended_fonts" = "Рекомендуемые шрифты";
-"reader.refresh_the_screen" = "Обновить экран";
+"reader.refresh_the_screen" = "Обновление экрана";
 "reader.bookmarks" = "Аннотации и закладки";
 "reader.restore_appearance_defaults" = "Восстановить оформление по умолчанию";
 "reader.restore_appearance_defaults_prompt" = "Восстановить оформление по умолчанию?";
@@ -549,9 +549,9 @@
 "settings.serif_font" = "Шрифт с засечками";
 "settings.sans_font" = "Шрифт без засечек";
 "settings.mono_font" = "Моноширинный шрифт";
-"settings.system" = "Системный";
+"settings.system" = "Система";
 "settings.automatic_book_opening" = "Автоматически открывать книги в Kobalt";
-"settings.automatic_book_opening_description" = "Использовать Kobalt при открытии поддерживаемых книг из библиотеки. Это та же настройка, что и в параметрах чтения Kobo.";
+"settings.automatic_book_opening_description" = "Использовать Kobalt при открытии поддерживаемых книг из библиотеки. Этот параметр также доступен в настройках чтения Kobo.";
 "settings.sleep_screen" = "Экран сна";
 "settings.page_navigation" = "Навигация по страницам";
 "settings.section_navigation_bar" = "Панель навигации";
@@ -567,8 +567,8 @@
 "settings.tap_top_bottom" = "Сверху / снизу";
 "settings.tap_one_handed" = "Для одной руки";
 "settings.tap_zones_hint" = "Выберите, куда касаться для перелистывания. Выделенная центральная зона всегда открывает меню.";
-"settings.tap_one_handed_hint" = "Для одной руки: касание — вперёд, проведение — назад или вперёд.";
-"settings.navigation_needs_swipes" = "Выберите другой пресет зон касаний, чтобы отключить проведение.";
+"settings.tap_one_handed_hint" = "Для одной руки: касание — вперёд, свайп — назад или вперёд.";
+"settings.navigation_needs_swipes" = "Выберите другой пресет зон касаний, чтобы отключить свайпы.";
 "settings.section_appearance" = "Оформление";
 "settings.section_screen" = "Обновление экрана";
 "settings.section_navigation" = "Навигация";
@@ -576,7 +576,7 @@
 "settings.section_new_books" = "Новая книга";
 "settings.section_book_content" = "Содержимое книги";
 "settings.advanced_text" = "Расширенная типографика";
-"settings.justification_tracking" = "Трекинг выключки";
+"settings.justification_tracking" = "Межбуквенная подгонка";
 /* Arguments: %1 (Justify icon) */
 "settings.justification_tracking_description" = "Влияет только на текст по ширине. Выберите %1 в разделе «Текст > Выравнивание». Распределяет свободное место между буквами, уменьшая большие пробелы между словами.";
 "settings.justification_tracking_off" = "Выкл.";
@@ -585,18 +585,18 @@
 "settings.widows_orphans" = "Висячие строки";
 "settings.widows_orphans_description" = "Убирает одиночные строки абзаца с краёв страницы. Их избегание может оставлять больше пустого места на предыдущей странице. Применяется ко всем книгам.";
 "settings.widows_orphans_publisher" = "Издательский";
-"settings.widows_orphans_avoid" = "Избегать обоих случаев";
-"settings.widows_orphans_allow" = "Разрешать оба случая";
+"settings.widows_orphans_avoid" = "Избегать";
+"settings.widows_orphans_allow" = "Разрешать";
 "settings.section_reading_menu" = "Меню чтения";
 "settings.section_reader" = "Ридер";
 "settings.section_sleep" = "Сон и пробуждение";
 "settings.section_window" = "Окно";
-"settings.navigation_taps_and_swipes" = "Проведения и касания";
+"settings.navigation_taps_and_swipes" = "Свайпы и касания";
 "settings.navigation_taps_and_swipes_description" = "По умолчанию";
 "settings.navigation_taps_only" = "Только касания";
 "settings.navigation_taps_only_description" = "Касайтесь зон перелистывания, чтобы переворачивать страницы.";
-"settings.navigation_swipes_only" = "Только проведения";
-"settings.navigation_swipes_only_description" = "Проводите влево и вправо для перелистывания.";
+"settings.navigation_swipes_only" = "Только свайпы";
+"settings.navigation_swipes_only_description" = "Проводите влево или вправо для перелистывания.";
 "settings.navigation_buttons_only" = "Только аппаратные кнопки перелистывания";
 "settings.navigation_buttons_only_description" = "Используйте кнопки устройства для перелистывания.";
 "settings.navigation_menu_hint" = "Коснитесь центра страницы, чтобы открыть меню в любом режиме.";
@@ -656,7 +656,7 @@
 /* Arguments: %1 */
 "search_panel.page_number" = "Страница %1";
 
-"settings.asks_first" = "СПРОСИТЬ СНАЧАЛА";
+"settings.asks_first" = "С ПОДТВЕРЖДЕНИЕМ";
 "bookmarks.title" = "Закладки";
 "bookmarks.close" = "Закрыть закладки";
 "bookmarks.empty" = "Закладок пока нет";
@@ -781,9 +781,9 @@
 "reader.tap_revealed_link" = "Нажмите на подсвеченную ссылку, чтобы перейти по ней";
 "reader.tap_elsewhere_to_exit" = "Коснитесь в другом месте, чтобы выйти";
 
-"reader.bold_reading" = "Жирное чтение";
+"reader.bold_reading" = "Бионическое чтение";
 "reader.bionic_description" = "Выделяет начала слов жирным. Толщина и вариативная насыщенность недоступны, пока режим включён.";
-"reader.bionic_weight_locked" = "Жирное чтение";
+"reader.bionic_weight_locked" = "Включено";
 
 /* Arguments: %1 installed version */
 "native_ui.recovered_assets_message" = "Обнаружено повреждение файловой системы или файл был передан некорректно. Переустановите Kobalt и попробуйте снова.\n\nУстановленная версия: %1";
@@ -798,8 +798,8 @@
 "reader.formatting_warning" = "Предупреждение о форматировании";
 "reader.formatting_warning_description" = "В этой книге возможны проблемы с форматированием. Можно продолжить чтение, но часть текста или вёрстки может отображаться не так, как задумано.";
 
-"reader.hide_nonlinear_fragments" = "Скрывать нелинейные фрагменты";
-"settings.hide_nonlinear_fragments_description" = "Пропускать нелинейные секции при перелистывании. Ссылки, оглавление и номера страниц по-прежнему могут их открывать.";
+"reader.hide_nonlinear_fragments" = "Скрыть дополнительные разделы";
+"settings.hide_nonlinear_fragments_description" = "Дополнительные разделы пропускаются при перелистывании, но открываются по ссылкам, из оглавления и по номерам страниц.";
 "settings.inherit_text_layout" = "Наследовать стиль текста от последней книги";
 "settings.inherit_text_layout_description" = "Новые книги начинают с текстового стиля последней книги. Настройки раскладки применяются ко всем книгам.";
 "settings.inherit_header_footer" = "Наследовать колонтитулы от последней книги";
@@ -865,7 +865,7 @@
 "settings.menu_view_none" = "По умолчанию";
 "settings.menu_view_seek" = "Режим навигации";
 "settings.menu_view_stats" = "Режим статистики";
-"settings.menu_view_none_description" = "Касание центра экрана просто открывает базовое меню чтения. Ничего особенного. Поведение Kobalt по умолчанию.";
+"settings.menu_view_none_description" = "Касание центра экрана открывает базовое меню чтения.";
 "settings.menu_view_seek_description" = "Показывает миниатюры страниц и расширенные элементы навигации по книге. Для тех, кто обычно использует вкладку «Навигация».";
 "settings.menu_view_stats_description" = "Показывает статистику книги и глав над панелью вкладок, как при открытии вкладки «Статистика».";
 
@@ -883,7 +883,7 @@
 "settings.header_footer_weight_heavier" = "Жирнее · +%1";
 
 "settings.hide_tab_labels" = "Скрыть подписи вкладок";
-"settings.hide_tab_labels_description" = "Вкладки внизу экрана показывают только значок выбранной вкладки.";
+"settings.hide_tab_labels_description" = "В меню чтения на вкладках показываются только значки, без подписей.";
 
 "settings.justification_tracking_summary" = "Уменьшает большие пробелы между словами за счёт межбуквенного интервала. Влияет только на текст по ширине (Текст > Выравнивание > По ширине).";
 
@@ -914,7 +914,7 @@
 "settings.word_spacing_wide_description" = "Использовать 120% обычной ширины пробела.";
 "settings.close" = "Закрыть настройки";
 "settings.title" = "Настройки";
-"common.more_next_page" = "Подробнее на следующей странице";
+"common.more_next_page" = "Продолжение на следующей странице";
 "annotations.style_shaded" = "Заливка";
 "annotations.style_underline" = "Сплошное подчёркивание";
 "annotations.style_dotted" = "Пунктирное подчёркивание";
