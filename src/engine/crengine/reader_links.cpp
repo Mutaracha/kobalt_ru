@@ -6,6 +6,7 @@
 #include <lvdocview.h>
 #include <QRegularExpression>
 #include <QSet>
+#include <QHash>
 #include <QUrl>
 
 namespace kobalt {
@@ -427,11 +428,23 @@ bool noteHtml(ldomNode *node, QString &html, NoteBudget &budget, int depth = 0) 
                                        "s",          "sub",   "sup",  "br",    "hr",     "ul", "ol", "li",
                                        "blockquote", "pre",   "code", "table", "tr",     "td", "th", "thead",
                                        "tbody",      "tfoot", "dl",   "dt",    "dd"};
-    const auto output =
-        allowed.contains(tag) ? tag
-        : tag == "aside" || tag == "section" || (tag.size() == 2 && tag[0] == 'h' && tag[1] >= '1' && tag[1] <= '6')
-            ? QStringLiteral("div")
-            : QString();
+    // FictionBook 2 has its own inline and block vocabulary. Map it onto the
+    // same safe subset so note titles, verses and bylines keep their structure
+    // instead of collapsing into glued text runs.
+    static const QHash<QString, QString> fb2Tags{
+        {"emphasis", "i"},        {"strikethrough", "s"},  {"a", "span"},
+        {"title", "div"},        {"subtitle", "div"},     {"v", "div"},
+        {"stanza", "div"},       {"poem", "div"},         {"epigraph", "div"},
+        {"cite", "div"},         {"text-author", "div"},  {"annotation", "div"},
+        {"empty-line", "br"}};
+    QString output;
+    if (allowed.contains(tag))
+        output = tag;
+    else if (tag == "aside" || tag == "section" ||
+             (tag.size() == 2 && tag[0] == 'h' && tag[1] >= '1' && tag[1] <= '6'))
+        output = QStringLiteral("div");
+    else if (const auto fb2 = fb2Tags.constFind(tag); fb2 != fb2Tags.cend())
+        output = fb2.value();
     if (!output.isEmpty())
         html += "<" + output + ">";
     for (int i = 0; i < node->getChildCount(); ++i)
@@ -498,7 +511,11 @@ LinkDetails ReaderModel::linkDetails(const QString &source) {
     }
     bool contained = false;
     int ancestors = 0;
-    for (auto *parent = target; match != NoteMatch::Passage && parent && !parent->isNodeName("DocFragment");
+    // EPUB notes live under DocFragment; an FB2 document roots them in body,
+    // so stop at either boundary instead of walking into unrelated sections.
+    for (auto *parent = target;
+         match != NoteMatch::Passage && parent && !parent->isNodeName("DocFragment") &&
+         !parent->isNodeName("body");
          parent = parent->getParentNode()) {
         engineActivity().checkpoint();
         if (++ancestors > noteDepthLimit) {

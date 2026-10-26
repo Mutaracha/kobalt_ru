@@ -1,0 +1,96 @@
+name: Kobo qt5 device build
+
+# Device-verification pipeline for the FB2/Russian fork.
+# Builds ONLY the Qt5 Kobo package (firmware 4.38+), the artifact that can be
+# sideloaded onto a physical Kobo for on-device testing. The Qt6 and Android
+# targets are intentionally excluded; see .github/workflows/ci.yml for those.
+on:
+  push:
+    branches: [arena/9e626d86-kobalt-ru]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kobalt-qt5-device-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CONTAINER_ENGINE: docker
+
+jobs:
+  build-qt5:
+    name: Build Kobalt-qt5 for device testing
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Offline release checks
+        run: bash platforms/ci/test.sh
+
+      - name: Build and verify Kobalt-qt5 package
+        run: bash platforms/ci/build.sh qt5
+
+      - name: Validate package contents
+        run: |
+          set -euo pipefail
+          zip=build/release/Kobalt-qt5.zip
+          test -f "$zip"
+          test ! -e build/release/Kobalt-qt6.zip
+          test -f build/release/build-qt5.json
+          python3 - "$zip" <<'PY'
+          import sys, zipfile
+          archive = zipfile.ZipFile(sys.argv[1])
+          names = set(archive.namelist())
+          required = {
+              ".kobo/KoboRoot.tgz",
+              ".adds/kobalt/assets/manifest.json",
+          }
+          missing = required - names
+          if missing:
+              sys.exit(f"Missing package members: {sorted(missing)}")
+          if any(name.startswith("/") or ".." in name.split("/") for name in names):
+              sys.exit("Unsafe package member path")
+          print(f"PASS: {len(names)} package members, all required paths present")
+          PY
+          unzip -l "$zip"
+
+      - name: Write device verification summary
+        run: |
+          set -euo pipefail
+          metadata=build/release/build-qt5.json
+          version=$(jq -r '.version' "$metadata")
+          commit=$(jq -r '.commit' "$metadata")
+          sha=$(jq -r '.sha256' "$metadata")
+          {
+              echo "## Kobalt-qt5 — сборка для проверки на устройстве"
+              echo
+              echo "- Версия: \`$version\`"
+              echo "- Коммит: \`$commit\`"
+              echo "- SHA-256 \`Kobalt-qt5.zip\`: \`$sha\`"
+              echo "- Артефакт: **Kobalt-qt5-device** (\`Kobalt-qt5.zip\` + метаданные сборки)"
+              echo
+              echo "### Установка на Kobo (прошивка 4.38–4.46, Qt5)"
+              echo "1. Скачать артефакт **Kobalt-qt5-device** и распаковать \`Kobalt-qt5.zip\`."
+              echo "2. Подключить Kobo по USB; скопировать папку \`.adds\` в корень диска Kobo, затем папку \`.kobo\` (слияние, без замены сторонних модов)."
+              echo "3. Безопасно извлечь устройство и дождаться установки \`KoboRoot.tgz\`."
+              echo
+              echo "### Чек-лист проверки на устройстве"
+              echo "- [ ] Kobalt загружается, книга EPUB открывается из библиотеки Nickel (регрессия отсутствует)."
+              echo "- [ ] Книга \`.fb2\` (UTF-8) открывается по тапу и через пункт меню *Open with Kobalt*."
+              echo "- [ ] Книга \`.fb2\` в кодировке \`windows-1251\` открывается без кракозябр."
+              echo "- [ ] Работают всплывающие сноски, оглавление, обложка на экране сна."
+              echo "- [ ] Переносы русских слов активны (\`Russian.pattern\`), позиция и прогресс чтения сохраняются."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Kobalt-qt5-device
+          path: build/release/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30

@@ -406,6 +406,26 @@ int main(int argc, char **argv) {
         book.observeReading();
         require(calls.destroyed == 1 && !book.offerFinish(), "Released book accessed its bridge again");
     }
+    {
+        // An FB2 identity has no Nickel chapter mapping. Its mapping failure must
+        // still reach KoboReader.sqlite as a time-only status/percentage write.
+        Calls calls;
+        calls.changed = false;
+        auto session = open();
+        const auto hash = session->sourceHash();
+        ReadingBook fb2(std::move(session), paths.bookState("fb2-book"), paths,
+                        "file:///mnt/onboard/Books/test.fb2", hash, std::make_unique<Bridge>(calls),
+                        calls.current, calls.current);
+        const int writes = calls.writes;
+        require(fb2.writeNative("ignored-rmsdk-location", "position cannot be mapped"),
+                "FB2 mapping failure blocked the exit save");
+        require(calls.writes == writes + 1 && calls.location.isEmpty(),
+                "FB2 writeback was not time-only after a mapping failure");
+        QJsonObject snapshot;
+        require(fb2.checkpoint(&snapshot), "FB2 checkpoint failed");
+        require(snapshot.value("native_writeback") == QStringLiteral("time-only"),
+                "FB2 checkpoint did not record time-only writeback");
+    }
     bool drained = false;
     ReaderSession::drain([&] {
         drained = true;

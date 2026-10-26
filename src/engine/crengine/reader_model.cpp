@@ -362,8 +362,11 @@ bool ReaderModel::saveDocumentCache() {
     if (!engine_ || cacheDirectory_.isEmpty() || cacheFingerprint_.isEmpty() || !resourceError().isEmpty() || !pages())
         return false;
     // Only a document opened under this book's key may write that key's file.
+    // FB2 openings add a .fb2 suffix to the same fingerprint-derived name.
     const auto name = engine_->getDocProps()->getStringDef(DOC_PROP_FILE_NAME, "");
-    if (QString::fromUtf8(UnicodeToUtf8(name).c_str()) != documentCacheName(cacheFingerprint_))
+    const auto expected = documentCacheName(cacheFingerprint_);
+    const auto actual = QString::fromUtf8(UnicodeToUtf8(name).c_str());
+    if (actual != expected && actual != expected + QStringLiteral(".fb2"))
         return false;
     auto *document = engine_->getDocument();
     DocumentCacheScope cache(cacheDirectory_);
@@ -776,7 +779,9 @@ bool ReaderModel::applyAppearance(const QJsonObject &settings, QSize size, Openi
         if (!cacheFingerprint_.isEmpty())
             engine_->getDocProps()->setHex(
                 DOC_PROP_FILE_CRC32,
-                documentCacheChecksum(documentCachePolicy() + ":bionic-v3:" + bionic_.toUtf8(), domVersion_));
+                documentCacheChecksum(documentCachePolicy() + (fb2Document_ ? QByteArray(":fb2-v1:") : QByteArray()) +
+                                          ":bionic-v3:" + bionic_.toUtf8(),
+                                      domVersion_));
         engine_->getDocument()->getProps()->setInt("kobalt.bionic.mode", bionic_ == "bold" ? 1 : 0);
         engine_->requestRender();
     }
@@ -878,17 +883,28 @@ void ReaderModel::applyStyleSheet() {
     }
     // Like Nickel's line-height override, leave inline spans and media alone.
     // Relative font sizes, indentation and paragraph margins remain publisher CSS.
-    overrides +=
-        QString("body,p,div,section,article,blockquote,li,dt,dd,h1,h2,h3,h4,h5,h6 { line-height:%1% !important; }")
-            .arg(spacing_);
+    const bool fb2 = fb2Document_ || (engine_ && engine_->getDocFormat() == doc_format_fb2);
+    if (fb2) {
+        // FB2 semantic blocks carry verse, epigraphs and annotations, so the
+        // adjustable leading must reach them as uniformly as plain paragraphs.
+        overrides +=
+            QString("body,p,div,section,article,blockquote,li,dt,dd,h1,h2,h3,h4,h5,h6,"
+                    "v,title,subtitle,epigraph,cite,annotation,text-author { line-height:%1% !important; }")
+                .arg(spacing_);
+    } else {
+        overrides +=
+            QString("body,p,div,section,article,blockquote,li,dt,dd,h1,h2,h3,h4,h5,h6 { line-height:%1% !important; }")
+                .arg(spacing_);
+    }
     // Only marked text blocks override publisher alignment; decorative blocks keep it.
     if (alignment_ != "publisher")
         overrides +=
             QString(
                 "[data-kobalt-prose=\"1\"], [data-kobalt-prose=\"1\"] span { text-align:%1 !important; text-align-last:auto !important; }")
                 .arg(alignment_);
-    engine_->setStyleSheet(lString8(readerHtmlCss) + lString8(readerOverridesCss) +
-                           lString8(overrides.toUtf8().constData()) + lString8("\n") +
+    const auto base = fb2 ? lString8(readerFb2Css) + lString8("\n") + lString8(readerFb2OverridesCss)
+                          : lString8(readerHtmlCss) + lString8(readerOverridesCss);
+    engine_->setStyleSheet(base + lString8(overrides.toUtf8().constData()) + lString8("\n") +
                            lString8(userStyleSheet_.constData()));
 }
 void ReaderModel::resize(QSize size) {

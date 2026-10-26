@@ -207,6 +207,30 @@ int main(int argc, char **argv) {
         require(cache->readBounded("image.png", ResourceCache::budgetBytes).startsWith("<svg"),
                 "Oversized image source was read instead of replaced");
     }
+    {
+        const QString fb2Path = directory.path() + "/russian.fb2";
+        const QByteArray fb2 =
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+            "<FictionBook xmlns=\"http://www.gribuser.ru/xml/fictionbook/2.0\">"
+            "<body><section><p>Single-file FB2 content for the local resource layer.</p>"
+            "<p>Second paragraph keeps the read non-trivial.</p></section></body></FictionBook>";
+        {
+            QFile file(fb2Path);
+            require(file.open(QIODevice::WriteOnly) && file.write(fb2) == fb2.size(), "write FB2 fixture");
+        }
+        auto source = native::openLocalPublication(fb2Path);
+        require(source, "Local backend rejected an FB2 file");
+        const auto resourceName = QString::fromLatin1(Publication::singleFb2ResourceName);
+        QMap<QString, qint64> fb2Sizes{{resourceName, fb2.size()}};
+        auto lease = std::make_shared<SourceLease>();
+        auto cache = source->resources(lease)(fb2Sizes, "sans-serif", rejected);
+        require(cache->readBounded(resourceName, ResourceCache::budgetBytes) == fb2,
+                "FB2 virtual resource bytes differ from the file");
+        require(cache->size(resourceName) == fb2.size(), "FB2 virtual resource size");
+        lease->revoke();
+        require(cache->readBounded(resourceName, ResourceCache::budgetBytes).isNull(),
+                "Revoked FB2 read was not cancelled");
+    }
     files["META-INF/license.lcpl"] = "{}";
     write();
     require(!native::openLocalPublication(path), "Local backend accepted a protected publication");

@@ -104,23 +104,31 @@ static ReaderBookRoute bookRoute(const void *volume, QString *identity, QString 
         return Route::Unsupported;
     const auto fields = values(volume);
     const auto mime = fields.value("MimeType").toString();
-    // PDFs and other formats never show a Kobalt screen.
-    if (mime != "application/epub+zip" && mime != "application/x-kobo-epub+zip")
-        return Route::Unsupported;
     const auto id = bookIdentity(volume);
     if (identity)
         *identity = id;
-    if (!fields.value("AdobeLocation").toString().isEmpty())
+    const auto localPath = localReaderBookPath(id);
+    const bool epub = mime == "application/epub+zip" || mime == "application/x-kobo-epub+zip";
+    // Nickel may index a sideloaded .fb2 by extension or by an XML mime type.
+    const bool fb2 =
+        (!localPath.isEmpty() && localPath.endsWith(QLatin1String(".fb2"), Qt::CaseInsensitive)) ||
+        mime == QLatin1String("application/x-fictionbook+xml") || mime == QLatin1String("application/fb2") ||
+        mime == QLatin1String("application/x-fb2");
+    // PDFs and other formats never show a Kobalt screen.
+    if (!epub && !fb2)
+        return Route::Unsupported;
+    // FB2 has no DRM container; the protection metadata below is EPUB-only.
+    if (epub && !fields.value("AdobeLocation").toString().isEmpty())
         return Route::Protected;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     static const auto adobe = symbol<bool (*)(const void *)>("_ZNK7Content10isAdobeDrmEv");
     static const auto lcp = symbol<bool (*)(const void *)>("_ZNK7Content9isLcpEpubEv");
     if (!adobe || !lcp)
         return Route::Unsupported;
-    if (adobe(volume) || lcp(volume))
+    if (epub && (adobe(volume) || lcp(volume)))
         return Route::Protected;
 #endif
-    auto filename = localReaderBookPath(id);
+    auto filename = localPath;
     const bool downloaded = filename.isEmpty();
     if (downloaded) {
         filename = downloadedReaderBookPath(id);
@@ -140,7 +148,7 @@ static ReaderBookRoute bookRoute(const void *volume, QString *identity, QString 
     if (!inspectPublication) {
         return Route::Direct;
     }
-    if (downloaded) {
+    if (downloaded && epub) {
         // Read only whether Nickel has protection metadata for this volume.
         // Never select key values or infer protection from purchase status or
         // a parser failure. Missing metadata is not proof of readable content;

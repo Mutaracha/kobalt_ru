@@ -36,9 +36,15 @@ public:
     }
     bool deviceTransition() const;
     bool canWriteNative() const;
-    // A sideloaded EPUB file that is not a kepub.
+    // A sideloaded file Nickel cannot cloud-sync: a plain EPUB that is not a
+    // kepub, or a single-file FB2. Its native position may be unmappable, in
+    // which case time-only progress writeback is still allowed.
     bool plainEpub() const {
-        return identity_.startsWith("file://") && identity_.endsWith(".epub", Qt::CaseInsensitive) &&
+        if (!identity_.startsWith("file://"))
+            return false;
+        if (identity_.endsWith(".fb2", Qt::CaseInsensitive))
+            return true;
+        return identity_.endsWith(".epub", Qt::CaseInsensitive) &&
                !identity_.endsWith(".kepub.epub", Qt::CaseInsensitive);
     }
     void releaseNative();

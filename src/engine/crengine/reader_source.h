@@ -10,6 +10,8 @@ struct ReaderSource {
     std::shared_ptr<ReaderSource> parent;
     // The full publication count also governs a preview of a font-free chapter.
     int embeddedFonts = -1;
+    // A single-file FB2 document has no ZIP container or mimetype member.
+    bool isFb2 = false;
     QByteArray bytes;
     std::shared_ptr<ResourceCache> resources;
     QMap<QString, qint64> sizes;

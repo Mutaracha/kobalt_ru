@@ -131,4 +131,38 @@ int main(int argc, char **argv) {
     available = true;
     enabled = false;
     { QMenu menu; require(!alternative(menu), "disabled native Read now must not be bypassed"); }
+    enabled = true;
+    // Sideloaded FB2 books route to Kobalt by mime type or by extension.
+    const QString fb2Path = directory.path() + "/russian.fb2";
+    {
+        QFile fb2(fb2Path);
+        require(fb2.open(QIODevice::WriteOnly), "create FB2 fixture");
+        fb2.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                  "<FictionBook xmlns=\"http://www.gribuser.ru/xml/fictionbook/2.0\">"
+                  "<body><section><p>FB2 routing fixture</p></section></body></FictionBook>");
+    }
+    identity = "file://" + fb2Path;
+    fields["MimeType"] = "application/x-fictionbook+xml";
+    {
+        QString routedIdentity, routedPath;
+        require(kobalt::readerBookRoute(&fields, &routedIdentity, &routedPath) ==
+                    kobalt::ReaderBookRoute::Direct,
+                "FB2 with an XML mime type must route directly to Kobalt");
+        require(routedIdentity == identity && routedPath == fb2Path, "FB2 route identity and local path");
+    }
+    fields["MimeType"] = "text/xml";
+    require(kobalt::readerBookRoute(&fields, nullptr, nullptr) == kobalt::ReaderBookRoute::Direct,
+            "FB2 must route by extension when Nickel stores a generic XML mime type");
+    require(kobalt::readerBookCandidateRoute(&fields, nullptr, nullptr) == kobalt::ReaderBookRoute::Direct,
+            "FB2 candidate route must be direct");
+    const QString pdfPath = directory.path() + "/document.pdf";
+    {
+        QFile pdf(pdfPath);
+        require(pdf.open(QIODevice::WriteOnly), "create PDF fixture");
+        pdf.write("%PDF-1.7\n%padding bytes");
+    }
+    identity = "file://" + pdfPath;
+    fields["MimeType"] = "application/pdf";
+    require(kobalt::readerBookRoute(&fields, nullptr, nullptr) == kobalt::ReaderBookRoute::Unsupported,
+            "PDF must remain unsupported");
 }

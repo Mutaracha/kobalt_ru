@@ -11,8 +11,12 @@ namespace kobalt {
 // Other payloads come from the selected resource adapter.
 class Publication {
 public:
+    enum class PublicationFormat { Epub, Fb2 };
     bool protectedBook() const {
         return protected_;
+    }
+    PublicationFormat format() const {
+        return format_;
     }
     bool inspect(const QByteArray &source, QString *error, OpeningResult *result = nullptr);
     bool inspect(QIODevice &source, QString *error, OpeningResult *result = nullptr);
@@ -32,9 +36,14 @@ public:
     QByteArray finish(QString *error);
     static constexpr int maxBytes = 64 * 1024 * 1024;
     static constexpr int maxResource = 16 * 1024 * 1024;
+    // A single-file FB2 is exposed to the resource layer under this virtual
+    // member name, so ResourceCache, SourceLease and ReaderSession keep the
+    // same plumbing they use for ZIP publications.
+    static constexpr auto singleFb2ResourceName = "__kobalt_document__.fb2";
 
 private:
     bool protected_ = false;
+    PublicationFormat format_ = PublicationFormat::Epub;
     QStringList names_;
     QMap<QString, qint64> sizes_;
     QByteArray archive_, directory_, fingerprint_;

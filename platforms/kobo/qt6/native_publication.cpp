@@ -85,7 +85,10 @@ bool NativePublication::open(const void *volume, const void *bookmark, QString *
     path_ = native.path(volume);
     if (identity_.isEmpty() || path_.isEmpty())
         return fail(strings::get("error.native_publication_identity_is_unavailable"));
-    if (bookmark) {
+    // RMSDK ContentLocation markers cannot map onto an FB2 DOM. Kobalt keeps
+    // its own SQLite position for these books, so start from the beginning.
+    const bool fb2 = path_.endsWith(QLatin1String(".fb2"), Qt::CaseInsensitive);
+    if (!fb2 && bookmark) {
         const auto *location = native.bookmark(bookmark);
         if (location && native.locationValid(location)) {
             location_ = publicationLocation(identity_, native.locationString(location));
@@ -93,7 +96,7 @@ bool NativePublication::open(const void *volume, const void *bookmark, QString *
                 return fail(strings::get("error.native_opening_position_cannot_be_converted"));
         }
     }
-    if (location_.isEmpty()) {
+    if (!fb2 && location_.isEmpty()) {
         // Read the native volume snapshot, without opening or changing its DB.
         const auto saved = native.values(volume).value("ChapterIDBookmarked").toString();
         if (!saved.isEmpty()) {

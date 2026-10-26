@@ -48,6 +48,7 @@ string(REGEX REPLACE "^v([0-9]+\\.[0-9]+(\\.[0-9]+)?).*$" "\\1" KOBALT_BUNDLE_VE
 
 set(source "${KOBALT_ROOT}/src")
 file(READ "${CRENGINE_SOURCE}/cr3gui/data/html5.css" READER_HTML_CSS)
+file(READ "${CRENGINE_SOURCE}/cr3gui/data/fb2.css" READER_FB2_CSS)
 configure_file("${source}/engine/crengine/reader_styles.h.in" reader_styles.h @ONLY)
 file(GLOB patterns RELATIVE "${CRENGINE_SOURCE}/cr3gui/data/hyph" "${CRENGINE_SOURCE}/cr3gui/data/hyph/*.pattern")
 list(SORT patterns)
@@ -383,7 +384,7 @@ if(BUILD_TESTING)
     kobalt_regressions(platform reader_orientation font_sources system_fonts nickel_dictionary_selection
         nickel_reading_pace_cache nickel_session_calls nickel_book_menu native_progress usb_removal page_transition_native)
     kobalt_regressions(engine source_index columns advanced_text alignment indentation page_layout vertical_writing mathml line_breaking
-        fallback_styles svg_limits whitespace links search word_selection reader publisher_markup local_reader document_word_count document_cache)
+        fallback_styles svg_limits whitespace links search word_selection reader publisher_markup local_reader document_word_count document_cache fb2)
     kobalt_regressions(component ui acknowledgments font_data font_registration)
     kobalt_regressions(session reading_book bookmark_session highlight_session reader_session)
     kobalt_regressions(resource image_policy resource_provider)

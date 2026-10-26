@@ -28,6 +28,14 @@ Do not open a visible app or run visible UI tests without authorization. Prefer 
 
 Stop and reap run-owned helper processes and remove scratch profiles, staging directories and temporary containers when a run ends, including on failure or interruption. Preserve the user's app state, active runs, SDKs and incremental caches. Retain useful current results and unresolved failure evidence rather than every successful raw log indefinitely.
 
+## Fork workflow (kobalt_ru)
+
+This fork follows `FB2_FORK_PLAN.md` in the repository root. Keep that plan current: mark every stage and checklist item with its progress status (planned / in progress / done) in the same change as the work it describes, so the plan alone is enough to resume after the sandbox or local checkout is wiped.
+
+Always commit completed work and push it to the current working branch (`git push origin <current-branch>`). The local repository and sandbox can be cleared at any time, so unpushed work is not considered safe. Never switch, create or push to another branch.
+
+The priority target is the Kobo **Qt5** package (`Kobalt-qt5.zip`, firmware 4.x). Desktop (mac) and Android are not priorities for this fork: do not block Kobo work on them, but keep shared code portable and avoid knowingly breaking their builds. Section 6 of `FB2_FORK_PLAN.md` (Russian interface localization) stays as a planned stage only until explicitly scheduled; do not implement it ahead of the other stages.
+
 ## Repository practice
 
 Read [Storage compatibility](doc/storage.md) before changing settings, book state, bookmarks, annotations or rendering caches. Keep saved reading data separate from disposable caches. App releases must not reset either format merely because the release version changed. Compatible optional data fields keep the current format version and must load older records with explicit defaults. Preserve supported optional fields when editing records. An incompatible saved-data change requires a format-version bump, a migration that preserves existing user data, and regression tests before it ships. Reject unsupported saved-data versions without overwriting the original files. Do not assume older builds preserve unknown fields or can safely write newer schemas.
@@ -36,6 +44,6 @@ Bump the format version in `documentCacheChecksum` when parser or preprocessing 
 
 Keep Markdown in `doc/`, except the root `README.md` and `AGENTS.md`. The user owns root README edits. Keep these instructions and build commands current in the same change as tooling updates.
 
-Do not stage, commit, push or publish without explicit authorization. Signed operations require an advance warning for 1Password prompts. Never add an agent coauthor. Preserve unrelated changes and the original checkout.
+In this fork, pushing completed work to the current working branch is pre-authorized and required (see [Fork workflow](#fork-workflow-kobalt_ru)); other publications (tags, releases, other branches) still need explicit authorization. Signed operations require an advance warning for 1Password prompts. Never add an agent coauthor. Preserve unrelated changes and the original checkout.
 
 Use lowercase release-stage words in commit messages, including `alpha` and `beta`, even when part of a release name. The abbreviation `RC` may remain uppercase.

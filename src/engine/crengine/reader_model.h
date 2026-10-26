@@ -299,6 +299,8 @@ private:
     QByteArray documentCachePolicy() const;
     qint64 cacheBytes_ = 0;
     bool openedFromCache_ = false;
+    // The loaded document is a single-file FB2 rather than an EPUB archive.
+    bool fb2Document_ = false;
     QVector<ChapterLink> contents_, graph_;
     qint64 totalWords_ = -1;
     QVector<ChapterLink> chapterPages(QVector<ChapterLink> links) const;
@@ -352,6 +354,8 @@ private:
     QMap<QPair<qint64, qint64>, QRect> damage_;
     bool openSource(std::shared_ptr<ReaderSource> source, QSize size, const QJsonObject &saved, QString *error,
                     OpeningProgress progress = {}, OpeningResult *result = nullptr);
+    // Build a compact in-memory FB2 from neighbouring paragraphs for the font preview.
+    bool openFb2Preview(ReaderModel &source, QSize size, QString *error);
     void trim();
     void applyPublisherFontFallbacks();
     void applyStyleSheet();

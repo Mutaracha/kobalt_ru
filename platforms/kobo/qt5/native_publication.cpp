@@ -88,11 +88,15 @@ bool NativePublication::open(const void *volume, const void *bookmark, QString *
     // Library openings carry an empty bookmark. Explicit annotation locations
     // need a separate conversion from QtWebKit's container paths; keep those
     // requests in stock reading until that conversion is validated.
-    if (bookmark && !native.bookmarkPath(bookmark).isEmpty())
+    const bool fb2 = path_.endsWith(QLatin1String(".fb2"), Qt::CaseInsensitive);
+    if (!fb2 && bookmark && !native.bookmarkPath(bookmark).isEmpty())
         return fail("explicit_native_bookmark_is_unsupported",
                     strings::get("error.explicit_native_bookmark_is_unsupported"));
-    location_ =
-        nickel4::shared(nickel4::chapter(identity_, native.values(volume).value("ChapterIDBookmarked").toString()));
+    // An RMSDK/XSL chapter marker cannot map onto an FB2 DOM. Kobalt keeps its
+    // own SQLite position for these books, so start from the beginning instead.
+    if (!fb2)
+        location_ =
+            nickel4::shared(nickel4::chapter(identity_, native.values(volume).value("ChapterIDBookmarked").toString()));
     source_ = native::publicationSource().open(volume, keys, path_, identity_, error);
     if (!source_)
         return fail("cannot_start_the_native_publication_service",

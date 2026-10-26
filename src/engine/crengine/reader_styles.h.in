@@ -20,3 +20,21 @@ a[data-kobalt-kobo-link="1"] { text-decoration: none; }
 se-span.kobo-link { border-bottom: 1px dotted currentColor; }
 hr { border: 1px inset black; }
 )rrcss";
+
+// KOReader's reference FictionBook 2 stylesheet, taken verbatim from the
+// pinned CREngine commit. It hides raw metadata tags, marks the secondary
+// notes/comments bodies as non-linear and styles poems, epigraphs and tables.
+constexpr auto readerFb2Css = R"rrcss(@READER_FB2_CSS@)rrcss";
+
+// Kobalt hints on top of fb2.css. Each section of a notes/comments body is one
+// footnote, so the popup engine can capture multi-paragraph notes whole
+// without swallowing neighbouring sections.
+constexpr auto readerFb2OverridesCss = R"rrcss(
+body[name="notes"] > section,
+body[name="comments"] > section {
+    -cr-hint: footnote;
+}
+a[type="note"] {
+    color: black;
+}
+)rrcss";

@@ -277,6 +277,10 @@ bool ReaderModel::supportedArchive(const QByteArray &bytes, QString *error) {
     Publication publication;
     if (!publication.inspect(bytes, error))
         return false;
+    // A single-file FB2 is an XML stream, not an archive; open() handles it
+    // on its own path and it must never be parsed as a ZIP central directory.
+    if (publication.format() == Publication::PublicationFormat::Fb2)
+        return fail(strings::get("error.unsupported_epub_archive"));
     auto u16 = [&bytes](int p) {
         return qFromLittleEndian<quint16>(reinterpret_cast<const uchar *>(bytes.constData() + p));
     };
@@ -321,15 +325,23 @@ bool ReaderModel::supportedArchive(const QByteArray &bytes, QString *error) {
 
 bool ReaderModel::open(QByteArray bytes, QSize size, const QJsonObject &saved, QString *error,
                        OpeningProgress progress) {
-    if (!supportedArchive(bytes, error))
+    // FB2 is a raw XML stream, not a ZIP archive, so it bypasses the EPUB
+    // central-directory validation and reaches the engine as a memory stream.
+    Publication probe;
+    QString inspectError;
+    const bool fb2 = probe.inspect(bytes, &inspectError) && probe.format() == Publication::PublicationFormat::Fb2;
+    if (!fb2 && !supportedArchive(bytes, error))
         return false;
     auto source = std::make_shared<ReaderSource>();
+    source->isFb2 = fb2;
     source->bytes = std::move(bytes);
-    source->container =
-        LVOpenArchieve(LVCreateMemoryStream(source->bytes.data(), source->bytes.size(), false, LVOM_READ));
-    if (source->container.isNull()) {
-        *error = strings::get("error.the_reading_engine_could_not_open_this_epub");
-        return false;
+    if (!fb2) {
+        source->container =
+            LVOpenArchieve(LVCreateMemoryStream(source->bytes.data(), source->bytes.size(), false, LVOM_READ));
+        if (source->container.isNull()) {
+            *error = strings::get("error.the_reading_engine_could_not_open_this_epub");
+            return false;
+        }
     }
     return openSource(std::move(source), size, saved, error, std::move(progress));
 }
@@ -339,6 +351,7 @@ bool ReaderModel::openResources(std::shared_ptr<ResourceCache> resources, const 
     auto source = std::make_shared<ReaderSource>();
     source->resources = std::move(resources);
     source->sizes = sizes;
+    source->isFb2 = sizes.contains(QString::fromLatin1(Publication::singleFb2ResourceName));
     source->container = LVContainerRef(new ResourceContainer(source->resources, sizes));
     return openSource(std::move(source), size, saved, error, std::move(progress), result);
 }
@@ -373,22 +386,27 @@ bool ReaderModel::openSource(std::shared_ptr<ReaderSource> source, QSize size, c
     openingTimes_ = {};
     QElapsedTimer phase;
     phase.start();
+    const bool loadingFb2 = source->isFb2;
     // Supplying a container skips format detection in the engine. Keep the
     // EPUB media-type check at this boundary for every resource provider.
-    const QByteArray expectedType("application/epub+zip");
-    auto mime = source->container->OpenStream(U"mimetype", LVOM_READ);
-    QByteArray mediaType(expectedType.size(), '\0');
-    lvsize_t read = 0;
-    if (mime.isNull() || mime->GetSize() != lvsize_t(mediaType.size()) ||
-        mime->Read(mediaType.data(), mediaType.size(), &read) != LVERR_OK || read != lvsize_t(mediaType.size()) ||
-        mediaType != expectedType) {
-        if (source->resources && !source->resources->error().isEmpty())
-            return fail(OpeningFailureKind::Io, "opening.resource-read", source->resources->error());
-        return fail(OpeningFailureKind::Unsupported, strings::key("error.the_publication_is_not_an_epub"));
+    // A single-file FB2 has neither a container nor a mimetype member.
+    if (!loadingFb2) {
+        const QByteArray expectedType("application/epub+zip");
+        auto mime = source->container->OpenStream(U"mimetype", LVOM_READ);
+        QByteArray mediaType(expectedType.size(), '\0');
+        lvsize_t read = 0;
+        if (mime.isNull() || mime->GetSize() != lvsize_t(mediaType.size()) ||
+            mime->Read(mediaType.data(), mediaType.size(), &read) != LVERR_OK ||
+            read != lvsize_t(mediaType.size()) || mediaType != expectedType) {
+            if (source->resources && !source->resources->error().isEmpty())
+                return fail(OpeningFailureKind::Io, "opening.resource-read", source->resources->error());
+            return fail(OpeningFailureKind::Unsupported, strings::key("error.the_publication_is_not_an_epub"));
+        }
     }
     if (!initializeFonts())
         return fail(OpeningFailureKind::HostUnavailable, strings::key("error.the_reading_font_is_unavailable"));
     configure(size, saved);
+    fb2Document_ = loadingFb2;
     openedFromCache_ = false;
     // Stream loading does not set a filename. CREngine uses its presence to
     // distinguish a loaded document from its internal blank/error document,
@@ -397,17 +415,24 @@ bool ReaderModel::openSource(std::shared_ptr<ReaderSource> source, QSize size, c
     auto properties = engine_->getDocProps();
     const bool keyed = !cacheDirectory_.isEmpty() && !cacheFingerprint_.isEmpty();
     if (keyed) {
+        // The .fb2 suffix is only a cache-file name hint; the fingerprint is
+        // still the full publication identity.
+        const auto cacheName = documentCacheName(cacheFingerprint_) +
+                               (loadingFb2 ? QStringLiteral(".fb2") : QString());
         properties->setString(DOC_PROP_FILE_NAME,
-                              Utf8ToUnicode(lString8(documentCacheName(cacheFingerprint_).toUtf8().constData())));
+                              Utf8ToUnicode(lString8(cacheName.toUtf8().constData())));
         properties->setHex(
             DOC_PROP_FILE_CRC32,
-            documentCacheChecksum(documentCachePolicy() + ":bionic-v3:" + bionic_.toUtf8(), domVersion_));
+            documentCacheChecksum(documentCachePolicy() + (loadingFb2 ? QByteArray(":fb2-v1:") : QByteArray()) +
+                                      ":bionic-v3:" + bionic_.toUtf8(),
+                                  domVersion_));
         properties->setString(DOC_PROP_FILE_SIZE, lString32::itoa(int(cacheBytes_ < 0         ? 0
                                                                       : cacheBytes_ > INT_MAX ? INT_MAX
                                                                                               : cacheBytes_)));
     } else
-        properties->setString(DOC_PROP_FILE_NAME, lString32(U"publication.epub"));
-    if (!source->parent) {
+        properties->setString(DOC_PROP_FILE_NAME,
+                              lString32(loadingFb2 ? U"publication.fb2" : U"publication.epub"));
+    if (!loadingFb2 && !source->parent) {
         source->container = LVContainerRef(new ContentContainer(source->container));
     }
     OpeningCallback callback(engine_, std::move(progress));
@@ -416,7 +441,29 @@ bool ReaderModel::openSource(std::shared_ptr<ReaderSource> source, QSize size, c
     bool loaded;
     {
         DocumentCacheScope cache(keyed ? cacheDirectory_ : QString());
-        loaded = engine_->LoadDocument(LVCreateMemoryStream(), false, source_->container);
+        if (loadingFb2) {
+            // The virtual resource name covers both the ResourceCache path
+            // and the in-memory buffer used by desktop tests and previews.
+            LVStreamRef documentStream;
+            if (!source_->container.isNull()) {
+                documentStream = source_->container->OpenStream(
+                    cre(QString::fromLatin1(Publication::singleFb2ResourceName)), LVOM_READ);
+            } else if (!source_->bytes.isEmpty()) {
+                documentStream =
+                    LVCreateMemoryStream(source_->bytes.data(), source_->bytes.size(), false, LVOM_READ);
+            }
+            if (documentStream.isNull())
+                return fail(OpeningFailureKind::InvalidContent,
+                            strings::key("error.the_reading_engine_could_not_open_this_epub"));
+            loaded = engine_->LoadDocument(documentStream, false);
+            if (loaded && engine_->getDocFormat() != doc_format_fb2) {
+                engine_.reset();
+                return fail(OpeningFailureKind::Unsupported,
+                            strings::key("error.the_publication_is_not_an_epub"));
+            }
+        } else {
+            loaded = engine_->LoadDocument(LVCreateMemoryStream(), false, source_->container);
+        }
         // A parsed document is rendered only after Render(); one restored
         // from the cache arrives rendered.
         openedFromCache_ = loaded && cache.enabled() && engine_->getDocument()->isRendered();
@@ -455,8 +502,12 @@ bool ReaderModel::openSource(std::shared_ptr<ReaderSource> source, QSize size, c
             stylesheet->pop();
         }
         markBodyAlignment(document);
-        markChapterLeadingImages(engine_.get());
-        markKoboLinkDecorations();
+        // Both markers target EPUB DocFragment spine structure and Kobo link
+        // decorations. FB2 books have neither; their layout comes from fb2.css.
+        if (!fb2Document_) {
+            markChapterLeadingImages(engine_.get());
+            markKoboLinkDecorations();
+        }
         // Loading computed styles before the body markers existed, including in previews.
         engine_->getDocument()->forceReinitStyles();
     }
@@ -488,6 +539,8 @@ bool ReaderModel::openPreview(ReaderModel &source, QSize size, QString *error) {
     };
     if (!source.engine_)
         return fail(strings::get("error.no_section_to_preview"));
+    if (source.engine_->getDocFormat() == doc_format_fb2)
+        return openFb2Preview(source, size, error);
     auto *document = source.engine_->getDocument();
     auto pointer = document->createXPointer(cre(source.position()));
     auto *fragment = pointer.isNull() ? nullptr : pointer.getNode();
@@ -599,5 +652,66 @@ bool ReaderModel::openPreview(ReaderModel &source, QSize size, QString *error) {
     settings["position"] = anchor;
     userStyleSheet_ = source.userStyleSheet_;
     return openSource(std::move(preview), size, settings, error);
+}
+bool ReaderModel::openFb2Preview(ReaderModel &source, QSize size, QString *error) {
+    auto fail = [error](const QString &message) {
+        *error = message;
+        return false;
+    };
+    auto *document = source.engine_->getDocument();
+    auto pointer = document->createXPointer(cre(source.position()));
+    auto *node = pointer.isNull() ? nullptr : pointer.getNode();
+    while (node && !node->isNodeName("section") && !node->isNodeName("body"))
+        node = node->getParentNode();
+    if (!node)
+        node = document->getRootNode();
+    QStringList paragraphs;
+    int total = 0;
+    constexpr int previewLimit = 8192;
+    for (int i = 0; i < node->getChildCount() && total < previewLimit; ++i) {
+        auto *child = node->getChildNode(i);
+        if (!child->isElement())
+            continue;
+        const auto name = qstring(child->getNodeName());
+        if (name.compare("p", Qt::CaseInsensitive) == 0 || name.compare("v", Qt::CaseInsensitive) == 0) {
+            const auto text = qstring(child->getText()).trimmed();
+            if (!text.isEmpty()) {
+                paragraphs.append(text);
+                total += text.size();
+            }
+        }
+    }
+    if (paragraphs.isEmpty()) {
+        const auto text = qstring(node->getText()).left(previewLimit).trimmed();
+        if (text.isEmpty())
+            return fail(strings::get("error.no_section_to_preview"));
+        paragraphs.append(text);
+    }
+    const auto language = qstring(source.engine_->getLanguage()).trimmed();
+    QByteArray previewBytes;
+    QXmlStreamWriter writer(&previewBytes);
+    writer.writeStartDocument("1.0", true);
+    writer.writeDefaultNamespace("http://www.gribuser.ru/xml/fictionbook/2.0");
+    writer.writeStartElement("FictionBook");
+    writer.writeStartElement("description");
+    writer.writeStartElement("title-info");
+    if (!language.isEmpty())
+        writer.writeTextElement("lang", language.left(2));
+    writer.writeEndElement(); // title-info
+    writer.writeEndElement(); // description
+    writer.writeStartElement("body");
+    writer.writeStartElement("section");
+    for (const auto &paragraph : paragraphs)
+        writer.writeTextElement("p", paragraph);
+    writer.writeEndElement(); // section
+    writer.writeEndElement(); // body
+    writer.writeEndElement(); // FictionBook
+    writer.writeEndDocument();
+    // The synthetic document has its own DOM, so the original XPointer cannot
+    // be restored. open() recognizes the bytes as FB2 and skips the EPUB path.
+    auto settings = source.state();
+    settings.remove("position");
+    userStyleSheet_ = source.userStyleSheet_;
+    return open(previewBytes, size, settings, error);
 }
 }

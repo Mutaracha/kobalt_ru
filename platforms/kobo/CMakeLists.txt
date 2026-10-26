@@ -46,6 +46,7 @@ foreach(index RANGE ${last})
 endforeach()
 
 file(READ "${CRENGINE_SOURCE}/cr3gui/data/html5.css" READER_HTML_CSS)
+file(READ "${CRENGINE_SOURCE}/cr3gui/data/fb2.css" READER_FB2_CSS)
 configure_file("${source}/engine/crengine/reader_styles.h.in" reader_styles.h @ONLY)
 file(GLOB patterns RELATIVE "${CRENGINE_SOURCE}/cr3gui/data/hyph" "${CRENGINE_SOURCE}/cr3gui/data/hyph/*.pattern")
 list(SORT patterns)

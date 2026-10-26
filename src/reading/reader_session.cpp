@@ -501,10 +501,17 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
                 // when the text itself is not read again. Never treat a matching
                 // archive hash as an access decision.
                 QString probe;
-                for (const auto &name : publication.names()) {
-                    if (name.endsWith(".xhtml", Qt::CaseInsensitive) || name.endsWith(".html", Qt::CaseInsensitive)) {
-                        probe = name;
-                        break;
+                if (publication.format() == Publication::PublicationFormat::Fb2) {
+                    // The whole single-file book is the one readable resource.
+                    // It also enables the retained-book check and the DOM cache.
+                    probe = QString::fromLatin1(Publication::singleFb2ResourceName);
+                } else {
+                    for (const auto &name : publication.names()) {
+                        if (name.endsWith(".xhtml", Qt::CaseInsensitive) ||
+                            name.endsWith(".html", Qt::CaseInsensitive)) {
+                            probe = name;
+                            break;
+                        }
                     }
                 }
                 const auto readable = [&] {
@@ -557,9 +564,15 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
                     // Reinspect warnings so diagnostics always contain the cause.
                     cacheHit = cacheHit && layout.verdict == LayoutCompatibility::Supported;
                     if (!cacheHit && !cancelled() && outcome.ready()) {
-                        layout = inspectLayout(*resources, publication.sizes());
-                        if (!cancelled())
-                            cacheStored = cache.store(digest, layout);
+                        if (publication.format() == Publication::PublicationFormat::Fb2) {
+                            // The EPUB spine inspector has no OPF to parse for a
+                            // single-file FB2; CREngine validates the XML itself.
+                            layout.verdict = LayoutCompatibility::Supported;
+                        } else {
+                            layout = inspectLayout(*resources, publication.sizes());
+                            if (!cancelled())
+                                cacheStored = cache.store(digest, layout);
+                        }
                     }
                     inspectionMs = timer.elapsed() - inspectionStart;
                     formattingDetails = kobalt::qt::object({{"verdict", int(layout.verdict)},

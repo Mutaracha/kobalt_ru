@@ -11,6 +11,7 @@
 #include <QUrl>
 #include <QtEndian>
 #include <zlib.h>
+#include <cstring>
 
 namespace kobalt {
 namespace {
@@ -42,6 +43,33 @@ bool safeName(const QString &name) {
             return false;
     // These prefixes belong to Nickel's other HTTP handlers.
     return !name.startsWith("TENG/") && !name.startsWith("FONT_ROUTE/") && !name.startsWith("EPUBPATH");
+}
+// Raw-byte FictionBook recognition. The payload is never decoded here: a
+// windows-1251 book keeps its encoding declaration and CREngine decodes it.
+// The head is bounded to the first 64 KiB, which always covers the XML
+// declaration and the root element of a well-formed FB2 document.
+bool fictionBookHead(const QByteArray &head) {
+    int at = 0;
+    if (head.startsWith("\xEF\xBB\xBF"))
+        at = 3;
+    while (at < head.size() &&
+           (head[at] == '\t' || head[at] == '\r' || head[at] == '\n' || head[at] == ' '))
+        ++at;
+    const auto prefix = head.mid(at);
+    if (!prefix.startsWith("<?xml") && !prefix.startsWith("<FictionBook"))
+        return false;
+    // XML entity expansion (billion laughs) guard, mirroring cleanXml for EPUB.
+    if (head.contains("<!ENTITY"))
+        return false;
+    const int tag = head.indexOf("<FictionBook");
+    if (tag < 0)
+        return false;
+    const int after = tag + int(std::strlen("<FictionBook"));
+    if (after >= head.size())
+        return false;
+    const char delimiter = head[after];
+    return delimiter == ' ' || delimiter == '\t' || delimiter == '\r' || delimiter == '\n' ||
+           delimiter == '>';
 }
 // Font obfuscation is an EPUB embedding convention, not content encryption.
 // CREngine decodes IDPF and Adobe fonts. Admit only metadata for those paths.
@@ -242,10 +270,49 @@ bool Publication::inspect(QIODevice &source, QString *error, OpeningResult *resu
     fingerprint_.clear();
     received_ = 0;
     protected_ = false;
+    format_ = PublicationFormat::Epub;
     const qint64 length = source.size();
     if (source.isSequential() || length < 22 || length > 1024LL * 1024 * 1024)
         return inspectionFailure(error, result, OpeningFailureKind::Unsupported,
                                  strings::key("error.unsupported_publication_size"));
+    // Recognize single-file FB2 before the ZIP end-of-directory scan. A raw
+    // XML stream has no ZIP record, so the EPUB checks below must not run first.
+    if (length >= 32 && length <= qint64(maxBytes)) {
+        if (!source.seek(0))
+            return inspectionFailure(error, result, OpeningFailureKind::Io,
+                                     strings::key("error.cannot_read_publication_directory"));
+        const auto head = source.read(qMin(length, qint64(65536)));
+        if (head.size() != qMin(length, qint64(65536)))
+            return inspectionFailure(error, result, OpeningFailureKind::Io,
+                                     strings::key("error.incomplete_publication_directory"));
+        if (fictionBookHead(head)) {
+            format_ = PublicationFormat::Fb2;
+            protected_ = false;
+            if (!source.seek(0))
+                return inspectionFailure(error, result, OpeningFailureKind::Io,
+                                         strings::key("error.cannot_read_publication_directory"));
+            // A single file has no central directory to fingerprint. Hash the
+            // length plus the complete contents so any edit invalidates caches.
+            QCryptographicHash hash(QCryptographicHash::Sha256);
+            QByteArray sizePrefix;
+            u32(sizePrefix, quint32(length));
+            u32(sizePrefix, quint32(quint64(length) >> 32));
+            hash.addData(sizePrefix);
+            while (!source.atEnd()) {
+                const auto chunk = source.read(64 * 1024);
+                if (chunk.isEmpty())
+                    return inspectionFailure(error, result, OpeningFailureKind::Io,
+                                             strings::key("error.incomplete_publication_directory"));
+                hash.addData(chunk);
+            }
+            fingerprint_ = hash.result().toHex();
+            const auto resourceName = QString::fromLatin1(singleFb2ResourceName);
+            names_ = QStringList{resourceName};
+            sizes_.clear();
+            sizes_[resourceName] = length;
+            return true;
+        }
+    }
     const auto tailStart = qMax(qint64(0), length - 65557);
     if (!source.seek(tailStart))
         return inspectionFailure(error, result, OpeningFailureKind::Io,
