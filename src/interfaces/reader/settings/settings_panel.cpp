@@ -702,13 +702,16 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     resetRow->setStretch(0, 0);
     resetRow->setStretch(1, 1);
     resetRow->setStretch(2, 0);
+    cacheRow->setStretch(0, 0);
+    cacheRow->setStretch(1, 1);
+    cacheRow->setStretch(2, 0);
     for (auto *button :
-         {resetDefaults, refreshButton, columnSpacingButton, sleepScreenButton, pageNavigationButton, tapZonesButton, navigationBarButton,
+         {resetDefaults, clearCacheButton, refreshButton, columnSpacingButton, sleepScreenButton, pageNavigationButton, tapZonesButton, navigationBarButton,
           menuViewButton, uiFontButton, uiMonoFontButton, headerFooterFontButton, headerFooterWeightButton,
           defaultFontButton, serifFontButton, sansFontButton, monoFontButton, wordSpacingButton, trackingButton, widowsOrphansButton}) {
         button->setRule(Qt::BottomEdge);
-        // The refresh row's caption shows its current choice, set when Settings opens.
-        if (button == resetDefaults)
+        // Both Defaults-tab actions open a confirmation modal before doing anything.
+        if (button == resetDefaults || button == clearCacheButton)
             button->setCaption(strings::get("settings.asks_first"));
         ui::readerStyle(
             button,
