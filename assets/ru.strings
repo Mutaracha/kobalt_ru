@@ -92,8 +92,8 @@
 "about.version" = "Версия %1 (Qt%2)";
 /* Arguments: %1 */
 "about.fork" = "%1";
-/* Arguments: %1 имя форка, %2 коммит исходников */
-"about.fork_build" = "%1, сборка %2";
+/* Arguments: %1 имя форка, %2 коммит исходников; без кириллицы, чтобы шрифт совпадал со штатной строкой коммита */
+"about.fork_build" = "%1 · %2";
 
 /* chapter_contents */
 "chapter_contents.chapter_destination_unavailable" = "Назначение главы недоступно";

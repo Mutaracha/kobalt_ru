@@ -516,8 +516,12 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     commit->setAlignment(Qt::AlignCenter);
     readerStyle(commit, styles::font(m::about::commitText));
     build->addWidget(commit);
-    commit->setVisible(inputs.commitVisible);
+    // A fork row carries the same commit, so the standalone row would only
+    // duplicate it; generic builds (no fork name) keep the upstream layout.
+    commit->setVisible(inputs.commitVisible && !inputs.forkVisible);
     // Fork builds identify themselves on a dedicated row; generic builds hide it.
+    // Keep the text Latin-only: a Cyrillic label takes the private FreeType
+    // fallback path and renders in a different face than this 24 px row.
     if (inputs.forkVisible) {
         const QString forkText = inputs.commit.isEmpty()
             ? strings::get("about.fork").arg(inputs.forkName)
