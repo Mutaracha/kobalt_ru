@@ -48,6 +48,6 @@ Bump the format version in `documentCacheChecksum` when parser or preprocessing 
 
 Keep Markdown in `doc/`, except the root `README.md` and `AGENTS.md`. The user owns root README edits. Keep these instructions and build commands current in the same change as tooling updates.
 
-In this fork, pushing completed work to the current working branch is pre-authorized and required (see [Fork workflow](#fork-workflow-kobalt_ru)); other publications (tags, releases, other branches) still need explicit authorization. Signed operations require an advance warning for 1Password prompts. Never add an agent coauthor. Preserve unrelated changes and the original checkout.
+In this fork, pushing completed work to the current working branch is pre-authorized and required (see [Fork workflow](#fork-workflow-kobalt_ru)); other publications (tags, releases, other branches) still need explicit authorization. Signed operations require an advance warning for 1Password prompts. Never add an agent coauthor: the sandbox may install a `commit-msg` hook that appends a `Co-authored-by: arena-agent` trailer, so create fork commits with `git commit --no-verify` and verify with `git log --grep=arena-agent` that the history stays trailer-free. Preserve unrelated changes and the original checkout.
 
 Use lowercase release-stage words in commit messages, including `alpha` and `beta`, even when part of a release name. The abbreviation `RC` may remain uppercase.
