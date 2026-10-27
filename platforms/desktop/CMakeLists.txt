@@ -65,6 +65,7 @@ if(modifications)
     set(KOBALT_COMMIT_MODIFIED ON)
 endif()
 set(KOBALT_FORK_NAME "" CACHE STRING "Fork identifier for the About page; empty hides the fork row")
+string(TIMESTAMP KOBALT_BUILD_TIME "%Y-%m-%d %H:%M UTC" UTC)
 configure_file("${source}/support/build_info.h.in" build_info.h @ONLY)
 
 # Keep portable objects separate so UI edits do not relink standalone checks.
@@ -377,7 +378,7 @@ if(BUILD_TESTING)
         endforeach()
     endfunction()
     kobalt_regressions(model storage_assets profile_storage bookmark_store highlight_store annotation_database appearance_settings header_footer
-        layout_cache resource_cache layout_compatibility reading_pace reading_speed engine_activity
+        layout_cache rendering_cache resource_cache layout_compatibility reading_pace reading_speed engine_activity
         local_resources zip_resource diagnostics dictionary_store image_damage page_pixels
         logical_word_counter brightness_gesture qt_compat page_refresh_regions screen_refresh plain_archive reading_progress
         library strings_locale)

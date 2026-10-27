@@ -974,6 +974,7 @@ void Reader::buildSettings() {
     settingsInputs.commitVisible = kobaltCommit[0] != '\0';
     settingsInputs.forkName = QString::fromLatin1(kobaltForkName);
     settingsInputs.forkVisible = kobaltForkName[0] != '\0';
+    settingsInputs.forkBuildTime = QString::fromLatin1(kobaltBuildTime);
     settingsInputs.qtMajor = QT_VERSION >> 16;
     settingsInputs.desktopUi = services.desktopUi;
     settingsInputs.downloadableDictionaries = services.downloadableDictionaries;
@@ -1156,6 +1157,32 @@ void Reader::buildSettings() {
         acknowledgments->open();
         for (auto *widget : acknowledgments->findChildren<QWidget *>())
             textRefresh(widget);
+    });
+    connect(settings->confirmClearCache, &QPushButton::clicked, this, [this] {
+        // Only disposable rendering caches are removed; the database, book
+        // state, annotations and settings live outside these paths.
+        if (!storage::clearRenderingCaches(book->paths())) {
+            auto *notice = new ui::NoticeModal(
+                this,
+                {strings::get("reader.clear_book_cache_failed"), strings::get("reader.clear_book_cache_prompt"), {}},
+                {strings::get("common.ok"), "rrClearCacheErrorConfirm"});
+            notice->setObjectName("rrClearCacheError");
+            const auto dismiss = [notice] {
+                notice->hide();
+                notice->deleteLater();
+            };
+            connect(notice->primaryButton(), &QPushButton::clicked, this, dismiss);
+            notice->dismissed = dismiss;
+            notice->centerCard();
+            notice->show();
+            notice->raise();
+            notice->primaryButton()->setFocus();
+            for (auto *widget : notice->findChildren<QWidget *>())
+                textRefresh(widget);
+            return;
+        }
+        // The normal close path saves progress first, then hands back to Nickel.
+        close();
     });
     connect(settings->confirmDefaults, &QPushButton::clicked, this, [this] {
         restoringDefaults = true;

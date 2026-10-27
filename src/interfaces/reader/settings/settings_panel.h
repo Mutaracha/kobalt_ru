@@ -28,6 +28,8 @@ struct SettingsPanelInputs {
     // Fork distribution label (e.g. "kobalt_ru"); empty hides the extra About row.
     QString forkName;
     bool forkVisible = false;
+    // Configure-time UTC build stamp shown next to the fork name.
+    QString forkBuildTime;
     bool animationsSupported = false, lightSupported = false, warmthSupported = false;
     bool debugProgressAvailable = false, desktopUi = false;
     bool downloadableDictionaries = true;
@@ -40,6 +42,7 @@ public:
     SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs);
     ~SettingsPanel() override;
     void dismissRestore();
+    void dismissClearCache();
     void showFontChoices(const QString &title, const QVector<ReadingFont> &fonts, const QString &current,
                          const QString &defaultFamily, std::function<void(const QString &)> chosen,
                          std::function<void(const QStringList &)> prepareFonts = {});
@@ -72,8 +75,9 @@ public:
     ui::CaptionButton *sleepScreenButton = nullptr, *menuViewButton = nullptr;
     ui::CaptionButton *pageNavigationButton = nullptr, *tapZonesButton = nullptr, *navigationBarButton = nullptr;
     ui::DescribedOption *bionicOption = nullptr;
-    ui::CaptionButton *refreshButton = nullptr, *resetDefaults = nullptr;
+    ui::CaptionButton *refreshButton = nullptr, *resetDefaults = nullptr, *clearCacheButton = nullptr;
     QPushButton *keepDefaults = nullptr, *confirmDefaults = nullptr;
+    QPushButton *keepClearCache = nullptr, *confirmClearCache = nullptr;
     QPushButton *openAcknowledgments = nullptr, *debugProgress = nullptr;
     DictionariesPage *dictionaries = nullptr;
     QLabel *settingsError = nullptr;
@@ -92,5 +96,6 @@ private:
     void fitRail(int availableHeight = 0);
     QLabel *aboutDescription = nullptr;
     QPointer<ui::ChoiceModal> restoreDialog;
+    QPointer<ui::ChoiceModal> clearCacheDialog;
 };
 }

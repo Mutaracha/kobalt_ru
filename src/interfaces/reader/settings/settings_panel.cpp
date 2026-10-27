@@ -407,6 +407,22 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     readerStyle(resetDefaults, styles::font(m::text::secondary));
     resetDefaults->setFixedHeight(m::about::actionHeight);
     resetRow->addStretch(1);
+    // Disposable rendering caches only; reading progress lives elsewhere and
+    // is kept. The confirmation modal warns that Kobalt closes afterwards.
+    auto *cacheRow = kobalt::ui::horizontalRow();
+    defaultsRows->addLayout(cacheRow);
+    cacheRow->addStretch(1);
+    clearCacheButton = ui::makeCaptionButton(defaultsPage, cacheRow, "rrClearBookCache",
+                                             strings::get("reader.clear_book_cache"), [this] {
+                                                 settingsPages->setCurrentIndex(DefaultsSettings);
+                                                 clearCacheDialog->fitCard();
+                                                 clearCacheDialog->show();
+                                                 clearCacheDialog->raise();
+                                                 clearCacheDialog->setFocus();
+                                             });
+    readerStyle(clearCacheButton, styles::font(m::text::secondary));
+    clearCacheButton->setFixedHeight(m::about::actionHeight);
+    cacheRow->addStretch(1);
     defaultsRows->addStretch(1);
     auto *stylingPage = new QWidget(settingsPages);
     stylingPage->setObjectName("rrStylingOptions");
@@ -516,16 +532,14 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     commit->setAlignment(Qt::AlignCenter);
     readerStyle(commit, styles::font(m::about::commitText));
     build->addWidget(commit);
-    // A fork row carries the same commit, so the standalone row would only
-    // duplicate it; generic builds (no fork name) keep the upstream layout.
-    commit->setVisible(inputs.commitVisible && !inputs.forkVisible);
-    // Fork builds identify themselves on a dedicated row; generic builds hide it.
-    // Keep the text Latin-only: a Cyrillic label takes the private FreeType
-    // fallback path and renders in a different face than this 24 px row.
+    commit->setVisible(inputs.commitVisible);
+    // Fork builds add one read-only row below the untouched stock rows:
+    // fork name plus the UTC build time. Latin-only text keeps the same font
+    // rendering path as the original 24 px commit label.
     if (inputs.forkVisible) {
-        const QString forkText = inputs.commit.isEmpty()
+        const QString forkText = inputs.forkBuildTime.isEmpty()
             ? strings::get("about.fork").arg(inputs.forkName)
-            : strings::get("about.fork_build").arg(inputs.forkName, inputs.commit);
+            : strings::get("about.fork_build").arg(inputs.forkName, inputs.forkBuildTime);
         auto *fork = new ui::InterfaceLabel(forkText, aboutPage);
         fork->setObjectName("rrAboutFork");
         fork->setAlignment(Qt::AlignCenter);
@@ -598,6 +612,26 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     });
     restoreDialog->dismissed = [this] {
         dismissRestore();
+    };
+    clearCacheDialog =
+        new ui::ChoiceModal(parent,
+                            {strings::get("reader.clear_book_cache_detail"),
+                             strings::get("reader.clear_book_cache_prompt"),
+                             {}},
+                            {strings::get("common.cancel"), "rrKeepClearCache"},
+                            {strings::get("reader.clear_book_cache_confirm"), "rrConfirmClearCache"});
+    clearCacheDialog->setObjectName("rrClearCacheConfirmation");
+    clearCacheDialog->setDimmed(true);
+    keepClearCache = clearCacheDialog->secondaryButton();
+    confirmClearCache = clearCacheDialog->primaryButton();
+    connect(keepClearCache, &QPushButton::clicked, this, [this] {
+        dismissClearCache();
+    });
+    connect(confirmClearCache, &QPushButton::clicked, this, [this] {
+        dismissClearCache();
+    });
+    clearCacheDialog->dismissed = [this] {
+        dismissClearCache();
     };
     if (inputs.desktopUi) {
         auto *nativePage = new QWidget(settingsPages);
@@ -1113,8 +1147,15 @@ void SettingsPanel::dismissRestore() {
     restoreDialog->hide();
     resetDefaults->setFocus();
 }
+void SettingsPanel::dismissClearCache() {
+    if (!clearCacheDialog || clearCacheDialog->isHidden())
+        return;
+    clearCacheDialog->hide();
+    clearCacheButton->setFocus();
+}
 void SettingsPanel::hideEvent(QHideEvent *event) {
     dismissRestore();
+    dismissClearCache();
     dismissFontChoices();
     ui::Panel::hideEvent(event);
 }

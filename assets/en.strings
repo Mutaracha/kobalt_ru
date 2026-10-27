@@ -92,7 +92,7 @@
 "about.version" = "Version %1 (Qt%2)";
 /* Arguments: %1 */
 "about.fork" = "%1";
-/* Arguments: %1 fork name, %2 source commit; language-neutral Latin-only format keeps the stock commit row font */
+/* Arguments: %1 fork name, %2 UTC build time; language-neutral Latin-only format keeps the stock commit row font */
 "about.fork_build" = "%1 · %2";
 
 /* chapter_contents */
@@ -488,6 +488,11 @@
 "reader.restore_appearance_defaults" = "Restore appearance defaults";
 "reader.restore_appearance_defaults_prompt" = "Restore appearance defaults?";
 "reader.restore_defaults" = "Restore defaults";
+"reader.clear_book_cache" = "Clear book cache";
+"reader.clear_book_cache_prompt" = "Clear the book cache?";
+"reader.clear_book_cache_detail" = "Reading positions, bookmarks, annotations and settings are kept. Parsed books and layout caches are rebuilt when you open a book again. Kobalt closes after this action.";
+"reader.clear_book_cache_confirm" = "Clear and close";
+"reader.clear_book_cache_failed" = "The cache could not be cleared. Check free space and file permissions.";
 "reader.return_to_passage" = "Return to passage";
 "reader.follow_link" = "Follow link";
 "reader.link_dictionary" = "Dictionary";

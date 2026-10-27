@@ -7,3 +7,5 @@ constexpr auto kobaltCommit = "@KOBALT_COMMIT@";
 // Fork distribution identifier shown on the About page. Empty in generic
 // builds, which keeps the upstream About layout unchanged.
 constexpr auto kobaltForkName = "@KOBALT_FORK_NAME@";
+// Configure-time UTC timestamp, rendered on the fork's About row.
+constexpr auto kobaltBuildTime = "@KOBALT_BUILD_TIME@";

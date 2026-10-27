@@ -92,7 +92,7 @@
 "about.version" = "Версия %1 (Qt%2)";
 /* Arguments: %1 */
 "about.fork" = "%1";
-/* Arguments: %1 имя форка, %2 коммит исходников; без кириллицы, чтобы шрифт совпадал со штатной строкой коммита */
+/* Arguments: %1 имя форка, %2 время сборки (UTC); без кириллицы, чтобы шрифт совпадал со штатной строкой коммита */
 "about.fork_build" = "%1 · %2";
 
 /* chapter_contents */
@@ -488,6 +488,11 @@
 "reader.restore_appearance_defaults" = "Восстановить оформление по умолчанию";
 "reader.restore_appearance_defaults_prompt" = "Восстановить оформление по умолчанию?";
 "reader.restore_defaults" = "Восстановить значения по умолчанию";
+"reader.clear_book_cache" = "Удалить кэш книг";
+"reader.clear_book_cache_prompt" = "Удалить кэш книг?";
+"reader.clear_book_cache_detail" = "Прогресс чтения, закладки, аннотации и настройки не затрагиваются. Кэш свёрстанных книг и раскладки будет создан заново при следующем открытии. После очистки Kobalt закроется.";
+"reader.clear_book_cache_confirm" = "Очистить и выйти";
+"reader.clear_book_cache_failed" = "Не удалось удалить кэш. Проверьте свободное место и права доступа.";
 "reader.return_to_passage" = "Вернуться к фрагменту";
 "reader.follow_link" = "Перейти по ссылке";
 "reader.link_dictionary" = "Словарь";

@@ -55,6 +55,7 @@ configure_file("${source}/engine/crengine/reader_hyphenation.h.in" reader_hyphen
 set(KOBALT_COMMIT "" CACHE STRING "Source commit, passed by the container launcher")
 option(KOBALT_COMMIT_MODIFIED "Source has uncommitted changes" OFF)
 set(KOBALT_FORK_NAME "" CACHE STRING "Fork identifier for the About page; empty hides the fork row")
+string(TIMESTAMP KOBALT_BUILD_TIME "%Y-%m-%d %H:%M UTC" UTC)
 configure_file("${source}/support/build_info.h.in" build_info.h @ONLY)
 
 file(GLOB_RECURSE shared CONFIGURE_DEPENDS "${source}/*.cpp" "${source}/*.h")

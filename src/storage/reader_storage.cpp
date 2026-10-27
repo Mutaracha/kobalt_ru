@@ -357,4 +357,23 @@ bool prepareProfile(const Paths &paths) {
     }
     return ok;
 }
+
+bool clearRenderingCaches(const Paths &paths) {
+    if (paths.directory.isEmpty())
+        return false;
+    bool ok = true;
+    // CREngine owns .cache/ and removes files it does not recognize, so the
+    // whole directory is disposable. It is recreated on the next book open.
+    const QString documentCache = paths.documentCache();
+    if (!documentCache.isEmpty() && QFileInfo::exists(documentCache))
+        ok = QDir(documentCache).removeRecursively() && ok;
+    // The layout inspection cache is a single bounded JSON file; drop its
+    // parent directory as well when nothing else remains inside it.
+    const QString layoutCache = paths.layoutCache();
+    if (!layoutCache.isEmpty() && QFileInfo::exists(layoutCache))
+        ok = QFile::remove(layoutCache) && ok;
+    QDir().rmdir(QFileInfo(layoutCache).absolutePath());
+    // Success means every previously existing cache target is now gone.
+    return ok && !QFileInfo::exists(documentCache) && !QFileInfo::exists(layoutCache);
+}
 }

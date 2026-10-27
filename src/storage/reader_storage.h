@@ -47,5 +47,11 @@ bool writePreferences(const QString &path, const QJsonObject &);
 // Imports recognized durable files and tidies known transient files. Unknown
 // files and failed imports are kept. Safe to retry after an interruption.
 bool prepareProfile(const Paths &);
+// Remove only the disposable rendering caches: CREngine parsed books under
+// .cache/ and the layout inspection cache cache/reopen-layout.json. Settings,
+// the database, bookmarks, annotations and per-book reading state live outside
+// these paths and are never touched. Missing caches count as success; false is
+// returned only when an existing target cannot be removed. Safe to retry.
+bool clearRenderingCaches(const Paths &);
 void archiveImportedSource(const QString &directory, const QString &source);
 }
