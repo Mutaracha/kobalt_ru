@@ -19,10 +19,11 @@ if [[ -n $(git -C "$root" status --porcelain) ]]; then modified=ON; fi
     --workdir /work/platforms/kobo "$image" bash -euc '
         started=$SECONDS
         cmake --preset "$1" \
-            -DKOBALT_SDK_ID="$5" -DKOBALT_DEPENDENCY_JOBS="$2" -DKOBALT_COMMIT="$3" -DKOBALT_COMMIT_MODIFIED="$4"
+            -DKOBALT_SDK_ID="$5" -DKOBALT_DEPENDENCY_JOBS="$2" -DKOBALT_COMMIT="$3" -DKOBALT_COMMIT_MODIFIED="$4" \
+            -DKOBALT_FORK_NAME="$6"
         echo "Configure: $((SECONDS - started)) seconds"
         started=$SECONDS
         cmake --build --preset "$1" --parallel "$2"
         cmake --build --preset "$1" --target check-package
         echo "Build and package: $((SECONDS - started)) seconds"
-    ' kobalt-build "$target" "$jobs" "$commit" "$modified" "$sdk_id"
+    ' kobalt-build "$target" "$jobs" "$commit" "$modified" "$sdk_id" "${KOBALT_FORK_NAME:-}"

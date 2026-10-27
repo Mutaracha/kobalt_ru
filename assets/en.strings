@@ -90,6 +90,10 @@
 "about.description" = "An alternative EPUB reader with a CREngine renderer and a Qt reading interface, with a focus on speed and an excellent user experience.";
 /* Arguments: %1, %2 */
 "about.version" = "Version %1 (Qt%2)";
+/* Arguments: %1 */
+"about.fork" = "%1";
+/* Arguments: %1 fork name, %2 source commit */
+"about.fork_build" = "%1 build %2";
 
 /* chapter_contents */
 "chapter_contents.chapter_destination_unavailable" = "Chapter destination unavailable";

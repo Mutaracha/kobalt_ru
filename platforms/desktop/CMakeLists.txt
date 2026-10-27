@@ -64,6 +64,7 @@ set(KOBALT_COMMIT_MODIFIED OFF)
 if(modifications)
     set(KOBALT_COMMIT_MODIFIED ON)
 endif()
+set(KOBALT_FORK_NAME "" CACHE STRING "Fork identifier for the About page; empty hides the fork row")
 configure_file("${source}/support/build_info.h.in" build_info.h @ONLY)
 
 # Keep portable objects separate so UI edits do not relink standalone checks.

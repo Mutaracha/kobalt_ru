@@ -18,6 +18,9 @@ concurrency:
 
 env:
   CONTAINER_ENGINE: docker
+  # Fork-only enablement: the generic mechanism defaults to empty, so upstream
+  # builds keep the stock About page; the fork's CI labels its builds explicitly.
+  KOBALT_FORK_NAME: kobalt_ru
 
 jobs:
   build-qt5:

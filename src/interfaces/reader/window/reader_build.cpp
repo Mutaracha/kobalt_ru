@@ -972,6 +972,8 @@ void Reader::buildSettings() {
     settingsInputs.release = release.mid(release.startsWith('v') ? 1 : 0);
     settingsInputs.commit = QString::fromLatin1(kobaltCommit) + (KOBALT_COMMIT_MODIFIED ? "*" : "");
     settingsInputs.commitVisible = kobaltCommit[0] != '\0';
+    settingsInputs.forkName = QString::fromLatin1(kobaltForkName);
+    settingsInputs.forkVisible = kobaltForkName[0] != '\0';
     settingsInputs.qtMajor = QT_VERSION >> 16;
     settingsInputs.desktopUi = services.desktopUi;
     settingsInputs.downloadableDictionaries = services.downloadableDictionaries;

@@ -18,6 +18,7 @@
 | 4 | Nickel-роутинг, native publication qt5/qt6, time-only writeback | **done** (ожидает CI-сборки) |
 | 5 | Тесты: `tests/model/fb2.cpp`, FB2-кейсы в `nickel_book_menu`, `reading_book`, `local_resources` | **done** (qt5 CI зелёный; mac-tests — при мерже) |
 | 6 | Русская локализация интерфейса | **done** (qt5 CI зелёный, артефакт `Kobalt-qt5-device` опубликован; mac-tests — при мерже) |
+| 7 | Финализация: строка версии форка в «О приложении», карта изменений, регламент переноса на upstream, пользовательская инструкция | **done** (см. раздел 7 и `doc/fork-kobalt_ru.md`) |
 
 **Решение по `.fb2.zip` (подтверждено заказчиком 2026-10-26):** поддержка ИСКЛЮЧЕНА окончательно. Nickel не индексирует `.fb2.zip` как книги, целевой сценарий — одиночные `.fb2`, видимые в штатной библиотеке; desktop/Android по указанию заказчика не приоритетны. Если потребность вернётся, точка расширения: в `Publication::inspect(QIODevice&)` после ZIP-ветки детектировать архив с единственным членом `*.fb2`, отдавать его под тем же виртуальным именем `singleFb2ResourceName` (распаковка в `LocalResources::transferSingleFile`), а движок не менять — он уже грузит поток через `LoadDocument(stream, false)`.
 
@@ -27,6 +28,7 @@
 - 2026-10-26 (этап 6): реализована локализация по варианту A из раздела 6. `assets/ru.strings` — полный перевод 764 ключей с паритетом ключей и слотов `%n`; `platforms/strings.cmake` разбит на parse/generate/parity (сборка падает при расхождении локалей); `src/support/strings.h` хранит две таблицы, атомарный селектор `setLocale/locale`, нормализацию кодов (`ru`, `ru_RU`, `ru-RU` → русский) и хелпер плюрализации CLDR (`_one/_few/_many`, английский сохранил one/база); новый `src/support/locale.{h,cpp}`: `KOBALT_LANGUAGE` → `Kobo eReader.conf` (`ApplicationPreferences/CurrentLocale`) → `QLocale::system()` → английский. Вызовы разрешения локали добавлены в `initialize()` qt5/qt6 и в `main()` desktop/Android. Фолбэк: отсутствующий перевод берётся из английской таблицы. Диагностика (`diagnosticErrorCode`) по-прежнему опирается на каноническую английскую таблицу. Тест `tests/model/strings_locale.cpp` (коды, переводы, key-режим, плюрал 1/2/5/11/21/101, INI-конфиг, env), parity-кейсы в `platforms/strings-test.cmake`. Смена языка не затрагивает путь FB2: форматные ветки управляются отдельными флагами, все строковые ключи FB2 присутствуют в обеих локалях.
 - 2026-10-26 (этап 6, CI-фиксы): (1) автономные `cmake -P` parity-скрипты без `cmake_minimum_required` получали OLD-политики на CMake 3.x, где оператор `IN_LIST` (CMP0057) запрещён — во вложенные скрипты добавлен явный policy-baseline 3.22 (в CMake 4.x песочницы политика всегда NEW, локально дефект не воспроизводился); (2) Kobo Qt5 SDK старше Qt 5.10 — `QStringView` удалён из `strings.h`/`locale.cpp`/теста, `normalizeLocaleCode` принимает `const QString&`. После фиксов qt5-device workflow зелёный целиком, артефакт `Kobalt-qt5-device` (~35.6 МБ) опубликован. Шаг «Offline release checks» теперь пишет хвост лога в step summary при падении.
 - 2026-10-26 (этап 6, правки перевода по замечаниям с устройства, 25 ключей `assets/ru.strings`, только значения, ключи/слоты не тронуты): обрезка в меню «Раскладка» — `header_footer.title` → «Колонтитулы», `reader.header/footer` → «Верхний»/«Нижний» (длина как у en «Header»/«Footer»); `custom_hint` переписан про пресет «Свой», 6 ячеек и схему выше; `common.more_next_page` → «Продолжение на следующей странице» (оглавление и вкладка шрифтов); «Обновить экран» → «Обновление экрана»; «Жирное чтение» → «Бионическое чтение» (метка режима, статусы включения; в узком слоте значения насыщенности — «Включено»); в навигации существительные «проведения» → «свайп(ы)», в описании «влево и вправо» → «влево или вправо» (глагол «Проводите» сохранён); описание стиля меню по умолчанию сокращено до формулировки заказчика; «СПРОСИТЬ СНАЧАЛА» → «С ПОДТВЕРЖДЕНИЕМ»; «Трекинг выключки» → «Межбуквенная подгонка»; опции висячих строк «Избегать обоих случаев/Разрешать оба случая» → «Избегать»/«Разрешать» (по длине en «Avoid both»/«Allow both»); «нелинейные фрагменты» → «дополнительные разделы» (label + описание); вкладка «Системный» → «Система»; второе предложение описания автооткрытия книг — «Этот параметр также доступен в настройках чтения Kobo»; описание скрытия подписей вкладок — «В меню чтения на вкладках показываются только значки, без подписей».
+- 2026-10-27 (этап 7, финализация): (1) идентификация форка на странице «О приложении» — generic-механизм `KOBALT_FORK_NAME` (пустой дефолт в трёх платформенных CMakeLists, константа `kobaltForkName` в `build_info.h.in`, проброс в `platforms/kobo/build.sh`, включение `kobalt_ru` только в fork-workflow); новая строка `rrAboutFork` в `settings_panel.cpp` видна лишь при непустом имени, тексты — `about.fork`/`about.fork_build` в обеих локалях (паритет соблюдён); десктоп/Android сохраняют штатный вид About. (2) Проведён полный аудит дельты относительно `64235f4`: все FB2-ветки за явными флагами, EPUB-поведение не изменено, новые подсистемы вынесены в отдельные файлы; карта всех изменений и правила разрешения конфликтов — в разделе 7.2. (3) В план добавлен регламент поддержки (раздел 7): сборка промежуточных версий, офлайн- и CI-проверки, процедура переноса на новый upstream, чек-лист перед пушем, зафиксированные компромиссы. (4) Написана пользовательская инструкция `doc/fork-kobalt_ru.md`.
 
 ---
 
@@ -372,3 +374,105 @@ bool plainEpub() const {
 4. Проверка плюрального хелпера на русских счётных формах (1/2/5/11/21).
 5. Mac headless: `cmake --build --preset mac-tests && ctest --preset mac` — все существующие тесты проходят, ключи на месте.
 6. Ручная проверка на устройстве через артефакт workflow `Kobalt-qt5-device`: при `CurrentLocale=ru` все панели, диалоги и меню Kobalt отображаются по-русски без усечений и «квадратов» (кириллица в IBM Plex Sans), при `CurrentLocale=en` — прежний английский интерфейс; перезапуск устройства сохраняет выбор.
+
+---
+
+## 7. Поддержка форка и перенос на новые релизы upstream (финализация)
+
+Все этапы 0–6 реализованы и зелёные в qt5-CI. Этот раздел — постоянный регламент поддержки: как собирать промежуточные версии, какие именно исходники отличают форк от upstream, что проверять перед пушем и как переносить правки на будущие релизы Kobalt.
+
+### 7.1. Принцип минимального вмешательства (соблюдён, обязателен и впредь)
+
+1. **Поведение EPUB — неприкосновенно.** Любая новая ветка включается явным флагом (`Publication::PublicationFormat::Fb2`, `ReaderSource::isFb2`, `ReaderModel::fb2Document_`, суффиксы `.fb2` в идентичности/путях). При значениях по умолчанию поток управления и тексты совпадают с upstream.
+2. **Новые подсистемы — в новых файлах.** Локаль (`src/support/locale.{h,cpp}`), данные (паттерны, `ru.strings`), тесты (`tests/model/fb2.cpp`, `tests/model/strings_locale.cpp`), CI-воркфлоу не правят существующую архитектуру, а подключаются через узкие точки.
+3. **Generic-механизмы с пустыми дефолтами, fork-значения — только в fork-only файлах.** Пример: `KOBALT_FORK_NAME` (пусто во всех CMakeLists → строки форка нет, upstream видит штатную About-страницу; имя `kobalt_ru` задаётся исключительно в `.github/workflows/kobo-qt5-device.yml`).
+4. **Никаких новых строк в обход таблиц.** Новый `strings::get("...")` требует ключа в `assets/en.strings` И `assets/ru.strings`; паритет ключей и слотов `%n` проверяется на configure и в `platforms/ci/test.sh`.
+5. **Совместимость со старым Qt5 Kobo SDK (до Qt 5.10):** не использовать `QStringView` и прочие API новее SDK; это автоматически проверяется qt5-сборкой с `-Werror`.
+
+### 7.2. Полная карта изменений форка относительно upstream
+
+**Только добавления (конфликты при rebase маловероятны):**
+
+| Файл/каталог | Назначение |
+|---|---|
+| `.github/workflows/kobo-qt5-device.yml` | push-CI: сборка строго qt5, валидация ZIP, артефакт `Kobalt-qt5-device`; здесь же включается `KOBALT_FORK_NAME=kobalt_ru` |
+| `FB2_FORK_PLAN.md`, `doc/fork-kobalt_ru.md` | План/регламент (этот файл) и пользовательская инструкция |
+| `assets/ru.strings` | Русская таблица, 764+ ключа, паритет с английской |
+| `assets/hyph/Russian.pattern`, `Russian_EnUS.pattern` | Паттерны переносов (LPPL, см. `assets/notices/Hyphenation-patterns`) |
+| `src/support/locale.{h,cpp}` | Разрешение локали: env `KOBALT_LANGUAGE` → Kobo conf → система → английский |
+| `tests/model/fb2.cpp`, `tests/model/strings_locale.cpp` | Регрессии FB2 и локали |
+
+**Точечные правки upstream-файлов (зона конфликтов при rebase):**
+
+| Файл | Суть правки | Правило разрешения конфликта |
+|---|---|---|
+| `src/support/strings.h` | Вторая таблица, `Locale`, атомарный селектор, `plural()`, `normalizeLocaleCode()`; API `get/key/showKeys/entries` сохранён | Сохранить расширения; `entries()` обязан остаться английской таблицей (диагностика) |
+| `platforms/strings.cmake`, `platforms/strings-test.cmake` | Разделение parse/generate, `kobalt_check_string_parity`, parity-кейсы; вложенные `-P`-скрипты обязаны начинаться с `cmake_minimum_required(VERSION 3.22)` (CMP0057) | Перенести функции целиком; валидатор — единая точка правил для строк |
+| `assets/CMakeLists.txt` | Генерация `kobalt_strings_ru.inc`, parity, `CONFIGURE_DEPENDS` на оба `.strings` | Три добавленные строки |
+| `assets/en.strings` | Слотные `_one` (обязаны содержать `%1`), `_few/_many`, `about.fork`, `about.fork_build` | Новые upstream-ключи добавлять и в `ru.strings`; сборка упадёт сама при расхождении |
+| `assets/manifest.json` | Записи о двух русских паттернах; регенерируется штатной сборкой | Не править руками — пересобрать ассеты |
+| `src/publication/publication.{h,cpp}` | `PublicationFormat`, гейт FB2 в `inspect()`, виртуальное имя `singleFb2ResourceName`, fingerprint всего файла | FB2-ветка строго до ZIP-скана; EPUB-ветка без изменений |
+| `src/publication/local_resources.cpp` | `transferSingleFile()` — чтение цельного файла чанками с отменой/таймаутом, как у ZIP-пути | Ветка по имени виртуального ресурса |
+| `src/engine/crengine/reader_source.{h,cpp}` | `isFb2`; байпас ZIP/mimetype; `LoadDocument(stream,false)`; проверка `doc_format_fb2`; `.fb2`-суффикс кэша; `openFb2Preview()` | Все ветки за `loadingFb2`; здесь же версия DOM-кэша `:fb2-v1:` |
+| `src/engine/crengine/reader_model.{h,cpp}` | `fb2Document_`; CSS `readerFb2Css`; расширение line-height на FB2-теги; расчёт кэш-суммы с `:fb2-v1:` | При изменении парсинга/препроцессинга FB2 бампнуть `:fb2-v1:` → `:fb2-v2:` в `reader_source.cpp` и `reader_model.cpp` синхронно |
+| `src/engine/crengine/reader_styles.h.in` | Константы `readerFb2Css` (из `fb2.css` pinned crengine) и `readerFb2OverridesCss` | Требует `file(READ ... fb2.css)` в трёх платформенных CMakeLists |
+| `src/engine/crengine/reader_alignment.cpp` | FB2-теги в `preserve()`-наборе | Влияет только на документы, где эти теги существуют |
+| `src/engine/crengine/reader_links.cpp` | Маппинг FB2-тегов в безопасный HTML сносок; граница обхода — `body` как альтернатива `DocFragment` | EPUB-ветки (`allowed`, `aside/section/h*`) сохранены дословно |
+| `src/reading/reader_session.cpp` | Ветка FB2 при выборе читаемого ресурса и пропуске OPF-инспекции раскладки | За `publication.format() == Fb2` |
+| `src/reading/reading_book.h` | `plainEpub()` расширен на `.fb2` (time-only writeback) | DRM-логика EPUB не затрагивается |
+| `platforms/kobo/common/book_menu.cpp` | Роутинг `.fb2` по расширению/XML-mime; DRM-проверки остались EPUB-only | PDF и прочее по-прежнему `Unsupported` |
+| `platforms/kobo/qt5/native_publication.cpp`, `qt6/native_publication.cpp` | Для `.fb2` пропущен неотображаемый RMSDK-маркер; позиция хранится в своём SQLite | Разные API Qt5/Qt6 — правки симметричны, не сливать в один файл |
+| `platforms/kobo/qt{5,6}/reader_controller.cpp`, `platforms/desktop/main.cpp`, `platforms/android/main.cpp` | Одна строка `strings::setLocale(resolveLocale())` + include | Вызывать до первого чтения UI-строк |
+| `platforms/{kobo,android,desktop}/CMakeLists.txt` | `file(READ fb2.css)`, `KOBALT_FORK_NAME`, регистрация тестов (`desktop`) | Три платформы симметрично |
+| `src/support/build_info.h.in` | `kobaltForkName` из `@KOBALT_FORK_NAME@` | Пустое значение — единственный дефолт generic-сборки |
+| `platforms/kobo/build.sh` | Проброс шестого аргумента `-DKOBALT_FORK_NAME` (пустой по умолчанию) | Сохранить нумерацию `$1..$5` |
+| 3 точки плюрализации (`library_view.cpp`, `bookmark_list.cpp`, `chapter_contents.cpp`) | Ручной тернарник заменён на `strings::plural()` | Плюральные ключи всегда содержат `%1` |
+
+### 7.3. Сборка промежуточных версий
+
+1. **Основной путь — CI (без локального SDK):** коммит и `git push origin arena/9e626d86-kobalt-ru`; воркфлоу стартует автоматически (ручной `workflow_dispatch` для форка может быть запрещён правами токена — это норма). Через ~5–6 минут в прогоне доступен артефакт **`Kobalt-qt5-device`** (ZIP `Kobalt-qt5.zip` внутри, SHA-256 и чек-лист установки — в step summary).
+2. **Локальная сборка устройства (нужен подготовленный `kobuild` docker-образ, см. `doc/building.md`):**
+   ```sh
+   KOBALT_FORK_NAME=kobalt_ru bash platforms/kobo/build.sh qt5
+   # пакет: build/kobo-qt5/Kobalt-qt5.zip
+   ```
+   Без переменной `KOBALT_FORK_NAME` соберётся generic-вид About-строки (строка форка скрыта) — это сознательное поведение механизма.
+3. **Офлайн-проверки без Qt SDK (можно в песочнице):**
+   ```sh
+   cmake -DTEST_TMP_ROOT="$(mktemp -d)" -P platforms/strings-test.cmake   # генерация, инвалиды, rebuild, parity en/ru
+   # Паритет локалей отдельным скриптом (cmake -P не принимает конвейеры):
+   cat > /tmp/parity.cmake <<CMAKE
+   include("$ENV{PWD}/platforms/strings.cmake")
+   kobalt_check_string_parity("$ENV{PWD}/assets/en.strings", "$ENV{PWD}/assets/ru.strings")
+   CMAKE
+   cmake -P /tmp/parity.cmake
+   bash platforms/ci/test.sh                                               # полный offline-релизный чек (нужен jq)
+   bash -n platforms/kobo/build.sh                                         # синтаксис shell-скриптов
+   ```
+   Известный флак среды: rebuild-кейс `strings-test.cmake` может падать в песочнице из-за гранулярности mtime (на старом baseline тоже); в CI на штатном раннере он стабилен. Локальный обход — `touch -d "+5 seconds"` на фикстуру после APPEND.
+4. **mac (если доступна среда по `doc/building.md`):** `cmake --build --preset mac-tests` из `platforms/desktop/`, затем `ctest --preset mac -L model` (как минимум `fb2`, `strings_locale`, `local_resources`, `nickel_book_menu`, `reading_book`).
+
+### 7.4. Перенос на новый релиз upstream
+
+1. Обновить ссылку upstream и сделать merge/rebase в форк-ветку; ожидать конфликты прежде всего в файлах второй таблицы 7.2.
+2. Сверить закреплённый коммит `koreader/crengine` в `dependencies/manifest.json`: в его `cr3gui/data/` должны существовать `fb2.css`, а в заголовках — `doc_format_fb2`. Если upstream поднял crengine — перечитать diff `fb2.css` и при необходимости обновить `readerFb2OverridesCss`.
+3. Разрешать конфликты по правилам колонки 3 таблицы 7.2: EPUB-поведение принимается как upstream, форк-ветки сохраняются за флагами. Никаких слияний «на глаз» в `reader_source.cpp` без прогона `tests/model/fb2.cpp`.
+4. Новые/изменённые ключи строк upstream перенести в `assets/ru.strings` (перевод; состав слотов — как в английском). Parity-валидатор не даст сконфигурировать сборку с расхождением.
+5. Если в новой версии изменились структуры настроек/закладок/кэшей — следовать `doc/storage.md`; для FB2 DOM-кэша допустимо изолированно бампнуть метку `:fb2-vN:`, не трогая EPUB-метку `:bionic-v3:`.
+6. Прогнать минимум из 7.3 (офлайн → qt5-CI целиком → mac model-тесты, если среда есть) и вручную проверить на устройстве оба языка и открытие EPUB (регресс) + FB2 (фича).
+
+### 7.5. Регрессный минимум перед пушем (обязателен)
+
+- [ ] `strings-test.cmake` и parity en/ru зелёные; полный GLOB-скан `src/` не находит отсутствующих ключей;
+- [ ] `git diff --check` чисто; YAML воркфлоу и `bash -n` скриптов валидны;
+- [ ] затронуты только допустимые файлы (карта 7.2), новых строк мимо таблиц нет;
+- [ ] qt5-CI зелёный целиком, артефакт `Kobalt-qt5-device` опубликован;
+- [ ] `FB2_FORK_PLAN.md` обновлён в том же коммите (статусы, журнал);
+- [ ] работа запушена в `arena/9e626d86-kobalt-ru` (другие ветки/теги/релизы — только по отдельному разрешению).
+
+### 7.6. Зафиксированные компромиссы и границы
+
+- `.fb2.zip` исключён поддержкой окончательно (Nickel не индексирует такие файлы); точка расширения описана в секции решений выше.
+- `ReaderModel::open()` выполняет дополнительный `Publication::inspect` для FB2-пробы перед штатной ZIP-проверкой: inspect ограничен первыми/последними 64 КиБ, на больших книгах стоимость пренебрежима; упрощать можно только заменой на единый inspect с переиспользованием результата — отдельной задачей с тестами.
+- Десктоп/Android собирают generic-вариант без fork-строки (пустой `KOBALT_FORK_NAME`): это удерживает форк-специфику в одном CI-файле; при необходимости имя можно включить и там одной CMake-переменной.
+- Пользовательская документация фич — `doc/fork-kobalt_ru.md`; правил проекта (`AGENTS.md`, `doc/`) она не подменяет.

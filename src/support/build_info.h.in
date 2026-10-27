@@ -4,3 +4,6 @@
 constexpr auto kobaltCommit = "@KOBALT_COMMIT@";
 // Whether the sources had uncommitted changes.
 #cmakedefine01 KOBALT_COMMIT_MODIFIED
+// Fork distribution identifier shown on the About page. Empty in generic
+// builds, which keeps the upstream About layout unchanged.
+constexpr auto kobaltForkName = "@KOBALT_FORK_NAME@";

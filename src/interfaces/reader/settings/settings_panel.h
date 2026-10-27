@@ -25,6 +25,9 @@ struct SettingsPanelInputs {
     QString release, commit;
     int qtMajor = 0;
     bool commitVisible = false;
+    // Fork distribution label (e.g. "kobalt_ru"); empty hides the extra About row.
+    QString forkName;
+    bool forkVisible = false;
     bool animationsSupported = false, lightSupported = false, warmthSupported = false;
     bool debugProgressAvailable = false, desktopUi = false;
     bool downloadableDictionaries = true;

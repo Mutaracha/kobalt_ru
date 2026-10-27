@@ -517,6 +517,17 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     readerStyle(commit, styles::font(m::about::commitText));
     build->addWidget(commit);
     commit->setVisible(inputs.commitVisible);
+    // Fork builds identify themselves on a dedicated row; generic builds hide it.
+    if (inputs.forkVisible) {
+        const QString forkText = inputs.commit.isEmpty()
+            ? strings::get("about.fork").arg(inputs.forkName)
+            : strings::get("about.fork_build").arg(inputs.forkName, inputs.commit);
+        auto *fork = new ui::InterfaceLabel(forkText, aboutPage);
+        fork->setObjectName("rrAboutFork");
+        fork->setAlignment(Qt::AlignCenter);
+        readerStyle(fork, styles::font(m::about::commitText));
+        build->addWidget(fork);
+    }
     auto *description = new ui::InterfaceLabel(strings::get("about.description"), aboutPage);
     aboutDescription = description;
     description->setObjectName("rrAboutDescription");
