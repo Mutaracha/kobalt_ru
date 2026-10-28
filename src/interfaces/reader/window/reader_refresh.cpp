@@ -383,9 +383,11 @@ void Reader::syncReadingControls() {
         ->setChecked(!general->isVisible() && appearanceEdit.panelOpen() &&
                      panels->currentIndex() != kobalt::reader::TypographyPage);
     findChild<QPushButton *>("rrSettings")->setChecked(general->isVisible());
+    if (toolbarComposition.darkTheme)
+        toolbarComposition.darkTheme->setChecked(model->state().value("dark_mode").toBool(false));
     const bool settingsOpen = general->isVisible();
     for (auto *action : {toolbarComposition.exitAction, toolbarComposition.settings, toolbarComposition.bookmarks,
-                         toolbarComposition.annotate, toolbarComposition.search})
+                         toolbarComposition.annotate, toolbarComposition.darkTheme, toolbarComposition.search})
         if (action)
             action->setVisible(!settingsOpen);
     toolbarComposition.formattingWarning->setVisible(!settingsOpen && model->formattingWarning());

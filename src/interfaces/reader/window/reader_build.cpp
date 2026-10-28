@@ -460,6 +460,17 @@ void Reader::buildToolbar() {
     iconButton(topControls, top, "rrGraph", strings::get("reader.chapter_lengths"), ControlIcon::Graph, [this] {
         toggleGraph();
     })->setCheckable(true);
+    // Quick dark mode toggle parked immediately left of search; it mirrors
+    // the Display settings checkbox and persists through the same preferences.
+    toolbarComposition.darkTheme =
+        iconButton(topControls, top, "rrDarkTheme", strings::get("reader.dark_mode"), ControlIcon::DarkTheme, [this] {
+            const bool enabled = !preferences.value("dark_mode").toBool(false);
+            applyDarkMode(enabled);
+            // applyDarkMode reverts the preferences draft when saving fails;
+            // mirror that so the checkable glyph never shows a stale state.
+            toolbarComposition.darkTheme->setChecked(preferences.value("dark_mode").toBool(false));
+        });
+    toolbarComposition.darkTheme->setCheckable(true);
     toolbarComposition.search =
         iconButton(topControls, top, "rrSearchOpen", strings::get("reader.search_book"), ControlIcon::Search, [this] {
             activateNavigation(kobalt::NavigationDestination::Search);
@@ -505,7 +516,7 @@ void Reader::buildToolbar() {
             continue;
         if (button->objectName() != "rrSettings" && button->objectName() != "rrBookmarks" &&
             button->objectName() != "rrAnnotate" && button->objectName() != "rrFormattingWarning" &&
-            button->objectName() != "rrSearchOpen")
+            button->objectName() != "rrSearchOpen" && button->objectName() != "rrDarkTheme")
             topActions.append(button);
         if (auto *action = dynamic_cast<kobalt::ui::Button *>(button))
             action->setPaintMode(kobalt::ui::ButtonPaintMode::ToolbarSquare);

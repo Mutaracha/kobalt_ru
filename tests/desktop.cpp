@@ -2471,6 +2471,33 @@ private slots:
         QTRY_VERIFY(!fixture.visible("rrGeneralSettings"));
         QTRY_COMPARE(storage::readJson(fixture.paths.preferences()).value("show_link_indicator").toBool(), !previous);
     }
+    void darkThemeToggle_data() { bookmarks_data(); }
+    void darkThemeToggle() {
+        QFETCH(bool, dark);
+        Fixture fixture(dark);
+        QVERIFY(fixture.prepared);
+        fixture.window.findChild<QComboBox *>("desktopScreenPicker")->setCurrentIndex(0);
+        QSignalSpy opened(&fixture.window, &desktop::Window::bookOpened);
+        fixture.window.openBook(book);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 10000);
+        QTRY_VERIFY(!fixture.state().value("busy").toBool());
+        QVERIFY(fixture.press("rrPage"));
+        QTRY_VERIFY(fixture.visible("rrSettings"));
+        // The fork adds a dark mode quick toggle in the top menu, left of search.
+        QTRY_VERIFY(fixture.visible("rrDarkTheme"));
+        auto *toggle = fixture.window.readerWindow()->findChild<QPushButton *>("rrDarkTheme");
+        QVERIFY(toggle);
+        QCOMPARE(toggle->isChecked(), dark);
+        const bool target = !dark;
+        QVERIFY(fixture.press("rrDarkTheme"));
+        QTRY_VERIFY(toggle->isChecked() == target);
+        QTRY_COMPARE(storage::readJson(fixture.paths.preferences()).value("dark_mode").toBool(), target);
+        // The Display settings checkbox remains the source of truth and mirrors it.
+        QVERIFY(fixture.press("rrSettings"));
+        QTRY_VERIFY(fixture.visible("rrDarkMode"));
+        QCOMPARE(fixture.window.readerWindow()->findChild<QCheckBox *>("rrDarkMode")->isChecked(), target);
+        QVERIFY(fixture.press("rrSettingsClose"));
+    }
     void advancedText_data() {
         QTest::addColumn<int>("dpi");
         QTest::addColumn<QString>("bookFont");

@@ -238,7 +238,8 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
     : bar(new BottomNavigation(parent)), toolbar(controls.panel), toolbarRows(controls.rows),
       exitAction(controls.exitAction), settings(controls.settings), bookmarks(controls.bookmarks),
       annotate(controls.annotate), clock(controls.clock), session(controls.session), battery(controls.battery),
-      bluetooth(controls.bluetooth), formattingWarning(controls.formattingWarning), search(controls.search) {
+      bluetooth(controls.bluetooth), formattingWarning(controls.formattingWarning), search(controls.search),
+      darkTheme(controls.darkTheme) {
     upperEdge = new ReadingRule(parent);
     upperEdge->setObjectName("rrNavigationUpperEdge");
     lowerEdge = new ReadingRule(parent);
@@ -269,6 +270,15 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
         search->setFixedSize(c::cellWidth, c::actionHeight);
         if (auto *button = dynamic_cast<ui::Button *>(search)) {
             searchPaint = button->paintMode();
+            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
+        }
+    }
+    if (darkTheme) {
+        darkThemeStyle = darkTheme->styleSheet();
+        ui::readerStyle(darkTheme, "QPushButton{border:none;padding:0;}");
+        darkTheme->setFixedSize(c::cellWidth, c::actionHeight);
+        if (auto *button = dynamic_cast<ui::Button *>(darkTheme)) {
+            darkThemePaint = button->paintMode();
             button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
         }
     }
@@ -334,6 +344,13 @@ Navigation::~Navigation() {
             button->setPaintMode(searchPaint);
         }
     }
+    if (darkTheme) {
+        darkTheme->setStyleSheet(darkThemeStyle);
+        darkTheme->setFixedSize(ui::metrics::control::toolbarButtonSize, ui::metrics::control::toolbarButtonSize);
+        if (auto *button = dynamic_cast<ui::Button *>(darkTheme)) {
+            button->setPaintMode(darkThemePaint);
+        }
+    }
     session->setStyleSheet(sessionStyle);
     settings->setStyleSheet(settingsStyle);
     bookmarks->setStyleSheet(bookmarksStyle);
@@ -379,16 +396,20 @@ void Navigation::update(QSize size, const NavigationState &state) {
     if (annotate) {
         annotate->setGeometry(size.width() - 3 * c::cellWidth, statusHeight(), c::cellWidth, c::actionHeight);
     }
+    if (darkTheme) {
+        darkTheme->setGeometry(size.width() - (annotate ? 4 : 3) * c::cellWidth, statusHeight(), c::cellWidth,
+                               c::actionHeight);
+    }
     if (search) {
-        search->setGeometry(size.width() - (annotate ? 4 : 3) * c::cellWidth, statusHeight(), c::cellWidth,
+        search->setGeometry(size.width() - (annotate ? 5 : 4) * c::cellWidth, statusHeight(), c::cellWidth,
                             c::actionHeight);
     }
     if (formattingWarning) {
-        formattingWarning->setGeometry(size.width() - ((annotate ? 4 : 3) + (search ? 1 : 0)) * c::cellWidth,
+        formattingWarning->setGeometry(size.width() - ((annotate ? 5 : 4) + (search ? 1 : 0)) * c::cellWidth,
                                        statusHeight(), c::cellWidth, c::actionHeight);
     }
-    const int rightActions =
-        (formattingWarning && !formattingWarning->isHidden() ? 3 : 2) + (annotate ? 1 : 0) + (search ? 1 : 0);
+    const int rightActions = (formattingWarning && !formattingWarning->isHidden() ? 3 : 2) + (annotate ? 1 : 0) +
+                             (darkTheme ? 1 : 0) + (search ? 1 : 0);
     if (rules->property("right_actions").toInt() != rightActions) {
         rules->setProperty("right_actions", rightActions);
         rules->update();

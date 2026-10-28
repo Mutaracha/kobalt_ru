@@ -308,6 +308,17 @@
     ]
   },
   {
+    "group": "icons",
+    "name": "Fluent UI System Icons",
+    "version": "ic_fluent_dark_theme_24_regular",
+    "description": "Dark mode quick-toggle glyph in the reading menu, by Microsoft Corporation.",
+    "license": "MIT",
+    "url": "https://github.com/microsoft/fluentui-system-icons",
+    "notices": [
+      "Fluent-MIT"
+    ]
+  },
+  {
     "group": "author",
     "name": "NickelRotate",
     "version": "3efe2fa4ac33",

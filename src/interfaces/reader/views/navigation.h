@@ -30,6 +30,8 @@ struct ToolbarComposition {
     ui::BluetoothIndicator *bluetooth = nullptr;
     QPushButton *formattingWarning = nullptr;
     QPushButton *search = nullptr;
+    // Fork-only dark mode quick toggle, parked immediately left of search.
+    QPushButton *darkTheme = nullptr;
 };
 enum class NavigationDestination { Chapters, Seek, Text, Layout, Light, Stats, Search };
 struct NavigationState {
@@ -126,8 +128,11 @@ private:
     ui::BluetoothIndicator *bluetooth;
     QPushButton *formattingWarning;
     QPushButton *search;
+    QPushButton *darkTheme;
     QString searchStyle;
     ui::ButtonPaintMode searchPaint = ui::ButtonPaintMode::Native;
+    QString darkThemeStyle;
+    ui::ButtonPaintMode darkThemePaint = ui::ButtonPaintMode::Native;
     QString sessionStyle, settingsStyle, bookmarksStyle, annotateStyle, formattingWarningStyle;
     ui::ButtonPaintMode annotatePaint = ui::ButtonPaintMode::Native;
     ui::ButtonPaintMode settingsPaint = ui::ButtonPaintMode::Native, bookmarksPaint = ui::ButtonPaintMode::Native,

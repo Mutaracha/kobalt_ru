@@ -72,7 +72,9 @@ enum class ControlIcon {
     Check,
     Trash,
     FolderPlus,
-    Folders
+    Folders,
+    // Fork-only quick toggle for the display settings' dark mode.
+    DarkTheme
 };
 // Paint vectors at the target resolution without an intermediate icon bitmap.
 void paintOpeningIcon(QPainter &painter, ControlIcon icon, const QRectF &bounds, QColor color);

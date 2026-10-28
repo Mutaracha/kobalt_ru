@@ -174,6 +174,12 @@ Geometry geometry(ControlIcon icon, bool sideButtons) {
         transform.rotate(-90 * (int(icon) - int(ControlIcon::Portrait)));
         transform.translate(-12, -12);
         path = transform.map(path);
+    } else if (icon == ControlIcon::DarkTheme) {
+        // The Fluent dark-theme asset ships beside the checked Phosphor set
+        // but uses its own snapshot instead of the Phosphor name table.
+        result.canvas = 256;
+        result.filled = true;
+        darkThemeGeometry(path);
     } else {
         static const char *const names[] = {"magnifying-glass",
                                             "sun",
