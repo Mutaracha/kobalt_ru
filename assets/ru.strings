@@ -315,7 +315,7 @@
 "header_footer.time_left" = "осталось %1";
 "header_footer.learning_pace" = "Определение скорости чтения";
 /* Arguments: %1, %2 */
-"header_footer.pages_left" = "осталось %1 %2";
+"header_footer.pages_left" = "%1 %2";
 "header_footer.preset.default" = "Kobalt";
 "header_footer.preset.alternative_a" = "Книжный";
 "header_footer.preset.alternative_b" = "Уголь";
