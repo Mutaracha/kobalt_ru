@@ -43,6 +43,11 @@ inline QString value(BarButtons mode) {
 inline BarButtons barButtons(const QJsonObject &preferences) {
     return preferences.value(barButtonsKey) == value(BarButtons::Pages) ? BarButtons::Pages : BarButtons::Chapters;
 }
+// Optional global preference: absent in older profiles means stock swipe direction.
+inline constexpr auto invertSwipesKey = "invert_page_swipes";
+inline int swipeDirection(int direction, bool rightToLeft, bool inverted) {
+    return rightToLeft != inverted ? -direction : direction;
+}
 enum class Mode { TapsAndSwipes, TapsOnly, SwipesOnly, ButtonsOnly };
 inline constexpr Mode modes[] = {Mode::TapsAndSwipes, Mode::TapsOnly, Mode::SwipesOnly, Mode::ButtonsOnly};
 inline constexpr auto preferenceKey = "page_navigation";

@@ -18,6 +18,11 @@ class Button : public QPushButton {
 public:
     using QPushButton::QPushButton;
     void setPaintMode(ButtonPaintMode mode);
+    // Theme toggles already express their state through the global palette.
+    void setHighlightChecked(bool enabled) {
+        highlightChecked = enabled;
+        update();
+    }
     void setFill(QPalette::ColorRole role) {
         if (fill == role)
             return;
@@ -68,6 +73,7 @@ private:
     ButtonIcon configuredIcon;
     int iconLabelGap = 0;
     bool iconAboveLabel = false;
+    bool highlightChecked = true;
     bool hasConfiguredIcon = false, hasIconTheme = false, iconDark = false;
 };
 

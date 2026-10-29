@@ -16,6 +16,8 @@
 #include "interfaces/library/library_view.h"
 #include "library/library_store.h"
 #include "reading/reading_density.h"
+#include "reading/page_navigation.h"
+#include "interfaces/reader/ui/controls/options.h"
 #include "storage/reader_storage.h"
 #include "storage/bookmark_store.h"
 #include "storage/highlight_store.h"
@@ -2471,6 +2473,48 @@ private slots:
         QTRY_VERIFY(!fixture.visible("rrGeneralSettings"));
         QTRY_COMPARE(storage::readJson(fixture.paths.preferences()).value("show_link_indicator").toBool(), !previous);
     }
+    void swipeDirections() {
+        for (const bool rtl : {false, true}) {
+            for (const bool inverted : {false, true}) {
+                const int left = pageNavigation::swipeDirection(1, rtl, inverted);
+                QCOMPARE(left, rtl != inverted ? -1 : 1);
+                QCOMPARE(pageNavigation::swipeDirection(-1, rtl, inverted), -left);
+            }
+        }
+        QVERIFY(!QJsonObject().value(pageNavigation::invertSwipesKey).toBool(false));
+    }
+    void invertSwipesSetting() {
+        Fixture fixture;
+        QVERIFY(fixture.prepared);
+        fixture.window.findChild<QComboBox *>("desktopScreenPicker")->setCurrentIndex(0);
+        QSignalSpy opened(&fixture.window, &desktop::Window::bookOpened);
+        fixture.window.openBook(book);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 10000);
+        QTRY_VERIFY(!fixture.state().value("busy").toBool());
+        QVERIFY(fixture.press("rrPage"));
+        QTRY_VERIFY(fixture.visible("rrSettings"));
+        QVERIFY(fixture.press("rrSettings"));
+        QVERIFY(fixture.press("rrSettingsControls"));
+        QTRY_VERIFY(fixture.visible("rrInvertSwipes"));
+        auto *option = fixture.window.readerWindow()->findChild<QCheckBox *>("rrInvertSwipes");
+        QVERIFY(option);
+        QVERIFY(!option->isChecked());
+        QCOMPARE(option->accessibleDescription(), strings::get("settings.swipes_left_forward"));
+        QVERIFY(fixture.press("rrInvertSwipes"));
+        QVERIFY(option->isChecked());
+        QCOMPARE(option->accessibleDescription(), strings::get("settings.swipes_right_forward"));
+        QVERIFY(fixture.press("rrSettingsClose"));
+        QTRY_VERIFY(!fixture.visible("rrGeneralSettings"));
+        QTRY_VERIFY(storage::readJson(fixture.paths.preferences()).value(pageNavigation::invertSwipesKey).toBool());
+        QVERIFY(fixture.press("rrSettings"));
+        QVERIFY(fixture.press("rrSettingsControls"));
+        QTRY_VERIFY(fixture.visible("rrInvertSwipes"));
+        QVERIFY(option->isChecked());
+        QVERIFY(fixture.press("rrInvertSwipes"));
+        QCOMPARE(option->accessibleDescription(), strings::get("settings.swipes_left_forward"));
+        QVERIFY(fixture.press("rrSettingsClose"));
+        QTRY_VERIFY(!storage::readJson(fixture.paths.preferences()).value(pageNavigation::invertSwipesKey).toBool());
+    }
     void darkThemeToggle_data() { bookmarks_data(); }
     void darkThemeToggle() {
         QFETCH(bool, dark);
@@ -2488,9 +2532,15 @@ private slots:
         auto *toggle = fixture.window.readerWindow()->findChild<QPushButton *>("rrDarkTheme");
         QVERIFY(toggle);
         QCOMPARE(toggle->isChecked(), dark);
+        // A checked theme button must use the same paper as its neighbours,
+        // not invert its cell a second time in night mode.
+        QCOMPARE(toggle->grab().toImage().pixelColor(2, toggle->height() / 2),
+                 toggle->palette().color(QPalette::Window));
         const bool target = !dark;
         QVERIFY(fixture.press("rrDarkTheme"));
         QTRY_VERIFY(toggle->isChecked() == target);
+        QTRY_COMPARE(toggle->grab().toImage().pixelColor(2, toggle->height() / 2),
+                     toggle->palette().color(QPalette::Window));
         QTRY_COMPARE(storage::readJson(fixture.paths.preferences()).value("dark_mode").toBool(), target);
         // The Display settings checkbox remains the source of truth and mirrors it.
         QVERIFY(fixture.press("rrSettings"));

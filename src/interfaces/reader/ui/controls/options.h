@@ -26,6 +26,7 @@ public:
         bool opticalLabel = false;
         bool operator==(const Presentation &other) const;
     };
+    void setDescription(const QString &text);
     void setPresentation(const Presentation &value);
     const Presentation &presentation() const {
         return appearance;

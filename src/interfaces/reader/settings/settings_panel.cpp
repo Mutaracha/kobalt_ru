@@ -350,6 +350,9 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     tapZonesButton =
         ui::makeCaptionButton(controlsPage, nullptr, "rrTapZones", strings::get("settings.tap_zones"), [] {});
     controlsRows->addWidget(tapZonesButton);
+    invertSwipesOption = check(controlsPage, "rrInvertSwipes", strings::get("settings.invert_swipes"),
+                              strings::get("settings.swipes_left_forward"));
+    controlsRows->addWidget(invertSwipesOption);
     linkIndicatorOption = check(controlsPage, "rrShowLinkIndicator", strings::get("reader.show_link_indicator"),
                                 strings::get("reader.link_indicator_description"));
     controlsRows->addWidget(linkIndicatorOption);
@@ -673,6 +676,7 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     QVector<ui::DescribedOption *> options = {avoidWastefulStylingOption,
                                               hideNonlinearOption,
                                               linkIndicatorOption,
+                                              invertSwipesOption,
                                               darkOption,
                                               bionicOption,
                                               landscapeColumnsOption,

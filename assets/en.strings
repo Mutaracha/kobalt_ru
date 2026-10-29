@@ -954,3 +954,8 @@
 "marks.sort_position" = "Book order";
 "marks.sort_position_description" = "Earlier passages in the book come first.";
 "marks.sort_title" = "Sort by";
+
+/* Swipe navigation */
+"settings.invert_swipes" = "Invert page swipes";
+"settings.swipes_left_forward" = "Swipe left: next page; swipe right: previous page.";
+"settings.swipes_right_forward" = "Swipe right: next page; swipe left: previous page.";

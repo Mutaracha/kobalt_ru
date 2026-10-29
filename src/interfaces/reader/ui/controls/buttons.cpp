@@ -21,6 +21,8 @@ namespace kobalt::ui {
 namespace m = metrics;
 void Button::initStyleOption(QStyleOptionButton *option) const {
     QPushButton::initStyleOption(option);
+    if (!highlightChecked)
+        option->state &= ~QStyle::State_On;
     // Keep keyboard focus without drawing Nickel's focus frame on reader buttons.
     option->state &= ~QStyle::State_HasFocus;
 }
@@ -67,7 +69,7 @@ void Button::paintEvent(QPaintEvent *) {
             option.icon = QIcon();
             QPainter painter(this);
             style()->drawControl(QStyle::CE_PushButton, &option, &painter, this);
-            const bool active = isEnabled() && (isChecked() || isDown());
+            const bool active = isEnabled() && ((highlightChecked && isChecked()) || isDown());
             painter.setPen(palette().color(!isEnabled() ? QPalette::Mid
                                            : active     ? QPalette::Window
                                                         : QPalette::WindowText));
@@ -108,7 +110,7 @@ void Button::paintEvent(QPaintEvent *) {
         return;
     }
     QPainter painter(this);
-    const bool active = isEnabled() && (isChecked() || isDown());
+    const bool active = isEnabled() && ((highlightChecked && isChecked()) || isDown());
     const auto ink = palette().color(isEnabled() ? QPalette::WindowText : QPalette::Mid);
     const auto paper = fill == QPalette::Midlight ? sectionColor(this) : palette().color(fill);
     const bool toolbar = mode == ButtonPaintMode::ToolbarSquare || mode == ButtonPaintMode::ToolbarCell;

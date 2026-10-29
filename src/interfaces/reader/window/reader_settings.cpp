@@ -277,6 +277,10 @@ void Reader::openSettings() {
     showAdvancedText();
     animationOption->setChecked(preferences.value("page_animations").toBool(false));
     bionicOption->setChecked(model->state().value("bold_reading").toString("off") == "bold");
+    invertSwipesOption->setChecked(preferences.value(pageNavigation::invertSwipesKey).toBool(false));
+    invertSwipesOption->setDescription(strings::get(
+        model->state().value("page_progression_rtl").toBool() != invertSwipesOption->isChecked()
+            ? "settings.swipes_right_forward" : "settings.swipes_left_forward"));
     linkIndicatorOption->setChecked(preferences.value("show_link_indicator").toBool(false));
     edgeLightOption->setChecked(preferences.value("edge_light_gestures").toBool(true));
     denseGraphOption->setChecked(preferences.value("dense_stats_chart").toBool(false));
@@ -361,6 +365,7 @@ void Reader::applySettings() {
     next["justification_tracking"] = settingsTracking;
     next["widows_orphans"] = settingsWidowsOrphans;
     next["page_animations"] = animationOption->isChecked();
+    next[pageNavigation::invertSwipesKey] = invertSwipesOption->isChecked();
     next["show_link_indicator"] = linkIndicatorOption->isChecked();
     next["edge_light_gestures"] = edgeLightOption->isChecked();
     next["dense_stats_chart"] = denseGraphOption->isChecked();

@@ -58,6 +58,16 @@ void DescribedOption::setValue(const QString &next, const ValueStyle &style) {
     valueStyle = style;
     update();
 }
+void DescribedOption::setDescription(const QString &text) {
+    if (description == text)
+        return;
+    description = text;
+    setAccessibleDescription(text);
+    setToolTip(text);
+    updateGeometry();
+    update();
+}
+
 DescribedOption::DescribedOption(const QString &text, const QString &description, QWidget *parent)
     : QCheckBox(text, parent), description(description) {
     setAccessibleDescription(description);

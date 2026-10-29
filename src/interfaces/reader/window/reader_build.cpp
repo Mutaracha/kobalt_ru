@@ -471,6 +471,7 @@ void Reader::buildToolbar() {
             toolbarComposition.darkTheme->setChecked(preferences.value("dark_mode").toBool(false));
         });
     toolbarComposition.darkTheme->setCheckable(true);
+    static_cast<kobalt::ui::Button *>(toolbarComposition.darkTheme)->setHighlightChecked(false);
     toolbarComposition.search =
         iconButton(topControls, top, "rrSearchOpen", strings::get("reader.search_book"), ControlIcon::Search, [this] {
             activateNavigation(kobalt::NavigationDestination::Search);
@@ -1075,6 +1076,12 @@ void Reader::buildSettings() {
     minimalAnnotationOption = settings->minimalAnnotationOption;
     automaticOpeningOption = settings->automaticOpeningOption;
     hideTabLabelsOption = settings->hideTabLabelsOption;
+    invertSwipesOption = settings->invertSwipesOption;
+    connect(invertSwipesOption, &QCheckBox::toggled, this, [this](bool inverted) {
+        const bool rtl = model->state().value("page_progression_rtl").toBool();
+        invertSwipesOption->setDescription(strings::get(
+            rtl != inverted ? "settings.swipes_right_forward" : "settings.swipes_left_forward"));
+    });
     linkIndicatorOption = settings->linkIndicatorOption;
     hideNonlinearOption = settings->hideNonlinearOption;
     avoidWastefulStylingOption = settings->avoidWastefulStylingOption;
@@ -1365,7 +1372,8 @@ void Reader::connectPageInput() {
             lookupPending || appearanceEdit.preview() || general->isVisible() || choices->isVisible() ||
             topControls->isVisible())
             return;
-        turnPage(model->state().value("page_progression_rtl").toBool() ? -direction : direction);
+        turnPage(pageNavigation::swipeDirection(direction, model->state().value("page_progression_rtl").toBool(),
+                                                preferences.value(pageNavigation::invertSwipesKey).toBool(false)));
     };
     page->tapped = [this](QPoint point) {
         const QPoint bodyPoint = point - QPoint(0, page->topHeight());

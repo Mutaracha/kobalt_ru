@@ -954,3 +954,8 @@
 "marks.sort_position" = "По порядку в книге";
 "marks.sort_position_description" = "Сначала идут более ранние фрагменты книги.";
 "marks.sort_title" = "Сортировать по";
+
+/* Swipe navigation */
+"settings.invert_swipes" = "Инвертировать свайпы";
+"settings.swipes_left_forward" = "Свайп влево — вперёд; вправо — назад.";
+"settings.swipes_right_forward" = "Свайп вправо — вперёд; влево — назад.";
