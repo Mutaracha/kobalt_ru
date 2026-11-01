@@ -50,6 +50,32 @@ namespace {
 class ReturnTitle final : public ui::InterfaceLabel {
 public:
     using ui::InterfaceLabel::InterfaceLabel;
+    QSize sizeHint() const override {
+        ensurePolished();
+        int width = 0, height = 0;
+        for (const auto &run : titleRuns()) {
+            width += ui::interfaceTextWidth(run.first, run.second);
+            height = qMax(height, ui::interfaceLineHeight(run.second));
+        }
+        const auto margins = contentsMargins();
+        return {width + margins.left() + margins.right() + 2 * margin(),
+                height + margins.top() + margins.bottom() + 2 * margin()};
+    }
+    QSize minimumSizeHint() const override { return sizeHint(); }
+
+private:
+    QVector<QPair<QString, QFont>> titleRuns() const {
+        QVector<QPair<QString, QFont>> runs;
+        const int at = text().indexOf(QStringLiteral("Kobalt"), 0, Qt::CaseInsensitive);
+        if (at < 0) {
+            runs.append({text(), font()});
+        } else {
+            if (at) runs.append({text().left(at), font()});
+            runs.append({text().mid(at, 6), ui::brandFont(font().pixelSize())});
+            if (at + 6 < text().size()) runs.append({text().mid(at + 6), font()});
+        }
+        return runs;
+    }
 
 protected:
     void paintEvent(QPaintEvent *) override {
@@ -64,8 +90,35 @@ protected:
         painter.setPen(colors.color(!isEnabled() ? QPalette::Mid : pressed ? QPalette::Window
                                                                             : QPalette::WindowText));
         const auto bounds = contentsRect().adjusted(margin(), margin(), -margin(), -margin());
-        // Font line boxes include padding above and below the visible letters.
-        ui::drawOpticalText(painter, bounds.translated(0, m::chrome::returnTitleOffset), text(), true);
+        // Preserve the brand word, but draw the surrounding interface text
+        // in Sans. Measure and paint the same runs on a common baseline.
+        const auto runs = titleRuns();
+        QRect ink;
+        int advance = 0;
+        for (const auto &run : runs) {
+            ink |= ui::interfaceInkBounds(run.first, run.second).translated(advance, 0);
+            advance += ui::interfaceTextWidth(run.first, run.second);
+        }
+        const int x = qRound(bounds.center().x() - ink.center().x());
+        const int baseline = qRound(bounds.center().y() - ink.center().y()) + int(m::chrome::returnTitleOffset);
+        painter.setClipRect(bounds);
+        advance = 0;
+        for (const auto &run : runs) {
+            painter.setFont(run.second);
+            if (ui::needsPrivateText(run.first, run.second)) {
+                auto rendered = ui::renderPrivateText(run.first, run.second);
+                if (!rendered.image.isNull()) {
+                    QPainter tint(&rendered.image);
+                    tint.setCompositionMode(QPainter::CompositionMode_SourceIn);
+                    tint.fillRect(rendered.image.rect(), painter.pen().color());
+                    tint.end();
+                    painter.drawImage(QPoint(x + advance, baseline) + rendered.origin, rendered.image);
+                }
+            } else {
+                painter.drawText(QPoint(x + advance, baseline), run.first);
+            }
+            advance += ui::interfaceTextWidth(run.first, run.second);
+        }
     }
 };
 class ReturnButton final : public ui::Button {
@@ -553,7 +606,7 @@ void Reader::buildToolbar() {
     returnTitle->setAttribute(Qt::WA_TransparentForMouseEvents);
     returnTitle->setAlignment(Qt::AlignCenter);
     returnTitle->setContentsMargins(0, 0, m::chrome::inset, 0);
-    readerStyle(returnTitle, styles::brand(m::chrome::titleText) + "background:transparent;");
+    readerStyle(returnTitle, styles::font(m::chrome::titleText) + "font-weight:400;background:transparent;");
     returnTitle->ensurePolished();
     returnRow->addSpacing(back->labelStart(returnTitle->font()));
     returnRow->addWidget(returnTitle, 1);

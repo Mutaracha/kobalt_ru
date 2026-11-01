@@ -200,7 +200,7 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     auto *title = new ui::InterfaceLabel(strings::get("settings.title"), heading);
     title->setObjectName("rrSettingsTitle");
     title->setContentsMargins(c::inset, 0, c::inset, 0);
-    readerStyle(title, styles::brand(c::titleText) + "background:transparent;");
+    readerStyle(title, styles::font(c::titleText) + "font-weight:400;background:transparent;");
     headingRows->addWidget(title, 1);
     generalRows->addWidget(heading);
     auto *sections = new QWidget(this);
