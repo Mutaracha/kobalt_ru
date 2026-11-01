@@ -16,6 +16,10 @@
 namespace kobalt::reader {
 namespace c = ui::metrics::chrome;
 namespace {
+// The tab labels are capitals, so the cap height is their ink.
+int tabCapital(int pixels) {
+    return ui::interfaceInkBounds(QStringLiteral("H"), ui::interfaceFont(pixels)).height();
+}
 constexpr ui::Px toolbarBorder = c::heavyRule;
 class ToolbarRules final : public QWidget {
 public:
@@ -71,7 +75,7 @@ public:
     void setSampleFace(const QString &face) {
         auto next = ui::fontSample(face);
         // Samples are sized for the 40 pixel cell icons; grow with the tab icon.
-        next.setPixelSize(qRound(next.pixelSize() * qreal(c::tabIcon) / c::cellIcon));
+        next.setPixelSize(qRound(next.pixelSize() * qreal(c::tabIcon) / c::cellIcon * ui::detail::iconScale));
         if (sample == next)
             return;
         sample = next;
@@ -91,16 +95,16 @@ protected:
         if (!isEnabled())
             painter.setOpacity(.45);
         const auto color = active ? paper : ink;
-        // The labels are capitals, so the cap height is their ink. Centering
-        // the icon box and that ink as one group lines every tab up.
+        // Centering the icon box and the label's ink as one group lines every
+        // tab up.
         const auto label = ui::interfaceFont(c::tabText);
-        const int capital = qCeil(QFontMetricsF(label).tightBoundingRect(QStringLiteral("H")).height());
+        const int capital = tabCapital(c::tabText);
         const int top = labelsHidden ? (height() - c::tabIcon) / 2 : (height() - c::tabIcon - c::tabGap - capital) / 2;
         const QRect icon((width() - c::tabIcon) / 2, top, c::tabIcon, c::tabIcon);
         painter.setPen(color);
         if (glyph == ui::ControlIcon::Typography) {
             painter.setFont(sample);
-            ui::drawOpticalText(painter, QRect(0, icon.top(), width(), icon.height()), QStringLiteral("Aa"), true);
+            ui::drawOpticalText(painter, QRect(0, icon.top(), width(), icon.height()), QStringLiteral("Aa"), true, {});
         } else
             ui::controlIcon(glyph, color).paint(&painter, icon);
         if (labelsHidden)
@@ -149,7 +153,7 @@ BottomNavigation::BottomNavigation(QWidget *parent) : ui::Panel(parent, Qt::TopE
             returnRequested();
     });
     auto *tabRow = new QWidget(this);
-    tabRow->setFixedHeight(barHeight - toolbarBorder);
+    tabRow->setFixedHeight(barHeight() - toolbarBorder);
     rows->addWidget(tabRow);
     auto *row = new QHBoxLayout(tabRow);
     row->setContentsMargins(0, 0, 0, 0);
@@ -212,16 +216,38 @@ void BottomNavigation::setTextFace(const QString &face) {
 }
 void BottomNavigation::setLightTab(bool shown) {
     tabs[int(NavigationDestination::Light)]->setVisible(shown);
+    updateLabels();
 }
 
 void BottomNavigation::setDefaultView(int destination) {
     for (auto tab : {NavigationDestination::Seek, NavigationDestination::Stats})
         tabs[int(tab)]->setVisible(int(tab) != destination);
+    updateLabels();
 }
 
 void BottomNavigation::setLabelsHidden(bool hidden) {
+    labelsHidden = hidden;
+    updateLabels();
+}
+void BottomNavigation::resizeEvent(QResizeEvent *event) {
+    ui::Panel::resizeEvent(event);
+    updateLabels();
+}
+void BottomNavigation::updateLabels() {
+    // A large interface scale leaves the tabs too narrow for some labels.
+    // Hide them all, as the option does, rather than elide a few.
+    int shown = 0;
     for (auto *tab : tabs)
-        static_cast<Tab *>(tab)->setLabelsHidden(hidden);
+        shown += !tab->isHidden();
+    bool fit = shown > 0;
+    const auto font = ui::interfaceFont(c::tabText);
+    for (auto *tab : tabs)
+        if (!tab->isHidden() && ui::interfaceTextWidth(tab->text(), font) > width() / qMax(1, shown) - ui::px(4))
+            fit = false;
+    for (auto *tab : tabs) {
+        static_cast<Tab *>(tab)->setLabelsHidden(labelsHidden || !fit);
+        tab->setProperty("labels_hidden", labelsHidden || !fit);
+    }
 }
 
 void BottomNavigation::setReturnLabel(const QString &label, const QString &note) {
@@ -230,16 +256,25 @@ void BottomNavigation::setReturnLabel(const QString &label, const QString &note)
     returnButton->setCaption(note);
     returnButton->setAccessibleName(label + " " + note);
 }
+// Large text makes the tab icon and label taller. The bar grows by the same
+// amount, so they keep the space they have at the standard size. As at the
+// standard size, the bar keeps its height when the labels are hidden.
+int BottomNavigation::barHeight() {
+    if (ui::textScale() == 1)
+        return c::actionHeight;
+    const int icon = c::tabIcon - ui::px(c::tabIcon.design());
+    const int label = tabCapital(c::tabText) - tabCapital(ui::px(c::tabText.design()));
+    return c::actionHeight + icon + label;
+}
 int BottomNavigation::navigationHeight() const {
-    return barHeight + (returnRow->isHidden() ? 0 : ui::metrics::links::returnHeight);
+    return barHeight() + (returnRow->isHidden() ? 0 : ui::metrics::links::returnHeight);
 }
 
 Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
     : bar(new BottomNavigation(parent)), toolbar(controls.panel), toolbarRows(controls.rows),
       exitAction(controls.exitAction), settings(controls.settings), bookmarks(controls.bookmarks),
       annotate(controls.annotate), clock(controls.clock), session(controls.session), battery(controls.battery),
-      bluetooth(controls.bluetooth), formattingWarning(controls.formattingWarning), search(controls.search),
-      darkTheme(controls.darkTheme) {
+      bluetooth(controls.bluetooth), wifi(controls.wifi), formattingWarning(controls.formattingWarning), search(controls.search), sync(controls.sync), darkTheme(controls.darkTheme) {
     upperEdge = new ReadingRule(parent);
     upperEdge->setObjectName("rrNavigationUpperEdge");
     lowerEdge = new ReadingRule(parent);
@@ -279,6 +314,15 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
         darkTheme->setFixedSize(c::cellWidth, c::actionHeight);
         if (auto *button = dynamic_cast<ui::Button *>(darkTheme)) {
             darkThemePaint = button->paintMode();
+            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
+        }
+    }
+    if (sync) {
+        syncStyle = sync->styleSheet();
+        ui::readerStyle(sync, "QPushButton{border:none;padding:0;}");
+        sync->setFixedSize(c::cellWidth, c::actionHeight);
+        if (auto *button = dynamic_cast<ui::Button *>(sync)) {
+            syncPaint = button->paintMode();
             button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
         }
     }
@@ -352,6 +396,11 @@ Navigation::~Navigation() {
         }
     }
     session->setStyleSheet(sessionStyle);
+    if (sync) {
+        sync->setStyleSheet(syncStyle);
+        sync->setFixedSize(ui::metrics::control::toolbarButtonSize, ui::metrics::control::toolbarButtonSize);
+        if (auto *button = dynamic_cast<ui::Button *>(sync)) button->setPaintMode(syncPaint);
+    }
     settings->setStyleSheet(settingsStyle);
     bookmarks->setStyleSheet(bookmarksStyle);
     settings->setFixedSize(ui::metrics::control::toolbarButtonSize, ui::metrics::control::toolbarButtonSize);
@@ -361,7 +410,7 @@ Navigation::~Navigation() {
     toolbarRows->invalidate();
 }
 QRect Navigation::panelBounds(QSize size, int height) const {
-    return QRect(0, size.height() - BottomNavigation::barHeight - height, size.width(), height);
+    return QRect(0, size.height() - BottomNavigation::barHeight() - height, size.width(), height);
 }
 void Navigation::stackPanel(QWidget *panel) const {
     // Keep the header rule in place when a bottom panel opens. Raising the
@@ -378,19 +427,33 @@ void Navigation::update(QSize size, const NavigationState &state) {
     rules->setGeometry(toolbar->rect());
     rules->show();
     rules->raise();
-    clock->setGeometry(c::inset, ui::px(10), ui::px(160), ui::px(40));
-    int sessionInset = ui::px(196);
-    battery->move(size.width() - c::inset - battery->width(), ui::px(10));
+    // The status line keeps its proportions as large text enlarges it.
+    const int statusTop = ui::textPx(10);
+    clock->setGeometry(c::inset, statusTop, ui::textPx(160), ui::metrics::panel::statusHeight);
+    int sessionInset = ui::textPx(196);
+    battery->move(size.width() - c::inset - battery->width(), statusTop);
+    const int statusGap = ui::metrics::panel::bluetoothGap;
+    QWidget *previousStatus = nullptr;
+    const auto placeStatus = [&](QWidget *indicator) {
+        const int x = previousStatus ? previousStatus->x() - statusGap - indicator->width()
+            : battery->x() - statusGap - (int(ui::metrics::panel::bluetoothIconSize) + indicator->width()) / 2;
+        indicator->move(x, statusTop);
+        previousStatus = indicator;
+        sessionInset = qMax(sessionInset, size.width() - indicator->x() + int(c::inset));
+    };
     if (bluetooth) {
         bluetooth->setVisible(statusVisible && bluetooth->active());
-        bluetooth->move(battery->x() - int(ui::metrics::panel::bluetoothGap) - bluetooth->width(), ui::px(10));
         if (bluetooth->active()) {
-            const int rightInset = size.width() - bluetooth->x() + int(c::inset);
-            sessionInset = qMax(sessionInset, rightInset);
+            placeStatus(bluetooth);
         }
     }
-    session->setGeometry(sessionInset, ui::px(10), qMax(0, size.width() - 2 * sessionInset), ui::px(40));
-    exitAction->setGeometry(ui::px(24), statusHeight(), exitAction->sizeHint().width(), c::actionHeight);
+    if (wifi) {
+        wifi->setVisible(statusVisible && wifi->active());
+        if (wifi->active())
+            placeStatus(wifi);
+    }
+    session->setGeometry(sessionInset, statusTop, qMax(0, size.width() - 2 * sessionInset),
+                         ui::metrics::panel::statusHeight);
     settings->setGeometry(size.width() - c::cellWidth, statusHeight(), c::cellWidth, c::actionHeight);
     bookmarks->setGeometry(size.width() - 2 * c::cellWidth, statusHeight(), c::cellWidth, c::actionHeight);
     if (annotate) {
@@ -404,12 +467,23 @@ void Navigation::update(QSize size, const NavigationState &state) {
         search->setGeometry(size.width() - (annotate ? 5 : 4) * c::cellWidth, statusHeight(), c::cellWidth,
                             c::actionHeight);
     }
+    const int syncActions = sync && !sync->isHidden() ? 1 : 0;
+    if (sync) {
+        sync->setGeometry(size.width() - ((annotate ? 4 : 3) + (search ? 1 : 0) + (darkTheme ? 1 : 0)) * c::cellWidth,
+                          statusHeight(), c::cellWidth, c::actionHeight);
+    }
     if (formattingWarning) {
-        formattingWarning->setGeometry(size.width() - ((annotate ? 5 : 4) + (search ? 1 : 0)) * c::cellWidth,
+        formattingWarning->setGeometry(size.width() - ((annotate ? 4 : 3) + (search ? 1 : 0) + syncActions + (darkTheme ? 1 : 0)) * c::cellWidth,
                                        statusHeight(), c::cellWidth, c::actionHeight);
     }
-    const int rightActions = (formattingWarning && !formattingWarning->isHidden() ? 3 : 2) + (annotate ? 1 : 0) +
-                             (darkTheme ? 1 : 0) + (search ? 1 : 0);
+    const int rightActions =
+        (formattingWarning && !formattingWarning->isHidden() ? 3 : 2) + (annotate ? 1 : 0) + (search ? 1 : 0) + syncActions + (darkTheme ? 1 : 0);
+    // A large interface scale can leave too little room for the exit caption.
+    // The arrow then keeps a cell of its own, as each action does.
+    const int exitWidth = exitAction->sizeHint().width();
+    exitAction->setGeometry(0, statusHeight(),
+                            exitWidth <= size.width() - rightActions * c::cellWidth ? exitWidth : int(c::cellWidth),
+                            c::actionHeight);
     if (rules->property("right_actions").toInt() != rightActions) {
         rules->setProperty("right_actions", rightActions);
         rules->update();

@@ -433,6 +433,25 @@ int main(int argc, char **argv) {
     const QByteArray first("<p>A domesticated animal with a definition crossing compressed chunks.</p>"),
         second("<p>\xd9\x83\xd8\xaa\xd8\xa7\xd8\xa8</p>");
     checkDictzip(temp.path() + "/dictzip-validation", first + second);
+    {
+        const auto folder = temp.path() + "/phrase";
+        require(QDir().mkpath(folder), "make phrase dictionary directory");
+        const QByteArray definition("<p>A frozen dessert.</p>");
+        QByteArray index("ice cream\0", 10);
+        be32(index, 0);
+        be32(index, definition.size());
+        save(folder + "/phrase.idx", index);
+        save(folder + "/phrase.dict.dz", dictzip(definition));
+        save(folder + "/phrase.ifo", "StarDict's dict ifo file\nversion=2.4.2\nwordcount=1\nidxfilesize=" +
+                                        QByteArray::number(index.size()) + "\nsametypesequence=h\n");
+        QString error;
+        require(StarDict::prepare(folder, "phrase", &error), qPrintable(error));
+        StarDict dictionary;
+        require(dictionary.open(folder, "phrase", &error), qPrintable(error));
+        require(dictionary.lookup("ice cream").html.toUtf8() == definition,
+                "Dictionary lookup did not resolve a complete phrase entry");
+        require(dictionary.lookup("ice").html.isEmpty(), "Phrase lookup silently used only its first word");
+    }
     QByteArray idx("CAT\0", 4);
     be32(idx, first.size());
     be32(idx, second.size());
@@ -451,7 +470,12 @@ int main(int argc, char **argv) {
     files["en-en.syn"] = syn;
     files["en-en.dict.dz"] = dictzip(first + second);
     files["LICENSE"] = "Fixture license";
-    files["ATTRIBUTION"] = "Fixture attribution";
+    files["ATTRIBUTION"] = "This dictionary is distributed under CC-BY-SA-4.0.\nhttps://license.example\n\n"
+                           "It is built from the following sources:\n\n"
+                           "  * pwn30: Princeton University WordNet 3.0\n"
+                           "  * wikt-en: English Wiktionary via kaikki.org (wiktextract)\n"
+                           "  * wikt-en-extra: English Wiktionary via kaikki.org (wiktextract)\n\n"
+                           "-- WordNet notice --\nFull license notice stays in this file.\n";
     DownloadDictionary entry;
     entry.id = "en-en";
     entry.name = "Fixture";
@@ -476,6 +500,20 @@ int main(int argc, char **argv) {
     StarDict dictionary;
     require(dictionary.open(root + "/en-en", "en-en", &error), qPrintable(error));
     require(dictionary.lookup("cat").html.toUtf8() == first, "cross-chunk definition");
+    require(dictionary.lookup("cat").source == QString::fromUtf8("WordNet 3.0 · English Wiktionary"),
+            "Lookup source summary must name projects once and omit license and import details");
+    require(dictionary.lookup("absent").source == dictionary.lookup("cat").source,
+            "Missing definitions retain their dictionary source summary");
+    QFile attribution(root + "/en-en/ATTRIBUTION");
+    require(attribution.open(QIODevice::ReadOnly) && attribution.readAll() == files["ATTRIBUTION"],
+            "Compact source display must preserve the full attribution file");
+    attribution.close();
+    save(root + "/en-en/ATTRIBUTION", "It is built from the following sources:\n  * custom: A <credit> & partner\n");
+    StarDict escaped;
+    require(escaped.open(root + "/en-en", "en-en", &error) &&
+                escaped.lookup("cat").source == "A &lt;credit&gt; &amp; partner",
+            "Source summaries must preserve unknown project names and escape markup");
+    save(root + "/en-en/ATTRIBUTION", files["ATTRIBUTION"]);
     require(dictionary.lookup("CAT").html.toUtf8() == second, "exact spelling beats folded acronym");
     require(dictionary.lookup("Cat").html.toUtf8() == second, "ASCII fold fallback");
     require(dictionary.lookup("cats").html.toUtf8() == first, "inflection index");

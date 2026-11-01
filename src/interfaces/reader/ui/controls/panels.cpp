@@ -72,7 +72,7 @@ LightSwipeNotice::LightSwipeNotice(QWidget *parent)
     caption = new ui::InterfaceLabel(this);
     caption->setObjectName("rrLightSwipeCaption");
     readerStyle(percentage, styles::font(m::lightSwipe::percentText));
-    readerStyle(caption, styles::font(m::lightSwipe::captionText) + "color:#666666;");
+    readerStyle(caption, styles::font(m::lightSwipe::captionText) + "color:@swipe-caption-ink@;");
     auto font = interfaceFont(m::lightSwipe::captionText);
     font.setLetterSpacing(QFont::AbsoluteSpacing, px(2));
     caption->setFont(font);
@@ -84,10 +84,6 @@ void LightSwipeNotice::setLevel(bool warmth, int value) {
     warm = warmth;
     level = next;
     percentage->setText(QString::number(level) + '%');
-    const auto style =
-        styles::font(m::lightSwipe::captionText) + (darkTheme(this) ? "color:#aaaaaa;" : "color:#666666;");
-    if (caption->property("reader_style").toString() != style)
-        readerStyle(caption, style);
     caption->setText((warm ? strings::get("light_panel.warmth") : strings::get("light_panel.brightness")).toUpper());
     setAccessibleName((warm ? strings::get("reader.warmth") : strings::get("reader.brightness")).arg(level));
     if (changed)
@@ -172,6 +168,37 @@ BluetoothIndicator::BluetoothIndicator(QWidget *parent) : QWidget(parent) {
     setAccessibleName(strings::get("components.bluetooth_enabled"));
     hide();
 }
+WifiIndicator::WifiIndicator(QWidget *parent) : QWidget(parent) {
+    const int width = m::panel::wifiIconWidth;
+    const int reference = m::panel::bluetoothIconSize;
+    // Equal width parity keeps their centers on the same pixel grid.
+    setFixedSize(width + (width - reference) % 2, m::panel::statusHeight);
+    setAttribute(Qt::WA_TransparentForMouseEvents);
+    hide();
+}
+bool WifiIndicator::setStatus(bool radio, bool online, int bars) {
+    online = radio && online;
+    bars = online && bars >= 0 ? qBound(0, bars, 4) : -1;
+    if (enabled == radio && connected == online && strength == bars) return false;
+    enabled = radio;
+    connected = online;
+    strength = bars;
+    setAccessibleName(online && bars >= 0 ? strings::get("components.wifi_signal").arg(bars) :
+        strings::get(!radio ? "components.wifi_off" : !online ? "components.wifi_disconnected" : "components.wifi_connected"));
+    update();
+    return true;
+}
+void WifiIndicator::paintEvent(QPaintEvent *) {
+    QPainter painter(this);
+    const int side = m::panel::bluetoothIconSize;
+    const ControlIcon levels[] = {ControlIcon::WifiNone, ControlIcon::WifiLow,
+                                  ControlIcon::WifiMedium, ControlIcon::WifiHigh};
+    // Map Nickel's 0..4 reports to Phosphor's four signal silhouettes.
+    const auto icon = !connected ? ControlIcon::WifiDisconnected :
+        strength < 0 ? ControlIcon::WifiNone : levels[(strength * 3 + 2) / 4];
+    paintWifiStatusIcon(painter, icon, QRectF(0, (height() - side) / 2. - px(1), width(), side),
+                     palette().color(QPalette::WindowText));
+}
 void BluetoothIndicator::paintEvent(QPaintEvent *) {
     QPainter painter(this);
     const int side = m::panel::bluetoothIconSize;
@@ -179,7 +206,7 @@ void BluetoothIndicator::paintEvent(QPaintEvent *) {
                      palette().color(QPalette::WindowText));
 }
 
-BatteryIndicator::BatteryIndicator(QWidget *parent) : QLabel(parent) {
+BatteryIndicator::BatteryIndicator(QWidget *parent) : InterfaceLabel(parent) {
     setFixedSize(m::panel::batteryWidth, m::panel::statusHeight);
     setContentsMargins(0, 0, m::panel::batteryTextInset, 0);
     setAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -262,15 +289,19 @@ void paintBattery(QPainter &painter, const QRectF &body, int percent, bool charg
     auto fill = body.adjusted(part(4), part(4), -part(4), -part(4));
     fill.setWidth(qRound(fill.width() * qMax(0, percent) / 100.0));
     painter.fillRect(fill, ink);
-    if (charging) {
-        const auto center = body.center();
-        const QPolygonF bolt(QVector<QPointF>{center + QPointF(2, -9) * scale, center + QPointF(-5, 1) * scale,
-                                              center + QPointF(0, 1) * scale, center + QPointF(-2, 9) * scale,
-                                              center + QPointF(5, -1) * scale, center + QPointF(0, -1) * scale});
-        painter.setPen(QPen(paper, 2 * scale));
-        painter.setBrush(ink);
-        painter.drawPolygon(bolt);
-    }
+    if (charging)
+        paintBatteryBolt(painter, body.center(), scale, ink, paper);
+    painter.restore();
+}
+void paintBatteryBolt(QPainter &painter, const QPointF &center, qreal scale, const QColor &ink, const QColor &paper) {
+    const QPolygonF bolt(QVector<QPointF>{center + QPointF(2, -9) * scale, center + QPointF(-5, 1) * scale,
+                                          center + QPointF(0, 1) * scale, center + QPointF(-2, 9) * scale,
+                                          center + QPointF(5, -1) * scale, center + QPointF(0, -1) * scale});
+    painter.save();
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(QPen(paper, 2 * scale));
+    painter.setBrush(ink);
+    painter.drawPolygon(bolt);
     painter.restore();
 }
 qreal batteryWidth(qreal bodyHeight) {
@@ -294,8 +325,16 @@ QFont batteryTextFont(QFont font, qreal bodyHeight, int weight) {
     return font;
 }
 void BatteryIndicator::paintEvent(QPaintEvent *event) {
-    QLabel::paintEvent(event);
+    const bool privateText = needsPrivateText(text(), font());
+    if (!privateText)
+        InterfaceLabel::paintEvent(event);
     QPainter painter(this);
+    if (privateText) {
+        painter.setFont(font());
+        painter.setPen(palette().color(isEnabled() ? QPalette::WindowText : QPalette::Mid));
+        // Align the visible digits with the icon, rather than the padded font line.
+        drawOpticalPrivateText(painter, contentsRect(), text(), alignment());
+    }
     const QRectF body(width() - m::panel::batteryIconSize + 1, (height() - m::panel::batteryBodyHeight) / 2.0,
                       m::panel::batteryBodyWidth, m::panel::batteryBodyHeight);
     paintBattery(painter, body, percent, charging, palette().color(QPalette::WindowText),

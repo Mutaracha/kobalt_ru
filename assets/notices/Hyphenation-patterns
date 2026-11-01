@@ -6,6 +6,7 @@ English_US.pattern
 Patterns from hyph-en-us.tex (https://github.com/hyphenation/tex-hyphen). Copyright (C) 1990, 2004, 2005 Gerard D.C. Kuiken.
 Copying and distribution of this file, with or without modification, are permitted in any medium without royalty provided the copyright notice and this notice are preserved.
 Exceptions from ushyphex.tex (https://ctan.org/tex-archive/info/digests/tugboat/hyphenex). Copyright 2021 TeX Users Group. You may freely use, modify and/or distribute this file.
+Kobalt corrected the exception conversion to block breaks not listed in the original exceptions. The general patterns are unchanged.
 
 English_GB.pattern
 From hyph-en-gb.tex (https://github.com/hyphenation/tex-hyphen). Copyright (C) 1992, 1996, 2005, 2016 Dominik Wujastyk, Graham Toal. MIT license, below.
@@ -64,6 +65,11 @@ GNU LGPL, as stated in the converted pattern. No version is specified; Kobalt di
 Slovak.pattern
 From hyph-sk.tex (https://github.com/hyphenation/tex-hyphen). Copyright (C) 1992 Jana Chlebíková.
 MIT. License text below.
+
+Russian.pattern
+From hyph-ru.tex (https://github.com/hyphenation/tex-hyphen/blob/master/hyph-utf8/tex/generic/hyph-utf8/patterns/tex/hyph-ru.tex), Copyright (C) 1999-2003 Alexander I. Lebedev, version 2003/03/10.
+Licensed under the LaTeX Project Public License 1.2 or later. Kobalt uses LPPL 1.3c; the full text is in LPPL-1.3c.
+KOReader converted the TeX patterns to CREngine XML. Kobalt includes that conversion unchanged from the pinned CREngine source. The original TeX file is available at the source link above. The original authors do not provide support for this conversion or for Kobalt.
 
 Slovenian.pattern
 From hyph-sl.tex (https://github.com/hyphenation/tex-hyphen). Copyright (C) 1990 Matjaž Vrečko.

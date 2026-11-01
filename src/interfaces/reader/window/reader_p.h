@@ -10,11 +10,15 @@
 #include "interfaces/reader/ui/style/theme.h"
 #include "interfaces/reader_window.h"
 #include "interfaces/reader_interface.h"
+#include "interfaces/reader/views/opening.h"
 #include "reading/reading_book.h"
 #include "reading/appearance_settings.h"
 #include "reading/reader_session.h"
+#include "reading/kosync.h"
+#include "interfaces/reader/settings/kosync_page.h"
 #include "reading/bookmark_session.h"
 #include "reading/highlight_session.h"
+#include "storage/annotation_export.h"
 #include "interfaces/reader/views/reading_page.h"
 #include "interfaces/reader/panels/choice_screen.h"
 #include "interfaces/reader/panels/chapter_graph.h"
@@ -30,7 +34,10 @@
 #include "platform/api/reader_host_services.h"
 #include "platform/api/reader_orientation.h"
 #include "ui/screen_refresh.h"
+#include "support/main_thread.h"
 #include <QCheckBox>
+#include <array>
+#include <atomic>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QFrame>
@@ -66,9 +73,17 @@ public:
     bool readyForPresentation() const override;
     void preparePresentation(std::function<void(bool)> finished) override;
     void checkpoint() override;
+    bool flushBeforeStandby() override;
+    bool pendingStorageSave() const override;
+    void revokeNativeReading() override;
+    void finishStorageSave(std::function<void(bool)> finished, bool nativeAllowed = true) override;
     void prepareUsb(std::function<void()> finished) override;
-    void prepareShutdown(std::function<void()> finished) override;
+    void prepareShutdown(std::function<void()> finished, bool allowFailedSave = false) override;
+    sleep::Snapshot powerScreenSnapshot() override;
     void sleepReader() override;
+    bool pendingNetworkSync() const override {
+        return kosyncFinishing && kosyncFinishingElapsed.elapsed() < kosyncFinishBudget;
+    }
     void prepareWake() override;
     void cancelWake() override;
     void sleepViewReady() override;
@@ -76,6 +91,20 @@ public:
     void progressTick() override;
     void refreshHostPresentation() override;
     void pageButton(int direction) override;
+    bool busy() const override {
+        return model->busy() || model->preparingNeighbours() || stylingSamplesPending > 0;
+    }
+    // Automatic syncs follow the account setting, unless a performance run
+    // has paused them for the whole process.
+    bool kosyncAutomatic() const {
+        return kosyncClient->automatic() && !kobalt::kosync::automaticPaused();
+    }
+    void setOpeningTiming(const QElapsedTimer &started, const QJsonObject &stages) override;
+    kobalt::ActionTiming closingTiming() const override {
+        return closingTimes;
+    }
+    void locateText(const QString &text, std::function<void(QPoint)> found) override;
+    void locateLink(const QString &label, std::function<void(QPoint)> found) override;
     QVector<QWidget *> popups() const;
     bool popup(QObject *object) const;
     void raisePopups();
@@ -90,7 +119,7 @@ protected:
 
 private:
     void observeReading();
-    void prepareTransition(std::function<void()> finished, int timeoutMs);
+    void prepareTransition(std::function<void()> finished, bool usb);
     // Construction, in this order. Each step builds one group of widgets and
     // connects its signals.
     void saveNativeProgress();
@@ -180,8 +209,44 @@ private:
     void buildOverlays();
     void buildAppearance(const kobalt::reader::AppearanceLayout &layout);
     void buildSettings();
+    void buildKosync();
+    void requestManualKosync();
+    void updateKosyncToolbar();
+    void synchronizeKosync(bool interactive = false);
+    QByteArray kosyncDocument() const;
+    void prepareKosyncPresentation(std::function<void(bool)> finished);
+    void finishKosyncPresentation();
+    void prepareAnnotationPresentation(std::function<void(bool)> finished);
+    void showKosyncChoice();
+    void startKosyncExchange(bool finishing);
+    void continueKosyncWhenReady(std::function<void()> ready);
+    void prepareKosyncNetwork(bool interactive, std::function<void()> ready);
+    void flushKosync(std::function<void()> finished);
+    void finishKosync(const QString &message);
+    void cancelKosync();
+    void showKosyncOpening();
+    void hideKosyncOpening();
+    void kosyncStatus(const QString &message);
+    std::unique_ptr<kosync::Client> kosyncClient;
+    std::unique_ptr<SyncNetwork> kosyncNetwork;
+    KosyncPage *kosyncPage = nullptr;
+    static constexpr int kosyncFinishBudget = 2000;
+    QTimer kosyncTimer, kosyncDeadline, kosyncOpeningGrace, kosyncReaderRetry;
+    QElapsedTimer kosyncFinishingElapsed;
+    std::function<void()> kosyncFinished;
+    std::function<void(bool)> kosyncPresentationReady;
+    std::function<void()> kosyncReaderReady;
+    bool kosyncFinishing = false, kosyncOpening = false, kosyncFlushWaiting = false;
+    bool kosyncConnecting = false, kosyncAuthenticating = false;
+    QPointer<ui::ModalOverlay> kosyncDialog;
+    kosync::Reconciler kosyncProgress;
+    QString kosyncMessage;
+    quint64 kosyncEpoch = 0;
+    bool kosyncStarted = false;
+    bool kosyncPositionFailed = false;
+    bool kosyncPromptDeferred = false;
     void showFontPicker();
-    void showFontDefaultDialog(const QString &face);
+    void showFontDefaultDialog(const QString &face, bool instructions);
     void buildNotices();
     void connectLightGestures();
     void connectPageInput();
@@ -209,17 +274,21 @@ private:
     bool exitPending = false, exportRunning = false;
     bool lifecycleHidden = false;
     QImage sleepImage, sleepCover;
+    QFileInfo sleepCoverSource;
+    sleep::Snapshot exitSleepSnapshot;
     QString sleepProgress, sleepRemaining;
+    int sleepPercent = -1;
     BatteryStatus sleepBattery;
     quint64 sleepCoverRequest = 0;
     Qt::ScreenOrientation sleepOrientation = Qt::PrimaryOrientation;
-    QTimer *clockTimer;
+    QTimer *clockTimer = nullptr;
 #ifdef KOBALT_READER_HARDWARE
     const bool liveState = QFile::exists(book->paths().directory + "/live-state");
 #endif
     QLabel *menuClock, *menuSession;
     kobalt::ui::BatteryIndicator *menuBattery;
     kobalt::ui::BluetoothIndicator *menuBluetooth;
+    kobalt::ui::WifiIndicator *menuWifi;
     kobalt::ReadingPage *page;
     ChapterHeader *header;
     AppearanceSheet *menu;
@@ -234,7 +303,6 @@ private:
     QCheckBox *darkOption, *inheritTextLayoutOption, *animationOption, *edgeLightOption, *denseGraphOption;
     QCheckBox *automaticOpeningOption = nullptr, *minimalAnnotationOption = nullptr, *hideTabLabelsOption = nullptr;
     QPushButton *autoRotateOption;
-    QCheckBox *hideStatusOption = nullptr;
     bool hideNativeStatus() const;
     QJsonObject preferences;
     QLabel *settingsError;
@@ -270,7 +338,8 @@ private:
     kobalt::ui::DropdownButton *headerFooterRow = nullptr;
     kobalt::reader::SlotMap *slotMap = nullptr;
     QVector<kobalt::reader::PresetCard *> presetCards;
-    QVector<QPushButton *> headerSizeButtons, footerSizeButtons, progressBarButtons;
+    kobalt::reader::StripSizeControl *headerSizeControl = nullptr, *footerSizeControl = nullptr;
+    QVector<QPushButton *> progressBarButtons;
     // Header and footer and the field list fill the reading area like
     // Chapters, over the Layout panel, which stays open beneath them.
     kobalt::reader::HeaderFooterView *headerFooterView = nullptr;
@@ -287,7 +356,8 @@ private:
     // Reads the preset and layout from the preferences and shows them.
     void loadChrome();
     // Saves the preset, and the Custom layout when given, then shows them.
-    bool saveChrome(kobalt::headerfooter::Preset preset, const kobalt::headerfooter::Layout *custom = nullptr);
+    bool saveChrome(kobalt::headerfooter::Preset preset, const kobalt::headerfooter::Layout *custom = nullptr,
+                    const kobalt::headerfooter::Layout *text = nullptr);
     void syncChromeControls();
     void openFieldChooser(int slot);
     void closeFieldChooser();
@@ -300,9 +370,7 @@ private:
     quint64 warmScheduledGeneration = 0;
     quint64 warmAttemptGeneration = 0;
     using AppearanceDestination = kobalt::reader::AppearanceEditSession::Destination;
-    QVector<int> registeredFonts;
     QStringList pickerNativeFamilies;
-    QSet<QString> registeredFontPaths;
     bool resizePending = false;
     bool choosingTypography = false, dismissingFontTouch = false, dismissingFontMouse = false;
     QString navigationFontFace;
@@ -322,6 +390,8 @@ private:
     QJsonObject settingsFontFaces;
     QString settingsDefaultFontFace;
     QString settingsUiFontFace, settingsUiMonoFontFace, settingsHeaderFooterFontFace;
+    QString settingsDictionaryFontFace;
+    int settingsDictionaryFontSize = 100;
     int settingsHeaderFooterWeight = 2;
     void applyInterfaceFonts();
     void showSettingsFonts();
@@ -354,7 +424,7 @@ private:
     void dismissLinkConfirmation();
     void dismissLinks();
     void updateLinkReturn();
-    bool openLink(QPoint point);
+    bool openLink(QPoint point, bool direct = false);
     void goToPassage(const QString &target);
     kobalt::DictionaryPanel *dictionaryPanel = nullptr;
     std::unique_ptr<kobalt::DictionaryService> dictionary;
@@ -363,6 +433,7 @@ private:
     quint64 lookupEpoch = 0;
     bool lookupPending = false;
     void dismissLookup(bool keepGesture = false);
+    void dismissDictionary();
     void lookupWord(QPoint point);
     void lookupSelection();
     void resizeText();
@@ -388,9 +459,20 @@ private:
     void applyDarkMode(bool enabled);
     void applyBoldReading(bool enabled);
     void prepareSleepCover();
+    sleep::Snapshot captureSleepScreen();
     void updateSleepBattery();
     void showSleepScreen();
     void openSleepScreen();
+    void openSleepTile();
+    void openSessionTimeout();
+    struct SleepOption {
+        QString value, label, explanation;
+    };
+    // Sleep and session choices share one popup.
+    void openSleepChoice(const QString &name, const QString &optionPrefix, const QString &heading,
+                         const QVector<SleepOption> &options, int current, std::function<void(int)> chosen,
+                         const QString &description = {});
+    bool saveSleepPreferences(const QJsonObject &next);
     void closeSleepScreen();
     void showTapZones();
     void openTapZones();
@@ -398,6 +480,9 @@ private:
     void showPageNavigation();
     void openPageNavigation();
     void closePageNavigation();
+    void showTappableLinks();
+    void openTappableLinks();
+    void closeTappableLinks();
     void showMenuView();
     void openMenuView();
     void closeMenuView();
@@ -428,12 +513,18 @@ private:
     bool pageList(int direction);
     // Runs from a tap or swipe until its page is painted; invalid otherwise.
     QElapsedTimer turnStarted;
-    // Exit Kobalt ignores taps from when the chapter list closes until a short
-    // time after the reader has handled the close. A tap that waited in the
-    // queue while the screen repainted still counts as part of the double tap.
+    // Exit Kobalt ignores the second tap of a double tap on a panel's close
+    // control, which sits where Exit Kobalt is. A tap that waited in the queue
+    // while the screen repainted still counts as part of the double tap, but
+    // only if it was pressed within the guard time of the first. Closing
+    // Settings can hold the GUI longer than that on a device.
     bool exitGuarded = false;
     int exitGuardGeneration = 0;
+    // Source timestamps of the newest press and of the press that armed the
+    // exit guard. Zero when the platform gives no timestamp.
+    quint32 lastPressTime = 0, exitGuardPressTime = 0;
     void guardExit();
+    bool exitGuardElapsed() const;
     // Full flashes clear the ghosting that partial page turns leave behind.
     // Turns since the last flash, for the Refresh the screen setting.
     int pagesSinceFlash = 0;
@@ -441,17 +532,33 @@ private:
     ui::DescribedOption *bionicOption = nullptr;
     kobalt::ui::CaptionButton *refreshButton = nullptr;
     QPointer<kobalt::ui::ModalOverlay> refreshPopup;
-    kobalt::ui::CaptionButton *sleepScreenButton = nullptr;
+    kobalt::ui::CaptionButton *sleepScreenButton = nullptr, *sessionTimeoutButton = nullptr, *sleepTileButton = nullptr;
     QPointer<kobalt::ui::ModalOverlay> sleepPopup;
     kobalt::ui::CaptionButton *pageNavigationButton = nullptr, *tapZonesButton = nullptr,
                               *navigationBarButton = nullptr;
-    QPointer<kobalt::ui::ModalOverlay> pageNavigationPopup, tapZonesPopup, navigationBarPopup, menuViewPopup;
-    kobalt::ui::CaptionButton *menuViewButton = nullptr;
+    QPointer<kobalt::ui::ModalOverlay> pageNavigationPopup, tapZonesPopup, navigationBarPopup, menuViewPopup,
+                                     tappableLinksPopup;
+    kobalt::ui::CaptionButton *menuViewButton = nullptr, *tappableLinksButton = nullptr;
     int settingsColumnSpacing = defaultColumnSpacingPercent;
     int settingsWordSpacing = 100;
+    int settingsParagraphSpacing = -1;
+    int settingsParagraphIndent = -1;
+    QJsonObject settingsBeautifier;
     int settingsTracking = 0;
     QString settingsWidowsOrphans = "publisher";
-    void showAdvancedText();
+    QString settingsVerticalSpacing = "off", settingsVerticalSpacingScope = "all";
+    // `changed` is the styling setting that just changed, as a
+    // SettingsPanel::AdvancedText value, or -1. Its samples already show
+    // every option, so only the others are drawn again.
+    void showAdvancedText(int changed = -1);
+    void renderStylingSamples(int requested);
+    // The selected option of a SettingsPanel::AdvancedText setting, in sheet order.
+    int stylingChoice(int feature) const;
+    // The latest sample render of each setting. Setting one stops its render.
+    std::array<std::shared_ptr<std::atomic_bool>, 6> stylingSampleRenders;
+    // Includes queued renders until their results reach the GUI thread.
+    int stylingSamplesPending = 0;
+    void cancelStylingSamples();
     static QString refreshExplanation(kobalt::ScreenRefresh mode);
     static QString refreshLabel(kobalt::ScreenRefresh mode);
     void showScreenRefresh();
@@ -464,29 +571,77 @@ private:
     void syncBookmarks();
     kobalt::BookmarkList *bookmarkList = nullptr;
     QPointer<kobalt::ui::ModalOverlay> removeDialog;
+    QPointer<kobalt::ui::ModalOverlay> marksActions;
+    void openMarksActions();
+    void closeMarksActions();
+    void askExportMarks(AnnotationExportFormat format);
+    QByteArray marksExportArchive(AnnotationExportFormat format);
+    void confirmMarksExport(AnnotationExportFormat format, bool replace, const QString &path, std::function<void()> accepted);
+    void saveMarksExport(AnnotationExportFormat format, const QString &path, bool replaceApproved);
+    void chooseMarksExport(AnnotationExportFormat format);
+    void finishMarksExport(AnnotationExportFormat format, bool saved, const QString &location = {});
+    QPointer<QDialog> annotationExportPicker;
     QPointer<kobalt::ui::ModalOverlay> customReplaceDialog;
-    QPointer<kobalt::ui::ModalOverlay> bookmarkErrorDialog, settingsWriteErrorDialog;
+    QPointer<kobalt::ui::ModalOverlay> annotationErrorDialog, settingsWriteErrorDialog;
     QPointer<kobalt::ui::ModalOverlay> formattingWarningDialog;
     QVector<kobalt::BookmarkRow> bookmarkRows() const;
     void openBookmarks();
     void askRemoveBookmark(const QString &position);
     void toggleBookmark();
     void showBookmarkError();
+    void showHighlightError();
+    void showAnnotationError(const QString &message, const QString &title, const QString &name);
+    void showStartupNotice();
+    bool showNotice(const ReaderNotice &notice) override;
     void showFormattingWarning();
     bool flashAfterMenu = false, flashAfterPagePreview = false;
     void requestFlash(const char *reason);
-    QTimer *saveTimer = nullptr;
     bool turnPainted = false;
-    QElapsedTimer unsavedSince;
+    // Reading activity queues a due batch without a periodic wake timer.
+    bool lowBattery = false;
+    bool localSaveDue = false, standbyFlushQueued = false;
+    void runIdleSave(bool beforeStandby);
     void showFinishChoice();
-    // Like Nickel's reader, record the opening in Nickel's database once the
-    // book is on screen: the position, the reading status and the time. Nickel
-    // shows the most recently read book on the sleep screen and on Home.
-    // Checking Nickel's progress at opening has already compared the times.
+    // Record the local opening after the first page paints. Native status is
+    // attempted once during preparePresentation, before this window takes input.
     bool recordedOpening = false;
+    // Stages of the opening and of the close, for "reader-shown" and "book-close".
+    QJsonObject openingStages;
+    QElapsedTimer openingStarted, building, showing;
+    bool shownOnce = false;
+    // Local opening saves are queued after the first page paints.
+    bool pagePainted = false;
+    kobalt::ActionTiming closingTimes;
+    void reportShown();
+    void findLink(QVector<kobalt::PageLink> links, int index, QString label, std::function<void(QPoint)> found);
+    void locateOnPage(const kobalt::SearchHit &hit, std::function<void(QPoint)> found, int attempt);
     void recordOpening();
     void finishExit();
+    void saveExit(quint64 request);
+    void finishExitNative(quint64 request, const QString &location, const QString &error);
+    void finishExitSaved(quint64 request);
+    void saveTransition(quint64 request, bool usb, const QString &location, const QString &error,
+                        bool mapped, std::function<void()> finished, int failures = 0);
+    void finishStorageData(std::function<void(bool)> finished, bool nativeAllowed, int failures = 0);
+    bool allowFailedTransition = false;
+    void transitionSaveError(std::function<void()> retry, std::function<void()> discard);
+    void failExit(quint64 request, const QString &error = {});
+    void cancelExit();
+    void showSaving(int progress);
+    void hideSaving();
+    bool closeSaveRetried = false, closeWithoutSaving = false;
+    quint64 closeRequest = 0;
+    QElapsedTimer closeStage;
+    int closeSaveProgress = 0;
+    std::unique_ptr<SavingView> savingView;
+    QPointer<kobalt::ui::ChoiceModal> closeSaveError;
+    std::unique_ptr<storage::RecordWriter> reportWriter, preferencesWriter;
     void saveSoon();
-    void save(bool snapshot = false);
+    void save(bool snapshot = false, bool background = false, bool persist = true);
+    // True while a tap can turn the page. The main thread then must not write
+    // storage or wait for another thread; see support/main_thread.h.
+    bool takesInput() const;
+    // Declared last, so it is unregistered before the members it reads.
+    mainthread::Interaction interaction{[this] { return takesInput(); }};
 };
 }

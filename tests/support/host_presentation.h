@@ -7,6 +7,8 @@
 namespace kobalt::test {
 struct SleepPresentationState {
     QImage image;
+    sleep::Snapshot saved;
+    int savedCount = 0;
     Qt::ScreenOrientation orientation = Qt::PrimaryOrientation;
     int presented = 0;
     int updated = 0;
@@ -18,7 +20,11 @@ class HostPresentation final : public WindowPresentation {
 public:
     explicit HostPresentation(std::shared_ptr<SleepPresentationState> sleep = {}) : sleep(std::move(sleep)) {}
     void pauseBackground(bool) override {}
-    void resumeBackground() override {}
+    void resumeBackground() override {
+        if (resumed)
+            resumed();
+    }
+    std::function<void()> resumed;
     std::function<void()> repaint;
     void resumeAndRepaintBackground() override {
         if (repaint) {
@@ -36,6 +42,12 @@ public:
         sleep->orientation = orientation;
         ++sleep->presented;
         return true;
+    }
+    void saveSleepScreen(const sleep::Snapshot &snapshot) override {
+        if (sleep) {
+            sleep->saved = snapshot;
+            ++sleep->savedCount;
+        }
     }
     void clearSleepScreen() override {
         if (sleep) {

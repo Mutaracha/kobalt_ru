@@ -41,7 +41,11 @@ class Window : public QWidget {
 public:
     Window(EngineFontInputs fonts, QString placeholder)
         : controller(storage::Paths{QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/config"},
-                     std::move(fonts), std::move(placeholder), android::readerServices,
+                     std::move(fonts), std::move(placeholder), [this] {
+                         auto services = android::readerServices();
+                         services.nativeDialogParent = [this] { return this; };
+                         return services;
+                     },
                      [](Qt::ScreenOrientation) { /* Android owns display rotation. */ }),
           store(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/config",
                 std::make_shared<android::LibrarySource>()) {
@@ -58,7 +62,8 @@ public:
         setAutoFillBackground(true);
         layout = new QStackedLayout(this);
         layout->setContentsMargins(0, 0, 0, 0);
-        start = new android::StartScreen(android::readerServices().presentation, store);
+        const auto services = android::readerServices();
+        start = new android::StartScreen(services.presentation, store, services.textScale);
         start->setLibrarySystemBarBorders(true);
         // A book picked while the library is shown joins it; see openBook.
         connect(start, &android::StartScreen::libraryOpenRequested, this, [] {
@@ -114,6 +119,7 @@ public:
             libraryRefresh->requestClean();
             surfaceHandoff.present(true);
             libraryHandoff.stop();
+            syncPageButtons();
         });
         connect(&controller, &android::ReaderController::retiring, this, [this] {
             if (layout->currentWidget() == canvas) {
@@ -153,7 +159,10 @@ public:
             [this](int direction) {
                 if (!pageButtonsReady())
                     return;
-                controller.window()->pageButton(direction);
+                if (layout->currentWidget() == start)
+                    start->library()->pageButton(direction);
+                else
+                    controller.window()->pageButton(direction);
             },
             [this](const QString &uri, const QString &label) {
                 store.addFolder({uri, label});
@@ -170,6 +179,9 @@ public:
             android::setPageButtonsAvailable(false);
         });
         connect(qApp, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state) {
+            // The system font size can change in Settings while Kobalt is in the background.
+            if (state == Qt::ApplicationActive && layout->currentWidget() == start && start->libraryShown())
+                start->applyTextSize();
             syncPageButtons();
             if (state != Qt::ApplicationActive && controller.window())
                 controller.window()->checkpoint();
@@ -183,10 +195,6 @@ public:
             if (!android::refreshAvailable())
                 if (auto *control = reader->findChild<QWidget *>("rrScreenRefresh"))
                     control->hide();
-            if (auto *exit = reader->findChild<QPushButton *>("rrReturn")) {
-                exit->setText(strings::get("android.return"));
-                exit->setAccessibleName(strings::get("android.return"));
-            }
             reader->show();
             surfaceHandoff.present(true);
             setUpdatesEnabled(true);
@@ -204,6 +212,7 @@ public:
             android::activity("showStartup");
             start->showLibraryError(error);
             layout->setCurrentWidget(start);
+            syncPageButtons();
             qWarning() << "Kobalt reader error:" << error;
         });
         connect(&controller, &android::ReaderController::closed, this, [this] {
@@ -228,6 +237,7 @@ public:
             android::activity("readerReady");
             if (store.index().settings.checkAtStart)
                 store.scan();
+            syncPageButtons();
         });
     }
     ~Window() override {
@@ -263,12 +273,13 @@ private:
         canvas->fitContent();
     }
     bool pageButtonsReady() const {
-        auto *reader = controller.window();
-        if (closing || !reader || openingHandoff.isActive() || layout->currentWidget() != canvas ||
-            !reader->isEnabled() || QGuiApplication::applicationState() != Qt::ApplicationActive)
+        if (closing || !isEnabled() || openingHandoff.isActive() || libraryHandoff.isActive() ||
+            QGuiApplication::applicationState() != Qt::ApplicationActive)
             return false;
-        auto *list = reader->findChild<QWidget *>("rrBookmarkList");
-        return !list || !list->isVisible();
+        if (layout->currentWidget() == start)
+            return start->libraryShown();
+        auto *reader = controller.window();
+        return layout->currentWidget() == canvas && reader && reader->isVisible() && reader->isEnabled();
     }
     void syncPageButtons() {
         android::setPageButtonsAvailable(pageButtonsReady());
@@ -345,16 +356,17 @@ private:
         layout->setStackingMode(QStackedLayout::StackAll);
         android::activity("showReading");
         layout->activate();
-        controller.open(path, pixels());
+        controller.open(path, pixels(), openedKey);
     }
     bool eventFilter(QObject *object, QEvent *event) override {
         auto *reader = controller.window();
         if (reader && object == reader && event->type() == QEvent::Close && reader->updatesEnabled())
             surfaceHandoff.capture();
-        if (reader && (event->type() == QEvent::Show || event->type() == QEvent::Hide ||
-                       event->type() == QEvent::EnabledChange)) {
+        if (event->type() == QEvent::Show || event->type() == QEvent::Hide ||
+            event->type() == QEvent::EnabledChange) {
             auto *widget = qobject_cast<QWidget *>(object);
-            if (widget && (widget == reader || reader->isAncestorOf(widget)))
+            if (widget && (widget == this || widget == start || start->isAncestorOf(widget) ||
+                           (reader && (widget == reader || reader->isAncestorOf(widget)))))
                 syncPageButtons();
         }
         if (reader && object == reader && event->type() == QEvent::PaletteChange && palette() != reader->palette())
@@ -435,7 +447,7 @@ int main(int argc, char **argv) {
     ui::setDensity(physicalPpi);
     QApplication::setFont(ui::interfaceFont());
     initializeDiagnostics(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/diagnostics");
-    Window window(engineFontInputs(*assets, "/system/fonts", {}, {}), placeholderFontFamily(*assets, copies));
+    Window window(engineFontInputs(*assets, "/system/fonts", {}), placeholderFontFamily(*assets, copies));
     // Keep edge-to-edge geometry while the activity controls bar visibility.
     window.show();
     qInfo() << "Kobalt Android ready; density" << physicalPpi;

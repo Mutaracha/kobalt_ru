@@ -1,6 +1,7 @@
 #pragma once
 #include "dictionary_service.h"
 #include "keyboard_controller.h"
+#include "sync_network.h"
 #include "light_controls.h"
 #include "window_presentation.h"
 #include <QFont>
@@ -20,15 +21,34 @@ struct BatteryStatus {
     bool charging = false;
     bool fullyCharged = false;
 };
+struct WifiStatus {
+    bool enabled = false;
+    bool connected = false;
+    // Nickel reports four signal levels. -1 means no quality report yet.
+    int strength = -1;
+};
 // Constructed by the host and moved into one reader window. Queries stay live
 // across sleep and capability changes. Factories return independently owned
 // non-null controllers; they never return a borrowed native handle. Every
 // callback except automaticBookOpening, setAutomaticBookOpening,
-// debugProgressAction, observeBattery, observeBluetooth and remoteKeyActivity is required,
+// debugProgressAction, observeBattery, observeBluetooth, observeWifi, remoteKeyActivity and syncNetwork is required,
 // including unsupported hosts.
+// A notice in the reader's usual notice card. `name` is the card's object
+// name; its message and button add `Message` and `Confirm`.
+struct ReaderNotice {
+    QString title, message, name;
+};
 struct ReaderHostServices {
+    // Human-readable model used for the default sync device name.
+    QString deviceName;
+    // Standalone hosts return to their Library; Kobo uses the default exit label.
+    QString backButtonLabel;
     // Desktop-only presentation preferences; fixtures retain device chrome.
     bool desktopUi = false;
+    // Kobo supplies its default export folder. Other hosts open a save-location picker.
+    std::function<QString()> annotationExportDirectory;
+    // Optional native dialog parent for hosts that embed the reader in a canvas.
+    std::function<QWidget *()> nativeDialogParent;
     // Missing capability means monochrome; independent of theme and animation preferences.
     std::function<bool()> colorDisplay;
     // Optional desktop query. Device previews retain simulated status chrome.
@@ -49,6 +69,7 @@ struct ReaderHostServices {
     // Optional on unsupported hosts. The host owns the subscription under
     // context and reports cached state without blocking the reader thread.
     std::function<void(QObject *context, std::function<void(bool)> changed)> observeBluetooth;
+    std::function<void(QObject *context, std::function<void(WifiStatus)> changed)> observeWifi;
     // Report consumed key activity to the host. The host identifies remote
     // input and retains its own radio inactivity policy.
     std::function<void(QObject *context, QKeyEvent *event)> remoteKeyActivity;
@@ -57,16 +78,26 @@ struct ReaderHostServices {
     std::function<QStringList()> fontFamilies;
     std::function<QFont()> uiFont;
     std::function<bool()> suspended, lightAvailable, animationsAvailable;
+    // Optional: the platform's text size setting, where 1 is standard. On
+    // Android and desktop, the reader applies it when a book opens and the
+    // Library when it is shown. Kobo applies Nickel's Large Print scale in its
+    // coordinator instead.
+    std::function<qreal()> textScale;
     std::function<void()> cancelAnimation;
     std::function<std::unique_ptr<LightControls>(QWidget *)> light;
     std::function<std::unique_ptr<DictionaryService>()> dictionary;
     KeyboardFactory keyboard;
+    // Optional on hosts whose operating system already supplies connectivity.
+    SyncNetworkFactory syncNetwork;
     PresentationFactory presentation;
     // Empty in hardware builds. Keep the value layout independent of the
     // diagnostic macro used by the constructing and consuming targets.
     std::function<QJsonObject(const QJsonObject &)> debugProgressAction;
     std::function<bool()> browserAvailable;
     std::function<bool(const QUrl &, QWidget *)> openBrowser;
+    // Optional notice the reader shows once its first page has painted, for
+    // example after profile preparation reset unusable saved data.
+    ReaderNotice startupNotice;
     bool complete() const {
         return bool(automaticBookOpening) == bool(setAutomaticBookOpening) && clock && battery && pageButtons &&
                reverseLandscapeButtons && pageButtonDirection && fontFamilies && uiFont && suspended &&

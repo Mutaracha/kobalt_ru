@@ -3,6 +3,7 @@
 #include "check.h"
 #include "assets/assets.h"
 #include "interfaces/reader/ui/style/private_text.h"
+#include "interfaces/reader/ui/style/rich_text.h"
 #include "interfaces/reader/ui/controls/rows.h"
 #include "interfaces/reader/ui/controls/text.h"
 #include "interfaces/reader/ui/style/styles.h"
@@ -11,6 +12,294 @@
 #include <QPainter>
 #include <QTextBoundaryFinder>
 #include <QFileInfo>
+#include <QElapsedTimer>
+#include <QBuffer>
+
+inline void checkPrivateRichText() {
+    using namespace kobalt::ui;
+    const auto font = chromeFont(28);
+    for (const bool dark : {false, true}) {
+        for (const auto &container : {QStringLiteral("span"), QStringLiteral("paragraph"), QStringLiteral("cell")}) {
+            for (int sample = 0; sample < 3; ++sample) {
+                const QColor foreground = sample == 1 ? Qt::black : Qt::white;
+                const QColor background = sample == 0 ? Qt::black : sample == 1 ? Qt::white : Qt::blue;
+                PrivateRichText document;
+                document.setFont(font);
+                const auto style = QString("color:%1;background-color:%2").arg(foreground.name(), background.name());
+                document.setHtml(container == "span"
+                    ? QString("<p style='margin:0'><span style='%1'>MMMM</span></p>").arg(style)
+                    : container == "paragraph" ? QString("<p style='margin:0;%1'>MMMM</p>").arg(style)
+                    : QString("<table cellspacing='0' cellpadding='0'><tr><td style='%1'>MMMM</td></tr></table>").arg(style));
+                document.layout(400);
+                QPalette palette;
+                palette.setColor(QPalette::Window, dark ? Qt::black : Qt::white);
+                palette.setColor(QPalette::WindowText, dark ? Qt::white : Qt::black);
+                QImage image(400, document.height(), QImage::Format_RGB32);
+                image.fill(palette.color(QPalette::Window));
+                {
+                    QPainter painter(&image);
+                    document.draw(painter, image.rect(), palette);
+                }
+                const auto capture = qEnvironmentVariable("KOBALT_RICH_TEXT_CAPTURE");
+                if (!capture.isEmpty()) {
+                    require(QDir().mkpath(capture), "Cannot create rich-text capture directory");
+                    require(image.save(capture + QString("/contrast-%1-%2-%3.png")
+                        .arg(dark ? "dark" : "light", container, QString::number(sample))),
+                        "Cannot save rich-text contrast capture");
+                }
+                QRect backdrop;
+                for (int y = 0; y < image.height(); ++y)
+                    for (int x = 0; x < image.width(); ++x)
+                        if (image.pixelColor(x, y) == background)
+                            backdrop |= QRect(x, y, 1, 1);
+                require(backdrop.width() >= document.naturalWidth() && backdrop.height() > 20,
+                        "Rich-text background was dropped");
+                int ink = 0;
+                for (int y = backdrop.top(); y <= backdrop.bottom(); ++y)
+                    for (int x = backdrop.left(); x <= backdrop.right(); ++x)
+                        ink += image.pixelColor(x, y) == foreground;
+                require(ink > 100, "Explicit rich-text foreground lost contrast against its background");
+            }
+        }
+    }
+    QVector<QImage> bullets;
+    for (const auto &style : {QStringLiteral("disc"), QStringLiteral("circle"), QStringLiteral("square")}) {
+        PrivateRichText document;
+        document.setFont(font);
+        document.setHtml("<ul type='" + style + "' style='margin:0'><li>MMMM</li></ul>");
+        document.layout(400);
+        const auto lines = document.lineRectangles();
+        require(lines.size() == 2, "Unordered list lost its marker");
+        QImage image(400, document.height(), QImage::Format_RGB32);
+        image.fill(Qt::white);
+        QPalette palette;
+        palette.setColor(QPalette::WindowText, Qt::black);
+        {
+            QPainter painter(&image);
+            document.draw(painter, image.rect(), palette);
+        }
+        QRect ink;
+        const auto marker = lines.last().toAlignedRect().intersected(image.rect());
+        for (int y = marker.top(); y <= marker.bottom(); ++y)
+            for (int x = marker.left(); x <= marker.right(); ++x)
+                if (qGray(image.pixel(x, y)) < 128)
+                    ink |= QRect(x, y, 1, 1);
+        require(ink.height() >= 5, "Unordered bullet rendered as a tiny period");
+        bullets.append(image.copy(ink));
+    }
+    require(bullets[0] != bullets[1] && bullets[1] != bullets[2] && bullets[0] != bullets[2],
+            "Unordered list styles did not retain distinct bullet shapes");
+    for (const auto &tag : {QStringLiteral("ul"), QStringLiteral("ol")}) {
+        PrivateRichText document;
+        document.setFont(interfaceFont(32));
+        document.setHtml("<" + tag + " dir='rtl' style='margin:0'><li>العربية</li></" + tag + ">");
+        document.layout(400);
+        const auto lines = document.lineRectangles();
+        require(lines.size() == 2 && lines.last().left() >= lines.first().right() &&
+                    lines.last().right() <= 400,
+                "RTL list marker is on the wrong margin or outside the viewport");
+    }
+    {
+        PrivateRichText document;
+        document.setFont(font);
+        const int characters = 16384;
+        document.setPlainText(QString(characters, QLatin1Char('M')));
+        const int width = 4 * measurePrivateText(QStringLiteral("M"), font);
+        QElapsedTimer timer;
+        timer.start();
+        document.layout(width);
+        require(timer.elapsed() < 5000, "Long rich-text paragraph repeatedly shaped its remaining contents");
+        const auto lines = document.lineRectangles();
+        require(lines.size() == characters / 4, "Long rich-text paragraph lost or repeated wrapped characters");
+        for (int i = 0; i < lines.size(); ++i)
+            require(lines[i].left() >= 0 && lines[i].right() <= width && lines[i].height() > 0 &&
+                        (i == 0 || lines[i].top() >= lines[i - 1].bottom()),
+                    "Long rich-text paragraph has overlapping or out-of-bounds lines");
+    }
+    {
+        PrivateRichText document;
+        document.setFont(font);
+        document.setHtml("<ol style='margin:0'><li>MMMM<ol style='margin:0'><li>MMMM</li></ol></li>"
+                         "<li>MMMM</li></ol>");
+        document.layout(400);
+        QVector<QRectF> contents;
+        for (const auto &line : document.lineRectangles())
+            if (line.width() > 100)
+                contents.append(line);
+        require(contents.size() == 3 && contents[1].left() > contents[0].left() &&
+                    contents[2].left() == contents[0].left(),
+                "Nested rich-text list lost its hierarchy or retained the child indent");
+    }
+    {
+        PrivateRichText document;
+        document.setFont(font);
+        const QString paragraph = "<p style='margin:0 0 80px'>M</p>";
+        document.setHtml(paragraph);
+        document.layout(400);
+        const int pageHeight = qCeil(document.lineRectangles().first().height());
+        document.layout(400, pageHeight);
+        require(document.pages() == 1, "Trailing rich-text paragraph margin created blank pages");
+        document.setHtml(paragraph + "<p style='margin:0'>M</p>");
+        document.layout(400, pageHeight);
+        const auto lines = document.lineRectangles();
+        require(lines.size() == 2 && lines[1].top() >= lines[0].bottom() + 80 && document.pages() > 1,
+                "Trimming trailing rich-text margin removed spacing before subsequent content");
+        document.setHtml("<table cellspacing='8' cellpadding='0'><tr><td>M</td></tr></table>");
+        document.layout(400, pageHeight);
+        require(document.pages() == 1, "Trailing rich-text table spacing created a blank page");
+    }
+    for (const bool mixed : {false, true}) {
+        PrivateRichText document;
+        document.setFont(font);
+        document.setHtml(mixed
+            ? "<table cellspacing='8' cellpadding='0'><tr><td width='80%'>M</td><td>M</td></tr></table>"
+            : "<table cellspacing='8' cellpadding='0'><tr><td width='50%'>M</td>"
+              "<td width='50%'>M</td></tr></table>");
+        document.layout(400);
+        const auto lines = document.lineRectangles();
+        require(lines.size() == 2 && lines[0].left() >= 0 && lines[1].right() <= 400 &&
+                    lines[1].left() > lines[0].right(),
+                "Rich-text table widths exceed the viewport after cell spacing");
+        require(mixed ? lines[0].width() > 3 * lines[1].width()
+                      : qAbs(lines[0].width() - lines[1].width()) <= 1,
+                "Rich-text table did not allocate the remaining width to its unconstrained column");
+    }
+    for (const bool plainText : {false, true}) {
+        PrivateRichText document;
+        document.setFont(font);
+        const auto setText = [&](const QString &text) {
+            if (plainText)
+                document.setPlainText(text);
+            else
+                document.setHtml("<pre style='margin:0'>" + text + "</pre>");
+            document.layout(400);
+        };
+        const auto inkCount = [&document] {
+            QImage image(400, document.height(), QImage::Format_RGB32);
+            image.fill(Qt::white);
+            QPalette palette;
+            palette.setColor(QPalette::WindowText, Qt::black);
+            {
+                QPainter painter(&image);
+                document.draw(painter, image.rect(), palette);
+            }
+            int count = 0;
+            for (int y = 0; y < image.height(); ++y)
+                for (int x = 0; x < image.width(); ++x)
+                    count += qGray(image.pixel(x, y)) < 128;
+            return count;
+        };
+        setText("AB");
+        const int letters = inkCount();
+        const int plainWidth = document.naturalWidth();
+        setText("A\tB");
+        const int firstTabWidth = document.naturalWidth();
+        require(inkCount() == letters && firstTabWidth > plainWidth,
+                "Preformatted or license tab painted a missing glyph instead of blank spacing");
+        setText("AA\tB");
+        require(document.naturalWidth() == firstTabWidth,
+                "Preformatted or license tab did not align the following text to a tab stop");
+    }
+    {
+        const auto render = [&font](const QString &html) {
+            PrivateRichText document;
+            document.setFont(font);
+            document.setHtml(html);
+            document.layout(400);
+            QImage image(400, document.height(), QImage::Format_RGB32);
+            image.fill(Qt::white);
+            QPalette palette;
+            palette.setColor(QPalette::Window, Qt::white);
+            palette.setColor(QPalette::WindowText, Qt::black);
+            QPainter painter(&image);
+            document.draw(painter, image.rect(), palette);
+            return image;
+        };
+        const auto plain = render("<p style='margin:0'>oooo</p>");
+        const auto struck = render("<p style='margin:0'><s>oooo</s></p>");
+        require(plain.size() == struck.size(), "Strikeout changed rich-text line geometry");
+        int mostAddedInk = 0;
+        for (int y = 0; y < plain.height(); ++y) {
+            int added = 0;
+            for (int x = 0; x < plain.width(); ++x)
+                added += qGray(struck.pixel(x, y)) + 40 < qGray(plain.pixel(x, y));
+            mostAddedInk = qMax(mostAddedInk, added);
+        }
+        require(mostAddedInk > 20, "Footnote strikeout did not paint a horizontal stroke through its text");
+    }
+    for (const auto &heading : {QStringLiteral("العربية"), QStringLiteral("עברית")}) {
+        PrivateRichText document;
+        document.setFont(interfaceFont(32));
+        document.setHtml("<p style='margin:0'>" + heading + "<br><b><u>123</u></b></p>");
+        document.layout(400);
+        const auto lines = document.lineRectangles();
+        require(lines.size() == 2, "RTL rich-text fixture did not retain its two lines");
+        QImage image(400, document.height(), QImage::Format_RGB32);
+        image.fill(Qt::white);
+        QPalette palette;
+        palette.setColor(QPalette::WindowText, Qt::black);
+        {
+            QPainter painter(&image);
+            document.draw(painter, image.rect(), palette);
+        }
+        for (const auto &line : lines) {
+            int leftInk = 0, rightInk = 0;
+            for (int y = qCeil(line.top()); y < qMin(image.height(), qFloor(line.bottom())); ++y)
+                for (int x = 0; x < image.width(); ++x)
+                    if (qGray(image.pixel(x, y)) < 128)
+                        (x < image.width() / 2 ? leftInk : rightInk)++;
+            require(rightInk > 30 && leftInk == 0,
+                    "Rich text lost automatic RTL paragraph direction on a formatted numeric continuation");
+        }
+    }
+    {
+        QImage icon(19, 61, QImage::Format_RGB32);
+        icon.fill(Qt::red);
+        QByteArray png;
+        QBuffer buffer(&png);
+        require(buffer.open(QIODevice::WriteOnly) && icon.save(&buffer, "PNG"),
+                "Cannot encode the inline-image fixture");
+        const auto markup = QString("<img src='data:image/png;base64,%1' width='19' height='61'>")
+                                .arg(QString::fromLatin1(png.toBase64()));
+        PrivateRichText document;
+        document.setFont(font);
+        document.setHtml("A" + markup + "A");
+        document.layout(400);
+        const int expectedWidth = measurePrivateText("AA", font) + icon.width();
+        require(qAbs(document.naturalWidth() - expectedWidth) <= 1 &&
+                    document.lineRectangles().size() == 1 && document.height() >= icon.height(),
+                "Inline rich-text image lost its advance or baseline height");
+        const auto imageBounds = [&document] {
+            QImage image(400, document.height(), QImage::Format_RGB32);
+            image.fill(Qt::white);
+            QPalette palette;
+            palette.setColor(QPalette::WindowText, Qt::black);
+            {
+                QPainter painter(&image);
+                document.draw(painter, image.rect(), palette);
+            }
+            QRect red;
+            int pixels = 0;
+            for (int y = 0; y < image.height(); ++y)
+                for (int x = 0; x < image.width(); ++x)
+                    if (image.pixel(x, y) == qRgb(255, 0, 0)) {
+                        red |= QRect(x, y, 1, 1);
+                        ++pixels;
+                    }
+            require(pixels == red.width() * red.height(), "Inline rich-text image has missing interior pixels");
+            return red;
+        };
+        require(imageBounds().size() == icon.size(), "Inline rich-text image was omitted, clipped or resized");
+        document.layout(expectedWidth - 2);
+        require(document.lineRectangles().size() == 2 && imageBounds().size() == icon.size(),
+                "Rich-text wrapping ignored the inline image advance or clipped its height");
+        document.setHtml(markup + markup);
+        document.layout(400);
+        require(document.naturalWidth() == 2 * icon.width() &&
+                    imageBounds().size() == QSize(2 * icon.width(), icon.height()),
+                "Adjacent identical rich-text images collapsed into one object");
+    }
+}
 
 inline void checkPrivateFallbackStyles(const kobalt::AssetBundle &assets) {
     using namespace kobalt::ui;
@@ -32,8 +321,7 @@ inline void checkPrivateFallbackStyles(const kobalt::AssetBundle &assets) {
             if (name.contains("Italic") && !sample.italics) {
                 continue;
             }
-            require(registerPrivateInterfaceFont(assets.file(QString("fonts/%1-%2.ttf").arg(sample.stem, style)), alias,
-                                                 true) == PrivateFontRegistration::Private,
+            require(registerPrivateInterfaceFont(assets.file(QString("fonts/%1-%2.ttf").arg(sample.stem, style)), alias),
                     "Cannot register fallback style reference");
         }
         for (const bool italic : {false, true}) {
@@ -41,7 +329,7 @@ inline void checkPrivateFallbackStyles(const kobalt::AssetBundle &assets) {
                 continue;
             }
             for (const bool bold : {false, true}) {
-                QFont fallback("Kobalt UI Serif"), reference(alias);
+                QFont fallback("Instrument Serif"), reference(alias);
                 for (auto *font : {&fallback, &reference}) {
                     font->setPixelSize(48);
                     font->setBold(bold);
@@ -72,15 +360,15 @@ inline void checkPrivateFallbackStyles(const kobalt::AssetBundle &assets) {
 inline void checkPrivateInterfaceText(const kobalt::AssetBundle &assets) {
     using namespace kobalt::ui;
     require(privateInterfaceFontBytes() == 0, "Private interface fonts were loaded eagerly");
-    QFont font(QStringLiteral("Kobalt UI Sans"));
+    QFont font(QStringLiteral("IBM Plex Sans"));
     font.setPixelSize(32);
-    require(!needsPrivateText(QStringLiteral("Chapter 4"), font), "Private renderer replaced covered Latin text");
+    require(needsPrivateText(QStringLiteral("Chapter 4"), font), "Covered Latin text bypassed the private renderer");
     QFont readingFont("Custom Reading Face");
-    require(!needsPrivateText(QStringLiteral("第四章 한국어 목차"), readingFont),
+    require(needsPrivateText(QStringLiteral("第四章 한국어 목차"), readingFont),
             "Private interface renderer replaced a requested reading font");
     require(needsPrivateText(QStringLiteral("第四章 한국어 목차"), font), "CJK text stayed on the native font backend");
     const auto primaryBytes = QFileInfo(assets.file("fonts/IBMPlexSans-Regular.ttf")).size();
-    require(privateInterfaceFontBytes() == primaryBytes, "Latin text or fallback detection loaded fallback fonts");
+    require(privateInterfaceFontBytes() == 0, "Text routing loaded font bytes before rendering");
     const auto firstCjk = renderPrivateText(QStringLiteral("第一章 中文目录"), font);
     require(firstCjk.missingGlyphs == 0 && !firstCjk.image.isNull(), "Lazy CJK font did not render on first use");
     const auto cjkBytes = QFileInfo(assets.file("fonts/NotoSerifCJK-Regular.ttc")).size();
@@ -114,29 +402,61 @@ inline void checkPrivateInterfaceText(const kobalt::AssetBundle &assets) {
         boundary.setPosition(elided.size() - 1);
         require(boundary.isAtBoundary(), "Private ellipsis split a grapheme");
         require(elidePrivateText(sample, font, 0).isEmpty(), "Private text drew into zero available width");
+        QVector<int> ends;
+        boundary.toStart();
+        for (int end = boundary.toNextBoundary(); end >= 0; end = boundary.toNextBoundary())
+            ends.append(end);
+        const auto advance = [&](int start, int end) {
+            return measurePrivateText(sample.mid(start, end - start), font);
+        };
+        // A carried estimate from an earlier line must not change the break.
+        qreal unitAdvance = 0;
+        for (int start : {0, ends.value(ends.size() / 3)})
+            for (int width : {1, 40, 100, 160, 300, rendered.advance}) {
+                const int end = fittingTextEnd(ends, start, sample.size(), width, [&](int candidate) {
+                    return advance(start, candidate);
+                }, unitAdvance);
+                require(end == start || (end > start && advance(start, end) <= width),
+                        "Line fitting returned text wider than the line");
+                const auto next = std::upper_bound(ends.begin(), ends.end(), end);
+                require(next == ends.end() || advance(start, *next) > width,
+                        "Line fitting stopped before the last grapheme that fits");
+            }
     }
-    require(registerPrivateInterfaceFont(assets.file("fonts/NotoSerifCJK-Regular.ttc"), "Noto Serif CJK SC") ==
-                PrivateFontRegistration::Private,
-            "CJK collection was allowed onto the native font backend");
+    {
+        // On text whose advance grows with its length, the search finds the
+        // same break as checking every grapheme.
+        const QString text = QStringLiteral("The quick brown fox jumps over the lazy dog, again and again. ").repeated(4);
+        QTextBoundaryFinder graphemes(QTextBoundaryFinder::Grapheme, text);
+        QVector<int> ends;
+        for (int end = graphemes.toNextBoundary(); end >= 0; end = graphemes.toNextBoundary())
+            ends.append(end);
+        qreal unitAdvance = 0;
+        for (int limit : {int(text.size()), 40})
+            for (int width = 1; width < 1400; width += 37) {
+                int expected = 0;
+                for (int end : ends)
+                    if (end <= limit && measurePrivateText(text.left(end), font) <= width)
+                        expected = end;
+                require(fittingTextEnd(ends, 0, limit, width, [&](int end) {
+                    return measurePrivateText(text.left(end), font);
+                }, unitAdvance) == expected,
+                        "Line fitting found a different break from a full scan");
+            }
+    }
+    require(registerPrivateInterfaceFont(assets.file("fonts/NotoSerifCJK-Regular.ttc"), "Noto Serif CJK SC"),
+            "Cannot retain the CJK collection");
     QFont cjkFont("Noto Serif CJK SC");
     cjkFont.setPixelSize(32);
     require(needsPrivateText(QStringLiteral("Hox"), cjkFont), "CFF preview stayed on the native font backend");
     const auto cjkPreview = renderPrivateText(QStringLiteral("第一章 한국어 Hox"), cjkFont);
     require(!cjkPreview.image.isNull() && cjkPreview.missingGlyphs == 0, "Private CJK preview lost the selected face");
-    require(registerPrivateInterfaceFont(assets.file("fonts/IBMPlexSans-Regular.ttf"), "Reading Test Alias") ==
-                PrivateFontRegistration::Native,
-            "TrueType reading font could not retain native painting");
+    require(registerPrivateInterfaceFont(assets.file("fonts/IBMPlexSans-Regular.ttf"), "Reading Test Alias"),
+            "Cannot retain a TrueType reading font");
     QFont readingAlias("Reading Test Alias");
     readingAlias.setPixelSize(32);
-    require(!needsPrivateText(QStringLiteral("Hox"), readingAlias), "Covered TrueType reading text changed backend");
+    require(needsPrivateText(QStringLiteral("Hox"), readingAlias), "Covered TrueType reading text changed backend");
     require(needsPrivateText(QStringLiteral("第一章"), readingAlias), "Reading font did not use private CJK fallback");
-    require(registerPrivateInterfaceFont(assets.file("fonts/IBMPlexSans-Regular.ttf"), "Reading Test Alias", true) ==
-                    PrivateFontRegistration::Private &&
-                needsPrivateText(QStringLiteral("Hox"), readingAlias),
-            "Forced private painting reused a cached native registration");
-    require(registerPrivateInterfaceFont(assets.file("fonts/IBMPlexSans-Regular.ttf"), "Reading Test Alias") ==
-                PrivateFontRegistration::Private,
-            "A later registration put a private preview back on the native backend");
     QTemporaryDir readingDirectory;
     require(readingDirectory.isValid(), "Cannot create private reading-font fixture");
     const auto readingPath = readingDirectory.path() + "/reading.ttf";
@@ -150,9 +470,8 @@ inline void checkPrivateInterfaceText(const kobalt::AssetBundle &assets) {
 #endif
     };
     const auto familiesBefore = fontFamilies();
-    require(registerPrivateInterfaceFont(readingPath, "Retained Reading Test", true) ==
-                PrivateFontRegistration::Private,
-            "TrueType preview requested native Qt registration");
+    require(registerPrivateInterfaceFont(readingPath, "Retained Reading Test"),
+            "Cannot retain a TrueType preview font");
     require(fontFamilies() == familiesBefore, "Private reading registration changed Qt's font database");
     require(QFile::remove(readingPath), "Cannot remove private reading-font fixture");
     QFont retainedReading("Retained Reading Test");
@@ -161,14 +480,11 @@ inline void checkPrivateInterfaceText(const kobalt::AssetBundle &assets) {
     require(needsPrivateText(QStringLiteral("Hox"), retainedReading) && !retainedSample.image.isNull() &&
                 retainedSample.missingGlyphs == 0,
             "Private TrueType preview could not render after its source file was removed");
-    require(registerPrivateInterfaceFont(assets.root() + "/missing-font.ttf", "Missing") ==
-                PrivateFontRegistration::Failed,
+    require(!registerPrivateInterfaceFont(assets.root() + "/missing-font.ttf", "Missing"),
             "Missing reading font was accepted");
-    require(registerPrivateInterfaceFont(assets.file("fonts/ebook-core/Libron-Regular.ttf"), "Private Excerpt Serif",
-                                         true) == PrivateFontRegistration::Private,
+    require(registerPrivateInterfaceFont(assets.file("fonts/ebook-core/Libron-Regular.ttf"), "Private Excerpt Serif"),
             "Cannot register private excerpt serif");
-    require(registerPrivateInterfaceFont(assets.file("fonts/ebook-core/Libron-Bold.ttf"), "Private Excerpt Serif",
-                                         true) == PrivateFontRegistration::Private,
+    require(registerPrivateInterfaceFont(assets.file("fonts/ebook-core/Libron-Bold.ttf"), "Private Excerpt Serif"),
             "Cannot register private excerpt bold");
     {
         // A private label without descenders centers its letters, as the
@@ -237,6 +553,42 @@ inline void checkPrivateInterfaceText(const kobalt::AssetBundle &assets) {
     const auto mixedMetrics = measurePrivateTextLayout(QStringLiteral("中文 العربية"), excerpt.font());
     require(mixedMetrics.lineAscent == 37 && mixedMetrics.lineHeight == 58,
             "Mixed-script excerpt lost a fallback face's ascent or descent");
+    {
+        QFont face("Private Excerpt Serif");
+        face.setPixelSize(32);
+        const auto preview = [&](const QString &text, int maximumLines, int *count = nullptr) {
+            QImage image(320, 180, QImage::Format_RGB32);
+            image.fill(Qt::white);
+            QPainter painter(&image);
+            painter.setFont(face);
+            painter.setPen(Qt::black);
+            QVector<QRect> lines;
+            drawWrappedInterfaceText(painter, image.rect(), text, Qt::AlignLeft | Qt::AlignTop,
+                                     maximumLines, 0, &lines);
+            if (count)
+                *count = lines.size();
+            return image;
+        };
+        const QString two = QStringLiteral("First line\nSecond line");
+        const auto complete = preview(two, 0);
+        require(preview(two, 2) == complete, "Two complete preview lines gained an ellipsis");
+        int count = 0;
+        const auto clipped = preview(two + QStringLiteral("\nThird line"), 2, &count);
+        require(count == 2 && clipped != complete, "Overflowing preview lost its two-line ellipsis");
+        require(preview(two + QStringLiteral("\nThird line ").repeated(1000), 2) == clipped,
+                "Hidden passage changed the visible preview lines");
+        require(preview(two + QStringLiteral("\n"), 2) == complete,
+                "Terminal line break gained an ellipsis");
+        require(preview(two + QStringLiteral("\n\n"), 2) == clipped,
+                "Trailing blank line did not count as preview overflow");
+        const QString words = QStringLiteral("A long passage with e\u0301 and 中文 words repeated. ");
+        const auto shortPreview = preview(words.repeated(4), 2, &count);
+        require(count == 2 && preview(words.repeated(200), 2) == shortPreview,
+                "Long wrapped passage changed the visible Unicode preview");
+        require(wrappedInterfaceTextHeight(words.repeated(200), face, 320, 2) ==
+                    wrappedInterfaceTextHeight(words.repeated(4), face, 320, 2),
+                "Bounded preview height included hidden lines");
+    }
     for (const int ppi : {212, 300}) {
         setDensity(ppi);
         for (const bool dark : {false, true}) {
@@ -353,5 +705,6 @@ inline void checkPrivateInterfaceText(const kobalt::AssetBundle &assets) {
                 "Private RTL label did not preserve QLabel visual alignment and absolute left alignment");
     }
     checkPrivateFallbackStyles(assets);
+    checkPrivateRichText();
     require(initializePrivateInterfaceText(assets), "Cannot restore private font state after component checks");
 }

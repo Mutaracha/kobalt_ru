@@ -19,6 +19,7 @@
 #include <lvfntman.h>
 #include <lvbionic.h>
 #include <QCryptographicHash>
+#include <QColor>
 #include <QBuffer>
 #include <QElapsedTimer>
 #include <QFile>
@@ -167,6 +168,98 @@ static void checkKoboStyleHacks() {
     require(preview.openPreview(streamed, QSize(800, 1000), &error), qPrintable(error));
     require(preview.image(0) == expected.image(0), "Preview retained Kobo style hacks");
 }
+static void checkDarkModeTextColors() {
+    struct Case {
+        const char *ink;
+        const char *paper;
+        QRgb nightInk;
+        QRgb nightPaper = 0;
+    };
+    const Case cases[] = {
+        {"#12120d", "transparent", qRgb(237, 237, 242)},
+        {"#0d1212", "transparent", qRgb(242, 237, 237)},
+        {"#120d12", "transparent", qRgb(237, 242, 237)},
+        {"#20202a", "transparent", qRgb(223, 223, 213)},
+        {"#20202b", "transparent", qRgb(32, 32, 43)},
+        {"#121212", "transparent", qRgb(237, 237, 237)},
+        {"#12120d", "#dddddd", qRgb(237, 237, 242), qRgb(34, 34, 34)},
+        {"#e8f0f0", "#222222", qRgb(23, 15, 15), qRgb(221, 221, 221)},
+        {"#0000ff", "transparent", qRgb(0, 0, 255)},
+        {"#cc2200", "transparent", qRgb(204, 34, 0)},
+        {"#12120d", "#ffff00", qRgb(18, 18, 13), qRgb(255, 255, 0)},
+        {"#121212", "#ffff00", qRgb(18, 18, 18), qRgb(255, 255, 0)},
+        {"#12120d", "#fffef5", qRgb(18, 18, 13), qRgb(255, 254, 245)},
+        {"#e8f0f0", "#224466", qRgb(232, 240, 240), qRgb(34, 68, 102)},
+        {"#eeeeee", "#224466", qRgb(238, 238, 238), qRgb(34, 68, 102)},
+    };
+    kobalt::ReaderModel model(kobalt::test::readerFonts());
+    for (const auto &test : cases) {
+        for (const bool inlinePaper : {false, true}) {
+            const QByteArray ink(test.ink), paper(test.paper);
+            const auto background = " style='background-color:" + paper + "'";
+            const auto body = "<p style='margin:0;text-indent:0;color:" + ink +
+                              (inlinePaper ? "'" : ";background-color:" + paper + "'") + ">" +
+                              (inlinePaper ? "<span" + background + ">" : "<span>") +
+                              "Readable publisher text.</span></p>";
+            const auto bytes = storedEpub({
+                {"mimetype", "application/epub+zip"},
+                {"META-INF/container.xml", "<container xmlns='urn:oasis:names:tc:opendocument:xmlns:container' version='1.0'><rootfiles><rootfile full-path='book.opf' media-type='application/oebps-package+xml'/></rootfiles></container>"},
+                {"book.opf", "<package xmlns='http://www.idpf.org/2007/opf' version='2.0'><metadata><title>Text colors</title></metadata><manifest><item id='c' href='c.xhtml' media-type='application/xhtml+xml'/></manifest><spine><itemref idref='c'/></spine></package>"},
+                {"c.xhtml", "<html xmlns='http://www.w3.org/1999/xhtml'><head><title>Text colors</title></head><body>" + body + "</body></html>"},
+            });
+            QString error;
+            require(model.open(bytes, QSize(800, 300), {{"font_pixels", 48}}, &error), qPrintable(error));
+            const auto day = model.image(0);
+            const auto position = model.position();
+            const auto pages = model.pages();
+            model.setDarkMode(true);
+            const auto night = model.image(0);
+            const auto dayInk = QColor(test.ink).rgb();
+            const bool hasPaper = paper != "transparent";
+            const auto dayPaper = QColor(test.paper).rgb();
+            const bool coloredPaper = hasPaper && dayPaper == test.nightPaper;
+            QRect paperBounds;
+            int checked = 0, checkedPaper = 0;
+            for (int y = 0; y < day.height(); ++y) {
+                for (int x = 0; x < day.width(); ++x) {
+                    if (day.pixel(x, y) == dayInk) {
+                        require(night.pixel(x, y) == test.nightInk,
+                                qPrintable(QString("Dark text color changed incorrectly: %1 on %2 (%3 background)")
+                                               .arg(test.ink, test.paper, inlinePaper ? "inline" : "block")));
+                        ++checked;
+                    }
+                    if (hasPaper && day.pixel(x, y) == dayPaper) {
+                        const auto after = night.pixel(x, y);
+                        // A faint glyph edge can round to the paper color only in day mode.
+                        require(qAbs(qRed(after) - qRed(test.nightPaper)) <= 2 &&
+                                    qAbs(qGreen(after) - qGreen(test.nightPaper)) <= 2 &&
+                                    qAbs(qBlue(after) - qBlue(test.nightPaper)) <= 2,
+                                qPrintable(QString("Dark paper changed incorrectly: %1 on %2 (%3 background), got %4")
+                                               .arg(test.ink, test.paper, inlinePaper ? "inline" : "block")
+                                               .arg(night.pixel(x, y), 8, 16, QChar('0'))));
+                        paperBounds |= QRect(x, y, 1, 1);
+                        ++checkedPaper;
+                    }
+                }
+            }
+            require(checked > 100, "Text-color fixture did not render solid glyph pixels");
+            require(!hasPaper || checkedPaper > 100, "Text-color fixture did not render its background");
+            if (coloredPaper) {
+                for (int y = paperBounds.top(); y <= paperBounds.bottom(); ++y)
+                    for (int x = paperBounds.left(); x <= paperBounds.right(); ++x) {
+                        const auto before = day.pixel(x, y), after = night.pixel(x, y);
+                        // Integer glyph blending can differ by two levels after inversion.
+                        require(qAbs(qRed(before) - qRed(after)) <= 2 && qAbs(qGreen(before) - qGreen(after)) <= 2 &&
+                                    qAbs(qBlue(before) - qBlue(after)) <= 2,
+                                "Dark mode changed text contrast on colored paper");
+                    }
+            }
+            require(model.pages() == pages && model.position() == position, "Dark colors moved the reading position");
+            model.setDarkMode(false);
+            require(model.image(0) == day, "Returning to light mode changed publisher text colors");
+        }
+    }
+}
 static void checkPagePixelConversion() {
     for (const auto size : {QSize(1, 1), QSize(31, 33), QSize(65, 63), QSize(1264, 1680), QSize(2049, 2049)}) {
         QImage original(size, QImage::Format_RGB32);
@@ -220,7 +313,59 @@ static void checkPagePixelConversion() {
                     kobalt::normalizePagePixels(actual, dark, bounded ? &actualTiles : nullptr, columns);
                 require(actual == expected && actualColour == expectedColour && actualTiles == expectedTiles,
                         "Page pixel conversion changed pixels or colour refresh classification");
+                // RGBA byte order shows the same colours and classifies them alike.
+                auto rgba = before.copy();
+                QVector<uchar> rgbaTiles(expectedTiles.size(), 0);
+                const bool rgbaColour =
+                    kobalt::normalizePagePixels(rgba, dark, bounded ? &rgbaTiles : nullptr, columns, true);
+                rgba.reinterpretAsFormat(QImage::Format_RGBX8888);
+                require(rgba.convertToFormat(QImage::Format_RGB32) == expected && rgbaColour == expectedColour &&
+                            rgbaTiles == expectedTiles,
+                        "RGBA page pixels changed colours or colour refresh classification");
             }
+    }
+}
+// Kobo screens that store RGBA bytes receive pages in that byte order. They
+// must show the same pixels and metadata as RGB32 pages, including pages drawn
+// into a retired buffer.
+static void checkPageFormat() {
+    QByteArray body;
+    for (int i = 0; i < 60; ++i)
+        body += "<p style='color:#cc2200;background-color:#fffef5'>Coloured publisher text that fills several "
+                "pages so retired buffers are drawn again.</p>";
+    const auto bytes = storedEpub({
+        {"mimetype", "application/epub+zip"},
+        {"META-INF/container.xml", "<container xmlns='urn:oasis:names:tc:opendocument:xmlns:container' version='1.0'><rootfiles><rootfile full-path='book.opf' media-type='application/oebps-package+xml'/></rootfiles></container>"},
+        {"book.opf", "<package xmlns='http://www.idpf.org/2007/opf' version='2.0'><metadata><title>Page format</title></metadata><manifest><item id='c' href='c.xhtml' media-type='application/xhtml+xml'/></manifest><spine><itemref idref='c'/></spine></package>"},
+        {"c.xhtml", "<html xmlns='http://www.w3.org/1999/xhtml'><head><title>Page format</title></head><body>" + body + "</body></html>"},
+    });
+    const auto pages = [&bytes](QImage::Format format, bool dark) {
+        kobalt::ReaderModel::setPageFormat(format);
+        kobalt::ReaderModel model(kobalt::test::readerFonts());
+        QString error;
+        require(model.open(bytes, QSize(400, 300), {{"font_pixels", 24}}, &error), qPrintable(error));
+        model.setDarkMode(dark);
+        require(model.pages() > 4, "Page format fixture is too short");
+        QVector<QImage> result;
+        for (int page = 0; page < 5; ++page) {
+            model.go(page);
+            result.append(model.image(page));
+        }
+        return result;
+    };
+    for (const bool dark : {false, true}) {
+        const auto plain = pages(QImage::Format_RGB32, dark);
+        const auto rgba = pages(QImage::Format_RGBX8888, dark);
+        kobalt::ReaderModel::setPageFormat(QImage::Format_RGB32);
+        for (int page = 0; page < plain.size(); ++page) {
+            require(plain[page].format() == QImage::Format_RGB32 && rgba[page].format() == QImage::Format_RGBX8888,
+                    "Page images did not use the requested format");
+            require(rgba[page].convertToFormat(QImage::Format_RGB32) == plain[page],
+                    "RGBA page images changed pixels");
+            for (const auto *key : {"kobalt.image_regions", "kobalt.colour_regions", "kobalt.animation_text_only"})
+                require(rgba[page].text(key) == plain[page].text(key), "RGBA page images changed page metadata");
+        }
+        require(plain[0].text("kobalt.colour_regions") != "[]", "Page format fixture has no colour");
     }
 }
 static QByteArray hash(const QImage &image) {
@@ -367,6 +512,47 @@ static void checkCssDensity() {
     require(sizesAt212[4] == sizesAt300[4] && qAbs(sizesAt300[4].width() - 200) <= 1,
             "Percentage image width changed with CSS density");
 }
+static void checkBionicWidth() {
+    QString family;
+    int defaultWeight = 400;
+    for (const auto &font : kobalt::discoverReadingFonts(kobalt::test::readerFonts().sources))
+        for (const auto &file : font.files)
+            if (QFileInfo(file).fileName() == "AmstelvarAlpha-VF.ttf") {
+                family = font.family;
+                defaultWeight = font.weightAxis.defaultValue;
+            }
+    require(!family.isEmpty(), "Missing variable-width font fixture");
+    const auto publication = [&](int width, bool explicitPrefix) {
+        const QByteArray chapter =
+            "<html xmlns='http://www.w3.org/1999/xhtml'><head><style>p{margin:0;text-indent:0;"
+            "font-family:'" + family.toHtmlEscaped().toUtf8() + "';font-weight:400;font-width:" +
+            QByteArray::number(width) + "%}</style></head><body><p>" +
+            (explicitPrefix ? QByteArray("<span style='font-weight:700'>MMMM</span>MMMM") : QByteArray("MMMMMMMM")) +
+            "</p></body></html>";
+        return storedEpub({
+            {"mimetype", "application/epub+zip"},
+            {"META-INF/container.xml", "<container xmlns='urn:oasis:names:tc:opendocument:xmlns:container' version='1.0'><rootfiles><rootfile full-path='book.opf' media-type='application/oebps-package+xml'/></rootfiles></container>"},
+            {"book.opf", "<package xmlns='http://www.idpf.org/2007/opf' version='2.0'><metadata/><manifest><item id='c' href='c.xhtml' media-type='application/xhtml+xml'/></manifest><spine><itemref idref='c'/></spine></package>"},
+            {"c.xhtml", chapter}});
+    };
+    QImage normalWidth;
+    for (const int width : {100, 75}) {
+        kobalt::ReaderModel actual(kobalt::test::readerFonts()), expected(kobalt::test::readerFonts());
+        QString error;
+        auto settings = kobalt::qt::object({{"font_face", family}, {"font_weight", defaultWeight},
+                                          {"font_pixels", 40}, {"margin_pixels", 0}, {"bold_reading", "bold"}});
+        require(actual.open(publication(width, false), QSize(800, 1000), settings, &error), qPrintable(error));
+        settings["bold_reading"] = "off";
+        require(expected.open(publication(width, true), QSize(800, 1000), settings, &error), qPrintable(error));
+        require(actual.setOpticalSize(14) && expected.setOpticalSize(14), "Cannot set fixture optical size");
+        require(actual.image(0) == expected.image(0),
+                "Bold Reading lost authored font width or optical size on emphasized runs");
+        if (width == 100)
+            normalWidth = actual.image(0);
+        else
+            require(actual.image(0) != normalWidth, "The variable-width fixture did not change its glyph widths");
+    }
+}
 static void checkObfuscatedFonts() {
     QFile font(kobalt::test::readerAssets().file("fonts/InstrumentSerif-Regular.ttf"));
     require(font.open(QIODevice::ReadOnly), "open synthetic embedded font fixture");
@@ -374,7 +560,7 @@ static void checkObfuscatedFonts() {
     const QByteArray idpfAlgorithm = "http://www.idpf.org/2008/embedding";
     const QByteArray adobeAlgorithm = "http://ns.adobe.com/pdf/enc#RC";
     auto book = [&](const QByteArray &fontBytes, const QByteArray &algorithm, const QByteArray &identifier,
-                    const QByteArray &extraIdentifiers = QByteArray()) {
+                    const QByteArray &extraIdentifiers = QByteArray(), const QByteArray &mediaType = "font/ttf") {
         QList<QPair<QByteArray, QByteArray>> members = {
             {"mimetype", "application/epub+zip"},
             {"META-INF/container.xml",
@@ -382,7 +568,7 @@ static void checkObfuscatedFonts() {
             {"book.opf",
              "<package xmlns='http://www.idpf.org/2007/opf' version='3.0' unique-identifier='book-id'><metadata xmlns:dc='http://purl.org/dc/elements/1.1/'><dc:identifier id='book-id'>" +
                  identifier + "</dc:identifier>" + extraIdentifiers +
-                 "</metadata><manifest><item id='font' href='font.ttf' media-type='font/ttf'/><item id='chapter' href='chapter.xhtml' media-type='application/xhtml+xml'/></manifest><spine><itemref idref='chapter'/></spine></package>"},
+                 "</metadata><manifest><item id='font' href='font.ttf' media-type='" + mediaType + "'/><item id='chapter' href='chapter.xhtml' media-type='application/xhtml+xml'/></manifest><spine><itemref idref='chapter'/></spine></package>"},
             {"chapter.xhtml",
              "<html xmlns='http://www.w3.org/1999/xhtml'><head><style>@font-face {font-family: Embedded; src: url(font.ttf);} body {font-family: Embedded;}</style></head><body><p>Embedded font glyphs should match the unobfuscated original.</p></body></html>"},
             {"font.ttf", fontBytes}};
@@ -409,21 +595,27 @@ static void checkObfuscatedFonts() {
     struct FontCase {
         QByteArray algorithm, identifier, extraIdentifiers, key;
         int prefixBytes;
+        QByteArray mediaType = "font/ttf";
     };
     const auto idpfKey = QCryptographicHash::hash("test-identifier", QCryptographicHash::Sha1);
     const auto adobeKey = QByteArray::fromHex("0123456789abcdef0123456789abcdef");
     for (const auto &fixture :
          {FontCase{idpfAlgorithm, "test-identifier", {}, idpfKey, 1040},
+          FontCase{idpfAlgorithm, "test-identifier", {}, idpfKey, 1040, "font/sfnt"},
+          FontCase{idpfAlgorithm, "test-identifier", {}, idpfKey, 1040, "vendor/unknown"},
           FontCase{idpfAlgorithm, " test-\tiden\n tifier\r ", {}, idpfKey, 1040},
           FontCase{adobeAlgorithm, "urn:uuid:01234567-89ab-cdef-0123-456789abcdef", {}, adobeKey, 1024},
           FontCase{adobeAlgorithm, "test-identifier",
                    "<dc:identifier id='font-id'>urn:uuid:01234567-89ab-cdef-0123-456789abcdef</dc:identifier>",
-                   adobeKey, 1024}}) {
+                   adobeKey, 1024, "application/x-font-truetype"},
+          FontCase{adobeAlgorithm, "urn:uuid:01234567-89ab-cdef-0123-456789abcdef", {}, adobeKey, 1024,
+                   "application/octet-stream"}}) {
         auto obfuscated = original;
         for (int i = 0; i < qMin(fixture.prefixBytes, int(obfuscated.size())); ++i) {
             obfuscated[i] = char(uchar(obfuscated[i]) ^ uchar(fixture.key[i % fixture.key.size()]));
         }
-        const auto bytes = book(obfuscated, fixture.algorithm, fixture.identifier, fixture.extraIdentifiers);
+        const auto bytes =
+            book(obfuscated, fixture.algorithm, fixture.identifier, fixture.extraIdentifiers, fixture.mediaType);
         QTemporaryDir cache;
         require(cache.isValid(), "create obfuscated font cache");
         const auto fingerprint = QCryptographicHash::hash(bytes, QCryptographicHash::Sha256).toHex();
@@ -477,13 +669,107 @@ static void checkDeferredPublisherStyles() {
         }
     }
 }
+static void checkVerticalJustification() {
+    const QByteArray paragraph = "<p>A reader follows <a href='#end'>the passage</a> across the page. "
+        "<em>Careful spacing</em> keeps words clear and preserves every selection. "
+        "We can return to this sentence after a change in appearance.</p>";
+    const auto publication = [](const QByteArray &body) { return storedEpub({
+        {"mimetype", "application/epub+zip"},
+        {"META-INF/container.xml", "<container xmlns='urn:oasis:names:tc:opendocument:xmlns:container'><rootfiles><rootfile full-path='book.opf' media-type='application/oebps-package+xml'/></rootfiles></container>"},
+        {"book.opf", "<package xmlns='http://www.idpf.org/2007/opf' version='2.0' unique-identifier='id'><metadata xmlns:dc='http://purl.org/dc/elements/1.1/'><dc:identifier id='id'>vertical-fill</dc:identifier><dc:title>Vertical fill</dc:title><dc:language>en</dc:language></metadata><manifest><item id='c' href='c.xhtml' media-type='application/xhtml+xml'/></manifest><spine><itemref idref='c'/></spine></package>"},
+        {"c.xhtml", "<html xmlns='http://www.w3.org/1999/xhtml'><head><style>p{margin:0;text-indent:0}</style></head><body>" + body + "</body></html>"}}); };
+    const auto bytes = publication("<h1>Chapter</h1>" + paragraph.repeated(90) + "<p id='end'>The end.</p>");
+    QString error;
+    QTemporaryDir cache;
+    require(cache.isValid(), "create vertical justification cache");
+    QByteArray expected;
+    for (bool cached : {false, true}) {
+        kobalt::ReaderModel model(kobalt::test::readerFonts());
+        model.setDocumentCache(cache.path(), "vertical-fill-fingerprint", "vertical-fill", bytes.size());
+        require(model.open(bytes, QSize(800, 973), {}, &error), qPrintable(error));
+        require(model.openedFromCache() == cached, "vertical fill cache was not reused");
+        const auto pages = model.pages();
+        require(pages > 5, "vertical fill fixture is too short");
+        const auto opening = model.image(0);
+        require(model.applyAppearance({{"vertical_justification", true}}), "enable vertical fill");
+        require(model.image(0) == opening, "chapter heading page was stretched");
+        require(model.applyAppearance({{"vertical_justification", false}}), "disable vertical fill");
+        require(model.go(1), "open prose page");
+        const auto before = model.image(1);
+        const auto edges = model.annotationPageEdges();
+        const auto beforeFirst = model.rangeRects(edges.first.start, edges.first.end);
+        const auto beforeLast = model.rangeRects(edges.last.start, edges.last.end);
+        const auto beforeHandles = model.annotationGeometry(edges.last.start, edges.last.end);
+        const auto position = model.position();
+        const auto links = model.pageLinks();
+        require(!beforeFirst.isEmpty() && !beforeLast.isEmpty() && !links.isEmpty(), "missing prose geometry");
+        require(model.applyAppearance({{"vertical_justification", true}}), "enable prose fill");
+        const auto after = model.image(1);
+        require(after != before, "vertical justification did not change prose pixels");
+        require(model.pages() == pages && model.position() == position, "vertical fill changed page breaks or position");
+        const auto afterFirst = model.rangeRects(edges.first.start, edges.first.end);
+        const auto afterLast = model.rangeRects(edges.last.start, edges.last.end);
+        require(afterFirst == beforeFirst, "first prose line moved");
+        const int shift = afterLast.last().top() - beforeLast.last().top();
+        require(shift > 0 && afterLast.last().size() == beforeLast.last().size(), "last word was not translated intact");
+        auto inkBounds = [](const QImage &image) {
+            QRect ink;
+            for (int y=0; y<image.height(); ++y)
+                for (int x=0; x<image.width(); ++x)
+                    if (qGray(image.pixel(x,y)) < 100) ink |= QRect(x,y,1,1);
+            return ink;
+        };
+        const auto beforeInk = inkBounds(before), afterInk = inkBounds(after);
+        require(afterInk.top() == beforeInk.top() && afterInk.bottom()-beforeInk.bottom() == shift,
+                "painted text and selection geometry moved by different amounts");
+
+        require(model.wordAt(afterLast.last().center()).start == edges.last.start, "shifted word hit test missed");
+        const auto geometry = model.annotationGeometry(edges.last.start, edges.last.end);
+        require(geometry.rectangles == afterLast, "annotation did not follow shifted word");
+        require(geometry.start.first.y() == beforeHandles.start.first.y() + shift &&
+                geometry.end.first.y() == beforeHandles.end.first.y() + shift, "annotation handles did not follow shifted word");
+        require(model.pageLinks().last().rectangles.last().top() >= links.last().rectangles.last().top(), "link geometry did not follow text");
+        auto imageHash = [](const QImage &image) {
+            return QCryptographicHash::hash(QByteArray(reinterpret_cast<const char *>(image.constBits()), image.sizeInBytes()), QCryptographicHash::Sha256);
+        };
+        if (cached) require(imageHash(after) == expected, "cache reload changed vertical fill");
+        else expected = imageHash(after);
+        require(model.go(pages-1), "open ending page");
+        const auto ending = model.image(pages-1);
+        require(model.applyAppearance({{"vertical_justification", false}}), "disable ending fill");
+        require(model.image(pages-1) == ending, "short ending page was stretched");
+        require(model.applyAppearance({{"vertical_justification", true}, {"columns", 2}}, QSize(1280, 783)), "enable two-column fill");
+        require(model.go(1), "open two-column prose");
+        const auto columnEdges = model.annotationPageEdges();
+        const auto lastRects = model.rangeRects(columnEdges.last.start, columnEdges.last.end);
+        require(!lastRects.isEmpty() && model.wordAt(lastRects.last().center()).start == columnEdges.last.start,
+                "second-column inverse mapping missed the word");
+        require(model.applyAppearance({{"columns", 1}}, QSize(800, 973)), "restore single-column viewport");
+        require(model.saveDocumentCache(), "save vertical justification line metadata");
+    }
+    // These books fill several pages, so an unchanged first page proves the
+    // exclusion rather than merely hitting the short-ending-page rule.
+    for (const auto &body : {
+             QByteArray("<p>First verse<br/>Second verse<br/>Third verse<br/>Fourth verse</p>").repeated(60),
+             QByteArray("<pre>First code line\nSecond code line\nThird code line\n</pre>").repeated(60),
+             QByteArray("<div style='border:1px solid black'>") + paragraph.repeated(90) + "</div>"}) {
+        kobalt::ReaderModel excluded(kobalt::test::readerFonts());
+        require(excluded.open(publication(body), QSize(800, 973), {}, &error), qPrintable(error));
+        require(excluded.pages() > 2, "exclusion fixture did not fill a page");
+        const auto before = excluded.image(0);
+        require(excluded.applyAppearance({{"vertical_justification", true}}), "enable excluded layout fill");
+        require(excluded.image(0) == before, "vertical fill changed an authored or decorated layout");
+    }
+}
+
 int main(int argc, char **argv) {
     QGuiApplication app(argc, argv);
+    checkPageFormat();
     checkDeferredPublisherStyles();
     checkObfuscatedFonts();
     const auto positions = kobalt::nickel::positionCodec();
     const QVector<kobalt::ReadingFont> axisFixture{
-        {"Variable fixture", {}, kobalt::FontOrigin::Sideloaded, false, {300, 650, 450}, {6.25, 72.75, 14}}};
+        {"Variable fixture", {}, kobalt::FontOrigin::Sideloaded, {300, 650, 450}, {6.25, 72.75, 14}}};
     require(kobalt::fontWeightAxis(axisFixture, "VARIABLE FIXTURE").defaultValue == 450 &&
                 !kobalt::fontWeightAxis(axisFixture, "Missing font").available(),
             "Weight axis lookup lost family matching");
@@ -493,7 +779,9 @@ int main(int argc, char **argv) {
                 kobalt::normalizedOpticalSize(opticalFixture, 73) == 72 &&
                 kobalt::normalizedOpticalSize(opticalFixture, 14.6) == 15,
             "Optical size normalization lost defaults or whole-point bounds");
+    checkVerticalJustification();
     checkCssDensity();
+    checkBionicWidth();
     {
         kobalt::ReaderModel unopened(kobalt::test::readerFonts());
         const kobalt::PositionCodec synthetic{[](const kobalt::ReaderModel &, const QString &, QString *) {
@@ -569,7 +857,7 @@ int main(int argc, char **argv) {
         require(invalid.open(QIODevice::WriteOnly), "Cannot create invalid font");
         invalid.write("not a font");
         invalid.close();
-        const auto catalog = kobalt::discoverReadingFonts({bundled, temp.path() + "/absent", side, temp.path()});
+        const auto catalog = kobalt::discoverReadingFonts({bundled, temp.path() + "/absent", side});
         int core = 0, variableCore = 0, sideloaded = 0, interface = 0, arabicFallback = 0, hebrewFallback = 0;
         for (const auto &font : catalog) {
             if (font.origin == kobalt::FontOrigin::Recommended) {
@@ -624,6 +912,7 @@ int main(int argc, char **argv) {
     checkJpeg(true);
     checkSvg();
     checkKoboStyleHacks();
+    checkDarkModeTextColors();
     checkPagePixelConversion();
     require(argc == 3, "Pass the text and color test EPUB paths");
     QFile file(QString::fromLocal8Bit(argv[1]));
@@ -1234,6 +1523,38 @@ int main(int argc, char **argv) {
                         "Normalized heading prevented chapter-only native progress");
             }
         }
+    }
+    {
+        // A plain EPUB without element IDs. Nickel stores its position as a DOM
+        // point that counts every child from <html>, text nodes included, with
+        // a UTF-8 byte offset, as firmware 4.46 and 6.0 do for this layout.
+        const auto plain = storedEpub(
+            {{"mimetype", "application/epub+zip"},
+             {"META-INF/container.xml",
+              "<container xmlns='urn:oasis:names:tc:opendocument:xmlns:container' version='1.0'><rootfiles><rootfile full-path='book.opf' media-type='application/oebps-package+xml'/></rootfiles></container>"},
+             {"book.opf",
+              "<package xmlns='http://www.idpf.org/2007/opf' version='2.0'><metadata/><manifest><item id='c' href='text/c.xhtml' media-type='application/xhtml+xml'/></manifest><spine><itemref idref='c'/></spine></package>"},
+             {"text/c.xhtml",
+              "<?xml version='1.0' encoding='utf-8'?>\n<html xmlns='http://www.w3.org/1999/xhtml'>\n<head>\n<title>Plain</title>\n</head>\n"
+              "<body>\n<h1>Kapitel</h1>\n<p>Erste Zeile.</p>\n<p>Zweite <em>Gr\xc3\xb6\xc3\x9f" "e</em> Zeile.</p>\n</body>\n</html>"}});
+        kobalt::ReaderModel model(kobalt::test::readerFonts());
+        require(model.open(plain, QSize(1072, 1328), {}, &error), qPrintable(error));
+        // Paragraph start, inside the inline element after a two-byte letter,
+        // and inside the text after it.
+        for (const auto &point : {"point(/1/4/6/1:0)", "point(/1/4/6/2/1:4)", "point(/1/4/6/3:1)"}) {
+            const auto location = QStringLiteral("text/c.xhtml#") + point;
+            require(model.goToPlatform(positions, location, &error), qPrintable(location + ": " + error));
+            require(model.platformPosition(positions, &error) == location && error.isEmpty(),
+                    qPrintable("Plain EPUB position did not round-trip: " + location + " -> " +
+                               model.platformPosition(positions, &error)));
+        }
+        require(model.goToPlatform(positions, "text/c.xhtml#point(/1/4/4/1:6)", &error) &&
+                    model.position().endsWith(".6"),
+                "Plain EPUB point mapped to the wrong text offset");
+        require(!model.goToPlatform(positions, "text/c.xhtml#point(/1/4/6/2/1:3)", &error),
+                "A byte offset inside a UTF-8 character was accepted");
+        require(!model.goToPlatform(positions, "text/c.xhtml#point(/1/4/99/1:0)", &error),
+                "An out-of-range plain EPUB point was accepted");
     }
     kobalt::ReaderModel native(kobalt::test::readerFonts());
     require(native.open(bytes, QSize(1072, 1328), legacySettings, &error), qPrintable(error));

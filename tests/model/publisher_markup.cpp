@@ -9,6 +9,8 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QGuiApplication>
+#include <QCryptographicHash>
+#include <QRegularExpression>
 #include <cstdio>
 #include "check.h"
 
@@ -20,6 +22,67 @@ QByteArray read(const char *path) {
 }
 QString text(const lString32 &value) {
     return QString::fromUtf8(UnicodeToUtf8(value).c_str());
+}
+QString hyphenated(HyphMethod *method, const lString32 &word) {
+    lUInt16 widths[WORD_LENGTH] = {};
+    lUInt8 flags[WORD_LENGTH] = {};
+    require(word.length() < WORD_LENGTH, "Hyphenation probe is too long");
+    for (int i = 0; i < word.length(); ++i)
+        widths[i] = (i + 1) * 10;
+    method->hyphenate(word.c_str(), word.length(), widths, flags, 5, 1000);
+    lString32 result;
+    for (int i = 0; i < word.length(); ++i) {
+        result << word[i];
+        if (flags[i] & LCHAR_ALLOW_HYPH_WRAP_AFTER)
+            result << U'-';
+    }
+    return text(result);
+}
+void checkEnglishExceptions() {
+    const auto bytes = read(KOBALT_TEST_HYPHENATION_CORPUS);
+    require(QCryptographicHash::hash(bytes, QCryptographicHash::Sha256).toHex() ==
+                "9392bd6e14b2f34ebc31d2ba4eddb7d1266bf563bfd89c6161f63cfd7f00ef5c",
+            "The upstream US English exception corpus changed");
+    auto source = QString::fromUtf8(bytes);
+    source.remove(QRegularExpression("%[^\\n]*"));
+    const auto body = QRegularExpression("\\\\hyphenation\\{([^}]+)\\}").match(source);
+    require(body.hasMatch(), "The exception corpus has no hyphenation list");
+    const auto entries = body.captured(1).split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+    require(entries.size() == 1753, "The US English exception corpus lost entries");
+    auto *method = TextLangMan::getTextLangCfg(lString32("en-US"))->getHyphMethod();
+    require(text(method->getId()) == "English_US.pattern", "Corpus selected the wrong dictionary");
+    require(method->getLeftHyphenMin() == 2 && method->getRightHyphenMin() == 3,
+            "US English hyphenation limits changed");
+    int failures = 0;
+    for (const auto &entry : entries) {
+        require(QRegularExpression("^[A-Za-z]+(?:-[A-Za-z]+)*$").match(entry).hasMatch(),
+                "The exception corpus contains an unsupported entry");
+        auto word = entry;
+        word.remove('-');
+        QString expected;
+        int letters = 0;
+        // TeX exceptions replace the general patterns. Apply only the language's
+        // two-letter prefix and three-letter suffix limits to their break list.
+        for (const auto character : entry.toLower()) {
+            if (character == '-') {
+                if (letters >= method->getLeftHyphenMin() && word.size() - letters >= method->getRightHyphenMin())
+                    expected += '-';
+            } else {
+                expected += character;
+                ++letters;
+            }
+        }
+        const auto actual = hyphenated(method, Utf8ToUnicode(word.toUtf8().constData())).toLower();
+        if (actual != expected) {
+            if (failures < 5)
+                std::fprintf(stderr, "%s: expected %s, got %s\n", qPrintable(word), qPrintable(expected), qPrintable(actual));
+            ++failures;
+        }
+    }
+    // This general-pattern result is deliberately outside the exception repair.
+    require(hyphenated(method, lString32(U"seagull")) == "seag-ull", "The exception repair changed seagull");
+    require(failures == 0, qPrintable(QString("%1 of 1753 US English exceptions disagree with the corpus").arg(failures)));
+    std::puts("PASS: all 1753 upstream US English exceptions and unchanged seagull");
 }
 // Every match of `query` in the book, in reading order.
 QVector<kobalt::SearchHit> find(kobalt::ReaderModel &model, const QString &query) {
@@ -280,6 +343,7 @@ int main(int argc, char **argv) {
         require(text(TextLangMan::getMainLang()) == "en", "The package language was not applied");
         require(text(TextLangMan::getTextLangCfg()->getHyphMethod()->getId()) == "English_US.pattern",
                 "English does not use its dictionary");
+        checkEnglishExceptions();
 
         // A note without a container keeps its later paragraphs, up to the next note.
         model.go(0);
@@ -378,19 +442,26 @@ int main(int argc, char **argv) {
         require(model.image(model.page()) != hyphenated, "German hyphenation did not change wrapping");
     }
     {
-        // A language without a bundled dictionary keeps algorithmic hyphenation.
+        // Russian uses its dictionary, including regional language tags.
         kobalt::ReaderModel model(kobalt::test::readerFonts());
         require(model.open(read(argv[3]), size, kobalt::qt::object({{"hyphenation", "on"}}), &error),
                 qPrintable(error));
         require(text(TextLangMan::getMainLang()) == "ru", "The Russian package language was not applied");
-        require(text(TextLangMan::getTextLangCfg()->getHyphMethod()->getId()) == "@algorithm",
-                "Russian lost algorithmic hyphenation");
+        for (const auto *language : {"ru", "ru-RU"}) {
+            auto *method = TextLangMan::getTextLangCfg(lString32(language))->getHyphMethod();
+            require(text(method->getId()) == "Russian.pattern" && method->getCount() > 0,
+                    "Russian does not use its bundled patterns");
+            require(hyphenated(method, lString32(U"программирование")) == "про-грам-ми-ро-ва-ние",
+                    "Russian patterns lost their dictionary-specific breaks");
+        }
+        require(text(TextLangMan::getTextLangCfg(lString32("bg"))->getHyphMethod()->getId()) == "@algorithm",
+                "An unbundled language lost algorithmic hyphenation");
     }
     {
         const auto directory = QFileInfo(QString::fromLocal8Bit(argv[1])).absoluteDir();
         const QMap<QString, QString> dictionaries = {
             {"et-EE", "Estonian"},   {"fi-FI", "Finnish"},  {"ka-GE", "Georgian"}, {"hu-HU", "Hungarian"},
-            {"lt-LT", "Lithuanian"}, {"lv-LV", "Latvian"},  {"pl-PL", "Polish"},   {"sk-SK", "Slovak"},
+            {"lt-LT", "Lithuanian"}, {"lv-LV", "Latvian"},  {"pl-PL", "Polish"},   {"ru-RU", "Russian"}, {"sk-SK", "Slovak"},
             {"sl-SI", "Slovenian"},  {"uk-UA", "Ukrainian"}};
         for (auto entry = dictionaries.cbegin(); entry != dictionaries.cend(); ++entry) {
             kobalt::ReaderModel model(kobalt::test::readerFonts());

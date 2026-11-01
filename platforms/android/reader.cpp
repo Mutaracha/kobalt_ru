@@ -1,9 +1,13 @@
 #include "reading/appearance_settings.h"
 #include "support/strings.h"
+#include "support/main_thread.h"
+#include "support/diagnostics.h"
 #include "reader.h"
 #include "interfaces/reader_interface.h"
 #include "interfaces/opening_message.h"
+#include "interfaces/recovery_message.h"
 #include "reading/reading_book.h"
+#include "storage/annotation_database.h"
 #include "publication/native_resources.h"
 #include "publication/local_resources.h"
 #include <QDir>
@@ -14,6 +18,11 @@
 #include <QTimer>
 #include <QUrl>
 #include <utility>
+#ifdef Q_OS_ANDROID
+#include <QCoreApplication>
+#include <QJniObject>
+#include <QtCore/qnativeinterface.h>
+#endif
 
 namespace kobalt::android {
 namespace {
@@ -31,7 +40,14 @@ ReaderController::ReaderController(storage::Paths paths, EngineFontInputs fonts,
                                    std::function<void(Qt::ScreenOrientation)> rotate, QObject *parent)
     : QObject(parent), paths(std::move(paths)), fonts(std::move(fonts)), placeholder(std::move(placeholder)),
       services(std::move(services)), orientation(nullptr, std::move(rotate)) {
-    storage::prepareProfile(this->paths);
+    prepareProfile();
+}
+void ReaderController::prepareProfile() {
+    storage::ProfileRecovery recovery;
+    storage::prepareProfile(paths, &recovery);
+    storageFailed = recovery.storageFailed;
+    if (recovery.recovered())
+        recoveryNotice = profileRecoveryNotice(recovery, paths.directory + "/backups");
 }
 ReaderController::~ReaderController() {
     Q_ASSERT(idle());
@@ -47,6 +63,8 @@ bool ReaderController::forgetLastBook() {
     return storage::writeRecord(paths.directory, "last-book", paths.directory + "/last-book.json", {}, 256 * 1024);
 }
 QJsonObject ReaderController::savedState(const QString &path) const {
+    // Known exception: the library reads a book's progress on the main thread.
+    mainthread::AllowBlocking allow("library progress");
     const auto identity = QUrl::fromLocalFile(QFileInfo(path).absoluteFilePath()).toString();
     const auto saved = storage::readBookState(paths, identity).object;
     return saved.value("book").toString() == identity ? saved : QJsonObject();
@@ -62,20 +80,44 @@ bool ReaderController::resetBook(const QString &path) {
     // old settings or progress on the next opening.
     return storage::writeBookState(paths, identity, {{"book", identity}});
 }
-void ReaderController::open(const QString &path, QSize pixels) {
+void ReaderController::open(const QString &path, QSize pixels, QString sourceKey) {
     if (phase == Phase::Reading && path == current)
         return;
     if (!idle()) {
         pending = path;
+        pendingSourceKey = std::move(sourceKey);
         pendingSize = pixels;
         retire();
         return;
     }
+    currentSourceKey = std::move(sourceKey);
     begin(path, pixels);
 }
 void ReaderController::begin(const QString &path, QSize pixels) {
+    // Known exception: opening from the library prepares the profile on the
+    // main thread, also while another book is still open.
+    mainthread::AllowBlocking allow("library opening");
     phase = Phase::Opening;
+    openingStarted.start();
+    markMemoryBase();
     retirementNotified = false;
+    if (storageFailed)
+        prepareProfile();
+    if (storageFailed) {
+        emit failed(strings::get("error.profile_storage_failed"));
+        retire();
+        return;
+    }
+    if (!historyProfile && annotationDatabaseEnabled()) {
+        QString error;
+        historyProfile = ReadingHistory::openProfile(paths.directory, &error);
+        if (!historyProfile) {
+            emit failed(error == "profile-in-use" ? strings::get("error.profile_already_in_use")
+                                                 : strings::get("error.saved_data_unavailable"));
+            retire();
+            return;
+        }
+    }
     current = path;
     lease = std::make_shared<SourceLease>();
     source = native::openLocalPublication(path);
@@ -121,6 +163,13 @@ void ReaderController::begin(const QString &path, QSize pixels) {
     opening = std::make_unique<ReaderSession>(fonts, placeholder);
     QPointer<ReaderController> guard(this);
     OpenRequest request{identity, path, viewport, saved, {}, paths.layoutCache(), lease, source->resources(lease)};
+#ifdef Q_OS_ANDROID
+    const QJniObject context = QNativeInterface::QAndroidApplication::context();
+    request.syncFilename = context.callObjectMethod(
+        "syncFilename", "(Ljava/lang/String;)Ljava/lang/String;", QJniObject::fromString(path).object<jstring>()).toString();
+    // An absent legacy name must not silently identify the internal hashed filename.
+    if (request.syncFilename.isNull()) request.syncFilename = QStringLiteral("");
+#endif
     request.userStyleSheetPath = paths.directory + "/userstyle.css";
     request.appearanceDefaults = appearance::bookDefaults(settings);
     opening->open(
@@ -128,6 +177,7 @@ void ReaderController::begin(const QString &path, QSize pixels) {
         [guard, identity, statePath, pixels](const OpeningResult &result) {
             if (!guard || guard->phase != Phase::Opening)
                 return;
+            mainthread::AllowBlocking allow("library opening");
             if (!result.ready()) {
                 emit guard->failed(openingMessage(result));
                 guard->retire();
@@ -145,14 +195,25 @@ void ReaderController::begin(const QString &path, QSize pixels) {
                                  256 * 1024);
             const auto hash = guard->opening->sourceHash();
             auto book = std::make_unique<ReadingBook>(std::move(guard->opening), statePath, guard->paths, identity,
-                                                      hash, nullptr, ReadingProgress{}, ReadingProgress{});
-            auto *window = createReaderWindow(std::move(book), &guard->orientation, guard->services());
+                                                      hash, nullptr, ReadingProgress{}, ReadingProgress{}, guard->currentSourceKey);
+            auto services = guard->services();
+            services.startupNotice = std::exchange(guard->recoveryNotice, ReaderNotice{});
+            if (services.backButtonLabel.isEmpty())
+                services.backButtonLabel = strings::get("library.exit_to_library");
+            // Read the setting again: it can change while the Library is shown.
+            readerInterface().setLargeText(services.textScale ? services.textScale() : 1);
+            const double engine = guard->openingStarted.nsecsElapsed() / 1e6;
+            QElapsedTimer creating;
+            creating.start();
+            auto *window = createReaderWindow(std::move(book), &guard->orientation, std::move(services));
             window->setAttribute(Qt::WA_DeleteOnClose, false);
             window->setWindowFlags(Qt::Widget);
             window->setWindowModality(Qt::NonModal);
             window->resize(pixels);
             guard->window_ = window;
             window->finished = [guard](std::unique_ptr<ReaderSession> retained) {
+                if (guard && guard->window_)
+                    guard->closing = guard->window_->closingTiming();
                 // Show the host's captured frame before this close event hides
                 // the reader and queued resource cleanup begins.
                 if (guard)
@@ -168,7 +229,10 @@ void ReaderController::begin(const QString &path, QSize pixels) {
             };
             QPointer<ReaderWindow> pendingWindow(window);
             const auto lease = guard->lease;
-            window->preparePresentation([guard, pendingWindow, lease](bool ready) {
+            const double created = creating.nsecsElapsed() / 1e6;
+            QElapsedTimer waiting;
+            waiting.start();
+            window->preparePresentation([guard, pendingWindow, lease, engine, created, waiting](bool ready) {
                 if (!guard || !pendingWindow || guard->phase != Phase::Opening || guard->window_ != pendingWindow ||
                     guard->lease != lease) {
                     return;
@@ -178,6 +242,9 @@ void ReaderController::begin(const QString &path, QSize pixels) {
                     return;
                 }
                 guard->phase = Phase::Reading;
+                pendingWindow->setOpeningTiming(guard->openingStarted,
+                                                QJsonObject{{"engine_ms", engine}, {"window_ms", created},
+                                                            {"wait_ms", waiting.nsecsElapsed() / 1e6}});
                 emit guard->opened();
             });
         },
@@ -239,9 +306,11 @@ void ReaderController::release() {
             guard->lease.reset();
             guard->current.clear();
             guard->phase = Phase::Idle;
-            if (!guard->pending.isEmpty())
+            reportBookClose(std::exchange(guard->closing, {}));
+            if (!guard->pending.isEmpty()) {
+                guard->currentSourceKey = std::exchange(guard->pendingSourceKey, {});
                 guard->begin(std::exchange(guard->pending, {}), guard->pendingSize);
-            else
+            } else
                 emit guard->closed();
         });
     });

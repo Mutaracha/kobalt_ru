@@ -4,7 +4,9 @@
 #include "reading/page_navigation.h"
 #include "support/strings.h"
 #include "support/diagnostics.h"
+#include <QElapsedTimer>
 #include <QtMath>
+#include <initializer_list>
 #include <utility>
 
 namespace kobalt::reader {
@@ -47,6 +49,9 @@ void Reader::refreshRenderNotice() {
 void Reader::refresh() {
     if (lifecycleHidden)
         return;
+    if (recordedOpening && !kosyncStarted)
+        synchronizeKosync();
+    showKosyncChoice();
     // Reporting a page to Nickel's reading session asks Nickel for its
     // database, the account and the book. On a page turn that waits until
     // the new page is painted.
@@ -54,7 +59,7 @@ void Reader::refresh() {
         !model->busy() && model->turnDirection() != 0 && model->image().cacheKey() != page->image.cacheKey();
     if (!turnFrame || book->usesLocalPace())
         observeReading();
-    const bool afterTurn = !turnFrame && std::exchange(turnPainted, false);
+    if (!turnFrame) turnPainted = false;
     if (!publishPendingDarkMode())
         return;
     // syncFrameState consumes the completed jump and its return history.
@@ -74,7 +79,7 @@ void Reader::refresh() {
     // for the rest of its work. On a plain page turn, paint now and let the
     // controls, the chapter graph and the saved position follow.
     const bool readingTurn = isVisible() && !appearanceEdit.panelOpen() && !topControls->isVisible() &&
-                             !general->isVisible() && !choices->isVisible() && !syncDialog && !finishDialog &&
+                             !general->isVisible() && !choices->isVisible() && !syncDialog && !kosyncDialog && !finishDialog &&
                              !services.suspended() && !applyingText && !model->busy() && model->turnDirection() != 0 &&
                              nextImage.cacheKey() != previousPageImage;
     if (readingTurn) {
@@ -83,10 +88,9 @@ void Reader::refresh() {
     }
     syncAppearanceControls(pickingFont);
     syncReadingControls();
-    if (afterTurn)
-        saveSoon();
-    else
-        save();
+    // Jumps and layout changes join the activity batch. Layout memory is
+    // saved separately because it is a user setting.
+    saveSoon();
     // Wait for the selected preview page before clearing the dimmed frame.
     // Settings can also close the menu later than the tap, after applying.
     if ((flashAfterMenu || flashAfterPagePreview) && (!flashAfterPagePreview || !model->busy()) && isVisible() &&
@@ -101,10 +105,10 @@ void Reader::refresh() {
     // when its content changes, including a completed typography preview.
     if (!readingTurn)
         page->refreshContent(isVisible() && !appearanceEdit.panelOpen() && !topControls->isVisible() &&
-                             !general->isVisible() && !choices->isVisible() && !syncDialog && !finishDialog &&
+                             !general->isVisible() && !choices->isVisible() && !syncDialog && !kosyncDialog && !finishDialog &&
                              !services.suspended() && !applyingText && (model->turnDirection() != 0 || passageFrame) &&
                              nextImage.cacheKey() != previousPageImage);
-    if (!recordedOpening)
+    if (!recordedOpening && pagePainted)
         recordOpening();
     publishResize();
     if (appearanceEdit.finishPending() && appearanceEdit.ready()) {
@@ -142,9 +146,11 @@ void Reader::syncFrameState() {
     if (!model->busy() && !pendingSearchHit.start.isEmpty()) {
         const auto hit = std::exchange(pendingSearchHit, {});
         const auto epoch = searchEpoch;
+        const auto imageKey = model->image().cacheKey();
         QPointer<Reader> guard(this);
-        model->rangeRects(hit.start, hit.end, [guard, epoch](QVector<QRect> rects) {
-            if (guard && guard->searchEpoch == epoch && !guard->lifecycleHidden)
+        model->rangeRects(hit.start, hit.end, [guard, epoch, imageKey](QVector<QRect> rects) {
+            if (guard && guard->searchEpoch == epoch && !guard->lifecycleHidden &&
+                guard->page->image.cacheKey() == imageKey)
                 guard->page->mark(rects);
         });
     }
@@ -176,6 +182,7 @@ void Reader::finishAppearanceApply() {
         const bool successful = model->error().isEmpty();
         appearanceEdit.completeApply(successful, exitPending);
         if (successful) {
+            book->rememberAppearance();
             // Keep Settings covering the page until the destination preview
             // is ready. Showing the reading bars here adds a full refresh.
             if (!switchingAppearance) {
@@ -216,31 +223,40 @@ void Reader::showChapterText() {
 }
 
 void Reader::showPageImage(const QImage &nextImage) {
-    if (nextImage.cacheKey() != page->image.cacheKey()) {
-        page->animationDirection =
-            isVisible() && !appearanceEdit.panelOpen() && !topControls->isVisible() && !general->isVisible() &&
-                    !linkReturn->isVisible() && !syncDialog && !finishDialog && !services.suspended() &&
-                    preferences.value("page_animations").toBool(false) && services.animationsAvailable()
-                ? model->turnDirection()
-                : 0;
-    }
-    page->image = nextImage;
+    auto displayedImage = nextImage;
     if (appearanceEdit.edited() && appearanceEdit.ready() && appearanceEdit.preview()) {
         const auto *preview = appearanceEdit.preview();
         // Opening a panel keeps the current book frame. Use the isolated
         // preview only after appearance or viewport dimensions change.
         if (model->busy() || !appearance::same(preview->state(), model->state()) ||
             preview->image().size() != nextImage.size())
-            page->image = preview->image();
+            displayedImage = preview->image();
     }
+    if (displayedImage.cacheKey() != page->image.cacheKey()) {
+        // Temporary search and link marks belong to the old page geometry.
+        // Clear them without cancelling the gesture that edits the preview.
+        page->mark({});
+        page->animationDirection =
+            isVisible() && !appearanceEdit.panelOpen() && !topControls->isVisible() && !general->isVisible() &&
+                    !linkReturn->isVisible() && !syncDialog && !kosyncDialog && !finishDialog && !services.suspended() &&
+                    preferences.value("page_animations").toBool(false) && services.animationsAvailable()
+                ? model->turnDirection()
+                : 0;
+    }
+    page->image = std::move(displayedImage);
     // Only a turn forward counts towards the session's pace; jumps and reflows do not.
     if (!model->busy())
         book->pace().observe(model->page(), model->turnDirection() > 0);
 }
 
 void Reader::paintTurn() {
-    page->progressFraction =
-        model->pages() > 0 ? qBound(qreal(0), qreal(model->page() + 1) / model->pages(), qreal(1)) : 0;
+    // render_ms ends here: the engine's page and the GUI thread's wait for it.
+    // paint_ms covers the damage, the paint and the flush that follow.
+    const double rendered = turnStarted.isValid() ? turnStarted.nsecsElapsed() / 1e6 : 0;
+    QElapsedTimer painting;
+    if (turnStarted.isValid())
+        painting.start();
+    page->progressFraction = pageProgressFraction(model->page(), model->pages());
     page->preparedDamage = model->damage();
     page->preparedFrom = model->damageFrom();
     // The Refresh the screen setting decides which turns flash.
@@ -252,7 +268,11 @@ void Reader::paintTurn() {
                                                                                                     : "pages");
     page->refreshContent(true, true);
     if (turnStarted.isValid()) {
-        kobalt::diagnostic("page-turn-painted", {{"elapsed_ms", double(turnStarted.elapsed())}}, false);
+        kobalt::diagnostic("page-turn-painted",
+                           {{"elapsed_ms", turnStarted.nsecsElapsed() / 1e6},
+                            {"render_ms", rendered},
+                            {"paint_ms", painting.nsecsElapsed() / 1e6}},
+                           false);
         turnStarted.invalidate();
     }
     // The screen composes the flushed page from the event loop. Return
@@ -363,8 +383,7 @@ void Reader::syncReadingControls() {
     const auto chapter = model->chapterTitle().isEmpty() ? strings::get("reader.contents") : model->chapterTitle();
     chapterButton->setText(chapter);
     chapterButton->setAccessibleName(strings::get("reader.contents_detail").arg(chapter));
-    page->progressFraction =
-        model->pages() > 0 ? qBound(qreal(0), qreal(model->page() + 1) / model->pages(), qreal(1)) : 0;
+    page->progressFraction = pageProgressFraction(model->page(), model->pages());
     if (!model->busy())
         applyingText = false;
     refreshRenderNotice();
@@ -386,15 +405,17 @@ void Reader::syncReadingControls() {
     if (toolbarComposition.darkTheme)
         toolbarComposition.darkTheme->setChecked(model->state().value("dark_mode").toBool(false));
     const bool settingsOpen = general->isVisible();
-    for (auto *action : {toolbarComposition.exitAction, toolbarComposition.settings, toolbarComposition.bookmarks,
-                         toolbarComposition.annotate, toolbarComposition.darkTheme, toolbarComposition.search})
+    for (auto *action : std::initializer_list<QWidget *>{toolbarComposition.exitAction, toolbarComposition.settings,
+                                                       toolbarComposition.bookmarks, toolbarComposition.annotate,
+                                                       toolbarComposition.search, toolbarComposition.darkTheme})
         if (action)
             action->setVisible(!settingsOpen);
     toolbarComposition.formattingWarning->setVisible(!settingsOpen && model->formattingWarning());
     findChild<QPushButton *>("rrGraph")->setEnabled(!model->busy() && !appearanceEdit.applying());
     findChild<QPushButton *>("rrGraph")->setChecked(chapterGraph->isVisible() ||
                                                     appearanceEdit.destination() == AppearanceDestination::Stats);
-    updateGraph();
+    if (chapterGraph->isVisible())
+        updateGraph();
     updateOrientationBlock();
     for (auto *button : rotationButtons) {
         button->setChecked(!orientation->automatic() &&
@@ -484,7 +505,7 @@ void Reader::updateMenuStatus() {
         menuClock->setText(time);
     const auto battery = services.battery();
     menuBattery->setStatus(battery.percent, battery.charging);
-    const auto reading = book->readingMilliseconds();
+    const auto reading = book->sessionReadingMilliseconds();
     const auto session = reading > 300000 ? strings::get("reader.session_minutes").arg(reading / 60000) : QString();
     if (menuSession->text() != session)
         menuSession->setText(session);
@@ -495,7 +516,7 @@ void Reader::updateMenuStatus() {
 
 // Stats and the reading strips use the same platform or session estimates.
 void Reader::updateReadingStats() {
-    const auto reading = book->readingMilliseconds();
+    const auto reading = book->sessionReadingMilliseconds();
     const auto estimates = book->estimates();
     chapterGraph->setReading(int(reading / 60000), model->totalWords(), estimates.chapterMilliseconds,
                              estimates.bookMilliseconds);

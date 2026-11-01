@@ -4,6 +4,7 @@
 #include "interfaces/reader/ui/controls/rows.h"
 #include "interfaces/reader/ui/controls/options.h"
 #include "interfaces/reader/ui/controls/sliders.h"
+#include "interfaces/reader/ui/controls/page_scrubber.h"
 #include "interfaces/reader/ui/controls/paging.h"
 #include "interfaces/reader/ui/controls/panels.h"
 #include "interfaces/reader/ui/dialogs/modals.h"
@@ -13,14 +14,17 @@
 #include "assets/font_catalog.h"
 #include "reader_inputs.h"
 #include "interfaces/reader/views/opening.h"
+#include "interfaces/reader/settings/settings_panel.h"
 #include "host_presentation.h"
 #include "support/qt_font.h"
 #include "support/strings.h"
 #include "interfaces/reader/ui/style/fonts.h"
+#include "interfaces/reader/window/font_registration.h"
 #include <QFontInfo>
 #include <QFontDatabase>
 #include <QJsonObject>
 #include <QLabel>
+#include <QLineEdit>
 #include <QDir>
 #include <QTemporaryDir>
 #include <QFile>
@@ -32,8 +36,10 @@
 #include "interfaces/reader/settings/dictionaries_page.h"
 #include "interfaces/reader/panels/link_panel.h"
 #include "platforms/kobo/common/browser_handoff.h"
+#include "platforms/kobo/display/keyboard_refresh.h"
 #include "interfaces/reader/panels/chapter_graph.h"
 #include "interfaces/reader/panels/choice_screen.h"
+#include "interfaces/library/library_view.h"
 #include <QScrollBar>
 #include <QApplication>
 #include <QVariant>
@@ -131,6 +137,18 @@ protected:
     }
 };
 int main(int argc, char **argv) {
+#ifdef Q_OS_LINUX
+    // Noto Sans Math may be installed system-wide. This fixture must begin
+    // without it in Qt, then prove the private face is registered on demand.
+    QTemporaryDir fontEnvironment;
+    require(fontEnvironment.isValid(), "Cannot isolate the component font environment");
+    const auto fontConfig = fontEnvironment.filePath("fonts.conf");
+    QFile config(fontConfig);
+    require(config.open(QIODevice::WriteOnly), "Cannot create the component font configuration");
+    require(config.write("<fontconfig></fontconfig>\n") > 0, "Cannot write the component font configuration");
+    config.close();
+    qputenv("FONTCONFIG_FILE", fontConfig.toUtf8());
+#endif
     QApplication app(argc, argv);
     {
         // The loading view is built before the whole bundle is verified. A
@@ -139,8 +157,8 @@ int main(int argc, char **argv) {
         Q_UNUSED(early);
         kobalt::AssetBundle opening(kobalt::test::readerAssets().root(), QStringLiteral(KOBALT_VERSION));
         require(kobalt::ui::initializeOpeningFonts(opening), "Cannot load the opening view's fonts");
-        require(QFontInfo(kobalt::ui::interfaceFont()).family() == "Kobalt UI Sans" &&
-                    QFontInfo(kobalt::ui::brandFont(32)).family() == "Kobalt UI Serif",
+        require(QFontInfo(kobalt::ui::interfaceFont()).family() == "IBM Plex Sans" &&
+                    QFontInfo(kobalt::ui::brandFont(32)).family() == "Instrument Serif",
                 "Opening view does not draw in the interface fonts");
     }
     require(kobalt::test::readerAssets().available(), "Component assets failed manifest verification");
@@ -148,11 +166,119 @@ int main(int argc, char **argv) {
     require(kobalt::ui::initializeInterfaceFonts(kobalt::test::readerAssets(), &facesChanged),
             "Cannot load verified UI font bytes");
     require(!facesChanged, "Full font initialization replaced the opening faces and repaints the loading view");
-    require(QFontInfo(kobalt::ui::interfaceFont()).family() == "Kobalt UI Sans" &&
-                QFontInfo(kobalt::ui::chromeFont()).family() == "Kobalt UI Mono" &&
-                QFontInfo(kobalt::ui::brandFont(32)).family() == "Kobalt UI Serif",
+    require(QFontInfo(kobalt::ui::interfaceFont()).family() == "IBM Plex Sans" &&
+                QFontInfo(kobalt::ui::chromeFont()).family() == "IBM Plex Mono" &&
+                QFontInfo(kobalt::ui::brandFont(32)).family() == "Instrument Serif",
             "Component font substitution");
     checkPrivateInterfaceText(kobalt::test::readerAssets());
+    {
+        using namespace kobalt::ui;
+        const int savedWeight = interfaceWeight();
+        const int savedDensity = density();
+        for (int ppi : {212, 300}) {
+            setDensity(ppi);
+            for (bool dark : {false, true})
+                for (const auto &font : {interfaceFont(px(40)), chromeFont(px(40)), brandFont(px(40))}) {
+                    const auto render = [&](int weight, bool sample, int sampleWeight = 0) {
+                        setInterfaceWeight(weight);
+                        QImage image(px(600), px(100), QImage::Format_RGB32);
+                        image.fill(dark ? Qt::black : Qt::white);
+                        QPainter painter(&image);
+                        painter.setFont(font);
+                        painter.setPen(dark ? Qt::white : Qt::black);
+                        if (sample)
+                            drawOpticalText(painter, image.rect(), "Exit Kobalt", false,
+                                            {sampleWeight, QStringLiteral("off")});
+                        else
+                            drawOpticalText(painter, image.rect(), "Exit Kobalt");
+                        painter.end();
+                        return image;
+                    };
+                    const auto regular = render(0, false);
+                    const auto heavier = render(heavierTextSteps, false);
+                    const auto output = qEnvironmentVariable("KOBALT_TEST_CAPTURE_DIR");
+                    if (!output.isEmpty()) {
+                        require(QDir().mkpath(output), "Cannot create interface text capture directory");
+                        require(heavier.save(output + QString("/text-%1-%2-%3.png")
+                            .arg(font.family()).arg(ppi).arg(dark ? "dark" : "light")),
+                            "Cannot save interface text capture");
+                    }
+                    require(regular != heavier, "Optical UI labels ignored the default interface weight");
+                    require(heavier == render(heavierTextSteps, true, heavierTextSteps),
+                            "Optical UI labels used a different weight from interface labels");
+                    for (int weight : {0, 4})
+                        require(render(0, true, weight) == render(heavierTextSteps, true, weight),
+                                "Font samples inherited the interface weight instead of their explicit weight");
+                }
+        }
+        setDensity(savedDensity);
+        setInterfaceWeight(savedWeight);
+    }
+    {
+        using namespace kobalt::ui;
+        QWidget host;
+        Button button("Theme", &host);
+        LightSwipeNotice notice(&host);
+        auto *caption = notice.findChild<QLabel *>("rrLightSwipeCaption");
+        require(caption, "Swipe notice has no caption");
+        // Replay the same widgets in both directions. Platform gray roles must
+        // not leak into either QSS or custom painting after a theme change.
+        for (bool dark : {false, true, false, true}) {
+            host.setProperty("reader_dark", dark);
+            const auto &theme = themeColors(dark);
+            QPalette base;
+            for (const auto group : {QPalette::Active, QPalette::Inactive, QPalette::Disabled})
+                for (const auto role : {QPalette::Light, QPalette::Dark, QPalette::Mid, QPalette::Midlight})
+                    base.setColor(group, role, Qt::magenta);
+            const auto colors = readerPalette(base, dark);
+            applyReaderPalette(&host, colors);
+            readerStyle(&button, "color:palette(window-text);background:palette(window);");
+            applyReaderPalette(&button, colors);
+            for (const auto &entry : {
+                     qMakePair(QPalette::Window, theme.paper), qMakePair(QPalette::WindowText, theme.ink),
+                     qMakePair(QPalette::Highlight, theme.ink), qMakePair(QPalette::HighlightedText, theme.paper),
+                     qMakePair(QPalette::Mid, theme.disabledInk), qMakePair(QPalette::Midlight, theme.pressedPaper),
+                     qMakePair(QPalette::Light, theme.divider), qMakePair(QPalette::Dark, theme.outline)})
+                for (const auto group : {QPalette::Active, QPalette::Inactive, QPalette::Disabled})
+                    require(button.palette().color(group, entry.first) == entry.second,
+                            "Styled widget retained a platform color instead of the fixed theme");
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
+            require(button.palette().color(QPalette::PlaceholderText) == theme.secondaryInk,
+                    "Placeholder text retained the platform color");
+#endif
+            for (const auto &entry : {
+                     qMakePair("window-text", theme.ink), qMakePair("window", theme.paper),
+                     qMakePair("mid", theme.disabledInk), qMakePair("midlight", theme.pressedPaper),
+                     qMakePair("light", theme.divider), qMakePair("dark", theme.outline),
+                     qMakePair("placeholder-text", theme.secondaryInk)}) {
+                QLabel sample(&host);
+                readerStyle(&sample, QString("color:palette(%1);").arg(entry.first));
+                require(sample.styleSheet().contains("color:" + entry.second.name() + ';'),
+                        "Stylesheet and theme colors disagree");
+            }
+            applyReaderPalette(caption, colors);
+            require(caption->styleSheet().contains("color:" + theme.swipeCaptionInk.name() + ';'),
+                    "Theme replay left the swipe caption in its previous theme");
+            require(theme.swipeCaptionInk == QColor(dark ? "#aaaaaa" : "#666666") &&
+                        theme.lightHintPaper == QColor(dark ? "#222222" : "#e6e6e6") &&
+                        theme.sleepPaper == QColor(dark ? "#202020" : "#ffffff") &&
+                        theme.overviewPaper == QColor(dark ? "#242424" : "#f1f1f1") &&
+                        theme.openingTrack == QColor(dark ? "#2c2c2c" : "#d3d3d3") &&
+                        theme.modalFade.alpha() == 90 &&
+                        theme.modalPattern == QColor(dark ? 170 : 85, dark ? 170 : 85, dark ? 170 : 85, 150) &&
+                        theme.sleepDim == QColor(0, 0, 0, 40),
+                    "Theme flattened an intentional surface or caption color");
+        }
+        // Reader sheets are cached, so the same source must follow a new
+        // interface font as well as a new theme.
+        QLabel sample(&host);
+        for (const auto &family : {QString(), QStringLiteral("Kobalt Test Face"), QString()}) {
+            setInterfaceFontFamily(family);
+            readerStyle(&sample, "font-family:\"@ui-font-family@\";");
+            require(sample.styleSheet().contains("font-family:\"" + interfaceFont().family() + "\";"),
+                    "A cached reader sheet kept the previous interface font");
+        }
+    }
     {
         QWidget host;
         host.resize(1264, 1680);
@@ -243,6 +369,57 @@ int main(int argc, char **argv) {
                 };
                 setTheme(first, dark);
                 setTheme(second, !dark);
+                {
+                    QWidget controls;
+                    setTheme(controls, dark);
+                    applyReaderPalette(&controls, readerPalette(controls.palette(), dark));
+                    controls.resize(px(700), px(180));
+                    controls.show();
+                    {
+                        DropdownButton profile(&controls);
+                        profile.resize(px(600), px(90));
+                        profile.setText("Kobalt");
+                        profile.setForward(true);
+                        readerStyle(&profile, styles::font(metrics::text::secondary));
+                        applyReaderPalette(&profile, controls.palette());
+                        profile.show();
+                        app.processEvents();
+                        const auto image = profile.grab().toImage();
+                        const auto area = image.rect().adjusted(px(8), px(8), -px(100), -px(8));
+                        QRect ink;
+                        for (int y = area.top(); y <= area.bottom(); ++y)
+                            for (int x = area.left(); x <= area.right(); ++x)
+                                if (dark ? qGray(image.pixel(x, y)) > 192 : qGray(image.pixel(x, y)) < 64)
+                                    ink |= QRect(x, y, 1, 1);
+                        require(!ink.isEmpty() && qAbs(ink.left() - int(metrics::choices::fontButtonLeft)) <= px(4),
+                                "Forward profile label is not left-aligned");
+                        require(qAbs(ink.center().y() - image.rect().center().y()) <= 1,
+                                "Forward profile label is not vertically centered");
+                    }
+                    QVBoxLayout rows(&controls);
+                    SegmentedRow segments(&controls, &rows, "contrastSegments", "Header");
+                    auto *small = segments.add("contrastSmall", "Small");
+                    auto *large = segments.add("contrastLarge", "Large");
+                    app.processEvents();
+                    for (const bool enabled : {true, false})
+                        for (const bool checked : {false, true})
+                            for (const bool pressed : {false, true}) {
+                                small->setEnabled(enabled);
+                                (checked ? small : large)->setChecked(true);
+                                small->setDown(pressed);
+                                applyReaderPalette(small, readerPalette(controls.palette(), dark));
+                                const auto image = small->grab().toImage();
+                                const auto color = !enabled ? QColor("#999999")
+                                    : controls.palette().color(checked || pressed ? QPalette::Window
+                                                                                 : QPalette::WindowText);
+                                const auto area = image.rect().adjusted(px(8), px(8), -px(8), -px(8));
+                                int pixels = 0;
+                                for (int y = area.top(); y <= area.bottom(); ++y)
+                                    for (int x = area.left(); x <= area.right(); ++x)
+                                        pixels += image.pixelColor(x, y) == color;
+                                require(pixels > 10, "Segment label disappeared after palette propagation");
+                            }
+                }
                 PaintCountingListRow row(&first);
                 row.setCheckable(true);
                 row.resize(px(480), metrics::list::twoLines);
@@ -295,6 +472,14 @@ int main(int argc, char **argv) {
                 row.blockSignals(false);
                 row.setChecked(true);
                 labelInk(row.titleLabel(), first.palette().color(QPalette::Window));
+                // Applying the window theme to existing children must keep
+                // the selected row's contrasting text, including in Qt5.
+                for (auto *label : {row.titleLabel(), row.detailLabel(), row.captionLabel(),
+                                     row.leadingLabel(), row.trailingLabel()})
+                    applyReaderPalette(label, first.palette());
+                require(row.titleLabel()->palette().color(QPalette::WindowText) ==
+                            first.palette().color(QPalette::Window),
+                        "Applying the theme erased the selected row label color");
                 row.setEnabled(false);
                 labelInk(row.titleLabel(), QColor("#999999"));
                 row.setEnabled(true);
@@ -550,21 +735,24 @@ int main(int argc, char **argv) {
             auto *progress = window->findChild<QProgressBar *>("rrOpeningProgress");
             auto *label = window->findChild<QLabel *>("rrOpeningLabel");
             auto *detail = window->findChild<QLabel *>("rrOpeningDetail");
-            auto *retry = window->findChild<QPushButton *>("rrOpeningNative");
-            auto *back = window->findChild<QPushButton *>("rrOpeningBack");
             require(progress && progress->isVisible() && label, "normal opening has progress");
+            require(!window->findChild<QWidget *>("rrOpeningFailure"), "normal opening builds no failure card");
             view->showFallback(kobalt::OpeningFallback::Protected);
             app.processEvents();
-            require(!progress->isVisible() && !retry->isVisible() && !back->isVisible(),
+            require(!progress->isVisible() && !window->findChild<QWidget *>("rrOpeningFailure"),
                     "handoff has no progress or confirmation");
             require(label->text() == kobalt::strings::get("opening.native"), "handoff caption");
             view->showFallback(kobalt::OpeningFallback::Remembered);
             app.processEvents();
-            require(detail->text() == kobalt::strings::get("opening.remembered") && !retry->isVisible(),
+            require(detail->text() == kobalt::strings::get("opening.remembered") &&
+                        !window->findChild<QWidget *>("rrOpeningFailure"),
                     "remembered failure uses neutral automatic handoff");
             view->showFallback(kobalt::OpeningFallback::Failure);
             app.processEvents();
             auto *failure = window->findChild<QWidget *>("rrOpeningFailure");
+            auto *retry = window->findChild<QPushButton *>("rrOpeningNative");
+            auto *back = window->findChild<QPushButton *>("rrOpeningBack");
+            require(failure && retry && back, "failure builds its card");
             auto *failureTitle = failure->findChild<QLabel *>("rrModalTitle");
             auto *failureBody = failure->findChild<QLabel *>("rrModalDescription");
             require(retry->isVisible() && back->isVisible() && failureBody->isVisible(),
@@ -629,7 +817,7 @@ int main(int argc, char **argv) {
         require(graph.findChild<QLabel *>("rrGraphChapterCaption")->text() == "stats.chapter",
                 "Chapter caption does not expose its catalog key");
         graph.setProgress("Title", 4, 10, 12, 25, 100);
-        require(graph.findChild<QLabel *>("rrGraphChapterPercent")->text() == "common.percent [30]",
+        require(graph.findChild<QLabel *>("rrGraphChapterPercent")->text() == "common.percent [33]",
                 "Key mode lost the formatting argument");
         ui::PageNavigation navigation(&host, "keyTest");
         require(navigation.back->text() == "common.back", "Navigation bypasses the string catalog");
@@ -1250,9 +1438,9 @@ int main(int argc, char **argv) {
         require(barPaints.paints > 0, "Changed chapter word count did not repaint the bars");
         graph.setData(chapters, {20, -1, 1, 1}, true, {});
         require(title->text() == "The Second Voyage", "The chapter title is missing");
-        require(text("rrGraphChapterPercent") == get("common.percent").arg(30) && text("rrGraphChapterFigure") == "7" &&
+        require(text("rrGraphChapterPercent") == get("common.percent").arg(33) && text("rrGraphChapterFigure") == "7" &&
                     text("rrGraphChapterUnit") == get("stats.pages_left"),
-                "Chapter progress credited the current unread page");
+                "Chapter progress differs from the shared display rule");
         require(text("rrGraphChapterPosition") == get("stats.page_of").arg(4).arg(10),
                 "Chapter page position is missing");
         require(text("rrGraphNextChapter") == get("chapter_graph.next_chapter").arg(12).arg(get("common.pages")),
@@ -1554,7 +1742,13 @@ int main(int argc, char **argv) {
         const auto id = QFontDatabase::addApplicationFont(kobalt::test::readerFontCopies().file(
             "ebook-core/" + file, kobalt::test::readerAssets().fontData("ebook-core/" + file)));
         require(id >= 0, "Core font could not be registered for optical check");
-        readingFamilies.append(QFontDatabase::applicationFontFamilies(id));
+        const auto families = QFontDatabase::applicationFontFamilies(id);
+        for (const auto &family : families)
+            require(kobalt::ui::registerPrivateInterfaceFont(
+                        kobalt::test::readerFontCopies().file("ebook-core/" + file,
+                            kobalt::test::readerAssets().fontData("ebook-core/" + file)), family),
+                    "Core font could not be retained for optical check");
+        readingFamilies.append(families);
     }
     readingFamilies.removeDuplicates();
     for (const auto &face : readingFamilies) {
@@ -1566,7 +1760,9 @@ int main(int argc, char **argv) {
             QPainter painter(&image);
             painter.setFont(font);
             painter.setPen(Qt::black);
-            painter.drawText(QPoint(10, 70), "Hox");
+            const auto glyphs = kobalt::ui::renderPrivateText("Hox", font, 0);
+            require(glyphs.missingGlyphs == 0, "Optical sample lost a glyph");
+            painter.drawImage(QPoint(10, 70) + glyphs.origin, glyphs.image);
         }
         int top = 100, bottom = -1;
         for (int y = 0; y < image.height(); ++y)
@@ -1581,9 +1777,9 @@ int main(int argc, char **argv) {
     }
     const auto nativeFont = QApplication::font();
     // Regular and Bold share their legacy family names on Qt 5 and Qt 6.
-    // The interface registers renamed copies, apart from reading fonts.
-    const QString nativeFamily = "Kobalt UI Sans";
-    const QString chromeFamily = "Kobalt UI Mono";
+    // The interface registers the bundled faces unchanged.
+    const QString nativeFamily = "IBM Plex Sans";
+    const QString chromeFamily = "IBM Plex Mono";
     require(kobalt::ui::interfaceFontFamily() == nativeFamily, "The interface did not register Plex Sans");
     require(QFontInfo(kobalt::ui::interfaceFont()).family() == nativeFamily, "The interface resolved another font");
     require(QFontInfo(kobalt::ui::chromeFont()).family() == chromeFamily, "Chrome did not register Plex Mono");
@@ -1595,8 +1791,9 @@ int main(int argc, char **argv) {
     require(QFontInfo(boldUi).weight() == QFont::Bold, "Bold interface text did not resolve Plex Bold");
     require(QApplication::font() == nativeFont, "The interface changed the native application font");
 
-    // Heavier interface text replaces the faces while the widgets are shown.
-    // Layout stays the same, and switching back draws the same pixels.
+    // Heavier interface text applies to shown widgets that the private
+    // renderer draws. Layout stays the same, and switching back draws the
+    // same pixels. Text that Qt draws itself keeps the regular faces.
     {
         using namespace kobalt::ui;
         QWidget host;
@@ -1604,25 +1801,27 @@ int main(int argc, char **argv) {
         // As the reader window does, so style sheet fonts stay unhinted on Qt 5.2.
         keepInterfaceUnhinted(&host);
         readerStyle(&host, styles::reader());
-        auto *plain = new QLabel("Swipe along edges to adjust frontlight", &host);
+        auto *plain = new InterfaceLabel("Swipe along edges to adjust frontlight", &host);
         plain->setGeometry(10, 10, 880, 60);
-        auto *rich = new QLabel("<b>Chapter</b> 12 of 40", &host);
+        auto *rich = new InterfaceLabel("<b>Chapter</b> 12 of 40", &host);
         rich->setTextFormat(Qt::RichText);
         rich->setGeometry(10, 80, 880, 60);
-        auto *caption = new QLabel("12 pages left", &host);
+        auto *caption = new InterfaceLabel("12 pages left", &host);
         caption->setFont(captionFont());
         readerStyle(caption, styles::caption());
         caption->setGeometry(10, 150, 880, 60);
-        auto *brand = new QLabel("Kobalt", &host);
+        auto *brand = new InterfaceLabel("Kobalt", &host);
         readerStyle(brand, styles::brand(48));
         brand->setGeometry(10, 220, 880, 90);
         // A label's own style sheet keeps the font of its rules.
-        auto *styled = new QLabel("12 pages left", &host);
+        auto *styled = new InterfaceLabel("12 pages left", &host);
         readerStyle(styled, styles::caption());
         styled->setGeometry(10, 150, 880, 60);
-        auto *explicitFont = new QLabel("12 pages left", &host);
+        auto *explicitFont = new InterfaceLabel("12 pages left", &host);
         explicitFont->setFont(chromeFont(22));
         explicitFont->setGeometry(10, 150, 880, 60);
+        auto *native = new QLabel("Swipe along edges to adjust frontlight", &host);
+        native->setGeometry(10, 240, 880, 60);
         // Dictionary and link panels keep a laid-out document.
         auto *paged = new PagedText(&host);
         paged->setTextFont(interfaceFont(28));
@@ -1650,6 +1849,7 @@ int main(int argc, char **argv) {
             return values;
         };
         const auto regular = measure();
+        const auto nativeInk = ink(native);
         const auto hint = plain->sizeHint();
         const auto richHint = rich->sizeHint();
         QVector<QRect> rectangles;
@@ -1684,6 +1884,7 @@ int main(int argc, char **argv) {
                         QFontInfo(chromeFont()).family() == chromeFamily,
                     "Heavier text changed the family");
             const auto heavier = measure();
+            require(ink(native) == nativeInk, "Qt drew its own text heavier");
             require(paged->textFont().pixelSize() == 28, "Paged text lost its size when the faces changed");
             for (int index = 0; index < labels.size(); ++index) {
                 std::printf("interface weight: widget %d ink %+.1f%%\n", index,
@@ -1700,7 +1901,7 @@ int main(int argc, char **argv) {
             require(fits(plain) && fits(rich), "Heavier text does not fit its widget");
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             // Qt5 grid fitting can change advances without changing the stored
-            // font metrics. font-data-check tests those design advances exactly.
+            // font metrics.
             require(plain->sizeHint().height() == hint.height() && rich->sizeHint().height() == richHint.height(),
                     "Heavier text changed a line height");
 #else
@@ -1718,23 +1919,19 @@ int main(int argc, char **argv) {
         }
     }
 
-    require(kobalt::ui::metrics::reading::textPixels({}, false) == 24 &&
-                kobalt::ui::metrics::reading::textPixels({}, true) == 26,
-            "Default chrome sizes changed");
-    require(kobalt::ui::metrics::reading::textPixels("small", false) == 24 &&
-                kobalt::ui::metrics::reading::textPixels("medium", false) == 26 &&
-                kobalt::ui::metrics::reading::textPixels("large", false) == 28 &&
-                kobalt::ui::metrics::reading::textPixels("small", true) == 26 &&
-                kobalt::ui::metrics::reading::textPixels("medium", true) == 28 &&
-                kobalt::ui::metrics::reading::textPixels("large", true) == 30,
-            "Chrome text sizes have the wrong increments");
-    require(kobalt::ui::metrics::reading::stripHeight("small") == 48 &&
-                kobalt::ui::metrics::reading::stripHeight("medium") == 52 &&
-                kobalt::ui::metrics::reading::stripHeight("large") == 56,
-            "Chrome strips have the wrong heights");
-    require(kobalt::ui::metrics::reading::textSize("invalid") == "small" &&
-                kobalt::ui::metrics::reading::textPixels("invalid", false) == 24,
-            "Unknown chrome size did not use the default");
+    require(kobalt::ui::metrics::reading::textPixels(24, false) == 24 &&
+                kobalt::ui::metrics::reading::textPixels(24, true) == 24 &&
+                kobalt::ui::metrics::reading::textPixels(26, false) == 26 &&
+                kobalt::ui::metrics::reading::textPixels(26, true) == 26 &&
+                kobalt::ui::metrics::reading::textPixels(28, false) == 28 &&
+                kobalt::ui::metrics::reading::textPixels(28, true) == 28,
+            "Header and footer checkpoint sizes must match");
+    require(kobalt::ui::metrics::reading::stripHeight(24) == 48 &&
+                kobalt::ui::metrics::reading::stripHeight(26) == 52 &&
+                kobalt::ui::metrics::reading::stripHeight(28) == 56 &&
+                kobalt::ui::metrics::reading::stripHeight(48) == 96 &&
+                kobalt::ui::metrics::reading::textBandHeight(48) == 88,
+            "Chrome strips do not reserve enough room for large text");
     // Exercise the final styled layout, not only the constructor's size hints.
     {
         using namespace kobalt::ui;
@@ -1860,6 +2057,81 @@ int main(int argc, char **argv) {
                 }
         require(firstInk >= 4 && lastInk >= 0 && lastInk < reference.height() - 4,
                 "Setting description does not fit its requested height");
+    }
+    {
+        // Standard text keeps the description at its design offset below the
+        // title; only large text makes the title line taller.
+        namespace m = kobalt::ui::metrics;
+        const auto look = option.presentation();
+        QFont description = option.font();
+        description.setPixelSize(look.descriptionPixels);
+        description.setWeight(QFont::Normal);
+        description.setItalic(false);
+        const int width = 900, textWidth = width - 2 * look.horizontalInset - m::settings::labelLeft -
+                                           look.indicatorSize.width() - m::settings::toggleGap;
+        require(option.heightForWidth(width) ==
+                    qMax(look.minimumRowHeight, m::settings::descriptionTop + m::settings::descriptionBottom +
+                         kobalt::ui::wrappedInterfaceTextHeight(option.accessibleDescription(), description, textWidth)),
+                "Standard text moved the setting description");
+    }
+    {
+        // A radio label's capitals center on its circle at every text size.
+        // A word without descenders shows where the capitals sit.
+        namespace m = kobalt::ui::metrics;
+        const auto capitalsBelowCircle = [&optionsHost, &app](qreal scale) {
+            kobalt::ui::setLargeText(scale);
+            kobalt::ui::RadioList list(&optionsHost);
+            list.add("radioCentering", "HIDE");
+            list.resize(700, list.heightForWidth(700));
+            list.show();
+            app.processEvents();
+            const auto image = list.grab().toImage();
+            const auto inkRows = [&image](int left, int right) {
+                int first = -1, last = -1;
+                for (int y = 0; y < image.height() - 2; ++y)
+                    for (int x = left; x < right; ++x)
+                        if (qGray(image.pixel(x, y)) < 128) {
+                            if (first < 0)
+                                first = y;
+                            last = y;
+                            break;
+                        }
+                return (first + last) / 2.0;
+            };
+            const int circleRight = m::chrome::inset + m::chrome::checkSize;
+            return inkRows(circleRight + m::settings::toggleGap, image.width()) -
+                   inkRows(m::chrome::inset, circleRight);
+        };
+        const qreal standard = capitalsBelowCircle(1), large = capitalsBelowCircle(1.5);
+        kobalt::ui::setLargeText(1);
+        require(qAbs(standard) <= 1, "A radio label is not centered on its circle");
+        require(qAbs(large) <= 1, "Large text moved a radio label away from its circle");
+        // A value on the label's line keeps its place while the label is
+        // raised, so values line up whatever their labels' descenders.
+        const auto valueBelowCircle = [&optionsHost, &app](const QString &label) {
+            kobalt::ui::RadioList list(&optionsHost);
+            list.add("radioValue", label)->setValue("VALUE");
+            list.resize(700, list.heightForWidth(700));
+            list.show();
+            app.processEvents();
+            const auto row = list.grab().toImage();
+            const auto inkMiddle = [&row](int left, int right) {
+                int first = -1, last = -1;
+                for (int y = 0; y < row.height() - 2; ++y)
+                    for (int x = left; x < right; ++x)
+                        if (qGray(row.pixel(x, y)) < 128) {
+                            if (first < 0)
+                                first = y;
+                            last = y;
+                            break;
+                        }
+                return (first + last) / 2.0;
+            };
+            const int circleRight = m::chrome::inset + m::chrome::checkSize;
+            return inkMiddle(row.width() / 2, row.width()) - inkMiddle(m::chrome::inset, circleRight);
+        };
+        require(qAbs(valueBelowCircle("Title") - valueBelowCircle("Jumpy")) < 1,
+                "A radio row's value moved with its raised label");
     }
     kobalt::ui::DescribedOption compactOption("Automatic warmth", {}, &optionsHost);
     compactOption.resize(700, compactOption.heightForWidth(700));
@@ -2140,6 +2412,62 @@ int main(int argc, char **argv) {
         require(host.grab().toImage() == page, "Closing the opening popup damaged its parent");
         host.hide();
     }
+    {
+        using namespace kobalt::ui;
+        const auto alias = QStringLiteral("Dictionary private-only canary");
+        require(registerPrivateInterfaceFont(kobalt::test::readerAssets().file("fonts/NotoSansMath-Regular.ttf"), alias),
+                "Cannot retain the dictionary canary font");
+        QFont font(alias);
+        font.setPixelSize(36);
+        QFile editorFace(kobalt::test::readerAssets().file("fonts/NotoSansMath-Regular.ttf"));
+        require(editorFace.open(QIODevice::ReadOnly) && nativeEditorFontData(font) == editorFace.readAll(),
+                "A private TrueType face must remain available for a native editor");
+        require(nativeEditorFontData(QFont("Unregistered editor family")).isEmpty(),
+                "An unknown editor family must not silently load an unrelated font");
+        require(registerPrivateInterfaceFont(kobalt::test::readerAssets().file("fonts/NotoSansMath-Regular.ttf"), alias),
+                "Preparing a native editor must not change private preview registration");
+        const auto bytes = nativeEditorFontData(font);
+        const auto nativeFamily = QRawFont(bytes, 36, QFont::PreferNoHinting).familyName();
+        require(!nativeFamily.isEmpty(), "The editor fixture has no native font family");
+        QFont editorFont(nativeFamily);
+        editorFont.setPixelSize(36);
+        require(QRawFont::fromFont(editorFont).familyName() != nativeFamily,
+                "The private editor fixture was already registered with Qt");
+        require(kobalt::reader::registerEditorFont(editorFont) &&
+                    QRawFont::fromFont(renewedFont(editorFont)).familyName() == nativeFamily,
+                "A native editor must resolve the private reading face instead of a fallback");
+        require(!kobalt::reader::registerEditorFont(editorFont), "Reopening the editor must not register its face again");
+        PagedText preview;
+        preview.resize(500, 150);
+        preview.setMargins({});
+        preview.setTextFont(font);
+        preview.setHtml("iiiiWWWW");
+        preview.show();
+        const auto actual = preview.grab().toImage().convertToFormat(QImage::Format_RGB32);
+        QImage expected(actual.size(), QImage::Format_RGB32);
+        expected.fill(preview.palette().color(QPalette::Window));
+        const auto glyphs = renderPrivateText("iiiiWWWW", font, -1, {}, {}, PrivateTextEmphasis::FontFace,
+                                             Qt::LeftToRight,
+                                             {{0, 8, font, preview.palette().color(QPalette::WindowText)}});
+        QPainter painter(&expected);
+        painter.drawImage(QPoint(0, glyphs.lineAscent) + glyphs.origin, glyphs.image);
+        painter.end();
+        const auto ink = [](const QImage &image) {
+            QRect bounds;
+            for (int y = 0; y < image.height(); ++y)
+                for (int x = 0; x < image.width(); ++x)
+                    if (qGray(image.pixel(x, y)) < 240)
+                        bounds |= QRect(x, y, 1, 1);
+            return bounds;
+        };
+        if (actual.copy(ink(actual)) != expected.copy(ink(expected))) {
+            std::fprintf(stderr, "Canary actual ink %dx%d expected %dx%d font %s\n", ink(actual).width(),
+                         ink(actual).height(), ink(expected).width(), ink(expected).height(),
+                         qPrintable(preview.textFont().toString()));
+        }
+        require(!ink(expected).isEmpty() && actual.copy(ink(actual)) == expected.copy(ink(expected)),
+                "Dictionary definitions did not use the retained FreeType font glyphs");
+    }
     kobalt::ui::PagedText definition;
     definition.resize(400, 95);
     definition.show();
@@ -2327,6 +2655,45 @@ int main(int argc, char **argv) {
         checkList();
     }
     definition.hide();
+    for (const bool dark : {false, true}) {
+        for (const auto alignment : {Qt::AlignLeft, Qt::AlignHCenter}) {
+            kobalt::ui::Button button("Get");
+            button.resize(220, 66);
+            button.setProperty("reader_dark", dark);
+            button.setPalette(kobalt::ui::readerPalette(button.palette(), dark));
+            button.setContentAlignment(alignment);
+            kobalt::ui::readerStyle(&button, kobalt::ui::styles::outlined() + "QPushButton{font-size:34px;padding:0;}");
+            QPixmap glyph(28, 28);
+            glyph.fill(Qt::magenta);
+            button.setIcon(QIcon(glyph));
+            button.setIconSize(glyph.size());
+            button.show();
+            app.processEvents();
+            const auto image = button.grab().toImage();
+            QRect iconInk, textInk;
+            for (int y = 4; y < image.height() - 4; ++y)
+                for (int x = 4; x < image.width() - 4; ++x) {
+                    const auto pixel = image.pixelColor(x, y);
+                    if (pixel == QColor(Qt::magenta))
+                        iconInk |= QRect(x, y, 1, 1);
+                    else if (dark ? qGray(pixel.rgb()) > 192 : qGray(pixel.rgb()) < 64)
+                        textInk |= QRect(x, y, 1, 1);
+                }
+            if (qEnvironmentVariableIsSet("KOBALT_DICTIONARY_CONTROLS_CAPTURE")) {
+                const auto path = qEnvironmentVariable("KOBALT_DICTIONARY_CONTROLS_CAPTURE");
+                QDir().mkpath(path);
+                image.save(path + QString("/button-%1-%2.png").arg(dark).arg(int(alignment)));
+            }
+            require(!iconInk.isEmpty() && !textInk.isEmpty() && textInk.left() - iconInk.right() >= 8,
+                    "Shared button icon and text overlap or lack a horizontal gap");
+            require(qAbs(iconInk.center().y() - textInk.center().y()) <= 2 &&
+                        qAbs(textInk.center().y() - button.rect().center().y()) <= 2,
+                    "Shared button text and icon are not vertically centered");
+            require(alignment == Qt::AlignLeft ? qAbs(iconInk.left() - kobalt::ui::px(24)) <= 1 :
+                        qAbs((iconInk | textInk).center().x() - button.rect().center().x()) <= 3,
+                    "Shared button does not honor its horizontal content alignment");
+        }
+    }
     {
         QWidget owner;
         owner.resize(1100, 650);
@@ -2417,7 +2784,8 @@ int main(int argc, char **argv) {
             entry.id = id;
             entry.language = "en";
             entry.target = entry.id.section('-', 1, 1);
-            entry.name = id;
+            entry.name = entry.id == "en-en" ? "English monolingual" : "English to " + entry.target;
+            entry.license = "CC-BY-SA-4.0";
             entry.size = 3500000;
             english.append(entry);
         }
@@ -2448,9 +2816,66 @@ int main(int argc, char **argv) {
                 "Language subcaption is not repeated on a continued page");
         page.setLanguage("en");
         resetPage();
+        if (qEnvironmentVariableIsSet("KOBALT_DICTIONARY_CONTROLS_CAPTURE"))
+            page.grab().save(qEnvironmentVariable("KOBALT_DICTIONARY_CONTROLS_CAPTURE") + "/downloads.png");
+        int starts = 0, stops = 0;
+        page.installRequested = [&](const QString &id) {
+            ++starts;
+            page.setTransfer(id, 2000000, 3500000, false);
+            page.setState({}, true, {});
+        };
+        page.cancelRequested = [&] {
+            ++stops;
+            page.setTransfer({}, 0, 0, false);
+            page.setState({}, false, {});
+        };
+        QPointer<QPushButton> downloadAction = page.findChild<QPushButton *>("rrDictionaryAction0");
+        downloadAction->click();
+        auto *confirmation = dynamic_cast<kobalt::ui::ChoiceModal *>(owner.findChild<QWidget *>("rrDictionaryDownload"));
+        app.processEvents();
+        require(confirmation && confirmation->isVisible() && starts == 0,
+                "Get must ask for confirmation before starting a download");
+        require(confirmation->rect().contains(confirmation->card()->geometry()),
+                "Download confirmation must fit a short settings viewport");
+        require(confirmation->descriptionLabel()->text().contains("3.5 MB") &&
+                    confirmation->descriptionLabel()->text().contains("CC BY-SA 4.0"),
+                "Download confirmation must show its actual size and license");
+        if (qEnvironmentVariableIsSet("KOBALT_DICTIONARY_CONTROLS_CAPTURE"))
+            owner.grab().save(qEnvironmentVariable("KOBALT_DICTIONARY_CONTROLS_CAPTURE") + "/download-confirmation.png");
+        confirmation->secondaryButton()->click();
+        require(starts == 0 && !confirmation->isVisible(), "Cancel must dismiss confirmation without downloading");
+        app.processEvents();
+        downloadAction->click();
+        owner.findChild<QPushButton *>("rrDictionaryDownloadConfirm")->click();
+        require(starts == 1 && downloadAction && downloadAction->text() == kobalt::strings::get("dictionaries.stop"),
+                "Download action did not become Stop in place");
+        downloadAction->click();
+        require(stops == 1 && downloadAction && !downloadAction->icon().isNull(),
+                "Cancelling did not restore the download icon and action in place");
+        downloadAction->click();
+        app.processEvents();
+        owner.findChild<QPushButton *>("rrDictionaryDownloadConfirm")->click();
+        require(starts == 2, "Reused dictionary action retained an outdated click handler");
         page.setState({}, true, {});
         page.setTransfer("en-en", 2000000, 3500000, false);
         app.processEvents();
+        auto *activeRow = page.findChild<QWidget *>("rrDictionaryRow0");
+        auto *otherRow = page.findChild<QWidget *>("rrDictionaryRow1");
+        require(otherRow, "Progress test needs a second dictionary row");
+        PaintCountingObserver unrelatedPaints;
+        otherRow->installEventFilter(&unrelatedPaints);
+        for (auto *child : otherRow->findChildren<QWidget *>())
+            child->installEventFilter(&unrelatedPaints);
+        for (int received : {2100000, 2200000, 2200000}) {
+            page.setStorage({}, 1000000000);
+            page.setTransfer("en-en", received, 3500000, false);
+            page.setState({}, true, {});
+            app.processEvents();
+            require(page.findChild<QWidget *>("rrDictionaryRow0") == activeRow &&
+                        page.findChild<QWidget *>("rrDictionaryRow1") == otherRow,
+                    "Download progress rebuilt dictionary rows");
+        }
+        require(unrelatedPaints.paints == 0, "Download progress repainted an unchanged dictionary row");
         auto *progress = page.findChild<QProgressBar *>("rrDictionaryProgress0");
         require(progress && progress->width() == progress->height() && progress->value() > 0,
                 "Circular transfer progress is missing");
@@ -2471,6 +2896,8 @@ int main(int argc, char **argv) {
         for (auto *label : page.findChildren<QLabel *>())
             require(!label->isVisible() || label->text() != kobalt::strings::get("dictionaries.download_failed"),
                     "Next page action retained transfer failure");
+        owner.findChild<QPushButton *>("rrDictionaryDownloadCancel")->click();
+        app.processEvents();
         page.setState({"en-en"}, false, {});
         resetPage();
         auto *installedHeader =
@@ -2501,26 +2928,527 @@ int main(int argc, char **argv) {
         require(kobalt::DictionaryPanel::formatDefinition(ordinary) == ordinary,
                 "Kobo normalization changed ordinary dictionary HTML");
     }
+    {
+        using kobalt::DictionaryPanel;
+        require(DictionaryPanel::definitionLineHeight(100) == 0 &&
+                    DictionaryPanel::definitionLineHeight(120) == 110 &&
+                    DictionaryPanel::definitionLineHeight(140) == 120,
+                "Default dictionary font changed its automatic leading");
+        require(DictionaryPanel::definitionLineHeight(80, true) == 120 &&
+                    DictionaryPanel::definitionLineHeight(100, true) == 120 &&
+                    DictionaryPanel::definitionLineHeight(120, true) == 132 &&
+                    DictionaryPanel::definitionLineHeight(140, true) == 144,
+                "Custom dictionary font did not add twenty percent to its automatic leading");
+    }
+    {
+        QWidget host;
+        host.resize(800, 900);
+        kobalt::ui::PagerBar outer(&host, "outer");
+        QWidget nested(&host);
+        nested.resize(600, 600);
+        kobalt::ui::PagerBar inner(&nested, "inner");
+        outer.setPage(0, 3, {}, true);
+        inner.setPage(1, 2);
+        int outerTurns = 0, innerTurns = 0;
+        QObject::connect(outer.next, &QPushButton::clicked, [&] { ++outerTurns; });
+        QObject::connect(inner.previous, &QPushButton::clicked, [&] { ++innerTurns; });
+        host.show();
+        app.processEvents();
+        require(kobalt::ui::turnVisiblePageControl(&host, 1) && outerTurns == 0,
+                "End of nested text paged the list behind it");
+        require(kobalt::ui::turnVisiblePageControl(&host, -1) && innerTurns == 1,
+                "Hardware paging missed the nested pager");
+        nested.hide();
+        require(kobalt::ui::turnVisiblePageControl(&host, 1) && outerTurns == 1,
+                "Hidden nested pager intercepted a hardware turn");
+    }
+    {
+        kobalt::library::Index index;
+        for (int i = 0; i < 30; ++i)
+            index.folders.append({QString("/books/folder-%1").arg(i), QString("Folder %1").arg(i)});
+        for (int i = 0; i < 30; ++i) {
+            kobalt::library::Book book;
+            book.key = QString::number(i);
+            book.title = QString("Book %1").arg(i);
+            book.opened = 1;
+            book.percent = 20;
+            index.books.insert(book.key, book);
+        }
+        kobalt::library::LibraryView library(index, [](const QString &) { return QString(); });
+        library.resize(1072, 1448);
+        library.show();
+        for (auto view : {kobalt::library::View::Home, kobalt::library::View::List, kobalt::library::View::Grid}) {
+            index.settings.view = view;
+            library.refresh();
+            app.processEvents();
+            auto *counter = library.findChild<QLabel *>("libraryPage");
+            require(counter && counter->isVisible(), "Multi-page Library view has no pager");
+            const auto first = counter->text();
+            library.pageButton(1);
+            require(counter->text() != first, "Hardware buttons did not advance a Library view");
+            library.pageButton(-1);
+            require(counter->text() == first, "Hardware buttons did not return a Library view");
+        }
+        for (const QSize size : {QSize(1072, 1448), QSize(1448, 700)}) {
+            library.resize(size);
+            library.show();
+            library.refresh();
+            library.findChild<QPushButton *>("libraryMore")->click();
+            library.findChild<QPushButton *>("libraryMoreFolders")->click();
+            app.processEvents();
+            auto *counter = library.findChild<QLabel *>("libraryFoldersPage");
+            auto *folderPage = library.findChild<QWidget *>("libraryFolders");
+            require(counter && counter->isVisible(), "Long folder list has no pager");
+            const auto first = counter->text();
+            QSet<QString> reached;
+            int turns = 0;
+            do {
+                for (auto *widget : folderPage->findChildren<QWidget *>()) {
+                    const auto name = widget->objectName();
+                    if (!name.startsWith("libraryFolder") && name != "libraryCheckAtStart")
+                        continue;
+                    const auto center = widget->mapTo(&library, widget->rect().center());
+                    auto *hit = library.childAt(center);
+                    if (hit == widget || (hit && widget->isAncestorOf(hit)))
+                        reached.insert(name);
+                }
+                library.pageButton(1);
+                require(++turns < 100, "Folder paging did not wrap");
+            } while (counter->text() != first);
+            require(turns > 1, "Long folder list stayed on one page");
+            for (int i = 0; i < index.folders.size(); ++i)
+                require(reached.contains(QString("libraryFolder%1").arg(i)), "Folder paging lost a row");
+            require(reached.contains("libraryCheckAtStart") && reached.contains("libraryFoldersAdd") &&
+                        reached.contains("libraryFoldersRescan"), "Folder paging lost the controls after the list");
+            library.pageButton(-1);
+            require(counter->text() != first, "Folder paging did not wrap backwards");
+            library.pageButton(1);
+            require(counter->text() == first, "Folder paging did not return to its first page");
+            library.dismiss();
+        }
+    }
     QWidget reader;
     reader.resize(1072, 1448);
     reader.show();
+    {
+        kobalt::reader::SettingsPanel settings(&reader, {});
+        settings.setGeometry(reader.rect());
+        settings.show();
+        app.processEvents();
+        const auto sampleHeight = [&settings](const char *name) {
+            auto *option = settings.fontDialog->findChild<QWidget *>(name);
+            require(option && option->isVisible(), "Dictionary size preview is missing");
+            const auto image = option->grab().toImage().convertToFormat(QImage::Format_RGB32);
+            int first = image.height(), last = -1;
+            for (int y = 4; y < image.height() - 4; ++y)
+                for (int x = image.width() / 2; x < image.width() - 4; ++x)
+                    if (qGray(image.pixel(x, y)) < 80) {
+                        first = qMin(first, y);
+                        last = qMax(last, y);
+                    }
+            return last >= first ? last - first + 1 : 0;
+        };
+        for (const auto &family : {kobalt::ui::interfaceFont().family(), kobalt::ui::brandFont(30).family()}) {
+            settings.showDictionaryFontSizes(100, family, true, [](int) {});
+            app.processEvents();
+            const int small = sampleHeight("rrDictionaryFontSize80");
+            require(small > 0 && sampleHeight("rrDictionaryFontSize140") > small,
+                    "Dictionary size previews do not draw the selected text sizes");
+            auto *option = settings.fontDialog->findChild<QWidget *>("rrDictionaryFontSize140");
+            auto *preview = option->findChild<QWidget *>("rrDictionaryFontPreview140");
+            require(preview && option->rect().contains(preview->geometry()),
+                    "Extra large dictionary preview escapes its row");
+            for (int percent : {80, 100, 120, 140}) {
+                auto *sample = settings.fontDialog->findChild<QWidget *>(QString("rrDictionaryFontPreview%1").arg(percent));
+                auto *label = sample->findChild<QLabel *>();
+                require(label, "Dictionary preview has no sample label");
+                const int textWidth = qCeil(QFontMetricsF(label->font()).horizontalAdvance(label->text()));
+                require(label->width() >= textWidth, "Dictionary preview elides its sample text");
+                const auto pixels = sample->grab().toImage().convertToFormat(QImage::Format_RGB32);
+                QRect ink;
+                for (int y = 0; y < pixels.height(); ++y)
+                    for (int x = 0; x < pixels.width(); ++x)
+                        if (qGray(pixels.pixel(x, y)) < 80)
+                            ink |= QRect(x, y, 1, 1);
+                require(!ink.isEmpty(), "Dictionary preview has no painted text");
+                const auto bounds = QRect(sample->mapTo(sample->parentWidget(), ink.topLeft()), ink.size());
+                require(qAbs(bounds.top() - (sample->parentWidget()->height() - bounds.bottom() - 1)) <= 2,
+                        "Dictionary preview ink is not centered vertically in its row");
+                require(ink.left() >= kobalt::ui::px(8) && ink.top() >= kobalt::ui::px(8) &&
+                            pixels.width() - ink.right() - 1 >= kobalt::ui::px(8) &&
+                            pixels.height() - ink.bottom() - 1 >= kobalt::ui::px(8),
+                        "Dictionary preview ink has insufficient padding");
+            }
+            settings.dismissFontChoices();
+        }
+    }
+    {
+        kobalt::ui::PagedText text(&reader);
+        text.resize(300, 260);
+        text.setMargins({});
+        text.setTextFont(kobalt::ui::interfaceFont(30));
+        text.show();
+        const auto lineGap = [&text] {
+            const auto image = text.grab().toImage().convertToFormat(QImage::Format_RGB32);
+            QVector<int> starts;
+            bool previousInk = false;
+            for (int y = 0; y < image.height(); ++y) {
+                bool ink = false;
+                for (int x = 0; x < image.width(); ++x)
+                    ink |= qGray(image.pixel(x, y)) < 80;
+                if (ink && !previousInk)
+                    starts.append(y);
+                previousInk = ink;
+            }
+            require(starts.size() == 3, "Dictionary line spacing clipped or overlapped a line");
+            return starts[1] - starts[0];
+        };
+        text.setMinimumLineHeight(100);
+        text.setHtml("<p style='line-height:8px'>Hg<br>Hg<br>Hg</p>");
+        const int standard = lineGap();
+        text.setMinimumLineHeight(120);
+        require(lineGap() > standard, "Dictionary leading did not increase with the larger size");
+        text.setHtml("<p style='line-height:150%'>Hg<br>Hg<br>Hg</p>");
+        const int roomy = lineGap();
+        text.setMinimumLineHeight(110);
+        require(lineGap() == roomy, "Automatic dictionary leading reduced existing wider spacing");
+        text.setHtml("<p style='line-height:100%'>Hg<br>Hg<br>Hg</p>");
+        text.setMinimumLineHeight(120);
+        text.setMinimumLineHeight(0);
+        require(lineGap() == standard, "Restoring the dictionary size kept added line spacing");
+        text.setMinimumLineHeight(120);
+        const int beforeFontChange = lineGap();
+        QEvent fontChange(QEvent::FontChange);
+        QApplication::sendEvent(&text, &fontChange);
+        require(lineGap() == beforeFontChange, "A font refresh discarded dictionary line spacing");
+    }
+    {
+        kobalt::DictionaryPanel panel(&reader);
+        auto *definition = dynamic_cast<kobalt::ui::PagedText *>(panel.findChild<QWidget *>("rrDefinition"));
+        require(definition, "Dictionary definition widget is missing");
+        const auto body = kobalt::ui::brandFont(30).family();
+        const auto otherBody = kobalt::ui::chromeFont(30).family();
+        const auto overrideFamily = kobalt::ui::interfaceFont(30).family();
+        panel.setBookFont(body);
+        panel.setDefinitionFont({}, 120);
+        require(definition->textFont().family() == body, "Default dictionary font did not follow the book body");
+        panel.setBookFont(otherBody);
+        require(definition->textFont().family() == otherBody, "Default dictionary font did not follow a changed book font");
+        panel.setDefinitionFont(overrideFamily, 140);
+        const auto overrideSize = definition->textFont().pixelSize();
+        panel.setBookFont(body);
+        require(definition->textFont().family() == overrideFamily && definition->textFont().pixelSize() == overrideSize,
+                "Changing the book font replaced the explicit dictionary override");
+        panel.setDefinitionFont({}, 140);
+        require(definition->textFont().family() == body && definition->textFont().pixelSize() == overrideSize,
+                "Resetting the dictionary face did not restore the book font at the selected dictionary size");
+    }
+    for (const bool dark : {false, true}) {
+        QWidget host;
+        host.resize(600, 800);
+        host.setPalette(kobalt::ui::readerPalette(host.palette(), dark));
+        host.show();
+        kobalt::DictionaryPanel panel(&host);
+        kobalt::DictionaryResult contrast;
+        contrast.received = true;
+        contrast.dictionary = "Contrast fixture";
+        const QColor foreground = dark ? Qt::black : Qt::white;
+        const QColor background = dark ? Qt::white : Qt::black;
+        contrast.html = QString("<p><span style='color:%1;background-color:%2'>MMMM</span></p>")
+                            .arg(foreground.name(), background.name());
+        panel.open("word", contrast, QRect(10, 10, 40, 40));
+        app.processEvents();
+        auto *definition = panel.findChild<QWidget *>("rrDefinition");
+        require(definition && definition->isVisible(), "Contrast fixture did not open a dictionary definition");
+        const auto image = definition->grab().toImage().convertToFormat(QImage::Format_RGB32);
+        const auto capture = qEnvironmentVariable("KOBALT_RICH_TEXT_CAPTURE");
+        if (!capture.isEmpty())
+            require(image.save(capture + QString("/dictionary-%1.png").arg(dark ? "dark" : "light")),
+                    "Cannot save dictionary contrast capture");
+        QRect backdrop;
+        for (int y = 0; y < image.height(); ++y)
+            for (int x = 0; x < image.width(); ++x)
+                if (image.pixelColor(x, y) == background)
+                    backdrop |= QRect(x, y, 1, 1);
+        require(backdrop.width() > 30 && backdrop.height() > 20, "Dictionary definition lost its explicit background");
+        int ink = 0;
+        for (int y = backdrop.top(); y <= backdrop.bottom(); ++y)
+            for (int x = backdrop.left(); x <= backdrop.right(); ++x)
+                ink += image.pixelColor(x, y) == foreground;
+        require(ink > 100, "Dictionary definition text is invisible against its background");
+    }
+    {
+        const QRect keyboard(0, 900, 1072, 548), key(927, 1235, 95, 95), query(0, 0, 595, 112);
+        constexpr quint64 modes = 2 | 4 | 8, ordinary = (quint64(1) << 38) | 8;
+        using kobalt::completeKeyboardWaveform;
+        require(completeKeyboardWaveform(key, keyboard, 8, ordinary, modes) == ordinary,
+                "A native mode-only key policy must receive the text waveform so field/key damage can split");
+        require(completeKeyboardWaveform(key, keyboard, 4, ordinary, modes) == ((ordinary & ~modes) | 4),
+                "Completing a keyboard waveform must preserve partial update mode");
+        require(completeKeyboardWaveform(query, keyboard, 8, ordinary, modes) == 8 &&
+                    completeKeyboardWaveform(key, {}, 8, ordinary, modes) == 8 &&
+                    completeKeyboardWaveform(QRect(0, 0, 1072, 1448), keyboard, 8, ordinary, modes) == 8,
+                "Keyboard policy completion must not change header, hidden-keyboard or screen policies");
+        require(completeKeyboardWaveform(key, keyboard, 0, ordinary, modes) == 0 &&
+                    completeKeyboardWaveform(key, keyboard, 12, ordinary, modes) == 12 &&
+                    completeKeyboardWaveform(key, keyboard, 0x48, ordinary, modes) == 0x48,
+                "Explicit waveforms and invalid update modes must keep their original policy");
+        QVector<QPair<QRect, quint64>> policies{{keyboard, ordinary}, {keyboard, (ordinary & ~modes) | 2}};
+        const auto policy = [&](const auto &entries) {
+            return kobalt::commonKeyboardPolicy(entries, modes, 8, 2);
+        };
+        require(policy(policies) == ordinary, "Mixed native keyboard modes lost the full update policy");
+        std::reverse(policies.begin(), policies.end());
+        require(policy(policies) == ordinary, "Keyboard cache policy depends on widget flag order");
+        QImage pixels(1072, 1448, QImage::Format_ARGB32);
+        pixels.fill(Qt::white);
+        kobalt::KeyboardRefreshCache cache;
+        require(!cache.unchanged(&pixels, keyboard, keyboard, ordinary, false) &&
+                    cache.unchanged(&pixels, key, keyboard, policy(policies), true),
+                "Identical keyboard pixels with mixed native modes bypass the refresh cache");
+        pixels.setPixelColor(key.center(), Qt::black);
+        require(!cache.unchanged(&pixels, key, keyboard, policy(policies), true),
+                "A changed keyboard key was incorrectly suppressed");
+        const quint64 partial = (ordinary & ~modes) | 4;
+        require(!cache.unchanged(&pixels, key, keyboard, partial, true) &&
+                    !cache.unchanged(&pixels, key, keyboard, ordinary, true),
+                "A new full keyboard update was suppressed after a partial update");
+        policies[0].second ^= quint64(1) << 39;
+        require(policy(policies) == 0, "Different keyboard waveforms were combined for refresh suppression");
+        policies = {{key, ordinary | 2}};
+        require(policy(policies) == 0, "An invalid keyboard mode was accepted by the pixel cache");
+    }
+    for (const bool dark : {false, true}) {
+        const QColor paper(dark ? Qt::black : Qt::white), ink(dark ? Qt::white : Qt::black);
+        for (const auto edge : {Qt::TopEdge, Qt::BottomEdge, Qt::LeftEdge, Qt::RightEdge}) {
+            const bool horizontal = edge == Qt::TopEdge || edge == Qt::BottomEdge;
+            for (const qreal scale : {.5, .558, .75, 1., 1.116, 1.25, 2.}) {
+                for (const qreal offset : {0., .2, .4, .6, .8}) {
+                    QImage image(QSize(qCeil(100 * scale) + 2, qCeil(100 * scale) + 2),
+                                 QImage::Format_ARGB32_Premultiplied);
+                    image.fill(paper);
+                    {
+                        QPainter painter(&image);
+                        painter.translate(offset, offset);
+                        painter.scale(scale, scale);
+                        kobalt::ui::paintEdges(painter, QRect(0, 0, 100, 100), edge, ink, 3);
+                        // An opaque child touches the inner border on half of the edge.
+                        const QRect child = edge == Qt::TopEdge ? QRect(50, 3, 50, 97) :
+                                            edge == Qt::BottomEdge ? QRect(50, 0, 50, 97) :
+                                            edge == Qt::LeftEdge ? QRect(3, 50, 97, 50) : QRect(0, 50, 97, 50);
+                        painter.fillRect(child, paper);
+                    }
+                    const int exposed = qRound(offset + 25 * scale), covered = qRound(offset + 75 * scale);
+                    int visibleInk = 0;
+                    for (int across = 0; across < image.width(); ++across) {
+                        const auto bare = image.pixelColor(horizontal ? exposed : across, horizontal ? across : exposed);
+                        const auto adjacent = image.pixelColor(horizontal ? covered : across, horizontal ? across : covered);
+                        require(bare == adjacent, "An opaque neighbor clips a scaled border differently from transparent content");
+                        visibleInk += bare == ink;
+                    }
+                    require(visibleInk > 0, "Pixel alignment erased a scaled border");
+                }
+            }
+        }
+    }
+    for (const bool lower : {false, true}) {
+        class Keyboard final : public kobalt::KeyboardController {
+        public:
+            explicit Keyboard(QWidget *host) : host(host) {}
+            bool active = false;
+            bool show() override {
+                active = true;
+                host->window()->setProperty("reader_keyboard_bounds", QRect(0, host->height() - 300, host->width(), 300));
+                return true;
+            }
+            void hide() override {
+                active = false;
+                host->window()->setProperty("reader_keyboard_bounds", QRect());
+            }
+            void place() override {}
+            QWidget *host;
+        };
+        Keyboard *keyboard = nullptr;
+        kobalt::DictionaryPanel panel(&reader, [&](QWidget *host, QLineEdit *) {
+            require(host == &reader, "The keyboard must belong to the reader, separately from the dictionary sheet");
+            auto value = std::make_unique<Keyboard>(host);
+            keyboard = value.get();
+            return value;
+        });
+        panel.setBookFont(kobalt::ui::brandFont(kobalt::ui::metrics::chrome::titleText).family());
+        const QRect selection(20, lower ? 20 : reader.height() - 80, 50, 40);
+        kobalt::DictionaryResult missing;
+        missing.received = missing.restored = true;
+        missing.dictionary = "Spanish";
+        missing.dictionaryId = "es";
+        if (!lower)
+            missing.html = "<p>A matching definition.</p>";
+        panel.open("hablaban", missing, selection);
+        const auto original = panel.geometry();
+        auto *edit = panel.findChild<QPushButton *>("rrDictionaryEdit");
+        auto *query = panel.findChild<QLineEdit *>("rrDictionaryQuery");
+        auto *cancel = panel.findChild<QPushButton *>("rrDictionaryClose");
+        auto *submit = panel.findChild<QPushButton *>("rrDictionarySubmit");
+        auto *definition = panel.findChild<QWidget *>("rrDefinition");
+        const auto editImage = edit->grab().toImage().convertToFormat(QImage::Format_ARGB32);
+        int editInk = 0;
+        for (int y = 4; y < editImage.height() - 4; ++y)
+            for (int x = 4; x < editImage.width() - 4; ++x)
+                editInk += editImage.pixelColor(x, y) != edit->palette().color(QPalette::Window);
+        require(editInk > 20, "The lookup edit button must paint its pencil icon");
+        require(editImage.pixelColor(0, editImage.height() / 2).rgba() == edit->palette().color(QPalette::Mid).rgba(),
+                "The lookup edit cell needs a left divider");
+        if (lower) {
+            // Transparent text and opaque buttons must leave the same rule at
+            // fractional preview positions, including Retina pixel scales.
+            for (const qreal scale : {.33, .5, .558, .565, .75, 1., 1.116, 1.25, 2.}) {
+                for (const qreal offset : {0., .2, .4, .6, .8}) {
+                    QImage image(QSize(qCeil(panel.width() * scale), qCeil(panel.height() * scale) + 1),
+                                 QImage::Format_ARGB32_Premultiplied);
+                    image.fill(panel.palette().color(QPalette::Window));
+                    {
+                        QPainter painter(&image);
+                        painter.translate(0, offset);
+                        painter.scale(scale, scale);
+                        panel.render(&painter);
+                    }
+                    const auto ink = panel.palette().color(QPalette::WindowText);
+                    const auto rulePixels = [&](int x) {
+                        int count = 0;
+                        for (int y = 0; y < qCeil(int(kobalt::ui::metrics::chrome::heavyRule) * scale) + 2; ++y)
+                            count += image.pixelColor(qRound(x * scale), y) == ink;
+                        return count;
+                    };
+                    const int wordRule = rulePixels(int(kobalt::ui::metrics::chrome::inset) / 2);
+                    require(wordRule > 0 && wordRule == rulePixels(edit->geometry().center().x()) &&
+                                wordRule == rulePixels(cancel->geometry().center().x()),
+                            "Dictionary rule differs below transparent text and opaque buttons at a fractional pixel offset");
+                }
+            }
+        }
+        int requests = 0;
+        QString requested;
+        panel.requested = [&](const QString &value) { ++requests; requested = value; };
+        edit->click();
+        auto *heading = panel.findChild<QLabel *>("rrDictionaryWord");
+        require(query->font().family() == heading->font().family() &&
+                    query->font().pixelSize() == heading->font().pixelSize(),
+                "Editing the lookup must retain its heading font and size");
+        require(query->isVisible() && keyboard->active && query->text() == "hablaban",
+                "Lookup must remain editable with its current query, with or without a definition");
+        require(panel.y() == 0 && panel.height() <= original.height() && definition->isVisible(),
+                "Editing must move the compact dictionary sheet up and retain its definition");
+        require(panel.geometry().bottom() < reader.property("reader_keyboard_bounds").toRect().top(),
+                "The dictionary sheet must not overlap its sibling keyboard");
+        require(panel.findChild<QLabel *>("rrDictionaryEditHint")->isVisible(),
+                "Editing must explain how to update the dictionary word");
+        query->setText(" \n\t ");
+        require(!submit->isEnabled(), "A blank lookup must not submit");
+        keyboard->submitted();
+        require(requests == 0 && query->isVisible(), "Keyboard submission must reject blank text");
+        query->setText(QString::fromUtf8("  oír  "));
+        keyboard->submitted();
+        keyboard->submitted();
+        require(requests == 1 && requested == QString::fromUtf8("oír") && !keyboard->active,
+                "Keyboard submission must preserve accents, trim whitespace and run once");
+        require(panel.geometry() == original && definition->isVisible() && !query->isVisible(),
+                "Submission must restore the original dictionary sheet");
+        require(panel.findChild<QPushButton *>("rrDictionarySelect")->text() == "Spanish",
+                "Editing must retain the selected dictionary");
+        panel.open(requested, missing, selection);
+        edit->click();
+        require(query->text() == requested, "Reopening the editor must use the submitted lookup");
+        query->setText("cancelled");
+        cancel->click();
+        require(requests == 1 && !keyboard->active && panel.geometry() == original,
+                "Cancelling must retain the previous lookup without another request");
+        edit->click();
+        require(query->text() == requested, "Cancelled text must not replace the query");
+        panel.hide();
+        require(!keyboard->active && !query->hasFocus(), "Hiding lookup must dismiss its keyboard and focus");
+        panel.open("another selection", missing, selection);
+        edit->click();
+        require(query->text() == "another selection", "A new selection must discard an unfinished edit");
+        QKeyEvent escape(QEvent::KeyPress, Qt::Key_Escape, Qt::NoModifier);
+        QApplication::sendEvent(query, &escape);
+        require(!keyboard->active && !query->isVisible() && panel.isVisible(),
+                "Escape must cancel the edit and retain the definition");
+    }
+    {
+        kobalt::DictionaryPanel panel(&reader);
+        kobalt::DictionaryResult entry;
+        entry.received = true;
+        entry.dictionary = "English monolingual";
+        entry.dictionaryId = "downloaded:en-en";
+        entry.html = "<p>A surname from Cornwall.</p>";
+        entry.source = QString::fromUtf8("WordNet 3.0 · English Wiktionary");
+        panel.open("Trevelyan", entry, QRect(100, 100, 40, 40));
+        app.processEvents();
+        auto *body = dynamic_cast<kobalt::ui::PagedText *>(panel.findChild<QWidget *>("rrDefinition"));
+        require(body->pages() == 1, "Compact dictionary sources must not add a page to a short definition");
+        if (qEnvironmentVariableIsSet("KOBALT_DICTIONARY_CONTROLS_CAPTURE"))
+            panel.grab().save(qEnvironmentVariable("KOBALT_DICTIONARY_CONTROLS_CAPTURE") + "/source-footer.png");
+        const auto before = body->grab().toImage();
+        panel.place(QRect(100, 100, 40, 40));
+        require(body->grab().toImage() == before, "Unchanged dictionary source layout changed its pixels");
+        reader.resize(720, 1448);
+        panel.place(QRect(100, 100, 40, 40));
+        require(body->pages() == 1, "Narrow source footer must remain compact");
+        reader.resize(1072, 1448);
+    }
+    {
+        kobalt::DictionaryPanel panel(&reader);
+        QVector<kobalt::DictionaryChoice> choices{{"en", "English"}, {"en-nl", "English to Dutch"}};
+        panel.setChoices(choices);
+        kobalt::DictionaryResult result;
+        result.received = true;
+        result.html = "<p>A definition.</p>";
+        result.dictionary = "English to Dutch";
+        panel.open("word", result, QRect(100, 100, 40, 40));
+        auto *selector = panel.findChild<QPushButton *>("rrDictionarySelect");
+        const int currentWidth = selector->width();
+        choices.append({"long", QString(100, 'W')});
+        panel.setChoices(choices);
+        panel.place(QRect(100, 100, 40, 40));
+        require(selector->width() == currentWidth,
+                "A different dictionary's long name must not widen the current selector");
+        result.dictionary = "English";
+        panel.open("word", result, QRect(100, 100, 40, 40));
+        require(selector->width() >= kobalt::ui::px(220) && selector->width() < currentWidth,
+                "Dictionary selector must adapt to its current label with a minimum width");
+        result.dictionary = "English monolingual";
+        panel.open("word", result, QRect(100, 100, 40, 40));
+        if (qEnvironmentVariableIsSet("KOBALT_DICTIONARY_CONTROLS_CAPTURE"))
+            panel.grab().save(qEnvironmentVariable("KOBALT_DICTIONARY_CONTROLS_CAPTURE") + "/wrapped-selector.png");
+    }
     kobalt::DictionaryPanel dictionary(&reader);
     QVector<kobalt::DictionaryChoice> dictionaries;
-    for (int i = 0; i < 13; ++i)
-        dictionaries.append({QString::number(i), QString("Dictionary %1").arg(i)});
+    for (int i = 0; i < 31; ++i)
+        dictionaries.append({QString::number(i), QString("Dictionary %1").arg(i), i < 7 ? "en" : "es"});
     dictionary.setChoices(dictionaries);
+    dictionary.setLanguage("en");
     kobalt::DictionaryResult result;
     result.dictionary = "Dictionary 8";
     result.dictionaryId = "8";
     result.received = true;
     result.html = QString("<p>A definition long enough to require several pages.</p>").repeated(50);
-    for (const auto size : {QSize(1072, 1448), QSize(1448, 1072)}) {
+    for (const auto size : {QSize(1072, 1448), QSize(1448, 1072), QSize(720, 1448)}) {
         reader.resize(size);
         dictionary.open("word", result, QRect(100, 100, 40, 40));
         app.processEvents();
         auto *definition = dynamic_cast<kobalt::ui::PagedText *>(dictionary.findChild<QWidget *>("rrDefinition"));
         auto *definitionPager = dictionary.findChild<QPushButton *>("rrDictionaryNext")->parentWidget();
         require(definitionPager && definitionPager->isVisible(), "Long definition lacks its pager");
+        const int standardPages = definition->pages();
+        dictionary.setDefinitionFont({}, 140);
+        app.processEvents();
+        require(definition->pages() > standardPages, "Larger dictionary text did not repaginate the definition");
+        dictionary.setDefinitionFont("IBM Plex Mono", 120);
+        require(definition->textFont().family() == "IBM Plex Mono" &&
+                    definition->textFont().pixelSize() == qRound(int(kobalt::ui::metrics::chrome::labelText) * 1.2),
+                "Dictionary font override was not applied to definition text");
+        dictionary.setDefinitionFont({}, 100);
+        app.processEvents();
         const QRect definitionGeometry = definition->geometry();
         const int definitionPages = definition->pages();
         dictionary.findChild<QPushButton *>("rrDictionarySelect")->click();
@@ -2544,11 +3472,45 @@ int main(int argc, char **argv) {
             require(choices->rect().contains(QRect(button->mapTo(choices, QPoint()), button->size())),
                     "Dictionary choice or pager is clipped");
             if (button->objectName().startsWith("rrDictionaryChoice") && button->isCheckable())
-                require(button->height() == kobalt::ui::metrics::list::oneLine,
-                        "Dictionary choice row lost its fixed height");
+                require(button->height() == kobalt::ui::metrics::lookup::choiceHeight,
+                        "Dictionary choice row lost its compact height");
             selected |= button->isChecked() && button->text() == result.dictionary;
         }
         require(selected, "Dictionary picker did not open at the selected dictionary");
+        if (qEnvironmentVariableIsSet("KOBALT_DICTIONARY_CONTROLS_CAPTURE"))
+            dictionary.grab().save(qEnvironmentVariable("KOBALT_DICTIONARY_CONTROLS_CAPTURE") +
+                                   QString("/chooser-%1-%2.png").arg(size.width()).arg(size.height()));
+
+        QSet<QString> reached;
+        const auto firstPage = count->text();
+        int turns = 0, maximumChoices = 0;
+        do {
+            int visibleChoices = 0;
+            QVector<QRect> cells;
+            for (auto *button : choices->findChildren<QPushButton *>()) {
+                if (!button->isVisible() || !button->objectName().startsWith("rrDictionaryChoice") || !button->isCheckable())
+                    continue;
+                ++visibleChoices;
+                require(!reached.contains(button->text()), "Dense dictionary chooser repeats a dictionary across pages");
+                reached.insert(button->text());
+                for (const auto &cell : cells)
+                    require(!cell.intersects(button->geometry()), "Dense dictionary choices overlap");
+                cells.append(button->geometry());
+                if (size.width() >= kobalt::ui::px(900) && button->x() == 0) {
+                    const auto image = button->grab().toImage();
+                    require(image.pixelColor(image.width() - 1, image.height() / 2) == kobalt::ui::dividerColor(button),
+                            "Dictionary columns lack their vertical separator");
+                }
+                require(choices->rect().contains(button->geometry()), "Dense dictionary choice escapes the sheet");
+            }
+            maximumChoices = qMax(maximumChoices, visibleChoices);
+            dictionary.findChild<QPushButton *>("rrDictionaryChoicesNext")->click();
+            require(++turns < 40, "Dense dictionary chooser did not wrap");
+        } while (count->text() != firstPage);
+        require(reached.size() == dictionaries.size(), "Dense dictionary chooser lost installed dictionaries");
+        if (size.width() >= kobalt::ui::px(900))
+            require(maximumChoices >= 4, "Two-column dictionary chooser did not increase visible options");
+
         dictionary.findChild<QPushButton *>("rrDictionarySelect")->click();
         app.processEvents();
         require(definitionPager->isVisible() && definition->geometry() == definitionGeometry &&
@@ -2844,7 +3806,7 @@ int main(int argc, char **argv) {
     }
     panel.setProperty("reader_dark", true);
     kobalt::ui::readerStyle(&action, "color:palette(window-text);background:palette(window);");
-    require(action.styleSheet().contains("color:white;background:black"), "Dark component colors are wrong");
+    require(action.styleSheet().contains("color:#ffffff;background:#000000"), "Dark component colors are wrong");
     {
         QWidget nativeWindow;
         nativeWindow.setProperty("reader_dark", false);
@@ -2853,9 +3815,9 @@ int main(int argc, char **argv) {
         kobalt::ui::Button nested("Read", &reader);
         nested.resize(180, 80);
         kobalt::ui::readerStyle(&nested, "color:palette(window-text);background:palette(window);");
-        require(nested.styleSheet().contains("color:white;background:black"),
+        require(nested.styleSheet().contains("color:#ffffff;background:#000000"),
                 "Embedded reader uses the native window's light theme");
-        require(kobalt::ui::noteColor(&nested) == QColor(kobalt::ui::metrics::text::explanationDark),
+        require(kobalt::ui::noteColor(&nested) == kobalt::ui::themeColors(true).secondaryInk,
                 "Embedded reader caption uses light-theme ink");
         const auto image = nested.grab().toImage();
         require(qGray(image.pixel(4, 4)) == 0, "Embedded reader button has white paper in dark mode");
@@ -3119,6 +4081,44 @@ int main(int argc, char **argv) {
             require(row->grab().toImage() == plain, "Clearing a typeface preview left sample pixels behind");
         }
     }
+    {
+        using namespace kobalt::ui;
+        PageScrubber scrubber(nullptr);
+        scrubber.resize(1000, 700);
+        QVector<QPair<int, QString>> chapters{{0, "Start"}, {200, "Middle"}, {900, "Later"}, {1500, "End"}};
+        const auto checkMarkers = [&] {
+            auto *actual = scrubber.slider();
+            SettingSlider expected(nullptr, actual->minimum(), actual->maximum());
+            expected.setPalette(actual->palette());
+            expected.resize(actual->size());
+            expected.setDotMarkers(true);
+            expected.setValue(actual->value());
+            QVector<int> markers;
+            for (const auto &chapter : chapters) markers.append(chapter.first);
+            expected.setMarkers(markers);
+            require(actual->grab().toImage() == expected.grab().toImage(),
+                    "Scrubber chapter markers changed after a page, chapter or range update");
+        };
+        scrubber.setBook(0, 2000, chapters, {1072, 1448});
+        checkMarkers();
+        scrubber.setBook(20, 2000, chapters, {1072, 1448});
+        checkMarkers();
+        scrubber.setBook(1600, 2000, chapters, {1072, 1448});
+        checkMarkers();
+        scrubber.findChild<QPushButton *>("rrScrubberZoomIn")->click();
+        checkMarkers();
+        scrubber.findChild<QPushButton *>("rrScrubberZoomOut")->click();
+        checkMarkers();
+        chapters = {{1300, "Replacement"}, {1700, "Last"}};
+        scrubber.setBook(1600, 2000, chapters, {1072, 1448});
+        checkMarkers();
+        chapters.clear();
+        scrubber.setBook(1600, 2000, chapters, {1072, 1448});
+        checkMarkers();
+        chapters = {{0, "Only"}};
+        scrubber.setBook(0, 1, chapters, {1072, 1448});
+        checkMarkers();
+    }
     kobalt::ui::SettingSlider slider(&panel, 0, 100);
     slider.resize(300, 72);
     slider.show();
@@ -3172,6 +4172,22 @@ int main(int argc, char **argv) {
     slide(QEvent::MouseButtonPress, 25);
     slide(QEvent::MouseButtonRelease, 275);
     require(commits == 1 && slider.value() == 0, "Single-page slider emitted a jump");
+    slider.setRange(23, 48);
+    slider.setMarkers({23, 24, 26, 28, 48}, kobalt::ui::SettingSlider::MarkerMode::Checkpoints);
+    slider.resize(450, 72);
+    for (const auto point : {QPoint(25, 23), QPoint(125, 24), QPoint(225, 26), QPoint(325, 28),
+                             QPoint(375, 38), QPoint(425, 48)}) {
+        slide(QEvent::MouseButtonPress, point.x());
+        slide(QEvent::MouseButtonRelease, point.x());
+        require(slider.value() == point.y(), "Checkpoint drag did not interpolate sizes beyond Large");
+    }
+    slider.nudge(-1);
+    require(slider.value() == 47, "Checkpoint minus skipped a fine size");
+    slider.setValue(24);
+    slider.nudge(-1);
+    require(slider.value() == 23, "Minus from Small did not reach Off");
+    slider.nudge(1);
+    require(slider.value() == 24, "Plus from Off did not enable Small");
     slider.setRange(100, 300);
     const QVector<int> spacingStops{100, 110, 120, 130, 140, 150, 175, 200, 250, 300};
     slider.setMarkers(spacingStops, kobalt::ui::SettingSlider::MarkerMode::Stops);

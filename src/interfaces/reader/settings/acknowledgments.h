@@ -6,7 +6,7 @@
 #include <QJsonArray>
 #include <QLabel>
 #include <QPushButton>
-#include <QTextDocument>
+#include "interfaces/reader/ui/style/rich_text.h"
 #include <functional>
 
 namespace kobalt {
@@ -14,7 +14,8 @@ class LicenseText : public QWidget {
 public:
     explicit LicenseText(QWidget *parent);
     void setText(const QString &text);
-    int pages() const;
+    // Lays the notice out first if its text or size changed.
+    int pages();
     int page = 0;
 
 protected:
@@ -23,9 +24,9 @@ protected:
     void changeEvent(QEvent *event) override;
 
 private:
-    QTextDocument document;
-    QVector<QPair<qreal, qreal>> pageBounds;
-    void paginate();
+    ui::PrivateRichText document;
+    bool stale = true;
+    void ensureLayout();
 };
 
 // The project list and each license page use the header geometry: a caption

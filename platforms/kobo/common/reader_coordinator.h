@@ -1,8 +1,9 @@
 #pragma once
 #include "interfaces/reader_interface.h"
-#include "usb_dialog_overlay.h"
+#include "native_dialog_overlay.h"
 #include "engine/crengine/reader_model.h"
 #include "reading/reading_progress.h"
+#include "storage/reading_history.h"
 #include <QObject>
 #include <QPointer>
 #include <QTimer>
@@ -25,6 +26,9 @@ class SourceLease;
 enum class ReaderBookRoute;
 namespace nickel {
 struct ReaderEnvironment;
+class HomeSleepScreen;
+// Every accepted native opening invalidates a closed reader snapshot.
+void forgetHomeSleepScreen();
 struct CoordinatorBindings {
     bool (*enabled)();
     void (*installInput)(QObject *) = nullptr;
@@ -48,9 +52,18 @@ public:
     bool idleForBenchmark() const;
     bool begin(const RetainOpening &retainOpening);
     bool handleHomeKey(QKeyEvent *event);
+    void forgetSleepScreen();
 
 private:
-    bool eventFilter(QObject *object, QEvent *event) override;
+#ifdef KOBALT_SCENARIO_PLAYER
+    // Evaluation packages run the scenarios in the profile's scenarios folder
+    // once per process, after the first reader has opened.
+    void startScenarios();
+    void runScenarios(const QString &path);
+    bool scenariosStarted = false;
+    // A copy of the first opening, so scenarios can open the same book again.
+    std::unique_ptr<NativeOpening> scenarioOpening;
+#endif
     ReaderEnvironment &environment_;
     CoordinatorBindings bindings_;
     kobalt::NativeLifecycle *lifecycle;
@@ -89,13 +102,18 @@ private:
     unsigned generation = 0;
     bool busy = false;
     bool profilePrepared = false;
+    // Shown by the next reader: a saved-data reset, or a benchmark result that
+    // no reader was open to show.
+    kobalt::ReaderNotice pendingNotice;
+    std::shared_ptr<kobalt::ReadingHistory::Profile> historyProfile;
     bool homeAfterClose = false;
     void finishHomeNavigation();
 
     void status(const QString &value, const QString &reason = {});
     void hideLoading();
     void drainReadingJobs(std::function<void()> finished);
-    void disposeForTransition(std::function<void()> finished);
+    void disposeForTransition(std::function<void()> finished, bool nativeAllowed = true);
+    void finishDisposal(const QString &finalStatus, bool nativeAllowed);
     void release(bool endAuthorization = true);
     void cancelOpening();
     void fail(const QString &reason, kobalt::OpeningFallback state = kobalt::OpeningFallback::Failure,
@@ -109,7 +127,7 @@ private:
     void load();
 
     void showReader();
-    UsbDialogOverlay usbDialog_;
+    std::unique_ptr<HomeSleepScreen> homeSleep;
 };
 
 }

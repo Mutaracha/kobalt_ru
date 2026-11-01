@@ -1,4 +1,5 @@
 #include "bookmark_store.h"
+#include "support/main_thread.h"
 #include "reader_storage.h"
 #include <QDir>
 #include <QCryptographicHash>
@@ -41,6 +42,7 @@ QJsonObject readObject(const QString &path, QString *error) {
     return read.object;
 }
 bool writeObject(const QString &path, const QByteArray &bytes) {
+    mainthread::BlockingOperation blockingOperation("bookmark-write");
     QSaveFile file(path);
     return file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size() && file.commit();
 }
@@ -111,6 +113,7 @@ PathIndex readIndex(const QString &root, const QStringList &folders) {
     return {paths, true};
 }
 bool writeIndex(const QString &root, const QJsonObject &paths, const QStringList &folders) {
+    mainthread::BlockingOperation blockingOperation("bookmark-index-write");
     if (!QDir().mkpath(root + "/.index")) {
         return false;
     }
@@ -236,11 +239,21 @@ bool BookmarkStore::readFolder(const QString &folder, QString *error) {
             *error = "invalid";
         return false;
     }
+    const auto rows = list.toArray();
+    if (rows.size() > maxBookmarks) {
+        if (error)
+            *error = "invalid";
+        return false;
+    }
     QVector<Bookmark> loaded;
-    for (const auto &value : list.toArray()) {
+    for (const auto &value : rows) {
         Bookmark bookmark;
-        if (loaded.size() < maxBookmarks && bookmarkFromJson(value.toObject(), &bookmark))
-            loaded.append(bookmark);
+        if (!bookmarkFromJson(value.toObject(), &bookmark)) {
+            if (error)
+                *error = "invalid";
+            return false;
+        }
+        loaded.append(bookmark);
     }
     bookmarks_ = loaded;
     return true;

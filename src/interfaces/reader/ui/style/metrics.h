@@ -20,18 +20,19 @@ namespace spacing {
 inline constexpr Px tight{8}, row{16}, section{24}, gutter{48};
 }
 namespace text {
-inline constexpr auto explanationLight = "#333333", explanationDark = "#cccccc";
-inline constexpr Px small{32}, secondary{30}, explanation{32}, body{36};
-inline constexpr Px choice{36}, heading{36}, opening{40}, typography{44}, pageHeading{48};
+inline constexpr TextPx small{32}, secondary{30}, explanation{32}, body{36};
+inline constexpr TextPx choice{36}, heading{36}, opening{40}, typography{44}, pageHeading{48};
 }
 namespace control {
 inline constexpr Px border{2}; // Two pixels at 300 ppi, one at the Nia's 212 ppi.
-inline constexpr auto lightOutline = "#666666", darkOutline = "#bbbbbb";
 inline constexpr Px minimumHeight{60}, padding{4};
-inline constexpr Px captionValueText{24}, captionWidth{280}, valueWidth{84}, captionGap{8}, captionRight{12};
+inline constexpr TextPx captionValueText{24};
+inline constexpr Px captionWidth{280}, valueWidth{84}, captionGap{8}, captionRight{12};
 inline constexpr Px rowGap{16}, sectionGap{8}, itemGap{16}, fontPickerGap{16};
 inline constexpr Px segmentHeight{48}, segmentVerticalPadding{12}, segmentHorizontalPadding{16};
 inline constexpr Px stepSize{72}, stepIconInset{10};
+// The band for a slider's marker labels grows with their text.
+inline constexpr TextPx sliderLabelHeight{36};
 inline constexpr Px sliderHeight{72}, sliderInset{25}, sliderRadius{23}, sliderInnerRadius{16};
 inline constexpr Px sliderFillHeight{4};
 inline constexpr Px sliderMarkerTop{3}, sliderMarkerHeight{8}, sliderMarkerWidth{2};
@@ -50,10 +51,16 @@ inline constexpr PxMargins contentMargins{margins.left() + rowsMargins.left(), s
 inline constexpr Px gap{8}, toolbarGap{18}, footerGap{18}, toolbarHeight{152}, footerHeight{280};
 inline constexpr Px exitLabelExtraRight{6};
 inline constexpr PxMargins statusMargins{12, 0, 15, 0};
-inline constexpr Px statusHeight{40}, statusGap{8}, statusText{30}, sessionText{32};
-inline constexpr Px batteryWidth{132}, batteryIconSize{56}, batteryText{24};
-inline constexpr Px bluetoothIconSize{32}, bluetoothGap{12};
-inline constexpr Px batteryTextInset{68}, batteryBodyWidth{46}, batteryBodyHeight{24};
+// The status line's text and the boxes around it grow with large text. The
+// battery's slot follows the icon scale; the battery glyph keeps its size.
+inline constexpr TextPx statusHeight{40}, statusText{30}, sessionText{32}, batteryWidth{132}, batteryText{24};
+inline constexpr Px statusGap{8};
+inline constexpr IconPx batteryIconSize{56};
+inline constexpr IconPx bluetoothIconSize{32}, wifiIconWidth{40};
+inline constexpr Px bluetoothGap{12};
+// The battery text ends before the icon, so the inset follows the icon's size.
+inline constexpr IconPx batteryTextInset{68};
+inline constexpr Px batteryBodyWidth{46}, batteryBodyHeight{24};
 inline constexpr qreal batteryStroke = 1.5;
 inline QRect toolbar(const QSize &size) {
     return {0, 0, size.width(), toolbarHeight};
@@ -63,14 +70,14 @@ inline QRect footer(const QSize &size) {
 }
 }
 namespace light {
-inline constexpr auto hintPaperLight = "#e6e6e6", hintPaperDark = "#222222";
 inline constexpr int pollMilliseconds = 500;
 }
 namespace sleep {
 inline constexpr Px inset{48}, bottom{96}, width{620}, padding{36}, gap{20}, lineGap{8}, border{2};
 inline constexpr Px titleText{60}, detailText{32}, batteryText{28}, batteryGap{12};
-inline constexpr int dimAlpha = 40;
-inline constexpr auto lightPaper = "#ffffff", darkPaper = "#202020";
+inline constexpr Px bandHeight{188}, bandPadding{64}, bandRule{12}, bandTitleText{80}, bandGap{28}, captionText{26};
+inline constexpr Px ribbonWidth{280}, ribbonRight{104}, ribbonTop{120}, ribbonPadding{22}, ribbonNotch{70};
+inline constexpr Px ribbonOutline{4}, ribbonPercentText{104}, ribbonRule{70}, ribbonGap{22};
 }
 namespace scrubber {
 inline constexpr Px barHeight{144}, verticalPadding{16}, gap{20}, captionHeight{68}, padding{16}, text{24};
@@ -79,7 +86,6 @@ inline constexpr Px overviewHeight{192}, overviewWindow{64}, overviewBottomPaddi
 inline constexpr Px overviewTrack{28}, overviewGrip{64}, overviewIcon{32}, overviewIconPadding{8}, overviewLens{56};
 inline constexpr Px overviewBracketMinimum{10}, overviewBracketMaximum{20};
 inline constexpr Px overviewDashSpacing{20}, overviewDashHeight{10}, overviewTickGap{8}, overviewTickHeight{12};
-inline constexpr auto overviewPaperLight = "#f1f1f1", overviewPaperDark = "#242424";
 inline constexpr qreal previewHeightFraction = .9;
 inline constexpr int minimumZoomSpan = 60;
 }
@@ -99,10 +105,15 @@ inline constexpr Px descriptionTop{48}, descriptionBottom{16};
 }
 namespace about {
 inline constexpr PxMargins margins{16, 16, 16, 16};
-inline constexpr Px logoSize{112}, wordmarkText{72}, exitText{40};
-inline constexpr Px gap{20}, textWidth{760}, actionHeight{48}, actionGap{20};
-// Version, Qt build and commit form one block with tighter lines.
-inline constexpr Px buildGap{4}, commitText{24};
+inline constexpr Px logoSize{112}, wordmarkText{72};
+inline constexpr TextPx exitText{40};
+inline constexpr Px gap{20}, textWidth{760}, actionHeight{48};
+// Version, Qt build and commit form one block with tighter lines, between two rules.
+// sectionGap is the extra room outside the rules. The description's line box
+// keeps 5 px more above its capitals than below its descenders, so the button
+// needs 5 px more for the drawn gaps around the description to match.
+inline constexpr Px buildGap{6}, ruleWidth{420}, sectionGap{16}, buttonGap{21};
+inline constexpr TextPx commitText{26};
 }
 namespace navigation {
 inline constexpr Px headingTop{20}, headingSide{224}, height{control::stepSize};
@@ -131,20 +142,29 @@ inline constexpr Px oneLine{96}, twoLines{146}, threeLines{168};
 namespace chrome {
 // Kobalt navigation: the header, the bottom tabs and the Settings rows.
 // Full-screen views and sheets reuse these so they match the reading chrome.
-inline constexpr auto dividerLight = "#b8b8b8", dividerDark = "#666666";
-inline constexpr Px statusHeight{60}, actionHeight{112}, heavyRule{3};
-inline constexpr Px headerHeight{statusHeight + actionHeight};
-inline constexpr Px cellWidth{118}, cellIcon{40}, backIcon{44}, inset{36};
-inline constexpr Px labelText{30}, descriptionText{25}, countText{28}, tabText{26}, titleText{about::exitText};
+// The status strip holds one line of status text and grows with it.
+inline constexpr TextPx statusHeight{60};
+inline constexpr Px actionHeight{112}, heavyRule{3};
+inline int headerHeight() {
+    return statusHeight + actionHeight;
+}
+inline constexpr Px cellWidth{118}, inset{36};
+inline constexpr IconPx cellIcon{40}, backIcon{44};
+inline constexpr Px returnLabelGap{25}; // 6 points at 300 ppi.
+inline constexpr Px returnArrowOffset{2}, returnTitleOffset{1};
+inline constexpr TextPx labelText{30}, descriptionText{25}, countText{28}, tabText{26}, titleText{about::exitText};
 // A bottom tab centers its icon and label as one group.
-inline constexpr Px tabIcon{48}, tabGap{10};
-inline constexpr Px captionText{22}, captionSpacing{2}, numberText{22};
+inline constexpr IconPx tabIcon{48};
+inline constexpr Px tabGap{10};
+inline constexpr TextPx captionText{22}, numberText{22};
+inline constexpr Px captionSpacing{2};
 inline constexpr Px listActionHeight{list::twoLines}, optionHeight{list::twoLines}, checkSize{48};
 // Settings tabs stack an icon over a label, as the bottom tabs do. The rail
 // is as wide as its widest label with this margin on each side.
 inline constexpr Px railRowHeight{124}, railInset{28};
 inline constexpr Px chevronRight{42}, actionRight{112}, statsTopPadding{heavyRule};
-inline constexpr Px queryText{36}, selectorGap{16}, selectorIcon{36};
+inline constexpr TextPx queryText{36};
+inline constexpr Px selectorGap{16}, selectorIcon{36};
 // A label and its description, or a caption and the text below it.
 inline constexpr Px textGap{12}, blockTop{28};
 }
@@ -156,7 +176,8 @@ inline constexpr Px barsTop{30}, barsHeight{150}, tickGap{4}, tickHeight{8}, tic
 // may take two lines on narrow screens.
 inline constexpr int detailLines = 2;
 inline constexpr Px cellPadding{30}, figureBaseline{129}, detailTop{156}, cellHeight{253};
-inline constexpr Px figureText{72}, unitGap{12}, unitText{chrome::descriptionText};
+inline constexpr Px figureText{72}, unitGap{12};
+inline constexpr TextPx unitText{chrome::descriptionText};
 inline constexpr Px graphHeight{rowHeight + chartHeight + cellHeight};
 // Dense charts show every chapter. Past that, and in the sparse chart, a pager
 // bar appears between the chart and the cells.
@@ -167,7 +188,8 @@ inline constexpr Px sparseGap{12};
 inline constexpr Px outline{2}, fillInset{4}, narrowFillInset{2};
 }
 namespace list {
-inline constexpr Px headerHeight{chrome::statusHeight}, inset{chrome::inset}, gap{chrome::textGap};
+// Section strips keep the status strip's standard height.
+inline constexpr Px headerHeight{chrome::statusHeight.design()}, inset{chrome::inset}, gap{chrome::textGap};
 inline constexpr Px leadingWidth{72}, lineInset{18};
 }
 namespace contents {
@@ -178,17 +200,17 @@ inline constexpr Px pageGap{24}, indent{40};
 inline constexpr int exitGuardMilliseconds = 400;
 }
 namespace reading {
-// Reading chrome keeps its original default, independently of control text.
-inline constexpr Px defaultHeaderText{24}, defaultFooterText{26};
-inline int textPixels(const QString &size, bool footer) {
-    const int base = (footer ? defaultFooterText : defaultHeaderText).design();
-    return px(base + (size == "large" ? 4 : size == "medium" ? 2 : 0));
+// Reading chrome uses the same default for both strips, independently of control text.
+inline constexpr Px defaultHeaderText{24}, defaultFooterText{24};
+inline int textPixels(int size, bool footer) {
+    return px(size + (footer ? defaultFooterText.design() - defaultHeaderText.design() : 0));
 }
-inline QString textSize(const QString &size) {
-    return size == "medium" || size == "large" ? size : QString("small");
+inline int stripHeight(int size) {
+    return px(48 + 2 * (size - defaultHeaderText.design()));
 }
-inline int stripHeight(const QString &size) {
-    return px(size == "large" ? 56 : size == "medium" ? 52 : 48);
+// Preserve the old edge alignment through Large; give larger text a taller band.
+inline int textBandHeight(int size) {
+    return px(48 + qMax(0, size - 28) * 2);
 }
 inline constexpr Px progressHeight{24};
 inline constexpr Px headerSide{28}, headerTextGap{24}, batteryGap{8};
@@ -201,10 +223,12 @@ inline constexpr Px mapRowHeight{list::oneLine}, mapLineHeight{4};
 inline constexpr Px mapLineGap{spacing::section}, mapLineInset{list::inset}, mapEdgeInset{10};
 // Each slot is a dashed box around its text, so it reads as something to tap.
 inline constexpr Px slotGap{8}, slotPadding{8}, slotDash{4}, mapSideInset{7};
-inline constexpr Px valueText{control::captionValueText}, emptyText{chrome::captionText};
-// Preset miniatures: a page, then its name in a block as tall as a segment.
+inline constexpr TextPx valueText{control::captionValueText}, emptyText{chrome::captionText};
+// Preset miniatures: a page, then its name in a block as tall as a segment,
+// which grows with large text.
 inline constexpr Px miniatureWidth{184}, selectedBorder{5};
-inline constexpr Px miniatureTop{spacing::section}, nameGap{spacing::row}, nameHeight{control::segmentHeight};
+inline constexpr Px miniatureTop{spacing::section}, nameGap{spacing::row};
+inline constexpr TextPx nameHeight{control::segmentHeight.design()};
 inline constexpr Px namePadding{control::segmentHorizontalPadding};
 // Field rows are one-line list rows, as in Chapters. Described fields grow.
 inline constexpr Px fieldRowHeight{list::oneLine};
@@ -243,7 +267,6 @@ namespace actionMenu {
 inline constexpr Px thumbnailWidth{112}, thumbnailHeight{168};
 }
 namespace notice {
-inline constexpr int backdropFadeAlpha = 90, backdropLineAlpha = 150, backdropLineGray = 85;
 inline constexpr Px backdropPitch{18};
 inline constexpr Px cardWidth{760}, height{144}, sideClearance{32};
 inline constexpr PxMargins cardMargins{32, 28, 32, 28};
@@ -255,7 +278,8 @@ inline QRect centered(const QSize &size) {
 }
 }
 namespace acknowledgments {
-inline constexpr Px textMargin{12}, noticeText{24}, captionGap{40};
+inline constexpr Px textMargin{12}, captionGap{40};
+inline constexpr TextPx noticeText{24};
 }
 namespace selection {
 inline constexpr Px outline{2}, handleRadius{14}, handleHitRadius{32};
@@ -263,8 +287,7 @@ inline constexpr Px outline{2}, handleRadius{14}, handleHitRadius{32};
 namespace lookup {
 inline constexpr int heightPercent = 46, holdMilliseconds = 500;
 inline constexpr Px moveTolerance{40};
-inline constexpr int choiceRows = 6;
-inline constexpr Px choiceHeight{list::oneLine};
+inline constexpr Px choiceHeight{72};
 }
 
 namespace links {
@@ -276,13 +299,13 @@ inline constexpr Px hintGap{24}, stripButtonInset{6}, stripButtonPadding{16};
 // Revealed links: a tint and an outline around each link rectangle. Stacked
 // links keep a gap between their outlines.
 inline constexpr Px revealPadding{6}, revealGap{6}, revealOutline{2};
-inline constexpr auto revealLight = "#dddddd", revealDark = "#333333";
 }
 
 namespace search {
 inline constexpr Px clearWidth{64}, clearIcon{32}, clearRight{20};
 inline constexpr int excerptLines = 2;
-inline constexpr Px excerptText{32}, captionTop{list::lineInset}, excerptTop{58}, rowBottom{list::lineInset};
+inline constexpr TextPx excerptText{32};
+inline constexpr Px captionTop{list::lineInset}, excerptTop{58}, rowBottom{list::lineInset};
 inline constexpr int excerptLineHeight = 130; // Percentage, independent of screen density.
 inline constexpr Px emptyTop{48}, emptyBottom{40};
 }

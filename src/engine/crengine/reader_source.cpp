@@ -5,6 +5,7 @@
 #include "kobo_styles.h"
 #include "reader_render_callback.h"
 #include "reader_alignment.h"
+#include "reader_beautifier.h"
 #include "reader_page_layout.h"
 #include "document_cache.h"
 #include "engine_activity.h"
@@ -505,6 +506,7 @@ bool ReaderModel::openSource(std::shared_ptr<ReaderSource> source, QSize size, c
         // Both markers target EPUB DocFragment spine structure and Kobo link
         // decorations. FB2 books have neither; their layout comes from fb2.css.
         if (!fb2Document_) {
+            markBeautifierContent(document);
             markChapterLeadingImages(engine_.get());
             markKoboLinkDecorations();
         }

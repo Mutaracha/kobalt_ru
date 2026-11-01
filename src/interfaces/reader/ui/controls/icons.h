@@ -73,11 +73,29 @@ enum class ControlIcon {
     Trash,
     FolderPlus,
     Folders,
+    Export,
+    Sync,
+    WifiNone,
+    WifiLow,
+    WifiMedium,
+    WifiHigh,
+    WifiDisconnected,
+    KeyboardShift,
+    KeyboardBackspace,
+    KeyboardReturn,
+    // Styling settings rows.
+    SpreadHorizontal,
+    Paragraph,
+    SpreadVertical,
+    MagicWand,
+    Hidden,
     // Fork-only quick toggle for the display settings' dark mode.
     DarkTheme
 };
 // Paint vectors at the target resolution without an intermediate icon bitmap.
 void paintOpeningIcon(QPainter &painter, ControlIcon icon, const QRectF &bounds, QColor color);
+// Use 90% of Bluetooth's visible height, centered on its intersection.
+void paintWifiStatusIcon(QPainter &painter, ControlIcon icon, const QRectF &bounds, QColor color);
 QIcon controlIcon(ControlIcon icon, QColor color = Qt::black, bool sideButtons = false);
 // These Qt-facing helpers configure shared Button instances.
 // Original asset selection leaves the button painter unchanged.

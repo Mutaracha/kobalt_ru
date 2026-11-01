@@ -11,6 +11,13 @@ inline constexpr int defaultVariableFontWeight = 450;
 inline constexpr int defaultColumnSpacingPercent = 150;
 
 namespace appearance {
+inline constexpr std::array<int, 4> dictionaryFontSizes{80, 100, 120, 140};
+inline bool validDictionaryFontSize(int percent) {
+    for (int size : dictionaryFontSizes)
+        if (size == percent)
+            return true;
+    return false;
+}
 // Global generic-family fallbacks. An empty value keeps the bundled default.
 inline constexpr std::array<const char *, 3> fallbackFontKeys{"serif_font_face", "sans_font_face",
                                                               "monospace_font_face"};
@@ -43,15 +50,45 @@ QJsonObject globalPreferences(QJsonObject preferences);
 QJsonObject cleanPreferences(QJsonObject preferences);
 // The saved settings that decide how the book is laid out and drawn. A
 // retained layout is reused only when all of them match.
-inline constexpr std::array<const char *, 27> keys{
-    "line_spacing_version",   "font_pixels",     "line_spacing",      "font_face",
+inline constexpr std::array<const char *, 3> beautifierKeys{
+    "beautifier_initials", "beautifier_spacing", "beautifier_indent"};
+inline QJsonObject beautifierSettings(const QJsonObject &settings) {
+    QJsonObject result;
+    const bool legacy = settings.contains("book_beautifier");
+    const bool enabled = settings.value("book_beautifier").toBool(false);
+    for (const auto *key : beautifierKeys)
+        result[key] = (!legacy || enabled) && settings.value(key).toBool(legacy && enabled);
+    return result;
+}
+inline constexpr std::array<const char *, 34> keys{
+    "line_spacing_version",   "font_pixels",     "line_spacing", "paragraph_spacing", "paragraph_indent", "font_face",
     "default_font_face",      "margin_pixels",   "top_margin_pixels", "bottom_margin_pixels",
     "text_alignment",         "bold_reading",    "weight_steps",      "font_weight",
     "font_optical_size",      "hyphenation",     "dark_mode",         "hide_nonlinear_fragments",
-    "avoid_wasteful_styling", "serif_font_face", "sans_font_face",    "monospace_font_face",
-    "column_spacing", "columns", "two_columns_landscape", "column_spacing_percent", "word_spacing", "justification_tracking", "widows_orphans"};
+    "beautifier_initials", "beautifier_spacing", "beautifier_indent", "avoid_wasteful_styling", "serif_font_face", "sans_font_face",    "monospace_font_face",
+    "vertical_justification", "vertical_spacing_scope", "column_spacing", "columns", "two_columns_landscape", "column_spacing_percent", "word_spacing", "justification_tracking", "widows_orphans"};
+// Preserve the Boolean used by early development builds of page filling.
+inline QString verticalSpacingMode(const QJsonValue &value) {
+    if (value.isBool()) return value.toBool() ? QStringLiteral("expand") : QStringLiteral("off");
+    const auto mode = value.toString();
+    return mode == "expand" || mode == "center" ? mode : QStringLiteral("off");
+}
+inline QString verticalSpacingScope(const QJsonValue &value) {
+    return value.toString() == "protection" ? QStringLiteral("protection") : QStringLiteral("all");
+}
 inline bool validWordSpacing(int percent) {
+
     return percent == 80 || percent == 100 || percent == 120;
+}
+// -1 keeps publisher spacing; other values are percentages of the text size.
+inline int paragraphSpacing(const QJsonValue &value) {
+    const int percent = value.toInt(-1);
+    return value.isDouble() && value.toDouble() == percent && percent >= 0 && percent <= 200 ? percent : -1;
+}
+// -1 keeps publisher indentation; zero removes it.
+inline int paragraphIndent(const QJsonValue &value) {
+    const int percent = value.toInt(-1);
+    return value.isDouble() && value.toDouble() == percent && percent >= 0 && percent <= 300 ? percent : -1;
 }
 inline bool validTracking(int percent) {
     return percent == 0 || percent == 5 || percent == 15;

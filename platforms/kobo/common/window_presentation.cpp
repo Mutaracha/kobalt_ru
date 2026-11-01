@@ -1,4 +1,7 @@
 #include "window_presentation.h"
+#include "native_dialog_overlay.h"
+#include "native_font_scale.h"
+#include "support/qt_compat.h"
 #include <QApplication>
 #include <QDialog>
 #include <QEvent>
@@ -8,9 +11,15 @@
 #include <QPainter>
 #include <QScreen>
 #include <utility>
+#include <algorithm>
+#include <vector>
 
 namespace kobalt::nickel {
 namespace {
+bool nativeDialog(const QWidget *widget) {
+    return qobject_cast<const QDialog *>(widget) || widget->inherits("ConfirmationDialog") ||
+           widget->inherits("ProgressDialog") || widget->objectName() == QStringLiteral("N3Dialog");
+}
 class SleepFrame final : public QWidget {
 public:
     SleepFrame(QWidget *parent, QImage image, Qt::ScreenOrientation orientation)
@@ -58,10 +67,18 @@ private:
     Qt::ScreenOrientation orientation;
 };
 
-class Presentation final : public WindowPresentation {
+class Presentation final : public QObject, public WindowPresentation {
 public:
-    Presentation(QWidget *reader, bool sleepScreenSupported) : reader(reader), sleepSupported(sleepScreenSupported) {}
+    Presentation(QWidget *reader, bool sleepScreenSupported, std::function<void(const sleep::Snapshot &)> save)
+        : save(std::move(save)), reader(reader), sleepSupported(sleepScreenSupported) {
+        qApp->installEventFilter(this);
+    }
+    void saveSleepScreen(const sleep::Snapshot &snapshot) override {
+        if (save)
+            save(snapshot);
+    }
     ~Presentation() override {
+        dialogs.clear();
         clearSleepScreen();
         resumeBackground();
     }
@@ -128,10 +145,13 @@ public:
         resumeBackground();
         for (const auto &window : windows)
             if (window && window->isVisible()) {
-                // Flush one full update before exposing the backing store.
-                // repaint() can first flush a queued update, then draw it again.
-                window->update();
-                QCoreApplication::sendPostedEvents(window, QEvent::UpdateRequest);
+                // Complete deferred child paints before exposing Nickel's
+                // backing store. After a PIN unlock it can still hold the PIN
+                // frame. Do not process unrelated events during the handoff.
+                for (auto *child : window->findChildren<QWidget *>())
+                    QCoreApplication::sendPostedEvents(child, QEvent::UpdateLater);
+                QCoreApplication::sendPostedEvents(window, QEvent::UpdateLater);
+                window->repaint();
             }
     }
     void acceptHandoff(QDialog &dialog, const std::function<void()> &accept) override {
@@ -156,13 +176,62 @@ public:
     }
 
 private:
+    bool eventFilter(QObject *object, QEvent *event) override {
+        if (reader && reader->isVisible() && (event->type() == QEvent::Polish || event->type() == QEvent::Show)) {
+            // Nickel's dialogs keep Nickel's Large Print scale over the reader.
+            auto *widget = qobject_cast<QWidget *>(object);
+            if (widget && widget->isWindow() && nativeDialog(widget) && !ownedByReader(widget))
+                allowNativeFontScale(widget, event->type() == QEvent::Polish);
+        }
+        if (reader && reader->isVisible() && event->type() == QEvent::Show) {
+            auto *widget = qobject_cast<QWidget *>(object);
+            if (widget && nativeDialog(widget)) {
+                QPointer<QWidget> candidate(widget);
+                qt::later(0, this, [this, candidate] { if (candidate) presentDialog(candidate); });
+            }
+        }
+        return false;
+    }
+    bool ownedByReader(const QWidget *widget) const {
+        for (auto *parent = widget; parent; parent = parent->parentWidget())
+            if (parent == reader)
+                return true;
+        return false;
+    }
+    void presentDialog(QWidget *widget) {
+        if (!reader || !reader->isVisible() || !widget->isVisible()) return;
+        auto *dialog = widget;
+        for (auto *parent = widget->parentWidget(); parent; parent = parent->parentWidget())
+            if (nativeDialog(parent)) dialog = parent;
+        // The reader can itself be a QDialog owned by Nickel's main window.
+        // Never move it, or a dialog that contains it, into itself.
+        if (dialog == reader->window() || dialog->isAncestorOf(reader)) return;
+        // The browser retains its existing full-screen handoff and wake guard.
+        if (dialog->findChild<QWidget *>(QStringLiteral("N3BrowserView"))) return;
+        dialogs.erase(std::remove_if(dialogs.begin(), dialogs.end(),
+            [](const auto &overlay) { return !overlay->active(); }), dialogs.end());
+        for (const auto &overlay : dialogs)
+            if (overlay->contains(dialog)) return;
+        bool native = false;
+        for (auto *parent = dialog->parentWidget(); parent; parent = parent->parentWidget())
+            native = native || parent->inherits("MainWindowView");
+        for (const auto &overlay : dialogs)
+            native = native || overlay->contains(dialog->parentWidget());
+        if (!native) return;
+        auto overlay = std::make_unique<NativeDialogOverlay>();
+        overlay->present(dialog, reader->window());
+        dialogs.push_back(std::move(overlay));
+    }
+    std::function<void(const sleep::Snapshot &)> save;
+    std::vector<std::unique_ptr<NativeDialogOverlay>> dialogs;
     QPointer<QWidget> reader;
     bool sleepSupported;
     QPointer<SleepFrame> sleepFrame;
     QVector<QPointer<QWidget>> paused;
 };
 }
-std::unique_ptr<WindowPresentation> makeWindowPresentation(QWidget *reader, bool sleepScreenSupported) {
-    return std::make_unique<Presentation>(reader, sleepScreenSupported);
+std::unique_ptr<WindowPresentation> makeWindowPresentation(QWidget *reader, bool sleepScreenSupported,
+    std::function<void(const sleep::Snapshot &)> save) {
+    return std::make_unique<Presentation>(reader, sleepScreenSupported, std::move(save));
 }
 }

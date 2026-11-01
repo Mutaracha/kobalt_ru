@@ -1,4 +1,5 @@
 #include "highlight_store.h"
+#include "support/main_thread.h"
 #include "bookmark_store.h"
 #include "reader_storage.h"
 #include "support/qt_compat.h"
@@ -20,6 +21,7 @@ bool problem(QString *error, const char *text) {
     return false;
 }
 bool write(const QString &path, const QByteArray &bytes) {
+    mainthread::BlockingOperation blockingOperation("highlight-write");
     QSaveFile file(path);
     return file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size() && file.commit();
 }
@@ -223,6 +225,13 @@ bool HighlightStore::excerpts(const QStringList &ids, QVector<HighlightExcerpt> 
     *rows = std::move(result);
     return true;
 }
+void HighlightStore::dropDetails() {
+    if (!compact_)
+        return;
+    for (auto &h : highlights_) {
+        h.text.clear(); h.chapter.clear(); h.note.clear(); h.detailsLoaded = false;
+    }
+}
 bool HighlightStore::save(QString *error) {
     if (loadFailed_) {
         return problem(error, "load-failed");
@@ -237,11 +246,7 @@ bool HighlightStore::save(QString *error) {
             return false;
         if (!AnnotationDatabase::save(book, highlights_, persistedHighlights_, &databaseState_, error))
             return false;
-        if (compact_) {
-            for (auto &h : highlights_) {
-                h.text.clear(); h.chapter.clear(); h.note.clear(); h.detailsLoaded = false;
-            }
-        }
+        dropDetails();
         persistedHighlights_ = highlights_;
         return true;
     }

@@ -1,14 +1,43 @@
 #include "stardict.h"
+#include "support/main_thread.h"
 #include <QFile>
 #include <QDir>
 #include <QtEndian>
 #include <QMap>
+#include <QStringList>
 #include <QSaveFile>
 #include <zlib.h>
 #include <cstring>
 
 namespace kobalt {
 namespace {
+QString sourceSummary(const QString &attribution) {
+    QStringList sources;
+    bool inSources = false;
+    for (auto line : attribution.split('\n')) {
+        line = line.trimmed();
+        if (line == "It is built from the following sources:") {
+            inSources = true;
+            continue;
+        }
+        if (inSources && line.startsWith("-- "))
+            break;
+        if (!inSources || !line.startsWith("* "))
+            continue;
+        const int colon = line.indexOf(':', 2);
+        if (colon < 0)
+            continue;
+        const auto id = line.mid(2, colon - 2).trimmed();
+        auto name = line.mid(colon + 1).simplified();
+        // Keep the originating project, rather than the archive's import path.
+        name = name.section(", via ", 0, 0).section(" via ", 0, 0).trimmed();
+        if (id == "pwn30")
+            name = "WordNet 3.0";
+        if (!name.isEmpty() && !sources.contains(name))
+            sources.append(name);
+    }
+    return sources.join(QString::fromUtf8(" · "));
+}
 quint32 be32(const char *p) {
     return qFromBigEndian<quint32>(reinterpret_cast<const uchar *>(p));
 }
@@ -156,6 +185,7 @@ struct Body {
 bool index(const QString &path, int suffix, quint32 bodyLength, quint32 wordCount, QString *error,
            const std::function<bool()> &cancelled, quint32 expectedCount) {
     QFile file(path);
+    mainthread::BlockingOperation blockingOperation("dictionary-index-write");
     QSaveFile positions(path + ".kobalt");
     if (!file.open(QIODevice::ReadOnly) || !positions.open(QIODevice::WriteOnly))
         return fail(error, "Cannot read dictionary index.");
@@ -293,7 +323,7 @@ bool StarDict::open(const QString &directory, const QString &id, QString *error)
     }
     QFile credits(QDir(directory).filePath("ATTRIBUTION"));
     if (credits.open(QIODevice::ReadOnly))
-        next->source = QString::fromUtf8(credits.read(65536)).toHtmlEscaped().replace("\n", "<br>");
+        next->source = sourceSummary(QString::fromUtf8(credits.read(65536))).toHtmlEscaped();
     data = std::move(next);
     return true;
 }

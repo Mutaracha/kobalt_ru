@@ -1,5 +1,6 @@
 #pragma once
 #include "../style/theme.h"
+#include "text.h"
 #include <QFrame>
 #include <QFont>
 #include <QLabel>
@@ -101,11 +102,14 @@ private:
 // negative percent draws an empty battery. Insets scale with the body height.
 void paintBattery(QPainter &painter, const QRectF &body, int percent, bool charging, const QColor &ink,
                   const QColor &paper);
+// Draws the charging bolt upright around center, at the scale of a body
+// `scale` times the reference battery's height.
+void paintBatteryBolt(QPainter &painter, const QPointF &center, qreal scale, const QColor &ink, const QColor &paper);
 // The width of the battery drawn for a body of this height, terminal included.
 qreal batteryWidth(qreal bodyHeight);
 // Fit a fixed percentage sample to the icon's body, independent of its value.
 QFont batteryTextFont(QFont font, qreal bodyHeight, int weight = -1);
-class BatteryIndicator : public QLabel {
+class BatteryIndicator : public InterfaceLabel {
 public:
     explicit BatteryIndicator(QWidget *parent);
     void setStatus(int percent, bool charging);
@@ -132,5 +136,16 @@ protected:
 
 private:
     bool enabled = false;
+};
+class WifiIndicator final : public QWidget {
+public:
+    explicit WifiIndicator(QWidget *parent);
+    bool active() const { return enabled && connected && strength > 0; }
+    bool setStatus(bool enabled, bool connected, int strength);
+protected:
+    void paintEvent(QPaintEvent *) override;
+private:
+    bool enabled = false, connected = false;
+    int strength = -1;
 };
 }

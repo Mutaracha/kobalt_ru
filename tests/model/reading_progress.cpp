@@ -5,9 +5,19 @@
 #include "platforms/kobo/qt5/native_location.h"
 #include <QCoreApplication>
 #include "check.h"
+#include <limits>
 using namespace kobalt;
 int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
+    struct Display { int page, pages, percent; };
+    for (const auto &value : {Display{0, 0, 0}, Display{0, -1, 0}, Display{0, 1, 100}, Display{0, 2, 0},
+                              Display{1, 2, 100}, Display{1, 3, 50}, Display{1, 7, 17}, Display{1, 9, 13},
+                              Display{-10, 10, 0}, Display{9, 10, 100}, Display{20, 10, 100},
+                              Display{std::numeric_limits<int>::max(), std::numeric_limits<int>::max(), 100}}) {
+        require(pageProgressPercent(value.page, value.pages) == value.percent, "Incorrect displayed progress");
+        require(pageProgressFraction(value.page, value.pages) >= 0 && pageProgressFraction(value.page, value.pages) <= 1,
+                "Progress fraction escaped its bounds");
+    }
     for (const auto &path : {QStringLiteral("/mnt/onboard/.sync/.books/.hidden.epub"),
                              QStringLiteral("/mnt/onboard/.kobo/dropbox/.nested/book.epub"),
                              QStringLiteral("/mnt/onboard/.kobo/google_drive/book.epub"),
@@ -50,6 +60,15 @@ int main(int argc, char **argv) {
             }
         }
     }
+    // A plain EPUB without IDs: firmware 4 stores Nickel's DOM point as is, and
+    // the shared reader must see the same point, not a percent-encoded ID.
+    const QString point = "OEBPS/text/chapter1.xhtml#point(/1/4/24/1:0)";
+    require(nickel4::stored(point) == point && nickel4::shared(point) == point,
+            "Firmware 4 changed a plain EPUB DOM point");
+    require(nickel4::stored("OEBPS/c.xhtml#kobo.8.1:7") == "OEBPS/c.xhtml#kobo.8.1" &&
+                nickel4::shared("OEBPS/c.xhtml#kobo.8.1") == "OEBPS/c.xhtml#kobo.8.1",
+            "Firmware 4 element positions changed form");
+    require(nickel4::stored("OEBPS/c.xhtml#point(/1/4/x)").isEmpty(), "A malformed DOM point was stored");
     require(nickel4::localBookPath("12345678-1234-1234-1234-123456789abc").isEmpty() &&
                 nickel4::localBookPath("https://example.org/book.epub").isEmpty(),
             "Nonlocal book identity became a sideloaded path");

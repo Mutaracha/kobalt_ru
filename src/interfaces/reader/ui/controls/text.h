@@ -7,8 +7,14 @@
 
 class QPainter;
 
+namespace kobalt::headerfooter {
+struct Content;
+}
+
 namespace kobalt::ui {
-// Plain interface labels retain Qt's native path unless the face needs private rendering.
+// Elides only the title in a combined chapter field.
+QString headerFooterText(const headerfooter::Content &content, const QFont &font, int width);
+// Interface labels use the same private font metrics and painting as the reader controls.
 class InterfaceLabel : public QLabel {
 public:
     using QLabel::QLabel;
@@ -17,8 +23,9 @@ public:
 
 protected:
     void paintEvent(QPaintEvent *event) override;
+    bool event(QEvent *event) override;
 };
-int wrappedInterfaceTextHeight(const QString &text, const QFont &font, int width);
+int wrappedInterfaceTextHeight(const QString &text, const QFont &font, int width, int maximumLines = 0);
 void drawWrappedInterfaceText(QPainter &painter, const QRect &bounds, const QString &text,
                               Qt::Alignment alignment = Qt::AlignLeft | Qt::AlignTop, int maximumLines = 0,
                               int lineSpacing = 0, QVector<QRect> *lineRectangles = nullptr);
@@ -66,8 +73,10 @@ protected:
 private:
     SampleAppearance appearance;
 };
-void drawOpticalText(QPainter &painter, const QRectF &area, const QString &text, bool centered = false,
-                     SampleAppearance appearance = {});
+// UI labels inherit the interface weight. Font samples pass their own appearance.
+void drawOpticalText(QPainter &painter, const QRectF &area, const QString &text, bool centered = false);
+void drawOpticalText(QPainter &painter, const QRectF &area, const QString &text, bool centered,
+                     SampleAppearance appearance);
 QFont fontSample(const QString &face);
 // Page counts such as 5 / 33 keep half-width spaces around the slash. A
 // Unicode thin space still takes a full cell in mono fonts, so the painter

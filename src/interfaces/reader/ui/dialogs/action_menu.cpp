@@ -13,7 +13,7 @@ namespace kobalt::ui {
 namespace m = metrics;
 namespace {
 // One action: an optional icon and a label across the card's full width,
-// with a divider above. A held row turns the list's pressed gray.
+// with a divider above. A held row inverts its background, icon and label.
 class ActionRow final : public Button {
 public:
     ActionRow(const ActionMenuItem &item, bool divider, QWidget *parent)
@@ -28,19 +28,21 @@ public:
 protected:
     void paintEvent(QPaintEvent *) override {
         QPainter painter(this);
-        const auto paper = palette().color(QPalette::Window), ink = palette().color(QPalette::WindowText);
-        painter.fillRect(rect(), isDown() ? palette().color(QPalette::Midlight) : paper);
+        const auto colors = parentWidget() ? parentWidget()->palette() : palette();
+        const auto paper = colors.color(QPalette::Window), ink = colors.color(QPalette::WindowText);
+        const bool pressed = isEnabled() && isDown();
+        const auto foreground = pressed ? paper : ink;
+        painter.fillRect(rect(), pressed ? ink : paper);
         if (divider)
             painter.fillRect(0, 0, width(), m::control::border, dividerColor(this));
         const int iconSize = m::control::iconSize, left = m::chrome::inset;
         if (item.hasIcon)
-            controlIcon(item.icon, ink).paint(&painter, QRect(left, (height() - iconSize) / 2, iconSize, iconSize));
+            controlIcon(item.icon, foreground).paint(&painter, QRect(left, (height() - iconSize) / 2, iconSize, iconSize));
         const int textLeft = left + iconSize + m::chrome::selectorGap;
         painter.setFont(interfaceFont(m::chrome::labelText));
-        painter.setPen(isEnabled() ? ink : palette().color(QPalette::Mid));
+        painter.setPen(isEnabled() ? foreground : colors.color(QPalette::Mid));
         const int available = qMax(1, width() - textLeft - m::chrome::inset);
-        painter.drawText(QRect(textLeft, 0, available, height()), Qt::AlignLeft | Qt::AlignVCenter,
-                         painter.fontMetrics().elidedText(text(), Qt::ElideRight, available));
+        drawInterfaceText(painter, QRect(textLeft, 0, available, height()), elideInterfaceText(text(), painter.font(), available), Qt::AlignLeft | Qt::AlignVCenter);
     }
 
 private:
@@ -116,42 +118,24 @@ private:
             result.append({content.title, title, ink, 3});
         if (!content.detail.isEmpty())
             result.append({content.detail, interfaceFont(m::chrome::descriptionText), noteColor(this), 2});
+        // A caption that does not fit, such as with large text, wraps once
+        // rather than lose its end.
         if (!content.caption.isEmpty())
-            result.append({content.caption.toUpper(), captionFont(), noteColor(this), 1});
+            result.append({content.caption.toUpper(), captionFont(), noteColor(this), 2});
         return result;
     }
     // Draws or, without a painter, measures one part in up to `lines` lines,
     // eliding the last. Returns its height.
     static int draw(QPainter *painter, const Part &part, int left, int top, int width) {
-        QTextLayout layout(part.text, part.font);
-        QTextOption option;
-        option.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-        layout.setTextOption(option);
-        layout.beginLayout();
-        QVector<QTextLine> lines;
-        for (int row = 0; row < part.lines; ++row) {
-            auto line = layout.createLine();
-            if (!line.isValid())
-                break;
-            line.setLineWidth(width);
-            lines.append(line);
-        }
-        layout.endLayout();
-        const QFontMetrics metrics(part.font);
+        const int height = wrappedInterfaceTextHeight(part.text, part.font, width, part.lines);
         if (painter) {
             painter->setFont(part.font);
             painter->setPen(part.color);
-            for (int row = 0; row < lines.size(); ++row) {
-                const auto &line = lines[row];
-                const bool cut = row == lines.size() - 1 && line.textStart() + line.textLength() < part.text.size();
-                const auto shown = cut ? metrics.elidedText(part.text.mid(line.textStart()), Qt::ElideRight, width)
-                                       : part.text.mid(line.textStart(), line.textLength()).trimmed();
-                painter->drawText(QRect(left, top + row * metrics.height(), width, metrics.height()),
-                                  Qt::AlignLeft | Qt::AlignVCenter, shown);
-            }
+            drawWrappedInterfaceText(*painter, QRect(left, top, width, height), part.text, Qt::AlignLeft | Qt::AlignTop, part.lines);
         }
-        return lines.size() * metrics.height();
+        return height;
     }
+
     int textHeight(int width) const {
         int height = 0;
         for (const auto &part : parts())

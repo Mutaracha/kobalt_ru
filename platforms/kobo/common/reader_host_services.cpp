@@ -1,6 +1,7 @@
 #include "reader_host_services.h"
 #include "native_dictionary.h"
-#include "native_keyboard.h"
+#include "interfaces/reader/ui/controls/keyboard.h"
+#include "native_sync_network.h"
 #include "native_lifecycle.h"
 #include "native_light.h"
 #include "native_progress.h"
@@ -8,9 +9,38 @@
 #include "platforms/kobo/display/page_animation.h"
 #include "window_presentation.h"
 #include <QPointer>
+#include <dlfcn.h>
 
 namespace kobalt::nickel {
 namespace {
+QString syncDeviceModel() {
+    const auto current = reinterpret_cast<const void *(*)()>(dlsym(RTLD_DEFAULT, "_ZN6Device16getCurrentDeviceEv"));
+    const auto *device = current ? current() : nullptr;
+    if (!device) return QStringLiteral("Kobo");
+    // Prefer the specific variants before their shared hardware families.
+    const struct { const char *predicate; const char *name; } models[] = {
+        {"_ZNK6Device11isSpaKoboBWEv", "Kobo Clara BW"},
+        {"_ZNK6Device13isSpaTolinoBWEv", "tolino shine"},
+        {"_ZNK6Device17isSpaTolinoColourEv", "tolino shine color"},
+        {"_ZNK6Device13isMonzaTolinoEv", "tolino vision color"},
+        {"_ZNK6Device9isSpaKoboEv", "Kobo Clara Colour"},
+        {"_ZNK6Device11isMonzaKoboEv", "Kobo Libra Colour"},
+        {"_ZNK6Device8isCondorEv", "Kobo Elipsa 2E"},
+        {"_ZNK6Device11isGoldfinchEv", "Kobo Clara 2E"},
+        {"_ZNK6Device4isIoEv", "Kobo Libra 2"},
+        {"_ZNK6Device8isCadmusEv", "Kobo Sage"},
+        {"_ZNK6Device6isNovaEv", "Kobo Clara HD"},
+        {"_ZNK6Device6isLunaEv", "Kobo Nia"},
+        {"_ZNK6Device6isSnowEv", "Kobo Aura H2O Edition 2"},
+        {"_ZNK6Device6isStarEv", "Kobo Aura Edition 2"},
+        {"_ZNK6Device6isPikaEv", "Kobo Touch 2.0"},
+    };
+    for (const auto &model : models) {
+        const auto matches = reinterpret_cast<bool (*)(const void *)>(dlsym(RTLD_DEFAULT, model.predicate));
+        if (matches && matches(device)) return QString::fromLatin1(model.name);
+    }
+    return QStringLiteral("Kobo");
+}
 class Light final : public LightControls {
 public:
     explicit Light(QWidget *anchor) : adapter(new NativeLight(anchor)) {}
@@ -93,39 +123,14 @@ public:
 private:
     NativeDictionary adapter;
 };
-class Keyboard final : public KeyboardController {
-public:
-    Keyboard(QWidget *parent, QLineEdit *editor) : adapter(new NativeKeyboard(parent, editor)) {
-        adapter->submitted = [this] {
-            const auto callback = submitted;
-            if (callback)
-                callback();
-        };
-    }
-    ~Keyboard() override {
-        if (adapter)
-            adapter->submitted = {};
-        delete adapter.data();
-    }
-    bool show() override {
-        return adapter && adapter->show();
-    }
-    void hide() override {
-        if (adapter)
-            adapter->hide();
-    }
-    void place() override {
-        if (adapter)
-            adapter->place();
-    }
 
-private:
-    QPointer<NativeKeyboard> adapter;
-};
 
 }
 ReaderHostServices readerHostServices() {
     ReaderHostServices result;
+    result.annotationExportDirectory = [] { return QStringLiteral("/mnt/onboard/Kobalt/Annotations"); };
+
+    result.deviceName = syncDeviceModel();
     result.colorDisplay = [] {
         return pageAnimationPanel() == AnimationPanel::Colour;
     };
@@ -139,6 +144,7 @@ ReaderHostServices readerHostServices() {
     };
     result.observeBattery = observeNativeBattery;
     result.observeBluetooth = observeNativeBluetooth;
+    result.observeWifi = observeNativeWifi;
     result.remoteKeyActivity = reportNativeBluetoothActivity;
     result.pageButtons = nativeReaderHasPageButtons;
     result.reverseLandscapeButtons = nativeReaderReverseLandscapeButtons;
@@ -161,9 +167,8 @@ ReaderHostServices readerHostServices() {
     result.dictionary = [] {
         return std::make_unique<Dictionary>();
     };
-    result.keyboard = [](QWidget *parent, QLineEdit *editor) {
-        return std::make_unique<Keyboard>(parent, editor);
-    };
+    result.keyboard = ui::makeWidgetKeyboard;
+    result.syncNetwork = [] { return std::make_unique<NativeSyncNetwork>(); };
     result.presentation = [](QWidget *reader) {
         return makeWindowPresentation(reader, nativeReaderSleepScreenAvailable());
     };

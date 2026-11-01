@@ -1,4 +1,5 @@
 #include "window.h"
+#include "interfaces/library/library_view.h"
 #include "services.h"
 #include "platforms/android/canvas.h"
 #include "platforms/android/start_screen.h"
@@ -162,11 +163,13 @@ private:
     bool libra = false;
     QRect screenBounds;
 };
-Window::Window(storage::Paths paths, EngineFontInputs fonts, QString placeholder, std::function<QString()> clock)
+Window::Window(storage::Paths paths, EngineFontInputs fonts, QString placeholder, std::function<QString()> clock,
+               std::function<void(ReaderHostServices &)> configureServices)
     : clockSource(std::move(clock)), controller(
           paths, std::move(fonts), std::move(placeholder),
-          [this] {
+          [this, configureServices = std::move(configureServices)] {
               auto services = readerServices();
+              services.nativeDialogParent = [this] { return this; };
               services.devicePreview = [this] {
                   return screenPreset != 0;
               };
@@ -179,6 +182,11 @@ Window::Window(storage::Paths paths, EngineFontInputs fonts, QString placeholder
               services.battery = [this] {
                   return screenPreset ? BatteryStatus{100, false} : BatteryStatus{};
               };
+              services.textScale = [this] {
+                  return textSize / 100.0;
+              };
+              if (configureServices)
+                  configureServices(services);
               return services;
           },
           [](Qt::ScreenOrientation) {}),
@@ -201,12 +209,10 @@ Window::Window(storage::Paths paths, EngineFontInputs fonts, QString placeholder
     deviceFrame->hide();
     stack = new QStackedWidget(stage);
     connect(deviceFrame->previous, &QPushButton::clicked, this, [this] {
-        if (auto *reader = controller.window())
-            reader->pageButton(-1);
+        turnPage(-1, true);
     });
     connect(deviceFrame->next, &QPushButton::clicked, this, [this] {
-        if (auto *reader = controller.window())
-            reader->pageButton(1);
+        turnPage(1, true);
     });
     auto *toolbar = addToolBar(tr("Preview Toolbar"));
     toolbar->setObjectName("desktopPreviewToolbar");
@@ -223,11 +229,20 @@ Window::Window(storage::Paths paths, EngineFontInputs fonts, QString placeholder
     resolutionPicker->setObjectName("desktopResolutionPicker");
     resolutionPicker->setAccessibleName(tr("Rendering resolution"));
     resolutionPicker->setToolTip(
-        tr("Change preview sharpness without changing the book layout. Native uses the Mac display resolution."));
+        tr("Change preview sharpness without changing the book layout. Native uses the display resolution."));
     resolutionPicker->addItem(tr("212 DPI"), 212);
     resolutionPicker->addItem(tr("300 DPI"), 300);
     resolutionPicker->addItem(tr("Native"), 0);
     resolutionPicker->setCurrentIndex(resolutionPicker->findData(renderingDpi));
+    // Kobo's Large Print and Android's font size set the same scale.
+    textSizePicker = new QComboBox(toolbar);
+    textSizePicker->setObjectName("desktopTextSizePicker");
+    textSizePicker->setAccessibleName(tr("Text size"));
+    textSizePicker->setToolTip(tr("Enlarge interface text, as the system text size does on Kobo and Android. "
+                                  "Applies to the Library at once and to a book when it opens."));
+    for (const int percent : {100, 125, 150})
+        textSizePicker->addItem(tr("%1%").arg(percent), percent);
+    textSizePicker->setCurrentIndex(textSizePicker->findData(textSize));
     auto *contents = new QWidget(toolbar);
     contents->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     auto *layout = new QGridLayout(contents);
@@ -249,6 +264,7 @@ Window::Window(storage::Paths paths, EngineFontInputs fonts, QString placeholder
     choices->setSpacing(8);
     choices->addWidget(screenPicker, 1);
     choices->addWidget(resolutionPicker);
+    choices->addWidget(textSizePicker);
     rotateAction = new QAction(tr("Rotate Device"), this);
     rotateAction->setObjectName("desktopRotateDevice");
     rotateAction->setCheckable(true);
@@ -287,7 +303,17 @@ Window::Window(storage::Paths paths, EngineFontInputs fonts, QString placeholder
         renderingDpi = resolutionPicker->currentData().toInt();
         sizeCanvas();
     });
-    start = new android::StartScreen(readerServices().presentation, store);
+    start = new android::StartScreen(readerServices().presentation, store, [this] {
+        return textSize / 100.0;
+    });
+    start->setKeyboardFactory(readerServices().keyboard);
+    connect(textSizePicker, qOverload<int>(&QComboBox::currentIndexChanged), this, [this] {
+        textSize = textSizePicker->currentData().toInt();
+        // An open book keeps its size until it closes, and the Library takes
+        // the new size when it is shown again.
+        if (!controller.window())
+            start->applyTextSize();
+    });
     start->setDark(controller.preferences().value("dark_mode").toBool(false));
     connect(start, &android::StartScreen::bookRequested, this, &Window::openBook);
     connect(start, &android::StartScreen::libraryOpenRequested, this, &Window::chooseBook);
@@ -348,6 +374,7 @@ Window::Window(storage::Paths paths, EngineFontInputs fonts, QString placeholder
     };
     screenActions = choicesMenu(screenPicker, tr("Device"), "desktopDeviceMenu");
     resolutionActions = choicesMenu(resolutionPicker, tr("Rendering Resolution"), "desktopResolutionMenu");
+    textSizeActions = choicesMenu(textSizePicker, tr("Text Size"), "desktopTextSizeMenu");
     view->addAction(rotateAction);
     connect(rotateAction, &QAction::toggled, this, [this, rotate](bool landscape) {
         rotate->setChecked(landscape);
@@ -364,8 +391,10 @@ Window::Window(storage::Paths paths, EngineFontInputs fonts, QString placeholder
     view->addAction(showToolbar);
     for (const auto key : {Qt::Key_Right, Qt::Key_PageDown, Qt::Key_Left, Qt::Key_PageUp}) {
         auto *shortcut = new QShortcut(QKeySequence(key), this);
+        shortcut->setAutoRepeat(false);
         connect(shortcut, &QShortcut::activated, this, [this, key] {
-            turnPage(key == Qt::Key_Right || key == Qt::Key_PageDown ? 1 : -1);
+            turnPage(key == Qt::Key_Right || key == Qt::Key_PageDown ? 1 : -1,
+                     key == Qt::Key_PageUp || key == Qt::Key_PageDown);
         });
     }
     resizeTimer.setSingleShot(true);
@@ -489,9 +518,10 @@ void Window::sizeCanvas() {
         deviceFrame->hide();
         stack->setGeometry(bounds);
     }
-    const bool reading = controller.window() && controller.window()->isEnabled();
-    deviceFrame->previous->setEnabled(reading);
-    deviceFrame->next->setEnabled(reading);
+    const bool paging = (controller.window() && controller.window()->isEnabled()) ||
+                        (start->isVisible() && start->libraryShown());
+    deviceFrame->previous->setEnabled(paging);
+    deviceFrame->next->setEnabled(paging);
     if (auto *reader = controller.window())
         reader->resize(pixels());
     const qreal scale = screenPreset
@@ -518,9 +548,11 @@ void Window::selectScreen(int index) {
 void Window::setPreviewControlsEnabled(bool enabled) {
     screenPicker->setEnabled(enabled);
     resolutionPicker->setEnabled(enabled);
+    textSizePicker->setEnabled(enabled);
     rotateAction->setEnabled(enabled && screenPreset != 0);
     screenActions->setEnabled(enabled);
     resolutionActions->setEnabled(enabled);
+    textSizeActions->setEnabled(enabled);
 }
 void Window::chooseBook() {
     const auto path = QFileDialog::getOpenFileName(this, tr("Open EPUB"), {}, tr("EPUB books (*.epub)"));
@@ -560,13 +592,24 @@ void Window::openBook(const QString &path) {
     stack->setCurrentWidget(start);
     controller.open(absolute, pixels());
 }
-void Window::turnPage(int direction) {
+void Window::turnPage(int direction, bool hardware) {
     auto *reader = controller.window();
-    if (!reader || !reader->isVisible() || !reader->isEnabled() || QApplication::activeModalWidget())
+    if (closing || QApplication::activeModalWidget())
         return;
-    if (screenPicker->hasFocus() || resolutionPicker->hasFocus() ||
-        qobject_cast<QLineEdit *>(QApplication::focusWidget()))
+    if (!hardware && (screenPicker->hasFocus() || resolutionPicker->hasFocus() ||
+                      qobject_cast<QLineEdit *>(QApplication::focusWidget())))
         return;
+    if (!reader) {
+        if (start->isVisible() && start->libraryShown())
+            start->library()->pageButton(direction);
+        return;
+    }
+    if (!reader->isVisible() || !reader->isEnabled())
+        return;
+    if (hardware) {
+        reader->pageButton(direction);
+        return;
+    }
     // Only turn from the reading surface. The same keys must remain available
     // to search fields, sliders, lists and dialogs while controls are open.
     for (auto *child : reader->findChildren<QWidget *>(QString(), Qt::FindDirectChildrenOnly))

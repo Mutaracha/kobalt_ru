@@ -2,6 +2,7 @@
 #include "support/qt_compat.h"
 #include "support/strings.h"
 #include "reader_session.h"
+#include "kosync.h"
 #include "engine_worker.h"
 #include "ui/highlight_paint.h"
 #include "appearance_settings.h"
@@ -85,6 +86,21 @@ void captureChapters(ReaderFrame &result, ReaderModel &model) {
     result.contentsSelection = model.chapterSelection(result.chapters);
     result.graphSelection = model.chapterSelection(result.chapterGraph);
 }
+// Counts one neighbour job from the moment it is queued until it ends.
+class NeighbourJob {
+public:
+    explicit NeighbourJob(std::shared_ptr<std::atomic_int> count) : count(std::move(count)) {
+        ++*this->count;
+    }
+    ~NeighbourJob() {
+        --*count;
+    }
+    NeighbourJob(const NeighbourJob &) = delete;
+    NeighbourJob &operator=(const NeighbourJob &) = delete;
+
+private:
+    std::shared_ptr<std::atomic_int> count;
+};
 // Draws the pages beside the current one, so the next turn finds its image in
 // the cache. `direction` is the turn that led here; the page further that way
 // is the likelier next one and goes first. Stops when `current` reports a newer
@@ -235,6 +251,8 @@ std::unique_ptr<ReaderSession> ReaderSession::retained() {
     retained->documentCover = documentCover;
     retained->frame.turnDirection = 0;
     retained->fingerprint = fingerprint;
+    retained->syncDigest_ = syncDigest_;
+    retained->syncFilenameDigest_ = syncFilenameDigest_;
     retained->desired = desired;
     retained->temporaryAppearance = temporaryAppearance;
     retained->originalAppearance = originalAppearance;
@@ -312,6 +330,8 @@ static bool openAtPlatform(ReaderModel &engine, const PositionCodec &codec, cons
 }
 
 void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)> finished, OpeningProgress progress) {
+    syncDigest_.clear();
+    syncFilenameDigest_ = kosync::filenameDigest(request.syncFilename.isNull() ? request.path : request.syncFilename);
     if (ownsLease_)
         cancelSource();
     ++revision;
@@ -363,6 +383,7 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
     const auto systemFont = placeholderFamily_;
     const auto latest = newest;
     const auto job = revision;
+    const auto neighbourCount = neighbourJobs;
     auto report = [guard, progress, lease, job](OpeningStage stage, int percent) {
         if (!progress)
             return;
@@ -378,7 +399,8 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
         engineWorker(),
         [guard, engine, path, identity, size, saved, nativeLocation, lease, factory, finished, report, systemFont,
          layoutCachePath, documentCachePath, retainedHash, retainedSettings, latest, job, positions, pinnedAppearance,
-         retainedWarning, retainedDetails, userStyleSheetPath, appearanceDefaults, markup, markupGeneration]() mutable {
+         retainedWarning, retainedDetails, userStyleSheetPath, appearanceDefaults, markup, markupGeneration,
+         neighbourCount]() mutable {
             EngineJob activity;
             QElapsedTimer timer;
             timer.start();
@@ -400,7 +422,7 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
                                                               : OpeningFailureKind::HostUnavailable,
                                                     "opening.platform-position", detail);
             };
-            QByteArray digest;
+            QByteArray digest, syncDigest;
             ReaderFrame result;
             auto contentRejected = std::make_shared<std::atomic_bool>(false);
             QFile file(path);
@@ -424,6 +446,7 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
             else {
                 directoryMs = timer.elapsed();
                 digest = publication.fingerprint();
+                syncDigest = kosync::documentDigest(file);
                 savedMatches = saved.value("fingerprint").toString().toLatin1() == digest;
                 // States saved before the fingerprint hold the SHA-256 of the whole
                 // file. Hash it once so that they keep their position and typography.
@@ -463,6 +486,8 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
                 const auto landscapeColumns = saved.value("two_columns_landscape");
                 const auto columnSpacing = saved.value("column_spacing_percent");
                 const auto wordSpacing = saved.value("word_spacing");
+                const auto paragraphSpacing = saved.value("paragraph_spacing");
+                const auto paragraphIndent = saved.value("paragraph_indent");
                 const auto tracking = saved.value("justification_tracking");
                 const auto widowsOrphans = saved.value("widows_orphans");
                 if (!savedMatches)
@@ -474,6 +499,8 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
                 saved["two_columns_landscape"] = landscapeColumns;
                 saved["column_spacing_percent"] = columnSpacing;
                 saved["word_spacing"] = wordSpacing;
+                saved["paragraph_spacing"] = paragraphSpacing;
+                saved["paragraph_indent"] = paragraphIndent;
                 saved["justification_tracking"] = tracking;
                 saved["widows_orphans"] = widowsOrphans;
                 appearance::migrateLineSpacing(saved);
@@ -647,21 +674,26 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
                         {"layout_cache_stored", cacheStored},
                         {"document_cache_hit", !retainedHit && outcome.ready() && engine->openedFromCache()}});
             diagnostic("open-end",
-                       {{"elapsed_ms", double(timer.elapsed())},
+                       {{"elapsed_ms", timer.nsecsElapsed() / 1e6},
                         {"failed", !outcome.ready()},
                         {"error_code",
                          outcome.failure() ? QString::fromLatin1(outcome.failure()->reason.constData()) : QString()}});
             const bool opened = outcome.ready();
+            // The session reports the opening done before this job draws the
+            // pages beside the first one. Count that from before the report.
+            std::unique_ptr<NeighbourJob> neighbours;
+            if (opened)
+                neighbours = std::make_unique<NeighbourJob>(neighbourCount);
             kobalt::qt::invoke(
                 qApp,
-                [guard, result = std::move(result), outcome, digest, identity, savedMatches, finished, lease, job,
+                [guard, result = std::move(result), outcome, digest, syncDigest, identity, savedMatches, finished, lease, job,
                  formattingWarning, formattingDetails]() mutable {
                     if (!guard) {
                         return;
                     }
                     guard->completeFrameMarkup(
                         std::move(result), job, lease,
-                        [guard, outcome, digest, identity, savedMatches, finished, lease, job, formattingWarning,
+                        [guard, outcome, digest, syncDigest, identity, savedMatches, finished, lease, job, formattingWarning,
                          formattingDetails](ReaderFrame result) mutable {
                             if (!guard || guard->revision != job || guard->lease_ != lease)
                                 return;
@@ -682,6 +714,8 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
                             guard->formattingDetails_ = guard->formattingWarning_ ? formattingDetails : QJsonObject();
                             guard->desired = result.state;
                             guard->fingerprint = digest;
+                            guard->syncDigest_ = outcome.ready() ? syncDigest : QByteArray();
+                            if (!outcome.ready()) guard->syncFilenameDigest_.clear();
                             guard->savedMatched = savedMatches;
                             guard->identity_ = identity;
                             finished(outcome);
@@ -897,6 +931,12 @@ bool ReaderSession::setOpticalSize(double points) {
     }
     return true;
 }
+bool ReaderSession::setBookBeautifier(bool enabled) {
+    if (temporaryTypography()) return false;
+    for (const auto *key : appearance::beautifierKeys) desired[key] = enabled;
+    request(true);
+    return true;
+}
 bool ReaderSession::setHyphenation(const QString &mode) {
     if (temporaryTypography())
         return false;
@@ -954,6 +994,12 @@ bool ReaderSession::goTo(const QString &anchor) {
     return true;
 }
 bool ReaderSession::goToNative(const QString &location, std::function<void(QString)> finished) {
+    return importPosition(location, true, std::move(finished));
+}
+bool ReaderSession::goToSyncedPosition(const QString &position, std::function<void(QString)> finished) {
+    return importPosition(position, false, std::move(finished));
+}
+bool ReaderSession::importPosition(const QString &location, bool native, std::function<void(QString)> finished) {
     if (running)
         return false;
     cancelSearch();
@@ -967,11 +1013,14 @@ bool ReaderSession::goToNative(const QString &location, std::function<void(QStri
     const auto lease = lease_;
     kobalt::qt::invoke(
         engineWorker(),
-        [guard, engine, location, finished, job, lease, positions, markup, markupGeneration] {
+        [guard, engine, location, native, finished, job, lease, positions, markup, markupGeneration] {
             EngineJob activity;
             diagnostic("native-import-start");
             QString error;
-            engine->goToPlatform(positions, location, &error);
+            if (native)
+                engine->goToPlatform(positions, location, &error);
+            else if (!engine->goTo(location))
+                error = strings::get("kosync.position_error");
             auto result = capture(*engine, positions, true, markup, markupGeneration);
             diagnostic("native-import-end", {{"failed", !error.isEmpty()}});
             kobalt::qt::invoke(
@@ -1006,6 +1055,33 @@ bool ReaderSession::goToNative(const QString &location, std::function<void(QStri
         Qt::QueuedConnection);
     return true;
 }
+void ReaderSession::describeSyncedPosition(const QString &position,
+                                          std::function<void(SyncedPositionDescription)> finished) {
+    const auto engine = model;
+    const auto lease = lease_;
+    const auto job = revision;
+    const bool ready = layoutReady_;
+    QPointer<ReaderSession> guard(this);
+    kobalt::qt::invoke(engineWorker(), [engine, guard, position, lease, job, ready, finished] {
+        EngineJob activity;
+        SyncedPositionDescription result;
+        if (ready && lease && !lease->revoked()) {
+            result.comparison.direction = engine->comparePosition(position, &result.comparison.error);
+            if (result.comparison.error.isEmpty()) {
+                result.comparison.status = PositionComparison::Status::Compared;
+                result.chapter = engine->chapterTitle(position);
+            }
+        }
+        kobalt::qt::invoke(qApp, [guard, lease, job, result, finished]() mutable {
+            if (!guard) return;
+            if (guard->revision != job || guard->running || guard->lease_ != lease || !lease || lease->revoked()) {
+                result = {};
+                result.comparison.status = PositionComparison::Status::Stale;
+            }
+            finished(std::move(result));
+        }, Qt::QueuedConnection);
+    }, Qt::QueuedConnection);
+}
 void ReaderSession::compareNativePosition(const QString &location, std::function<void(PositionComparison)> finished) {
     auto engine = model;
     const auto positions = positions_;
@@ -1038,6 +1114,9 @@ void ReaderSession::compareNativePosition(const QString &location, std::function
         Qt::QueuedConnection);
 }
 void ReaderSession::coverImage(QSize maximumSize, std::function<void(QImage)> finished, QString preferredPath) {
+    coverImage(maximumSize, [finished](QImage image, QFileInfo) { finished(std::move(image)); }, preferredPath);
+}
+void ReaderSession::coverImage(QSize maximumSize, std::function<void(QImage, QFileInfo)> finished, QString preferredPath) {
     auto engine = model;
     const auto lease = lease_;
     QPointer<ReaderSession> guard(this);
@@ -1045,13 +1124,21 @@ void ReaderSession::coverImage(QSize maximumSize, std::function<void(QImage)> fi
         engineWorker(),
         [engine, guard, lease, maximumSize, preferredPath, finished] {
             EngineJob activity;
-            auto image = lease && !lease->revoked() ? engine->coverImage(maximumSize, preferredPath) : QImage();
+            QFileInfo before(preferredPath);
+            const auto bytes = before.size();
+            const auto modified = before.lastModified();
+            QString usedPath;
+            auto image = lease && !lease->revoked() ? engine->coverImage(maximumSize, preferredPath, &usedPath) : QImage();
+            const QFileInfo after(usedPath);
+            const auto source = !usedPath.isEmpty() && before.isAbsolute() && before.isFile() &&
+                bytes == after.size() && modified == after.lastModified() ? before : QFileInfo();
             kobalt::qt::invoke(
                 qApp,
-                [guard, lease, image = std::move(image), finished]() mutable {
+                [guard, lease, image = std::move(image), source, finished]() mutable {
                     if (!guard)
                         return;
-                    finished(guard->lease_ == lease && lease && !lease->revoked() ? std::move(image) : QImage());
+                    const bool valid = guard->lease_ == lease && lease && !lease->revoked();
+                    finished(valid ? std::move(image) : QImage(), valid ? source : QFileInfo());
                 },
                 Qt::QueuedConnection);
         },
@@ -1777,12 +1864,13 @@ void ReaderSession::loadImages() {
             ReaderFrame result;
             bool loaded = false;
             if (latest->load() == job) {
+                const bool timing = diagnosticsActive();
                 QElapsedTimer timer;
-                timer.start();
+                if (timing) timer.start();
                 loaded = engine->loadNextImage();
                 if (loaded && latest->load() == job)
                     result = capture(*engine, positions, false, markup, markupGeneration);
-                if (loaded)
+                if (loaded && timing)
                     diagnostic("image-load-end",
                                {{"elapsed_ms", double(timer.elapsed())},
                                 {"current", latest->load() == job},
@@ -1844,17 +1932,19 @@ void ReaderSession::resumeIdleWork(int direction, quint64 job) {
     const auto engine = model;
     const auto latest = newest;
     const auto lease = lease_;
+    const auto neighbours = std::make_shared<NeighbourJob>(neighbourJobs);
     QPointer<ReaderSession> guard(this);
     kobalt::qt::invoke(
         engineWorker(),
-        [engine, latest, direction, job, guard, lease] {
+        [engine, latest, direction, job, guard, lease, neighbours] {
             EngineJob activity;
+            const bool timing = diagnosticsActive();
             QElapsedTimer timer;
-            timer.start();
+            if (timing) timer.start();
             prepareNeighbours(*engine, direction, [latest, job] {
                 return latest->load() == job;
             });
-            diagnostic("neighbours-end",
+            if (timing) diagnostic("neighbours-end",
                        {{"elapsed_ms", double(timer.elapsed())}, {"completed", latest->load() == job}}, false);
             // Drawing a neighbour can discover deferred images. Publish them now
             // so they load before that page is requested.
@@ -1970,9 +2060,10 @@ void ReaderSession::dispatch(bool pageTurn) {
         [guard, engine, requested, size, anchor, delta, target, job, lease, progress, positions, markup,
          markupGeneration] {
             EngineJob activity;
+            const bool timing = diagnosticsActive();
             QElapsedTimer timer;
-            timer.start();
-            diagnostic("render-start", {{"page_turn", delta != 0}, {"jump", !anchor.isEmpty() || target >= 0}},
+            if (timing) timer.start();
+            if (timing) diagnostic("render-start", {{"page_turn", delta != 0}, {"jump", !anchor.isEmpty() || target >= 0}},
                        delta == 0);
             const auto before = engine->state();
             const auto oldSize = engine->viewport();
@@ -2009,8 +2100,12 @@ void ReaderSession::dispatch(bool pageTurn) {
             if (result.turnDirection && oldImage &&
                 engine->preparedDamage(oldImage, result.image.cacheKey(), &result.damage))
                 result.damageFrom = oldImage;
-            diagnostic("render-end", {{"elapsed_ms", double(timer.elapsed())}, {"failed", !result.error.isEmpty()}},
-                       false);
+            if (timing)
+                diagnostic("render-end", {{"elapsed_ms", double(timer.elapsed())}, {"failed", !result.error.isEmpty()}},
+                           result.error.isEmpty() ? DiagnosticSeverity::Activity : DiagnosticSeverity::Error);
+            else
+                diagnostic("render-end", {{"failed", !result.error.isEmpty()}},
+                           result.error.isEmpty() ? DiagnosticSeverity::Activity : DiagnosticSeverity::Error);
             const bool failed = !result.error.isEmpty();
             kobalt::qt::invoke(
                 qApp,

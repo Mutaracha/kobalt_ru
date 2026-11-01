@@ -2,12 +2,17 @@
 #include "reader_p.h"
 
 #include "interfaces/reader/ui/style/styles.h"
+#include "interfaces/reader/ui/dialogs/action_menu.h"
 #include "platform/api/kobo_refresh.h"
 #include "support/qt_font.h"
 #include "support/strings.h"
+#include "storage/annotation_export.h"
 
 #include <QHBoxLayout>
 #include <QGridLayout>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QDir>
 #include "support/qt_compat.h"
 #include <QVBoxLayout>
 #include <QtMath>
@@ -17,13 +22,187 @@
 namespace kobalt::reader {
 namespace m = kobalt::ui::metrics;
 namespace strings = kobalt::strings;
+namespace {
+const char *exportFormatName(AnnotationExportFormat format) {
+    return format == AnnotationExportFormat::Markdown ? "Markdown" : "HTML";
+}
+QByteArray exportFont(const EngineFontInputs &fonts) {
+    for (const auto &path : fonts.sources.bundled) {
+        if (!path.endsWith("/Libron-Regular.ttf")) continue;
+        QFile font(path);
+        if (!font.open(QIODevice::ReadOnly)) return {};
+        return font.readAll();
+    }
+    return {};
+}
+}
+
+void Reader::closeMarksActions() {
+    if (!marksActions) return;
+    marksActions->hide();
+    marksActions->deleteLater();
+    marksActions.clear();
+}
+
+void Reader::openMarksActions() {
+    if (marksActions || removeDialog || annotationExportPicker || model->busy() ||
+        closing || lifecycleHidden || services.suspended() || book->deviceTransition()) return;
+    const ui::ActionMenuHeader header{{}, strings::get("annotations.export"),
+                                      strings::get("annotations.export_compression"), {}};
+    auto *menu = new ui::ActionMenu(this, header,
+        {ui::actionItem(strings::get("annotations.export_markdown"), "rrAnnotationExportMarkdown", ui::ControlIcon::Export,
+                        [this] { askExportMarks(AnnotationExportFormat::Markdown); }),
+         ui::actionItem(strings::get("annotations.export_html"), "rrAnnotationExportHtml", ui::ControlIcon::Export,
+                        [this] { askExportMarks(AnnotationExportFormat::Html); })});
+    marksActions = menu;
+    menu->setObjectName("rrAnnotationActions");
+    const bool enabled = highlights->writable() && highlights->resolved() && !highlights->highlights().isEmpty();
+    for (auto *action : menu->actions()) action->setEnabled(enabled);
+    menu->dismissed = [this] { closeMarksActions(); };
+    menu->setDimmed(true);
+    menu->setProperty("reader_standard_modal", true);
+    menu->setGeometry(rect());
+    menu->fitCard();
+    menu->show();
+    menu->raise();
+    menu->setFocus();
+}
+
+QByteArray Reader::marksExportArchive(AnnotationExportFormat format) {
+    QVector<Highlight> rows;
+    return highlights->exportDetails(&rows)
+        ? annotationExportArchive(model->title(), model->author(), rows, format, QDateTime::currentDateTimeUtc(),
+                                  format == AnnotationExportFormat::Html ? exportFont(model->fontInputs()) : QByteArray()) : QByteArray();
+}
+
+void Reader::askExportMarks(AnnotationExportFormat format) {
+    if (removeDialog || annotationExportPicker || model->busy() || closing || lifecycleHidden || services.suspended() ||
+        book->deviceTransition())
+        return;
+    if (!highlights->writable() || !highlights->resolved() || highlights->highlights().isEmpty())
+        return;
+    if (!services.annotationExportDirectory) {
+        confirmMarksExport(format, false, {}, [this, format] { chooseMarksExport(format); });
+        return;
+    }
+    const auto directory = services.annotationExportDirectory();
+    const auto name = annotationExportFileName(book->identity(), model->title(), format);
+    if (directory.isEmpty() || name.isEmpty()) {
+        finishMarksExport(format, false);
+        return;
+    }
+    const auto path = QDir(directory).filePath(name);
+    const QFileInfo existing(path);
+    const bool replace = existing.exists() || existing.isSymLink();
+    confirmMarksExport(format, replace, path, [this, format, path, replace] { saveMarksExport(format, path, replace); });
+}
+
+void Reader::confirmMarksExport(AnnotationExportFormat format, bool replace, const QString &path, std::function<void()> accepted) {
+    auto description = strings::get(replace ? "annotations.export_replace_description" : "annotations.export_description")
+        .arg(model->title().isEmpty() ? strings::get("annotations.export_untitled") : model->title(),
+             QString::fromLatin1(exportFormatName(format)));
+    if (!path.isEmpty()) description += "\n\n" + strings::get("annotations.export_destination").arg(path);
+    auto *dialog = new ui::ChoiceModal(this,
+        {description, strings::get(replace ? "annotations.export_replace_title" : "annotations.export_title"), {}},
+        {strings::get("common.cancel"), "rrAnnotationExportCancel"},
+        {strings::get(replace ? "annotations.export_replace_action" : "annotations.export_action"),
+         replace ? "rrAnnotationExportReplace" : "rrAnnotationExportConfirm"});
+    for (auto *label : dialog->findChildren<QLabel *>()) label->setTextFormat(Qt::PlainText);
+    removeDialog = dialog;
+    dialog->setObjectName(replace ? "rrAnnotationExportReplaceDialog" : "rrAnnotationExportDialog");
+    const auto close = [this, dialog] {
+        if (removeDialog != dialog) return;
+        dialog->hide();
+        dialog->deleteLater();
+        removeDialog.clear();
+    };
+    dialog->dismissed = close;
+    connect(dialog->secondaryButton(), &QPushButton::clicked, this, close);
+    connect(dialog->primaryButton(), &QPushButton::clicked, this, [this, dialog, close, accepted = std::move(accepted)] {
+        if (removeDialog != dialog) return;
+        close();
+        if (model->busy() || closing || lifecycleHidden || services.suspended() || book->deviceTransition()) return;
+        accepted();
+    });
+    dialog->card()->fitToWidth(qMin<int>(m::notice::cardWidth, width() - 2 * m::notice::sideClearance));
+    dialog->centerCard();
+    dialog->show();
+    dialog->raise();
+}
+
+void Reader::saveMarksExport(AnnotationExportFormat format, const QString &path, bool replaceApproved) {
+    const auto bytes = marksExportArchive(format);
+    if (bytes.isEmpty() || !QDir().mkpath(QFileInfo(path).absolutePath())) {
+        finishMarksExport(format, false);
+        return;
+    }
+    // The destination may have appeared while the initial confirmation was open.
+    // Ask again with an explicit replacement action before writing that file.
+    const QFileInfo existing(path);
+    if (!replaceApproved && (existing.exists() || existing.isSymLink())) {
+        confirmMarksExport(format, true, path, [this, format, path] { saveMarksExport(format, path, true); });
+        return;
+    }
+    finishMarksExport(format, writeAnnotationExport(QUrl::fromLocalFile(path), bytes), path);
+}
+
+void Reader::chooseMarksExport(AnnotationExportFormat format) {
+    const auto bytes = marksExportArchive(format);
+    if (bytes.isEmpty()) {
+        finishMarksExport(format, false);
+        return;
+    }
+    // A native save sheet must belong to the host window. The reader can
+    // be a graphics proxy and must not acquire a separate native window.
+    auto *parent = services.nativeDialogParent ? services.nativeDialogParent() : this;
+    auto *picker = new QFileDialog(parent, strings::get("annotations.export_format_title").arg(exportFormatName(format)),
+                                  annotationExportFileName(book->identity(), model->title(), format),
+                                  strings::get("annotations.export_filter"));
+    annotationExportPicker = picker;
+    picker->setObjectName("rrAnnotationExportPicker");
+    picker->setAcceptMode(QFileDialog::AcceptSave);
+    picker->setFileMode(QFileDialog::AnyFile);
+    picker->setDefaultSuffix("zip");
+    picker->setOption(QFileDialog::DontConfirmOverwrite, false);
+    connect(picker, &QDialog::finished, this, [this, format, picker, bytes](int result) {
+        const auto urls = picker->selectedUrls();
+        annotationExportPicker.clear();
+        picker->deleteLater();
+        if (result != QDialog::Accepted || closing || book->deviceTransition()) return;
+        const auto destination = urls.value(0);
+        const bool saved = writeAnnotationExport(destination, bytes);
+        finishMarksExport(format, saved, destination.isLocalFile() ? destination.toLocalFile() : QString());
+    });
+    picker->QDialog::open();
+}
+
+void Reader::finishMarksExport(AnnotationExportFormat format, bool saved, const QString &location) {
+    auto *notice = new ui::NoticeModal(this,
+        {!saved ? strings::get("annotations.export_failed")
+                : location.isEmpty() ? strings::get("annotations.export_complete")
+                                     : strings::get("annotations.export_saved").arg(location),
+         strings::get("annotations.export_format_title").arg(exportFormatName(format)), {}},
+        {strings::get("common.ok"), "rrAnnotationExportDone"});
+    removeDialog = notice;
+    const auto done = [this, notice] {
+        notice->hide();
+        notice->deleteLater();
+        removeDialog.clear();
+    };
+    notice->dismissed = done;
+    connect(notice->primaryButton(), &QPushButton::clicked, this, done);
+    notice->card()->fitToWidth(qMin<int>(m::notice::cardWidth, width() - 2 * m::notice::sideClearance));
+    notice->centerCard();
+    notice->show();
+    notice->raise();
+}
 
 void Reader::paintAnnotationDraft() {
     page->annotate(draftHighlightRects, savedHighlightRects, {},
                    draftHighlightGeometry.vertical);
     auto geometry = draftHighlightGeometry;
     geometry.rectangles = draftHighlightRects;
-    page->setAnnotationHandles(annotationMode ? geometry : AnnotationGeometry{});
+    page->setAnnotationHandles(geometry);
     annotationPopover->setInputExclusions(page->annotationHandleHitRegion().translated(
         page->mapTo(this, QPoint()) - annotationPopover->pos()));
 }
@@ -239,7 +418,7 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
                             QString("QPushButton{min-height:%1px;max-height:%1px;padding:0;border:none;}").arg(rowHeight));
             button->ensurePolished();
             const int rowWidth = m::chrome::inset + m::chrome::cellIcon + ui::px(20) +
-                                 qCeil(qt::textWidth(QFontMetricsF(button->font()), action.label)) + m::chrome::actionRight;
+                                 ui::interfaceTextWidth(action.label, button->font()) + m::chrome::actionRight;
             desiredWidth = qMax(desiredWidth, rowWidth + 2 * int(m::control::border));
         }
     }
@@ -323,7 +502,7 @@ void Reader::annotationTap(QPoint point) {
 
 bool Reader::beginAnnotationDrag(QPoint point, int boundary) {
     if (annotationSaving || model->busy() || lifecycleHidden || closing || services.suspended() ||
-        (boundary >= 0 && !annotationMode) ||
+        (boundary >= 0 && !annotationMode && (annotationStart.isEmpty() || annotationEnd.isEmpty())) ||
         (topControls->isVisible() && !annotationMenuSelectionEnabled()))
         return false;
     if (topControls->isVisible())
@@ -422,9 +601,9 @@ int Reader::annotationDragPageDirection(QPoint point) const {
 }
 
 void Reader::moveAnnotationDrag(QPoint point) {
-    // Ordinary lookup keeps the word where the hold began. The page still owns
-    // the gesture, so movement and release cannot become a page turn.
-    if (!annotationDragging || !annotationMode)
+    // The initial lookup hold keeps its word. Lookup handles can adjust the
+    // range after release without enabling annotation mode.
+    if (!annotationDragging || (!annotationMode && !annotationHandleDragging))
         return;
     annotationDragPoint = point;
     requestAnnotationDrag();
@@ -433,7 +612,7 @@ void Reader::moveAnnotationDrag(QPoint point) {
 void Reader::finishAnnotationDrag(bool cancelled) {
     if (!annotationDragging) {
         if (std::exchange(annotationDragAwaitingRelease, false) && !cancelled && !annotationMode)
-            showAnnotationActions();
+            lookupSelection();
         return;
     }
     if (cancelled) {
@@ -454,7 +633,7 @@ void Reader::requestAnnotationDrag() {
     if (annotationHandleDragging) {
         const int direction = annotationDragPageDirection(annotationDragPoint);
         if (direction != 0) {
-            if (!(direction > 0 ? annotationDragEdges.continuesAfter : annotationDragEdges.continuesBefore)) {
+            if (!annotationMode || !(direction > 0 ? annotationDragEdges.continuesAfter : annotationDragEdges.continuesBefore)) {
                 const auto token = direction > 0 ? annotationDragEdges.last : annotationDragEdges.first;
                 const bool start = annotationDragBoundary == 0;
                 annotationDragPending = true;
@@ -464,6 +643,8 @@ void Reader::requestAnnotationDrag() {
                         return;
                     guard->annotationDragging = guard->annotationDragPending = false;
                     guard->annotationDragAwaitingRelease = !guard->annotationDragReleased;
+                    if (guard->annotationDragReleased && !guard->annotationMode)
+                        guard->lookupSelection();
                 };
                 resolveAnnotationTokens(start ? token : annotationStartWord, start ? annotationEndWord : token,
                     start ? !token.punctuation : annotationStartPolicy,
@@ -511,7 +692,7 @@ void Reader::requestAnnotationDrag() {
             } else if (guard->annotationDragReleased) {
                 guard->annotationDragging = false;
                 if (!guard->annotationMode && !guard->annotationStart.isEmpty()) {
-                    if (guard->annotationStartWord.start != guard->annotationEndWord.start || guard->selectionLinkPoint().x() >= 0)
+                    if (!guard->annotationHandleDragging && guard->selectionLinkPoint().x() >= 0)
                         guard->showAnnotationActions();
                     else
                         guard->lookupSelection();
@@ -855,7 +1036,7 @@ void Reader::syncAnnotationControls() {
         !searchPanel->isVisible() && !dictionaryPanel->isVisible() && !lightPopup->isVisible();
     const bool selectionEnabled = annotationMenuSelectionEnabled();
     page->setAnnotationInputEnabled(readingOnly || dictionaryPanel->isVisible() || selectionEnabled);
-    page->setAnnotationHandles(annotationMode ? draftHighlightGeometry : AnnotationGeometry{});
+    page->setAnnotationHandles(draftHighlightGeometry);
     annotationPopover->setInputExclusions(page->annotationHandleHitRegion().translated(
         page->mapTo(this, QPoint()) - annotationPopover->pos()));
 }
@@ -881,6 +1062,16 @@ void Reader::syncMarkupRequest() {
 }
 
 void Reader::preparePresentation(std::function<void(bool)> finished) {
+    prepareKosyncPresentation([this, finished = std::move(finished)](bool ready) mutable {
+        if (!ready) { finished(false); return; }
+        prepareAnnotationPresentation([this, finished = std::move(finished)](bool ready) {
+            if (ready) book->markNativeReading();
+            finished(ready);
+        });
+    });
+}
+
+void Reader::prepareAnnotationPresentation(std::function<void(bool)> finished) {
     syncMarkupRequest();
     if (annotationRequest.saved.isEmpty()) {
         finished(true);
@@ -995,7 +1186,7 @@ void Reader::syncAnnotations() {
         draftHighlightRects = matchingDraft ? markup.draft.rectangles : QVector<QRect>{};
         draftHighlightGeometry = matchingDraft ? markup.draft : AnnotationGeometry{};
         page->installAnnotationFrame(draftHighlightRects, markup.saved, draftHighlightGeometry.vertical,
-                                     annotationMode ? &draftHighlightGeometry : nullptr);
+                                     &draftHighlightGeometry);
         if (showActions) {
             annotationShowActionsPending = false;
             showAnnotationActions();

@@ -87,6 +87,14 @@ BookmarkList::BookmarkList(QWidget *parent) : Panel(parent) {
             tabRequested(true);
     });
     sortButton = new ui::CellButton(ui::ControlIcon::Sort, this);
+    moreButton = new ui::CellButton(ui::ControlIcon::More, this);
+    moreButton->setObjectName("rrAnnotationMore");
+    moreButton->setAccessibleName(strings::get("annotations.more"));
+    moreButton->setRule(Qt::LeftEdge);
+    connect(moreButton, &QPushButton::clicked, this, [this] {
+        closeSort();
+        if (actionsRequested) actionsRequested();
+    });
     sortButton->setObjectName("rrMarksSort");
     sortButton->setAccessibleName(strings::get("marks.sort_title"));
     sortButton->setRule(Qt::LeftEdge);
@@ -186,7 +194,7 @@ int BookmarkList::rowHeight() const {
     const int excerptHeight = privateText ? qMax(ui::measurePrivateTextSize(sample, font).height(),
                                                  ui::renderPrivateText(sample, font).image.height())
                                           : qMax(metrics.height(), metrics.tightBoundingRect(sample).height());
-    const int lineHeight = qMax(excerptHeight, QFontMetrics(ui::interfaceFont(c::labelText)).height());
+    const int lineHeight = qMax(excerptHeight, ui::interfaceLineHeight(ui::interfaceFont(c::labelText)));
     return qMax(int(ui::metrics::list::threeLines),
                 2 * int(ui::metrics::list::lineInset) + 4 * lineHeight + int(ui::metrics::control::border));
 }
@@ -308,12 +316,15 @@ void BookmarkList::arrange() {
         ++page;
     rows = (page + 1 < pageStarts.size() ? pageStarts[page + 1] : items.size()) - pageStarts[page];
     const int barHeight = c::actionHeight - c::heavyRule;
-    const int tabWidth = qMax(1, (width() - 2 * c::cellWidth) / 2);
+    moreButton->setEnabled(bool(actionsRequested) && !loading);
+    const int reserved = 3 * c::cellWidth;
+    const int tabWidth = qMax(1, (width() - reserved) / 2);
     close->setGeometry(0, 0, c::cellWidth, barHeight);
     annotationsTab->setGeometry(c::cellWidth, 0, tabWidth, barHeight);
-    bookmarksTab->setGeometry(c::cellWidth + tabWidth, 0, qMax(1, width() - 2 * c::cellWidth - tabWidth), barHeight);
+    bookmarksTab->setGeometry(c::cellWidth + tabWidth, 0, qMax(1, width() - reserved - tabWidth), barHeight);
+    moreButton->setGeometry(width() - c::cellWidth, 0, c::cellWidth, barHeight);
     listHeader->setGeometry(0, c::actionHeight, width(), ui::metrics::list::headerHeight);
-    sortButton->setGeometry(width() - c::cellWidth, 0, c::cellWidth, barHeight);
+    sortButton->setGeometry(width() - 2 * c::cellWidth, 0, c::cellWidth, barHeight);
     if (sortPopup) {
         sortPopup->setGeometry(rect());
         sortPopup->centerCard();

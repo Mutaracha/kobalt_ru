@@ -133,9 +133,12 @@ public:
         const auto background = GetBackgroundColor();
         const bool neutral = qRed(color) == qGreen(color) && qRed(color) == qBlue(color);
         const bool coloredPaper = qRed(background) != qGreen(background) || qRed(background) != qBlue(background);
-        // Preserve the publisher's contrast on colored backgrounds. Inverting
-        // black text on a preserved yellow highlight would make it white.
-        const lUInt32 ink = dark && neutral && coloredPaper && (background >> 24) != 255 ? color ^ 0x00ffffffU : color;
+        const bool preserveContrast = coloredPaper && (background >> 24) != 255;
+        // CREngine pre-inverts every non-gray text color. Undo that for faint
+        // tints on neutral paper so near-black text becomes light in dark mode.
+        // On preserved colored paper, keep the publisher's original contrast.
+        const bool invertInk = dark && (preserveContrast ? neutral : !neutral && !hasVisibleColour(color));
+        const lUInt32 ink = invertInk ? color ^ 0x00ffffffU : color;
         LVColorDrawBuf::Draw(x, y, bitmap, width, height, &ink);
     }
     void Draw(LVImageSourceRef image, int x, int y, int width, int height, bool dither) override {
@@ -332,7 +335,7 @@ QVector<ReadingFont> ReaderModel::fontCatalog() {
             }
         }
         if (!files.isEmpty()) {
-            result.append({family, files, FontOrigin::Interface, false, {}, {}});
+            result.append({family, files, FontOrigin::Interface, {}, {}});
         }
     }
     readingFontCatalog = result;
@@ -370,7 +373,11 @@ bool ReaderModel::saveDocumentCache() {
         return false;
     auto *document = engine_->getDocument();
     DocumentCacheScope cache(cacheDirectory_);
-    if (!cache.enabled() || engine_->updateCache() != CR_DONE)
+    if (!cache.enabled())
+        return false;
+    // The no-argument update serializes even a clean cache. Keep that path for
+    // creation and dirty documents; an existing clean cache needs no update.
+    if ((!document->hasCacheFile() || document->isCacheFileStale()) && engine_->updateCache() != CR_DONE)
         return false;
     if (document->hasCacheFile()) {
         if (!document->updateCacheFileName())
@@ -413,6 +420,8 @@ void ReaderModel::configure(QSize size, const QJsonObject &settings) {
     darkMode_ = saved.value("dark_mode").toBool(false);
     hideNonlinearFragments_ = saved.value("hide_nonlinear_fragments").toBool(false);
     avoidWastefulStyling_ = saved.value("avoid_wasteful_styling").toBool(true);
+    verticalSpacing_ = appearance::verticalSpacingMode(saved.value("vertical_justification"));
+    verticalSpacingScope_ = appearance::verticalSpacingScope(saved.value("vertical_spacing_scope"));
     wordSpacing_ = saved.value("word_spacing").toInt(100);
     if (!appearance::validWordSpacing(wordSpacing_))
         wordSpacing_ = 100;
@@ -424,6 +433,8 @@ void ReaderModel::configure(QSize size, const QJsonObject &settings) {
         widowsOrphans_ = "publisher";
     pixels_ = qBound(minimumFontPixels(), saved.value("font_pixels").toInt(defaultFontPixels()), maximumFontPixels());
     spacing_ = qBound(100, saved.value("line_spacing").toInt(defaultLineSpacing), maximumLineSpacing);
+    paragraphSpacing_ = appearance::paragraphSpacing(saved.value("paragraph_spacing"));
+    paragraphIndent_ = appearance::paragraphIndent(saved.value("paragraph_indent"));
     margin_ = qBound(0, saved.value("margin_pixels").toInt(defaultMarginPixels()), maximumMarginPixels());
     topMargin_ =
         qBound(0, saved.value("top_margin_pixels").toInt(defaultVerticalMarginPixels(margin_)), maximumMarginPixels());
@@ -435,6 +446,10 @@ void ReaderModel::configure(QSize size, const QJsonObject &settings) {
         hyphenation_ = "off";
     weight_ = qBound(0, saved.value("weight_steps").toInt(0), 12);
     bionic_ = saved.value("bold_reading").toString("off");
+    const auto beautifier = appearance::beautifierSettings(saved);
+    beautifierInitials_ = beautifier.value("beautifier_initials").toBool();
+    beautifierSpacing_ = beautifier.value("beautifier_spacing").toBool();
+    beautifierIndent_ = beautifier.value("beautifier_indent").toBool();
     // Preserve enabled Bionic reading from the retired thickness mode.
     if (bionic_ == "synthetic")
         bionic_ = "bold";
@@ -525,6 +540,7 @@ void ReaderModel::configure(QSize size, const QJsonObject &settings) {
                           lString8(QString("|||||%1|%2||").arg(monospaceFontFace, mathFontFace).toUtf8().constData()));
     engine_->propsApply(properties);
     engine_->setViewMode(DVM_PAGES, 1);
+    engine_->setVerticalSpacing(verticalSpacing_ == "center" ? 2 : verticalSpacing_ == "expand" ? 1 : 0, verticalSpacingScope_ == "protection");
     engine_->setDefaultFontFace(lString8((face_.isEmpty() ? QString(defaultFontFace) : face_).toUtf8().constData()));
     engine_->setFontSize(pixels_);
     // CSS sets the line height; the engine must not multiply it again.
@@ -549,7 +565,9 @@ QString ReaderModel::title() const {
 QString ReaderModel::author() const {
     return engine_ ? qstring(engine_->getAuthors()) : QString();
 }
-QImage ReaderModel::coverImage(QSize maximumSize, const QString &preferredPath) const {
+QImage ReaderModel::coverImage(QSize maximumSize, const QString &preferredPath, QString *usedPath) const {
+    if (usedPath)
+        usedPath->clear();
     if (!engine_ || maximumSize.isEmpty() || qint64(maximumSize.width()) * maximumSize.height() > 4 * 1024 * 1024) {
         return {};
     }
@@ -603,6 +621,8 @@ QImage ReaderModel::coverImage(QSize maximumSize, const QString &preferredPath) 
     if (!preferredPath.isEmpty()) {
         const auto image = decode(LVOpenFileStream(cre(preferredPath).c_str(), LVOM_READ));
         if (!image.isNull()) {
+            if (usedPath)
+                *usedPath = preferredPath;
             return image;
         }
     }
@@ -668,6 +688,19 @@ bool ReaderModel::style(int pixels, int spacing, const QString &face, int margin
 bool ReaderModel::applyAppearance(const QJsonObject &settings, QSize size, OpeningProgress progress) {
     const int pixels = settings.value("font_pixels").toInt(pixels_);
     const int spacing = settings.value("line_spacing").toInt(spacing_);
+    const int paragraphSpacing = settings.contains("paragraph_spacing")
+        ? appearance::paragraphSpacing(settings.value("paragraph_spacing")) : paragraphSpacing_;
+    if (settings.contains("paragraph_spacing") && settings.value("paragraph_spacing") != paragraphSpacing)
+        return false;
+    const int paragraphIndent = settings.contains("paragraph_indent")
+        ? appearance::paragraphIndent(settings.value("paragraph_indent")) : paragraphIndent_;
+    if (settings.contains("paragraph_indent") && settings.value("paragraph_indent") != paragraphIndent)
+        return false;
+    for (const auto *key : appearance::beautifierKeys)
+        if (settings.contains(key) && !settings.value(key).isBool()) return false;
+    const bool beautifierInitials = settings.value("beautifier_initials").toBool(beautifierInitials_);
+    const bool beautifierSpacing = settings.value("beautifier_spacing").toBool(beautifierSpacing_);
+    const bool beautifierIndent = settings.value("beautifier_indent").toBool(beautifierIndent_);
     const int margin = settings.value("margin_pixels").toInt(margin_);
     const int topMargin = settings.value("top_margin_pixels").toInt(topMargin_);
     const int bottomMargin = settings.value("bottom_margin_pixels").toInt(bottomMargin_);
@@ -697,6 +730,11 @@ bool ReaderModel::applyAppearance(const QJsonObject &settings, QSize size, Openi
     const bool dark = settings.value("dark_mode").toBool(darkMode_);
     const bool hideNonlinear = settings.value("hide_nonlinear_fragments").toBool(hideNonlinearFragments_);
     const bool avoidWastefulStyling = settings.value("avoid_wasteful_styling").toBool(avoidWastefulStyling_);
+    const auto verticalSpacing = settings.contains("vertical_justification")
+        ? appearance::verticalSpacingMode(settings.value("vertical_justification")) : verticalSpacing_;
+    const auto verticalScope = settings.contains("vertical_spacing_scope")
+        ? appearance::verticalSpacingScope(settings.value("vertical_spacing_scope")) : verticalSpacingScope_;
+    const bool verticalChanged = verticalSpacing != verticalSpacing_ || verticalScope != verticalSpacingScope_;
     const int wordSpacing = settings.value("word_spacing").toInt(wordSpacing_);
     const int tracking = settings.value("justification_tracking").toInt(justificationTracking_);
     if (size.width() < 320 || size.height() < 240)
@@ -722,22 +760,30 @@ bool ReaderModel::applyAppearance(const QJsonObject &settings, QSize size, Openi
     const bool bionicChanged = bionic != bionic_;
     // Outline thickness changes pixels only. Keep the formatted page and its anchors.
     const bool thicknessChanged = weight != weight_;
-    const bool styled = fallbackFaces != fallbackFaces_ || avoidWastefulStyling != avoidWastefulStyling_ ||
+    const bool styled = beautifierInitials != beautifierInitials_ || beautifierSpacing != beautifierSpacing_ ||
+        beautifierIndent != beautifierIndent_ || fallbackFaces != fallbackFaces_ || avoidWastefulStyling != avoidWastefulStyling_ ||
                         wordSpacing != wordSpacing_ || tracking != justificationTracking_ || widowsOrphans != widowsOrphans_ ||
                         bionicChanged || axisChanged || opticalChanged || pixels != pixels_ || spacing != spacing_ ||
+                        paragraphSpacing != paragraphSpacing_ ||
+                        paragraphIndent != paragraphIndent_ ||
                         face != face_ || defaultFace != defaultFace_ || margin != margin_ || topMargin != topMargin_ ||
                         bottomMargin != bottomMargin_ || alignment != alignment_ || hyphenation != hyphenation_;
     const bool resized = size != size_ || columns != columns_ || columnSpacing != columnSpacing_;
     twoColumnsLandscape_ = landscapeColumns;
     columnSpacingPercent_ = gapPercent;
-    if (!styled && !resized && weight == weight_ && dark == darkMode_ && hideNonlinear == hideNonlinearFragments_)
+    if (!verticalChanged && !styled && !resized && weight == weight_ && dark == darkMode_ && hideNonlinear == hideNonlinearFragments_)
         return true;
-    if (styled || resized)
+    if (styled || resized || verticalChanged)
         sourceIndex_.reset();
     const QString anchor = position();
     OpeningCallback callback(engine_, std::move(progress));
     pixels_ = pixels;
     spacing_ = spacing;
+    paragraphSpacing_ = paragraphSpacing;
+    paragraphIndent_ = paragraphIndent;
+    beautifierInitials_ = beautifierInitials;
+    beautifierSpacing_ = beautifierSpacing;
+    beautifierIndent_ = beautifierIndent;
     face_ = face;
     defaultFace_ = defaultFace;
     fallbackFaces_ = fallbackFaces;
@@ -754,6 +800,9 @@ bool ReaderModel::applyAppearance(const QJsonObject &settings, QSize size, Openi
     activateFontParameters();
     hideNonlinearFragments_ = hideNonlinear;
     avoidWastefulStyling_ = avoidWastefulStyling;
+    verticalSpacing_ = verticalSpacing;
+    verticalSpacingScope_ = verticalScope;
+    engine_->setVerticalSpacing(verticalSpacing_ == "center" ? 2 : verticalSpacing_ == "expand" ? 1 : 0, verticalSpacingScope_ == "protection");
     wordSpacing_ = wordSpacing;
     justificationTracking_ = tracking;
     widowsOrphans_ = widowsOrphans;
@@ -896,6 +945,22 @@ void ReaderModel::applyStyleSheet() {
             QString("body,p,div,section,article,blockquote,li,dt,dd,h1,h2,h3,h4,h5,h6 { line-height:%1% !important; }")
                 .arg(spacing_);
     }
+    {
+        const QString prose = "p[data-kobalt-beautify=\"body\"], p[data-kobalt-beautify=\"opening\"], p[data-kobalt-beautify=\"first-letter\"]";
+        if (beautifierSpacing_)
+            overrides += prose + " { margin-bottom:0 !important; padding-bottom:0 !important; }\n";
+        if (beautifierIndent_)
+            overrides += prose + " { text-indent:1.2em !important; }\n"
+                "p[data-kobalt-beautify=\"opening\"], p[data-kobalt-beautify=\"first-letter\"] { text-indent:0 !important; }\n";
+        if (beautifierInitials_)
+            overrides += "p[data-kobalt-beautify=\"first-letter\"]::first-letter, [data-kobalt-first-letter=\"1\"]::first-letter, span[data-kobalt-initial=\"1\"] { font-size:1em !important; font-family:inherit !important; font-weight:inherit !important; font-style:inherit !important; float:none !important; line-height:inherit !important; margin:0 !important; padding:0 !important; initial-letter:normal !important; }\n";
+    }
+    if (paragraphSpacing_ >= 0)
+        overrides += QString("p[data-kobalt-paragraph=\"1\"] { margin-top:0 !important; margin-bottom:%1em !important; padding-top:0 !important; padding-bottom:0 !important; }\n")
+                         .arg(paragraphSpacing_ / 100.0, 0, 'f', 2);
+    if (paragraphIndent_ >= 0)
+        overrides += QString("p[data-kobalt-paragraph=\"1\"] { text-indent:%1em !important; }\n")
+                         .arg(paragraphIndent_ / 100.0, 0, 'f', 2);
     // Only marked text blocks override publisher alignment; decorative blocks keep it.
     if (alignment_ != "publisher")
         overrides +=
@@ -919,6 +984,27 @@ void ReaderModel::prepareDamage(int fromPage, int toPage) {
     if (!damage_.contains(key))
         damage_.insert(key, kobalt::ui::imageDamage(from, to));
 }
+namespace {
+std::atomic<int> pageFormat{QImage::Format_RGB32};
+// CREngine draws into RGB32 buffers. Both page formats store four bytes per
+// pixel, so a buffer changes format without copying its pixels.
+void usePageFormat(QImage &image, QImage::Format format) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
+    if (image.format() != format)
+        image.reinterpretAsFormat(format);
+#else
+    Q_UNUSED(image);
+    Q_UNUSED(format);
+#endif
+}
+}
+void ReaderModel::setPageFormat(QImage::Format format) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
+    pageFormat = format == QImage::Format_RGBX8888 ? QImage::Format_RGBX8888 : QImage::Format_RGB32;
+#else
+    Q_UNUSED(format);
+#endif
+}
 bool ReaderModel::preparedDamage(qint64 fromKey, qint64 toKey, QRect *damage) const {
     const auto found = damage_.constFind(qMakePair(qMin(fromKey, toKey), qMax(fromKey, toKey)));
     if (found == damage_.cend())
@@ -935,8 +1021,10 @@ void ReaderModel::trim() {
             QImage retired = std::move(it.value());
             it = cache_.erase(it);
             if (spareImage_.isNull() && retired.isDetached() && retired.size() == size_ &&
-                retired.format() == QImage::Format_RGB32)
+                (retired.format() == QImage::Format_RGB32 || retired.format() == QImage::Format_RGBX8888)) {
+                usePageFormat(retired, QImage::Format_RGB32);
                 spareImage_ = std::move(retired);
+            }
         } else
             ++it;
     }
@@ -1024,7 +1112,10 @@ QImage ReaderModel::image(int pageNumber) {
     const int tileRows = result.height() / tileSize + (result.height() % tileSize != 0);
     const bool boundedTiles = qint64(tileColumns) * tileRows <= 4096;
     QVector<uchar> colourTiles(boundedTiles ? tileColumns * tileRows : 0, 0);
-    hasColor = normalizePagePixels(result, darkMode_, boundedTiles ? &colourTiles : nullptr, tileColumns);
+    const auto format = QImage::Format(pageFormat.load());
+    hasColor = normalizePagePixels(result, darkMode_, boundedTiles ? &colourTiles : nullptr, tileColumns,
+                                   format == QImage::Format_RGBX8888);
+    usePageFormat(result, format);
     result.setText("kobalt.image_regions", regionMetadata(buffer.imageRegions));
     result.setText(
         "kobalt.colour_regions",
@@ -1056,6 +1147,9 @@ quint64 ReaderModel::layoutSignature() const {
     };
     mix(quint64(quintptr(engine_->getDocument())));
     mix(engine_->getDocumentRenderingHash(true));
+    mix(columns_);
+    mix(verticalSpacing_ == "center" ? 2 : verticalSpacing_ == "expand" ? 1 : 0);
+    mix(verticalSpacingScope_ == "protection");
     return hash ? hash : 1;
 }
 const ReaderModel::ChapterIndex &ReaderModel::chapterIndex(ChapterIndex &index, const QVector<ChapterLink> &source,
@@ -1135,11 +1229,20 @@ QVector<ChapterLink> ReaderModel::chapterGraph() const {
         return {};
     return chapterIndex(graphIndex_, graph_, false).links;
 }
+int ReaderModel::chapterEndPage(const ChapterLink &next) const {
+    if (columns_ == 1)
+        return next.page;
+    const auto pointer = engine_->getDocument()->createXPointer(cre(next.position));
+    const int column = pointer.isNull() ? -1 : engine_->getBookmarkPage(pointer, true);
+    // A chapter starting in the second column shares this screen with the
+    // preceding chapter. Round its exclusive end up before counting screens.
+    return column < 0 ? next.page : (column + columns_ - 1) / columns_;
+}
 ChapterSelection ReaderModel::chapterSelection(const QVector<ChapterLink> &links) const {
     auto result = chapterAround(links, anchor_);
     if (result.current >= 0) {
         const int first = links[result.current].page;
-        const int last = result.next < 0 ? pages() - 1 : qMax(first, links[result.next].page - 1);
+        const int last = result.next < 0 ? pages() - 1 : qMax(first, chapterEndPage(links[result.next]) - 1);
         result.page = qBound(1, page() - first + 1, last - first + 1);
         result.pages = last - first + 1;
     }
@@ -1222,11 +1325,12 @@ ChapterProgress ReaderModel::chapterProgress() const {
             return {title.isEmpty() ? strings::get("reader.untitled_chapter") : title, selected.page, selected.pages};
         }
         if (selected.next >= 0)
-            return {strings::get("reader.front_matter"), page() + 1, qMax(1, links[selected.next].page)};
+            return {strings::get("reader.front_matter"), page() + 1, qMax(1, chapterEndPage(links[selected.next]))};
         return {};
     }
     const int current = page();
-    int start = -1, end = pages();
+    int start = -1;
+    const ChapterLink *next = nullptr;
     ChapterProgress progress;
     bool found = false;
     for (const auto &chapter : links) {
@@ -1236,8 +1340,8 @@ ChapterProgress ReaderModel::chapterProgress() const {
         if (chapter.page <= current && chapter.page >= start) {
             start = chapter.page;
             progress.title = chapter.title.trimmed();
-        } else if (chapter.page > current)
-            end = qMin(end, chapter.page);
+        } else if (chapter.page > current && (!next || chapter.page < next->page))
+            next = &chapter;
     }
     if (!found)
         return progress;
@@ -1245,7 +1349,7 @@ ChapterProgress ReaderModel::chapterProgress() const {
         progress.title = start < 0 ? strings::get("reader.front_matter") : strings::get("reader.untitled_chapter");
     const int first = qMax(0, start);
     progress.page = current - first + 1;
-    progress.pages = end - first;
+    progress.pages = (next ? chapterEndPage(*next) : pages()) - first;
     return progress;
 }
 QString ReaderModel::textFontFace() const {
@@ -1283,6 +1387,10 @@ QJsonObject ReaderModel::state() const {
                                {"position", position()},
                                {"font_pixels", pixels_},
                                {"line_spacing", spacing_},
+                               {"paragraph_spacing", paragraphSpacing_},
+                               {"paragraph_indent", paragraphIndent_},
+                               {"beautifier_initials", beautifierInitials_}, {"beautifier_spacing", beautifierSpacing_},
+                               {"beautifier_indent", beautifierIndent_},
                                {"line_spacing_version", 1},
                                {"font_face", face_},
                                {"default_font_face", defaultFace_},
@@ -1301,6 +1409,8 @@ QJsonObject ReaderModel::state() const {
                                {"dark_mode", darkMode_},
                                {"hide_nonlinear_fragments", hideNonlinearFragments_},
                                {"avoid_wasteful_styling", avoidWastefulStyling_},
+                               {"vertical_justification", verticalSpacing_},
+                               {"vertical_spacing_scope", verticalSpacingScope_},
                                {"columns", columns_},
                                {"two_columns_landscape", twoColumnsLandscape_},
                                {"column_spacing_percent", columnSpacingPercent_},

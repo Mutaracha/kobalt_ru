@@ -226,9 +226,12 @@ bool ListRow::eventFilter(QObject *object, QEvent *event) {
         (event->type() == QEvent::PaletteChange || event->type() == QEvent::DynamicPropertyChange))
         syncLabelStyles();
     if (!synchronizing &&
-        (object == title || object == detail || object == caption || object == leading || object == trailing) &&
-        (event->type() == QEvent::FontChange || event->type() == QEvent::StyleChange))
-        arrange();
+        (object == title || object == detail || object == caption || object == leading || object == trailing)) {
+        if (event->type() == QEvent::PaletteChange)
+            syncLabelStyles();
+        else if (event->type() == QEvent::FontChange || event->type() == QEvent::StyleChange)
+            arrange();
+    }
     return Button::eventFilter(object, event);
 }
 void ListRow::syncLabelStyles() {
@@ -241,10 +244,20 @@ void ListRow::syncLabelStyles() {
     int index = 0;
     bool changed = false;
     for (auto *label : {title, detail, caption, leading, trailing}) {
-        const QColor color = !isEnabled() ? QColor("#999999") : current || label == title ? ink : noteColor(this);
+        const QColor color = !isEnabled() ? themeColors(this).disabledInk
+                             : current || label == title ? ink : noteColor(this);
         const QString style = labelStyles[index++] + "color:" + color.name() + ';';
         if (label->property("reader_style").toString() != style) {
             readerStyle(label, style);
+            changed = true;
+        }
+        // Theme propagation can reset the palette without changing the
+        // stylesheet. Private text reads this role directly.
+        const QColor textColor(color.name());
+        if (label->palette().color(QPalette::WindowText) != textColor) {
+            auto colors = label->palette();
+            colors.setColor(QPalette::WindowText, textColor);
+            label->setPalette(colors);
             changed = true;
         }
     }
@@ -302,7 +315,7 @@ void ListRow::paintEvent(QPaintEvent *) {
     const QColor ink = colors.color(current ? QPalette::Window : QPalette::WindowText);
     QColor paper = colors.color(current ? QPalette::WindowText : QPalette::Window);
     if (!current && isEnabled() && isDown())
-        paper = darkTheme(this) ? QColor("#333333") : QColor("#dddddd");
+        paper = themeColors(this).pressedPaper;
     painter.fillRect(rect(), paper);
     if (hasLeadingIcon) {
         const int side = m::control::iconSize;
@@ -354,7 +367,7 @@ void ListHeader::setTrailingInset(int pixels) {
 void ListHeader::resizeEvent(QResizeEvent *) {
     const int available = qMax(0, width() - 2 * m::list::inset - trailingInset);
     const int side =
-        right->text().isEmpty() ? 0 : qMin(available, qt::textWidth(QFontMetrics(right->font()), right->text()));
+        right->text().isEmpty() ? 0 : qMin(available, interfaceTextWidth(right->text(), right->font()));
     left->setGeometry(m::list::inset, 0, qMax(0, available - side - (side ? int(m::list::gap) : 0)),
                       height() - m::control::border);
     right->setGeometry(width() - m::list::inset - trailingInset - side, 0, side, height() - m::control::border);
@@ -384,12 +397,29 @@ QHBoxLayout *labeledRow(QWidget *parent, QVBoxLayout *rows, const QString &label
     auto *caption = new ui::InterfaceLabel(label, parent);
     caption->setFixedWidth(m::control::captionWidth);
     caption->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    // Large text can need a second line, as slider captions do.
+    caption->setWordWrap(true);
     readerStyle(caption, styles::font(m::text::secondary));
     line->addWidget(caption);
     return line;
 }
-SegmentedRow::SegmentedRow(QWidget *parent, QVBoxLayout *rows, const char *name, const QString &label) {
+SegmentedRow::SegmentedRow(QWidget *parent, QVBoxLayout *rows, const char *name, const QString &label,
+                           const QString &detail) {
     auto *line = labeledRow(parent, rows, label);
+    if (!detail.isEmpty()) {
+        auto *caption = line->takeAt(0);
+        auto *labels = new QVBoxLayout;
+        labels->setSpacing(px(2));
+        labels->addWidget(caption->widget());
+        delete caption;
+        auto *value = new InterfaceLabel(detail, parent);
+        value->setObjectName(QString(name) + "Detail");
+        value->setFixedWidth(m::control::captionWidth);
+        readerStyle(value, styles::font(m::control::captionValueText) + "color:palette(placeholder-text);");
+        labels->addWidget(value);
+        line->addLayout(labels);
+        line->setAlignment(labels, Qt::AlignVCenter);
+    }
     frame = new QFrame(parent);
     frame->setObjectName(name);
     line->addWidget(frame, 1);

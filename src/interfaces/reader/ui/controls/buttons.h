@@ -23,6 +23,15 @@ public:
         highlightChecked = enabled;
         update();
     }
+    // Content stays vertically centered in either horizontal alignment.
+    void setContentAlignment(Qt::Alignment alignment) {
+        const auto next = alignment.testFlag(Qt::AlignLeft) ? Qt::AlignLeft : Qt::AlignHCenter;
+        if (contentAlignment == next)
+            return;
+        contentAlignment = next;
+        update();
+    }
+    void clearIconConfiguration();
     void setFill(QPalette::ColorRole role) {
         if (fill == role)
             return;
@@ -71,6 +80,7 @@ private:
     ButtonPaintMode mode = ButtonPaintMode::Native;
     QPalette::ColorRole fill = QPalette::Window;
     ButtonIcon configuredIcon;
+    Qt::Alignment contentAlignment = Qt::AlignHCenter;
     int iconLabelGap = 0;
     bool iconAboveLabel = false;
     bool highlightChecked = true;
@@ -199,6 +209,7 @@ public:
         update();
     }
     void setDescription(const QString &text);
+    void setValueCaption(bool enabled) { valueCaption = enabled; update(); }
     bool hasHeightForWidth() const override { return !description.isEmpty(); }
     int heightForWidth(int width) const override;
     QString caption() const {
@@ -239,7 +250,7 @@ private:
     QFont previewFont;
     int previewDensity = 0;
     Edges rule;
-    bool chevron = false, iconVisible = true;
+    bool chevron = false, iconVisible = true, valueCaption = false;
 };
 CaptionButton *makeCaptionButton(QWidget *parent, QBoxLayout *layout, const char *name, const QString &text,
                                  std::function<void()> action);
@@ -273,6 +284,23 @@ public:
         rule = edges;
         update();
     }
+    void setMaximumLabelLines(int lines) {
+        lines = qBound(1, lines, 2);
+        if (maximumLabelLines == lines)
+            return;
+        maximumLabelLines = lines;
+        updateGeometry();
+        update();
+    }
+    void setTrailingInset(int pixels) {
+        pixels = qMax(0, pixels);
+        if (trailingInset == pixels)
+            return;
+        trailingInset = pixels;
+        updateGeometry();
+        update();
+    }
+    int widthForLabel(int maximumWidth) const;
     QSize sizeHint() const override;
 
 protected:
@@ -283,6 +311,8 @@ private:
     int iconPixels;
     Edges rule;
     bool inverted = false;
+    int maximumLabelLines = 1;
+    int trailingInset = metrics::chrome::inset;
 };
 QPushButton *makeButton(QWidget *parent, QBoxLayout *layout, const char *name, const QString &text,
                         std::function<void()> action);

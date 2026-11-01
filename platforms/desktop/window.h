@@ -20,7 +20,8 @@ class DeviceFrame;
 class Window final : public QMainWindow {
     Q_OBJECT
 public:
-    Window(storage::Paths paths, EngineFontInputs fonts, QString placeholder, std::function<QString()> clock = {});
+    Window(storage::Paths paths, EngineFontInputs fonts, QString placeholder, std::function<QString()> clock = {},
+           std::function<void(ReaderHostServices &)> configureServices = {});
     ~Window() override;
     void openBook(const QString &path);
     // Saves the visible preview without Mac chrome. Device surroundings remain transparent.
@@ -57,10 +58,10 @@ private:
     DeviceFrame *deviceFrame;
     android::StartScreen *start;
     android::WidgetCanvas *canvas;
-    QComboBox *screenPicker, *resolutionPicker;
-    QActionGroup *screenActions, *resolutionActions;
+    QComboBox *screenPicker, *resolutionPicker, *textSizePicker;
+    QActionGroup *screenActions, *resolutionActions, *textSizeActions;
     QAction *rotateAction;
-    int screenPreset = 1, renderingDpi = 0;
+    int screenPreset = 1, renderingDpi = 300, textSize = 100;
     bool touchCursorVisible = false, touchCursorPressed = false;
     void setTouchCursor(bool visible, bool pressed = false);
     QTimer resizeTimer;
@@ -74,6 +75,6 @@ private:
     void chooseBook();
     void chooseFolder();
     void recordProgress();
-    void turnPage(int direction);
+    void turnPage(int direction, bool hardware = false);
 };
 }

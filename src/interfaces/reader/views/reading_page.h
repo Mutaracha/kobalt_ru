@@ -6,7 +6,7 @@
 #include "ui/brightness_gesture.h"
 #include <QWidget>
 #include <QImage>
-#include <QTimer>
+#include "ui/hold_timer.h"
 #include <QRegion>
 #include <QElapsedTimer>
 #include <QHash>
@@ -90,13 +90,15 @@ public:
     void installAnnotationFrame(const QVector<QRect> &draft, const QVector<HighlightGeometry> &saved,
                                 bool vertical = false, const AnnotationGeometry *geometry = nullptr);
     void mark(const QVector<QRect> &rectangles);
-    void revealLinks(const QVector<QRect> &rectangles);
+    void revealLinks(const QVector<QRect> &rectangles, const QVector<QRect> &footnotes = {});
     std::function<void(QPoint)> tapped;
     std::function<void(int)> swiped;
     std::function<void()> annotationRequested;
     ReadingPage(QWidget *parent, std::function<void()> cancelAnimation);
     // Copy the cached page and chrome without widget layout or backing-store work.
     QImage snapshot(bool sleeping = false) const;
+    // Cached chrome with the bookmark ribbon, without copying the page body.
+    QImage stripSnapshot(bool footer) const;
     void cleanRefresh(bool clean);
     void refreshContent(bool reading = false, bool now = false);
     // Set before refreshContent when the engine prepared the changed rectangle
@@ -136,7 +138,7 @@ private:
     void paintFooter(QPainter &painter, bool sleeping = false) const;
     void paintContents(QPainter &painter, bool sleeping = false) const;
     int headerRightWidth() const;
-    QTimer holdTimer;
+    ui::HoldTimer holdTimer;
     QVector<QRect> selection, revealedLinks, draftAnnotations, savedAnnotations, candidateAnnotations;
     QRegion draftContour, annotationColorRegion;
     QPainterPath draftOutline, candidateOutline;
@@ -148,14 +150,19 @@ private:
     bool annotationInputEnabled = false, annotationDragging = false;
     QPoint annotationDragOffset;
     int annotationPointerBoundary = -1;
-    void beginPointer(QPointF point);
+    void beginPointer(QPointF point, const QInputEvent *event);
+    void triggerHold();
     bool annotationVertical = false, installingAnnotationFrame = false;
     QRegion annotationFrameDamage;
     void damageAnnotations(const QRegion &dirty);
     QVector<HighlightGeometry> annotationColorGroups;
     struct PaintedHighlight { HighlightGeometry mark; QRegion visible; };
     QVector<PaintedHighlight> annotationTints;
-    QVector<QRect> revealedOutlines;
+    QVector<QRect> revealedOutlines, revealedFootnotes;
+    QVector<QPainterPath> revealedCircles;
+    QPainterPath revealedPress;
+    void pressRevealedLink(QPoint point);
+    void clearRevealedPress();
     bool tracking = false, moved = false, consumed = false;
     QElapsedTimer touchClock;
     QHash<int, QPointF> touchOrigins;

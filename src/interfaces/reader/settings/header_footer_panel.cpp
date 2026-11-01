@@ -40,6 +40,7 @@ void paintValue(QPainter &painter, const QRect &bounds, const Content &content, 
     const auto textFont = content.batteryIcon && !content.text.isEmpty()
         ? ui::batteryTextFont(font, body, ui::headerFooterTextWeight()) : font;
     painter.save();
+    painter.setClipRect(bounds, Qt::IntersectClip);
     painter.setFont(textFont);
     const int icon = content.batteryIcon ? qCeil(ui::batteryWidth(body)) : 0;
     const int gap = content.batteryIcon && !content.text.isEmpty() ? int(m::reading::batteryGap) : 0;
@@ -50,7 +51,7 @@ void paintValue(QPainter &painter, const QRect &bounds, const Content &content, 
                                    : ui::interfaceTextWidth(text, textFont);
     if (textWidth > room) {
         halfSpaces = false;
-        text = ui::elideInterfaceText(text, textFont, room);
+        text = ui::headerFooterText(content, textFont, room);
         textWidth = text.isEmpty() ? 0 : ui::interfaceTextWidth(text, textFont);
     }
     const int total = textWidth + gap + icon;
@@ -95,9 +96,9 @@ int progressSpace() {
     return m::reading::progressFillHeight + m::reading::progressBottom;
 }
 // A slot's box: its strip's line of text and the padding around it.
-int slotBoxHeight(const QString &size, bool footer) {
-    const QFont font = ui::headerFooterFont(m::reading::textPixels(m::reading::textSize(size), footer));
-    return QFontMetrics(font).height() + 2 * hf::slotPadding;
+int slotBoxHeight(int size, bool footer) {
+    const QFont font = ui::headerFooterFont(m::reading::textPixels(size, footer));
+    return ui::interfaceLineHeight(font) + 2 * hf::slotPadding;
 }
 // A dashed outline on whole pixels, drawn as filled dashes so every density
 // keeps the same crisp border width.
@@ -174,7 +175,7 @@ protected:
             font.setPixelSize(hf::emptyText);
             painter.setFont(font);
             painter.setPen(pressed ? ink : ui::noteColor(this));
-            painter.drawText(bounds, align | Qt::AlignVCenter, strings::get("header_footer.empty"));
+            ui::drawInterfaceText(painter, bounds, strings::get("header_footer.empty"), align | Qt::AlignVCenter);
             return;
         }
         painter.setPen(ink);
@@ -211,8 +212,8 @@ void SlotMap::setSlots(const Layout &next, const SlotContents &contents) {
     for (int slot = 0; slot < headerfooter::slotCount; ++slot) {
         const bool footer = headerfooter::footerSlot(slot);
         const auto &size = footer ? layout.footerSize : layout.headerSize;
-        cells[slot]->show(layout.slotFields[slot], contents[slot], size != "off", layout.progressBar,
-                          m::reading::textPixels(m::reading::textSize(size), footer));
+        cells[slot]->show(layout.slotFields[slot], contents[slot], footer ? layout.footerEnabled : layout.headerEnabled,
+                          layout.progressBar, m::reading::textPixels(size, footer));
     }
     if (repaint)
         update();
@@ -222,8 +223,8 @@ QSize SlotMap::sizeHint() const {
     // Room for the largest strips and the bar, whatever the layout shows, so
     // the sheet keeps its height when a preset or size changes. Smaller
     // strips leave more page between them, as they do on the reader.
-    const int strips = 2 * hf::mapEdgeInset + slotBoxHeight(QStringLiteral("large"), false) +
-                       slotBoxHeight(QStringLiteral("large"), true) + progressSpace();
+    const int strips = 2 * hf::mapEdgeInset + slotBoxHeight(headerfooter::maximumSize, false) +
+                       slotBoxHeight(headerfooter::maximumSize, true) + progressSpace();
     // Two lines with a line gap above and below them. A third line would
     // push the sheet past the screen on a Clara BW.
     const int body = 3 * hf::mapLineGap + hf::mapLineHeight;
@@ -236,8 +237,11 @@ void SlotMap::resizeEvent(QResizeEvent *) {
     for (int slot = 0; slot < headerfooter::slotCount; ++slot) {
         const int column = slot % 3;
         const int left = border + inner * column / 3, right = border + inner * (column + 1) / 3;
-        const int top = headerfooter::footerSlot(slot) ? height() - border - hf::mapRowHeight : border;
-        cells[slot]->setGeometry(left, top, right - left, hf::mapRowHeight);
+        const bool footer = headerfooter::footerSlot(slot);
+        const int rowHeight = hf::mapEdgeInset + slotBoxHeight(headerfooter::maximumSize, footer) +
+                              (footer ? progressSpace() : 0);
+        const int top = footer ? height() - border - rowHeight : border;
+        cells[slot]->setGeometry(left, top, right - left, rowHeight);
     }
 }
 
@@ -320,7 +324,10 @@ void PresetCard::paintEvent(QPaintEvent *) {
     if (divider)
         painter.fillRect(width() - m::control::border, hf::miniatureTop, m::control::border,
                          height() - hf::miniatureTop, ui::dividerColor(this));
-    const int pageWidth = qMin(int(hf::miniatureWidth), width() - 2 * hf::namePadding);
+    // The six-inch sheet can shorten the cards to fit its controls. Keep the
+    // name visible by shrinking the page in both dimensions.
+    const int pageRoom = qMax(0, height() - hf::miniatureTop - hf::nameGap - hf::nameHeight);
+    const int pageWidth = qMax(0, qMin(qMin(int(hf::miniatureWidth), width() - 2 * hf::namePadding), pageRoom * 3 / 4));
     const int pageHeight = pageWidth * 4 / 3;
     const QRect page((width() - pageWidth) / 2, hf::miniatureTop, pageWidth, pageHeight);
     const int edge = selected ? int(hf::selectedBorder) : int(m::control::border);
@@ -331,7 +338,7 @@ void PresetCard::paintEvent(QPaintEvent *) {
     // Each slot is a dash where the strip would show it.
     for (int slot = 0; slot < headerfooter::slotCount; ++slot) {
         const bool footer = headerfooter::footerSlot(slot);
-        if ((footer ? miniature.footerSize : miniature.headerSize) == "off")
+        if (!(footer ? miniature.footerEnabled : miniature.headerEnabled))
             continue;
         const int dash = qMin(dashWidth(miniature.slotFields[slot]), pageWidth / 3 - inset / 2);
         if (!dash)

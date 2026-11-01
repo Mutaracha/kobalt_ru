@@ -1,4 +1,6 @@
 #include "reader_inputs.h"
+#include "annotation_session_checks.h"
+#include "storage/profile_database.h"
 #include "check.h"
 #include "reading/bookmark_session.h"
 #include "reading/reader_session.h"
@@ -55,10 +57,10 @@ QByteArray read(const QString &path) {
 }
 
 int main(int argc, char **argv) {
-    // These cases obstruct legacy JSON files; SQLite behavior has its own database regressions.
-    qputenv("KOBALT_ANNOTATIONS_SQLITE", "0");
+    const bool sqlite = argc == 3 && QByteArray(argv[2]) == "--sqlite";
+    qputenv("KOBALT_ANNOTATIONS_SQLITE", sqlite ? "1" : "0");
     QGuiApplication app(argc, argv);
-    require(argc == 2, "Expected a synthetic EPUB");
+    require(argc == 2 || sqlite, "Expected a synthetic EPUB and optional SQLite variant");
     const auto path = QString::fromLocal8Bit(argv[1]);
     native::ResourceServer server;
     require(server.open(path,
@@ -123,8 +125,42 @@ int main(int argc, char **argv) {
         QTemporaryDir diagnostics;
         require(diagnostics.isValid(), "Cannot create bookmark diagnostics folder");
         initializeDiagnostics(diagnostics.path());
+        if (sqlite) {
+            QTemporaryDir damagedRoot;
+            const QString identity = "sqlite-damaged-book";
+            const auto position = model.state().value("position").toString();
+            BookmarkStore seed(damagedRoot.path(), identity, model.sourceHash(), model.title());
+            seed.setBookmarks({{position, "Chapter", "Saved passage", QDateTime::currentDateTimeUtc()}});
+            require(seed.save(), "Cannot seed malformed SQLite bookmark");
+            require(AnnotationDatabase::transaction(damagedRoot.path(), [](QSqlDatabase &db) {
+                QSqlQuery query(db); return query.exec("UPDATE entries SET start='' WHERE kind=0");
+            }), "Cannot damage SQLite bookmark");
+            {
+                BookmarkSession damaged(model, [&] { return originalKey; }, damagedRoot.path(), identity,
+                                        model.sourceHash(), model.title());
+                require(damaged.available() && !damaged.writable() && !damaged.error().isEmpty(),
+                        "Malformed SQLite bookmark remained writable");
+                int failures = 0;
+                damaged.failed = [&] { ++failures; };
+                require(!damaged.sync() && damaged.toggle(model.page()) == BookmarkSession::Toggle::Refused && failures == 1,
+                        "Malformed SQLite bookmark accepted an edit");
+                require(AnnotationDatabase::transaction(damagedRoot.path(), [](QSqlDatabase &db) {
+                    QSqlQuery query(db);
+                    return query.exec("SELECT start FROM entries WHERE kind=0") && query.next() && query.value(0).toString().isEmpty();
+                }), "Failed load removed the damaged SQLite row");
+            }
+            require(AnnotationDatabase::transaction(damagedRoot.path(), [&](QSqlDatabase &db) {
+                QSqlQuery query(db); query.prepare("UPDATE entries SET start=? WHERE kind=0");
+                query.addBindValue(position); return query.exec();
+            }), "Cannot repair SQLite bookmark fixture");
+            BookmarkSession repaired(model, [&] { return originalKey; }, damagedRoot.path(), identity,
+                                     model.sourceHash(), model.title());
+            require(repaired.writable() && repaired.bookmarks().size() == 1 && repaired.bookmarks().first().position == position,
+                    "Reopened SQLite session did not recover after repair");
+        }
         for (const auto &original :
              {QByteArray("damaged but recoverable"), QByteArray(BookmarkStore::maxFileBytes + 1, 'x')}) {
+            if (sqlite) continue; // These are damaged legacy JSON files.
             QTemporaryDir failedRoot;
             BookmarkStore store(failedRoot.path(), "file:///private-book.epub", model.sourceHash(), model.title());
             require(QDir().mkpath(store.folder()), "Cannot create failed-load folder");
@@ -153,6 +189,7 @@ int main(int argc, char **argv) {
             drain(model);
             require(failed == 1 && added == 0 && failedLoad.bookmarks().isEmpty() && read(path) == original,
                     "Editing after a failed load changed the saved bytes or announced success");
+            flushDiagnostics();
             const auto events = read(diagnostics.path() + "/events.jsonl");
             require(!events.contains(failedRoot.path().toUtf8()) && !events.contains("private-book.epub") &&
                         !events.contains("/bookmarks.json"),
@@ -160,7 +197,8 @@ int main(int argc, char **argv) {
         }
         // Obstruct each output after loading. Adds, removals and automatic
         // merges must leave both the current list and saved list unchanged.
-        for (const auto *blockedName : {"bookmarks.json", "book.json"}) {
+        const QStringList outputs = sqlite ? QStringList{"database"} : QStringList{"bookmarks.json", "book.json"};
+        for (const auto &blockedName : outputs) {
             QTemporaryDir failedRoot;
             const auto position = model.state().value("position").toString();
             BookmarkStore store(failedRoot.path(), "file:///private-book.epub", model.sourceHash(), model.title());
@@ -169,8 +207,8 @@ int main(int argc, char **argv) {
             store.setBookmarks(original);
             require(store.save(), "Cannot save failure fixture");
             const auto marksPath = store.folder() + "/bookmarks.json";
-            const auto originalBytes = read(marksPath);
-            const auto blockedPath = store.folder() + '/' + QString::fromLatin1(blockedName);
+            const auto originalBytes = sqlite ? QByteArray() : read(marksPath);
+            const auto blockedPath = store.folder() + '/' + blockedName;
             BookmarkSession failedSave(
                 model,
                 [] {
@@ -181,8 +219,10 @@ int main(int argc, char **argv) {
                 return failedSave.sync();
             });
             const auto originalPages = failedSave.pages();
-            require(QFile::rename(blockedPath, blockedPath + ".saved") && QDir().mkdir(blockedPath),
-                    "Cannot obstruct bookmark save");
+            std::unique_ptr<SqliteSessionWriteFailure> blocked;
+            if (sqlite) blocked = std::make_unique<SqliteSessionWriteFailure>(failedRoot.path(), 0);
+            else require(QFile::rename(blockedPath, blockedPath + ".saved") && QDir().mkdir(blockedPath),
+                         "Cannot obstruct bookmark save");
             int failed = 0, added = 0;
             failedSave.failed = [&] {
                 ++failed;
@@ -190,11 +230,19 @@ int main(int argc, char **argv) {
             failedSave.added = [&] {
                 ++added;
             };
-            require(!failedSave.remove(position) && failed == 1, "A failed removal announced success");
+            // Edits show at once. A failed save returns to the saved list.
+            require(failedSave.remove(position) && failedSave.bookmarks().isEmpty(), "A removal did not show at once");
+            waitUntil([&] {
+                return failed == 1;
+            });
             require(failedSave.bookmarks() == original && failedSave.pages() == originalPages,
-                    "A failed removal changed memory");
-            require(failedSave.toggle(model.page()) == BookmarkSession::Toggle::Refused && failed == 2,
-                    "A failed toggle removal announced success");
+                    "A failed removal kept its change in memory");
+            require(failedSave.toggle(model.page()) == BookmarkSession::Toggle::Removed, "Cannot start toggle removal");
+            waitUntil([&] {
+                return failed == 2;
+            });
+            require(failedSave.bookmarks() == original && failedSave.pages() == originalPages,
+                    "A failed toggle removal kept its change in memory");
             require(model.go(1), "Cannot turn for failed-add fixture");
             waitUntil([&] {
                 return !model.busy();
@@ -203,18 +251,24 @@ int main(int argc, char **argv) {
             waitUntil([&] {
                 return failed == 3;
             });
-            require(added == 0 && failedSave.bookmarks() == original && failedSave.pages() == originalPages &&
+            require(added == 1 && failedSave.bookmarks() == original && failedSave.pages() == originalPages &&
                         !failedSave.error().isEmpty(),
-                    "A failed add changed memory or announced success");
-            require(QDir().rmdir(blockedPath) && QFile::rename(blockedPath + ".saved", blockedPath),
-                    "Cannot restore bookmark output");
-            require(read(marksPath) == originalBytes, "A failed edit changed persisted bookmarks");
+                    "A failed add kept its change in memory or hid the error");
+            if (sqlite) blocked.reset();
+            else {
+                require(QDir().rmdir(blockedPath) && QFile::rename(blockedPath + ".saved", blockedPath),
+                        "Cannot restore bookmark output");
+                require(read(marksPath) == originalBytes, "A failed edit changed persisted bookmarks");
+            }
+            BookmarkStore persisted(failedRoot.path(), "file:///private-book.epub", model.sourceHash(), model.title());
+            require(persisted.load() && persisted.bookmarks() == original, "Failed edits changed persisted bookmark records");
             require(failedSave.toggle(model.page()) == BookmarkSession::Toggle::Adding, "Cannot retry failed add");
             waitUntil([&] {
-                return added == 1;
+                return added == 2 && !failedSave.saving();
             });
             require(failedSave.error().isEmpty() && failedSave.bookmarks().size() == 2,
                     "A successful retry kept the save error");
+            flushDiagnostics();
             const auto events = read(diagnostics.path() + "/events.jsonl");
             require(!events.contains(failedRoot.path().toUtf8()) && !events.contains("/bookmarks.json") &&
                         !events.contains("private-book.epub"),
@@ -234,14 +288,16 @@ int main(int argc, char **argv) {
             store.setBookmarks(original);
             require(store.save(), "Cannot save failed-merge fixture");
             const auto path = store.folder() + "/bookmarks.json";
-            const auto originalBytes = read(path);
+            const auto originalBytes = sqlite ? QByteArray() : read(path);
             BookmarkSession failedMerge(
                 model,
                 [] {
                     return QStringLiteral("failed-merge");
                 },
                 failedRoot.path(), "file:///merge.epub", model.sourceHash(), model.title());
-            require(QFile::rename(path, path + ".saved") && QDir().mkdir(path), "Cannot obstruct merged bookmarks");
+            std::unique_ptr<SqliteSessionWriteFailure> blocked;
+            if (sqlite) blocked = std::make_unique<SqliteSessionWriteFailure>(failedRoot.path(), 0);
+            else require(QFile::rename(path, path + ".saved") && QDir().mkdir(path), "Cannot obstruct merged bookmarks");
             int failed = 0;
             failedMerge.failed = [&] {
                 ++failed;
@@ -255,8 +311,11 @@ int main(int argc, char **argv) {
                     "A failed merge changed the list or lost its page pairing");
             drain(model);
             require(failed == 1, "A failed merge kept retrying without another edit");
-            require(QDir().rmdir(path) && QFile::rename(path + ".saved", path) && read(path) == originalBytes,
-                    "A failed merge changed persisted bookmarks");
+            if (sqlite) blocked.reset();
+            else require(QDir().rmdir(path) && QFile::rename(path + ".saved", path) && read(path) == originalBytes,
+                         "A failed merge changed persisted bookmarks");
+            BookmarkStore persisted(failedRoot.path(), "file:///merge.epub", model.sourceHash(), model.title());
+            require(persisted.load() && persisted.bookmarks() == original, "Failed merge changed persisted bookmark records");
         }
 
         // The window's layout key. Changing it asks the session to look pages up
@@ -357,6 +416,16 @@ int main(int argc, char **argv) {
         waitUntil([&] {
             return !model.busy();
         });
+        const auto beforeBeautifier = session->bookmarks();
+        for (bool enabled : {true, false}) {
+            require(model.setBookBeautifier(enabled), "Cannot toggle beautifier with bookmarks");
+            waitUntil([&] { return !model.busy(); });
+            waitUntil([&] { session->sync(); return session->resolved(); });
+            require(session->bookmarks().size() == beforeBeautifier.size(), "Beautifier lost bookmarks");
+            for (int i = 0; i < beforeBeautifier.size(); ++i)
+                require(session->bookmarks()[i].position == beforeBeautifier[i].position && session->page(i) >= 0,
+                        "Beautifier changed a bookmark anchor");
+        }
         const int pagesBefore = model.pages();
         require(model.style(minimumFontPixels(), 100), "Cannot change the text size");
         waitUntil([&] {
@@ -458,10 +527,28 @@ int main(int argc, char **argv) {
         };
 
         // A session destroyed while its lookup is pending drops the reply.
+        session->flush();
+        const auto beforeClose = session->bookmarks();
         layout = "third";
         require(!session->sync(), "A new layout reused old pages");
         session.reset();
         drain(model);
+        if (sqlite) {
+            storage::closeProfile();
+            auto reopened = std::make_unique<BookmarkSession>(model, [&] { return layout; }, annotations.path(),
+                "file:///bookmark-session.epub", model.sourceHash(), model.title());
+            require(reopened->bookmarks().size() == beforeClose.size(), "Closing SQLite lost bookmarks");
+            for (int i = 0; i < beforeClose.size(); ++i)
+                require(bookmarkJson(reopened->bookmarks()[i]) == bookmarkJson(beforeClose[i]), "Reopening SQLite changed a bookmark");
+            waitUntil([&] { return reopened->sync(); });
+            require(!reopened->bookmarks().isEmpty() && reopened->remove(reopened->bookmarks().first().position),
+                    "Cannot edit before closing SQLite bookmark session");
+            const auto expected = reopened->bookmarks();
+            reopened.reset(); // Do not wait for the async save's GUI reply.
+            storage::closeProfile();
+            BookmarkStore verified(annotations.path(), "file:///bookmark-session.epub", model.sourceHash(), model.title());
+            require(verified.load() && verified.bookmarks() == expected, "Closing SQLite dropped the last bookmark edit");
+        }
 
         lease->revoke();
         owned.reset();
@@ -472,5 +559,6 @@ int main(int argc, char **argv) {
     const int result = app.exec();
     std::puts(
         "PASS: bookmark pages follow list changes, merges survive removals, and pending replies outlive no session");
-    return result;
+    if (result || sqlite) return result;
+    return sqliteSessionVariant(path);
 }

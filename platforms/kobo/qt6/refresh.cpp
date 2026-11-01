@@ -1,6 +1,7 @@
 #include "../display/annotation_damage.h"
 #include "platform/api/kobo_refresh.h"
 #include "refresh.h"
+#include "engine/crengine/reader_model.h"
 #include "platforms/kobo/display/page_animation.h"
 #include "platforms/kobo/display/keyboard_refresh.h"
 #include "platforms/kobo/display/panel_damage.h"
@@ -13,6 +14,7 @@
 #include <QApplication>
 #include <QThread>
 #include <QBackingStore>
+#include <QImage>
 #include <QWindow>
 #include <algorithm>
 
@@ -35,6 +37,21 @@ quint64 ordinaryPolicy(bool dark) {
 quint64 repairPolicy(bool dark) {
     return bit(Qt::WA_KoboEpdWfModeAutoImage) | bit(Qt::WA_KoboEpdUpdateModeFull) |
            (dark ? bit(Qt::WA_KoboEpdFlagDarkMode) : 0);
+}
+// Firmware 6 stores window pixels as RGBA bytes. Painting an RGB32 page into
+// that converts every pixel on the GUI thread, which costs several
+// milliseconds per page turn. Every Nickel window passes this hook, so the
+// first flush tells the engine which format it should draw before any book opens.
+void choosePageFormat(QBackingStore *store) {
+    static bool chosen = false;
+    auto *device = store->paintDevice();
+    if (chosen || !device || device->devType() != QInternal::Image)
+        return;
+    chosen = true;
+    const auto format = static_cast<QImage *>(device)->format();
+    if (format == QImage::Format_RGBA8888 || format == QImage::Format_RGBX8888 ||
+        format == QImage::Format_RGBA8888_Premultiplied)
+        ReaderModel::setPageFormat(QImage::Format_RGBX8888);
 }
 bool readerOwnsScreen() {
     if (!qApp || QThread::currentThread() != qApp->thread() || !readerWindow || !readerWindow->isVisible())
@@ -67,6 +84,7 @@ void flushReader(QBackingStore *store, const QRegion &region, QWindow *target, c
         nativeFlush(store, region, target, offset, flags);
         return;
     }
+    choosePageFormat(store);
     if (!readerOwnsScreen() || store->window() != readerWindow->windowHandle() ||
         (target && target != store->window()) || !offset.isNull() || region.isEmpty() ||
         !readerWindow->rect().contains(region.boundingRect())) {
@@ -105,8 +123,17 @@ void flushReader(QBackingStore *store, const QRegion &region, QWindow *target, c
     const QRegion annotationRepairs = annotationRepairRegions(readerWindow);
     if (pageAnimationPanel() == AnimationPanel::Colour && !(region & annotationRepairs).isEmpty()) {
         keyboardPixels.clear();
-        nativeFlush(store, region, target, offset, {{region.boundingRect(), repairPolicy(dark)}});
-        consumeAnnotationRepairs(readerWindow, region);
+        if (pageTurn || direction) {
+            // Nickel turns onto and away from coloured highlights with its
+            // full-mode reading refresh, without a flash. Edits keep the cleanup.
+            const QRect screen = readerWindow->rect();
+            nativeFlush(store, QRegion(screen), target, offset,
+                        {{screen, ordinaryPolicy(dark) | bit(Qt::WA_KoboEpdScreenFlush)}});
+            consumeAnnotationRepairs(readerWindow, QRegion(screen));
+        } else {
+            nativeFlush(store, region, target, offset, {{region.boundingRect(), repairPolicy(dark)}});
+            consumeAnnotationRepairs(readerWindow, region);
+        }
         return;
     }
     constexpr auto autoText = bit(Qt::WA_KoboEpdWfModeAutoText), gl16 = bit(Qt::WA_KoboEpdWfModeGL16),
@@ -139,16 +166,14 @@ void flushReader(QBackingStore *store, const QRegion &region, QWindow *target, c
         return;
     }
     const QRect keyboardBounds = readerWindow->property("reader_keyboard_bounds").toRect();
-    const bool keyboardPolicy =
-        compatible && ordinaryControls && std::all_of(flags.cbegin(), flags.cend(), [&](const auto &entry) {
-            return entry.second == flags[0].second;
-        });
+    const quint64 keyboardPolicy = compatible && ordinaryControls
+        ? commonKeyboardPolicy(flags, heuristic | full | partialMode, full, heuristic) : 0;
     if (keyboardPolicy) {
         const bool keyboardOnly = std::all_of(flags.cbegin(), flags.cend(), [&](const auto &entry) {
             return keyboardBounds.contains(entry.first);
         });
         if (keyboardPixels.unchanged(dynamic_cast<QImage *>(store->paintDevice()), region, keyboardBounds,
-                                     flags[0].second, keyboardOnly))
+                                     keyboardPolicy, keyboardOnly))
             return;
     } else {
         keyboardPixels.clear();
@@ -175,10 +200,13 @@ void flushReader(QBackingStore *store, const QRegion &region, QWindow *target, c
             const QRegion images =
                 readerWindow->property(colour ? "reader_image_repairs" : "reader_mono_repairs").value<QRegion>() &
                 readerWindow->rect();
+            // Large pictures and colour turn like Nickel: the reading waveform
+            // over the whole screen in full mode, which drives every non-white
+            // pixel without the GC16 flash. Other turns stay partial.
             if (!images.isEmpty() || (colour && readerWindow->property("reader_colour_regions").toBool())) {
                 const QRect screen = readerWindow->rect();
                 nativeFlush(store, QRegion(screen), target, offset,
-                            {{screen, repairPolicy(dark) | bit(Qt::WA_KoboEpdScreenFlush)}});
+                            {{screen, ordinaryPolicy(dark) | bit(Qt::WA_KoboEpdScreenFlush)}});
                 return;
             }
         }

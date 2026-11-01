@@ -1,4 +1,5 @@
 #include "reading/appearance_settings.h"
+#include "reading/session_timeout.h"
 #include "support/qt_compat.h"
 #include "check.h"
 #include <QJsonArray>
@@ -8,10 +9,107 @@
 using namespace kobalt;
 
 int main() {
+    require(sessionTimeout::minutes({}) == 15, "Older preferences lost the default session timeout");
+    for (const auto minutes : sessionTimeout::choices) {
+        const auto preferences = appearance::cleanPreferences({{sessionTimeout::preferenceKey, minutes}, {"optional", "keep"}});
+        require(sessionTimeout::minutes(preferences) == minutes && preferences.value("optional").toString() == "keep",
+                "Session timeout cleanup lost a supported choice or an optional field");
+        require(sessionTimeout::milliseconds(preferences) == qint64(minutes) * 60000,
+                "Session timeout did not convert minutes safely");
+        require(appearance::same({}, preferences), "Session timeout invalidated the book layout");
+    }
+    for (const auto &invalid : {QJsonValue(-1), QJsonValue(16), QJsonValue(15.5), QJsonValue("60"), QJsonValue(true), QJsonValue()}) {
+        const auto preferences = appearance::cleanPreferences({{sessionTimeout::preferenceKey, invalid}});
+        require(!preferences.contains(sessionTimeout::preferenceKey) && sessionTimeout::minutes(preferences) == 15,
+                "Invalid session timeout did not fall back to fifteen minutes");
+    }
+    for (bool hidden : {false, true}) {
+        const auto cleaned = appearance::cleanPreferences({{"native_hide_status_bar", hidden}, {"private_optional", "keep"}});
+        require(!cleaned.contains("native_hide_status_bar") && cleaned.value("private_optional").toString() == "keep",
+                "Retired desktop status preference survived cleanup or removed an unrelated setting");
+    }
+    require(!appearance::cleanPreferences({}).contains("tappable_links"), "Older settings gained an explicit direct-tap choice");
+    for (const auto *mode : {"off", "footnotes", "all"})
+        require(appearance::cleanPreferences({{"tappable_links", mode}}).value("tappable_links").toString() == mode,
+                "Cleaning settings lost a supported direct-tap choice");
+    for (const auto &invalid : {QJsonValue("unknown"), QJsonValue(true), QJsonValue(1)})
+        require(!appearance::cleanPreferences({{"tappable_links", invalid}}).contains("tappable_links"),
+                "Invalid direct-tap preference did not fall back to the default");
+
+
+    const auto dictionary = appearance::cleanPreferences(qt::object({{"dictionary_font_face", "Libron"},
+        {"dictionary_font_size", 120}, {"private_optional", "keep"}}));
+    require(dictionary.value("dictionary_font_face").toString() == "Libron" &&
+            dictionary.value("dictionary_font_size").toInt() == 120 &&
+            dictionary.value("private_optional").toString() == "keep", "Dictionary preferences lost saved values");
+    for (const auto &size : {QJsonValue(0), QJsonValue(110), QJsonValue(120.5), QJsonValue(QStringLiteral("120")), QJsonValue(true)})
+        require(!appearance::cleanPreferences(qt::object({{"dictionary_font_size", size}})).contains("dictionary_font_size"),
+                "Invalid dictionary size survived preference cleanup");
+    require(!appearance::cleanPreferences(qt::object({{"dictionary_font_face", 12}})).contains("dictionary_font_face"),
+            "Invalid dictionary font survived preference cleanup");
+    require(appearance::same({}, dictionary), "Dictionary UI preferences invalidated the book layout");
     // Appearance settings decide the layout. The list must stay complete, because a
     // missing key would let a retained layout survive a changed setting.
-    require(appearance::keys.size() == 27, "The appearance keys changed without this check");
+    require(appearance::keys.size() == 34, "The appearance keys changed without this check");
+    require(appearance::bookDefaults({}).value("paragraph_indent").toInt() == -1,
+            "Paragraph indentation no longer defaults to Publisher");
+    for (int percent : {-1, 0, 100, 300}) {
+        const auto defaults = appearance::bookDefaults({{"paragraph_indent", percent}, {"inherit_text_layout", false}});
+        QJsonObject book{{"font_pixels", 40}, {"paragraph_indent", 200}};
+        appearance::applyBookDefaults(book, defaults);
+        require(book.value("paragraph_indent").toInt(-2) == percent,
+                "A saved book replaced the global paragraph indentation");
+        QJsonObject remembered;
+        appearance::rememberTextLayout(remembered, book);
+        require(!remembered.value(appearance::lastTextLayoutKey).toObject().contains("paragraph_indent"),
+                "Global paragraph indentation entered text inheritance");
+    }
+    for (const auto &invalid : {QJsonValue(), QJsonValue(true), QJsonValue("100"), QJsonValue(-2), QJsonValue(301), QJsonValue(1.5)})
+        require(appearance::paragraphIndent(invalid) == -1, "Invalid paragraph indentation did not use Publisher");
+    require(!appearance::same({{"paragraph_indent", 0}}, {{"paragraph_indent", 100}}),
+            "Paragraph indentation reused a stale layout");
+    require(appearance::bookDefaults({}).value("paragraph_spacing").toInt() == -1,
+            "Paragraph spacing no longer defaults to Publisher");
+    for (int percent : {-1, 0, 50, 200}) {
+        const auto global = appearance::bookDefaults({{"paragraph_spacing", percent}, {"inherit_text_layout", false}});
+        QJsonObject book{{"font_pixels", 40}, {"paragraph_spacing", 100}};
+        appearance::applyBookDefaults(book, global);
+        require(book.value("paragraph_spacing").toInt(-2) == percent,
+                "A book-specific gap replaced the global paragraph spacing");
+        QJsonObject remembered;
+        appearance::rememberTextLayout(remembered, book);
+        require(!remembered.value(appearance::lastTextLayoutKey).toObject().contains("paragraph_spacing"),
+                "Global paragraph spacing entered text inheritance");
+    }
+    for (const auto &invalid : {QJsonValue(), QJsonValue(true), QJsonValue("50"), QJsonValue(201), QJsonValue(0.5)})
+        require(appearance::paragraphSpacing(invalid) == -1, "Invalid paragraph spacing did not use Publisher");
+    require(!appearance::same({{"paragraph_spacing", 0}}, {{"paragraph_spacing", 50}}),
+            "Paragraph gap reused a stale layout");
 
+    const QJsonObject fillOn{{"vertical_justification", "expand"}}, fillOff{{"vertical_justification", "off"}};
+    require(!appearance::same(fillOn, fillOff), "Vertical fill reused a retained layout");
+    auto copiedFill = fillOff;
+    appearance::copy(copiedFill, fillOn);
+    require(copiedFill.value("vertical_justification").toString() == "expand", "Preview copy lost vertical fill");
+    const auto fill = appearance::bookDefaults({{"vertical_justification", true}});
+    auto oldBook = QJsonObject{{"vertical_justification", false}};
+    appearance::applyBookDefaults(oldBook, fill);
+    require(oldBook.value("vertical_justification").toString() == "expand", "global vertical fill was lost to book settings");
+    appearance::applyBookDefaults(oldBook, appearance::bookDefaults({}));
+    require(oldBook.value("vertical_justification").toString() == "off", "missing vertical fill did not default off");
+    const auto invalidFill = appearance::cleanPreferences({{"vertical_justification", "yes"}, {"future_option", 42}});
+    require(invalidFill.value("vertical_justification").toString() == "off" && invalidFill.value("future_option").toInt() == 42,
+            "vertical fill validation changed unknown preferences");
+    for (const auto &mode : {QString("off"), QString("expand"), QString("center")}) {
+        const auto cleaned = appearance::cleanPreferences({{"vertical_justification", mode}, {"vertical_spacing_scope", "protection"}});
+        require(cleaned.value("vertical_justification").toString() == mode &&
+                cleaned.value("vertical_spacing_scope").toString() == "protection", "Vertical mode or scope was lost");
+    }
+    require(appearance::verticalSpacingMode(true) == "expand" && appearance::verticalSpacingMode(false) == "off",
+            "Legacy Boolean page filling did not migrate");
+    require(appearance::verticalSpacingScope("invalid") == "all", "Invalid spacing scope did not default to all pages");
+    require(!appearance::same({{"vertical_spacing_scope", "all"}}, {{"vertical_spacing_scope", "protection"}}),
+            "Changing the spacing scope reused an old appearance");
     const auto from = qt::object({{"font_pixels", 40},
                                   {"line_spacing", QJsonValue(QJsonValue::Null)},
                                   {"font_face", "Libron"},
@@ -35,6 +133,24 @@ int main() {
             "Copy touched a setting it does not own");
 
     require(appearance::same(to, from), "Copied settings do not compare equal");
+    for (bool enabled : {false, true}) {
+        const auto global = appearance::cleanPreferences({{"book_beautifier", enabled},
+            {"beautifier_initials", true}, {"beautifier_spacing", false}, {"beautifier_indent", false}});
+        QJsonObject stale{{"book_beautifier", !enabled}, {"beautifier_spacing", true}};
+        appearance::applyBookDefaults(stale, appearance::bookDefaults(global));
+        require(!stale.contains("book_beautifier") && stale.value("beautifier_initials").toBool() == enabled &&
+            !stale.value("beautifier_spacing").toBool() && !stale.value("beautifier_indent").toBool(), "Global beautifier did not replace a stale book snapshot");
+    }
+    const auto directRules = appearance::bookDefaults({{"beautifier_initials", true}});
+    require(directRules.value("beautifier_initials").toBool() &&
+        !directRules.value("beautifier_spacing").toBool() && !directRules.value("beautifier_indent").toBool(),
+        "A checked rule required the retired master switch");
+    for (const auto *key : appearance::beautifierKeys)
+        require(!appearance::bookDefaults({}).value(key).toBool(), "A rule was enabled by default");
+    const auto invalidBeautifier = appearance::beautifierSettings(appearance::cleanPreferences(
+        {{"book_beautifier", "yes"}, {"beautifier_initials", "no"}}));
+    require(!invalidBeautifier.value("book_beautifier").toBool() && !invalidBeautifier.value("beautifier_initials").toBool(),
+        "Invalid beautifier settings did not use safe defaults");
     const auto advanced = qt::object({{"word_spacing", 80}, {"justification_tracking", 5}, {"widows_orphans", "avoid"}});
     auto advancedBook = qt::object({{"font_pixels", 40}, {"word_spacing", 120}, {"justification_tracking", 15}, {"widows_orphans", "allow"}});
     appearance::applyBookDefaults(advancedBook, appearance::bookDefaults(advanced));
@@ -120,6 +236,25 @@ int main() {
     fresh["font_face"] = QStringLiteral("NV Literata");
     appearance::applyFontDefault(fresh, qt::object({{"default_font_face", "NV Ancizar Serif"}}));
     require(fresh["font_face"].toString() == "NV Literata", "Default changes replaced an explicit book font");
+    const auto publisherDefault = qt::object({{"default_font_face", ""}, {appearance::inheritTextLayoutKey, false}});
+    auto publisherBook = appearance::bookDefaults(publisherDefault);
+    require(publisherBook.value("font_face").toString() == "" && publisherBook.contains("font_face") &&
+                publisherBook.value("default_font_face").toString() == defaultFontFace,
+            "Publisher default did not preserve publisher fonts with the normal fallback");
+    QJsonObject unopened;
+    appearance::applyBookDefaults(unopened, publisherBook);
+    require(unopened.value("font_face").toString().isEmpty(), "New book lost the Publisher default");
+    auto explicitBook = qt::object({{"font_face", "NV Literata"}});
+    appearance::applyBookDefaults(explicitBook, publisherBook);
+    require(explicitBook.value("font_face").toString() == "NV Literata",
+            "Publisher default replaced an existing book's explicit font");
+    auto inheritedPublisher = publisherDefault;
+    inheritedPublisher[appearance::inheritTextLayoutKey] = true;
+    inheritedPublisher[appearance::lastTextLayoutKey] = qt::object({{"font_face", "NV Literata"}});
+    require(appearance::bookDefaults(inheritedPublisher).value("font_face").toString() == "NV Literata",
+            "Publisher default overrode enabled text inheritance");
+    require(appearance::globalPreferences(publisherDefault).value("default_font_face") == QJsonValue(""),
+            "Publisher default was removed from existing global preferences");
     for (const auto *key : appearance::fallbackFontKeys) {
         auto changed = from;
         changed[key] = QStringLiteral("Personal Font");
@@ -202,8 +337,8 @@ int main() {
     for (const auto density : {212, 227, 265, 300}) {
         readingPpi.store(density);
         require(defaultFontPixels() == halfPointPixels(22), "Default text size is not 11 points");
-        require(minimumFontPixels() == halfPointPixels(14) && maximumFontPixels() == halfPointPixels(96),
-                "Engine size limits do not match the 7 to 48 point controls");
+        require(minimumFontPixels() == halfPointPixels(12) && maximumFontPixels() == halfPointPixels(96),
+                "Engine size limits do not match the 6 to 48 point controls");
     }
     readingPpi.store(300);
     auto inherited = appearance::typographyDefaults();

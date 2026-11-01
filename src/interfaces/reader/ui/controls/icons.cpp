@@ -41,12 +41,67 @@ Geometry geometry(ControlIcon icon, bool sideButtons) {
         path.moveTo(x1, y1);
         path.lineTo(x2, y2);
     };
-    // Phosphor has no vertical swipe gesture, and the device drawings show
-    // the side buttons, so these stay Kobalt's own artwork.
-    if (icon == ControlIcon::ArrowDownRight) {
+    // Keyboard symbols use the same 24-unit grid and stroke as our other drawings.
+    if (icon == ControlIcon::KeyboardShift) {
+        result.canvas = 24;
+        result.stroke = 1.5;
+        path.moveTo(12, 3);
+        path.lineTo(21, 12);
+        path.lineTo(16, 12);
+        path.lineTo(16, 21);
+        path.lineTo(8, 21);
+        path.lineTo(8, 12);
+        path.lineTo(3, 12);
+        path.closeSubpath();
+    } else if (icon == ControlIcon::KeyboardBackspace) {
+        result.canvas = 24;
+        result.stroke = 1.5;
+        path.moveTo(8, 5);
+        path.lineTo(22, 5);
+        path.lineTo(22, 19);
+        path.lineTo(8, 19);
+        path.lineTo(1, 12);
+        path.closeSubpath();
+        line(11, 9, 17, 15);
+        line(17, 9, 11, 15);
+    } else if (icon == ControlIcon::KeyboardReturn) {
+        result.canvas = 24;
+        result.stroke = 1.5;
+        path.moveTo(21, 4);
+        path.lineTo(21, 14);
+        path.lineTo(3, 14);
+        line(3, 14, 9, 8);
+        line(3, 14, 9, 20);
+    } else if (icon == ControlIcon::Export) {
+        // Regular-weight Phosphor icons retain their original 256-unit outlines.
+        result.canvas = 256;
+        result.filled = true;
+        phosphorGeometry(QStringLiteral("file-zip"), path);
+    } else if (icon >= ControlIcon::WifiNone && icon <= ControlIcon::WifiDisconnected) {
+        static const char *names[] = {"wifi-none", "wifi-low", "wifi-medium", "wifi-high", "wifi-slash"};
+        result.canvas = 256;
+        result.filled = true;
+        phosphorGeometry(QString::fromLatin1(names[int(icon) - int(ControlIcon::WifiNone)]), path);
+    } else if (icon == ControlIcon::Sync) {
+        result.canvas = 24;
+        result.stroke = 1.5;
+        path.moveTo(4, 9);
+        path.cubicTo(7, 2, 17, 2, 20, 9);
+        line(20, 4, 20, 9);
+        line(20, 9, 15, 9);
+        path.moveTo(20, 15);
+        path.cubicTo(17, 22, 7, 22, 4, 15);
+        line(4, 20, 4, 15);
+        line(4, 15, 9, 15);
+    } else if (icon == ControlIcon::ArrowDownRight) {
         result.canvas = 256;
         result.filled = true;
         phosphorGeometry(QStringLiteral("arrow-down-right"), path);
+    } else if (icon >= ControlIcon::SpreadHorizontal && icon <= ControlIcon::Hidden) {
+        const char *names[] = {"arrows-horizontal", "paragraph", "arrows-vertical", "magic-wand", "eye-slash"};
+        result.canvas = 256;
+        result.filled = true;
+        phosphorGeometry(QString::fromLatin1(names[int(icon) - int(ControlIcon::SpreadHorizontal)]), path);
     } else if (icon == ControlIcon::OneColumn || icon == ControlIcon::TwoColumns || icon == ControlIcon::Sort) {
         result.canvas = 256;
         result.filled = true;
@@ -364,11 +419,28 @@ private:
 void paintOpeningIcon(QPainter &painter, ControlIcon icon, const QRectF &bounds, QColor color) {
     paintGeometry(painter, geometry(icon, false), icon, bounds, color, IconRendition::OriginalAsset);
 }
+void paintWifiStatusIcon(QPainter &painter, ControlIcon icon, const QRectF &bounds, QColor color) {
+    const auto reference = geometry(ControlIcon::Bluetooth, false);
+    const auto shape = geometry(icon, false);
+    const auto full = geometry(icon == ControlIcon::WifiDisconnected ? icon : ControlIcon::WifiHigh, false).inkBounds();
+    const qreal side = qMin(bounds.width(), bounds.height());
+    const qreal scale = 0.9 * side * reference.inkBounds().height() / reference.canvas / full.height();
+    painter.save();
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.translate(bounds.center());
+    painter.scale(scale, scale);
+    painter.translate(-full.center());
+    painter.fillPath(shape.path, color);
+    painter.restore();
+}
 QIcon controlIcon(ControlIcon icon, QColor color, bool sideButtons) {
     if (int(icon) < 0 ||
         (int(icon) > int(ControlIcon::System) && icon != ControlIcon::PreviousChapter &&
-         icon != ControlIcon::NextChapter && icon != ControlIcon::Sort && icon != ControlIcon::ArrowDownRight &&
-         (icon < ControlIcon::Rows || icon > ControlIcon::Folders)))
+         icon != ControlIcon::NextChapter && icon != ControlIcon::Sync && icon != ControlIcon::Sort &&
+         icon != ControlIcon::ArrowDownRight && icon != ControlIcon::EditHighlight &&
+         (icon < ControlIcon::Rows || icon > ControlIcon::Export) &&
+         (icon < ControlIcon::KeyboardShift || icon > ControlIcon::KeyboardReturn) &&
+         (icon < ControlIcon::SpreadHorizontal || icon > ControlIcon::Hidden)))
         return {};
     return QIcon(new VectorIconEngine(icon, color, sideButtons));
 }
@@ -381,6 +453,11 @@ void Button::setIconConfiguration(ButtonIcon configuration) {
     refreshIcon();
 }
 
+void Button::clearIconConfiguration() {
+    hasConfiguredIcon = hasIconTheme = false;
+    setIcon({});
+}
+
 void Button::refreshIcon() {
     if (!hasConfiguredIcon)
         return;
@@ -388,10 +465,9 @@ void Button::refreshIcon() {
     if (hasIconTheme && iconDark == dark)
         return;
     const auto &configuration = configuredIcon;
-    const QColor foreground = dark ? Qt::white : Qt::black;
-    const QColor background = dark ? Qt::black : Qt::white;
-    setIcon(QIcon(new VectorIconEngine(configuration.glyph, foreground, configuration.rotationSideButtons,
-                                       configuration.rendition, background)));
+    const auto &colors = themeColors(dark);
+    setIcon(QIcon(new VectorIconEngine(configuration.glyph, colors.ink, configuration.rotationSideButtons,
+                                       configuration.rendition, colors.paper)));
     iconDark = dark;
     hasIconTheme = true;
 }

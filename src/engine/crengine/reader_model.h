@@ -108,6 +108,11 @@ public:
         return fonts_;
     }
     static bool supportedArchive(const QByteArray &bytes, QString *error);
+    // The format of new page images in this process: Format_RGB32 (the
+    // default) or Format_RGBX8888. Choose the one that the screen's backing
+    // store can take without converting pixels. Pages drawn earlier keep
+    // their format. Qt before 5.9 cannot reinterpret an image and keeps RGB32.
+    static void setPageFormat(QImage::Format format);
     bool open(QByteArray bytes, QSize size, const QJsonObject &saved, QString *error, OpeningProgress progress = {});
     bool openResources(std::shared_ptr<ResourceCache> resources, const QMap<QString, qint64> &sizes, QSize size,
                        const QJsonObject &saved, QString *error, OpeningProgress progress = {},
@@ -159,6 +164,7 @@ public:
     // Unavailable. *error explains why the exact position was not used.
     PositionTarget goToPlatformNearest(const PositionCodec &codec, const QString &location, QString *error);
     // Negative is before the current source anchor; positive is beyond it.
+    int comparePosition(const QString &position, QString *error) const;
     int comparePlatformPosition(const PositionCodec &codec, const QString &location, QString *error) const;
     // The page of each position in the current layout, or -1 where a
     // position no longer resolves.
@@ -185,7 +191,7 @@ public:
                               const QString &endTokenStart, const QString &endTokenEnd, bool endTokenPolicy = false,
                               bool startTokenPolicy = false, std::function<bool()> current = {});
     QVector<PageLink> pageLinks();
-    LinkDetails linkDetails(const QString &source);
+    LinkDetails linkDetails(const QString &source, bool preview = true);
     SearchBatch searchPage(const QString &query, int page);
     // Source-only current-page intersection. Does not resolve remote geometry.
     // Returns input indices in order; at most 2000 saved ranges plus one draft.
@@ -262,7 +268,7 @@ public:
     QString author() const;
     // Decodes the host cover first, then the publication cover, within the
     // requested size and 4 million pixels. Empty means neither is usable.
-    QImage coverImage(QSize maximumSize, const QString &preferredPath = {}) const;
+    QImage coverImage(QSize maximumSize, const QString &preferredPath = {}, QString *usedPath = nullptr) const;
     QVector<ChapterLink> chapters() const;
     void setChapters(QVector<ChapterLink> contents, QVector<ChapterLink> graph);
     QVector<ChapterLink> chapterGraph() const;
@@ -276,6 +282,7 @@ public:
 private:
     // Sets the current and next entries of `links` around `position`.
     ChapterSelection chapterAround(const QVector<ChapterLink> &links, const QString &position) const;
+    int chapterEndPage(const ChapterLink &next) const;
     void markKoboLinkDecorations();
     EngineFontInputs fonts_;
     friend class nickel::NickelPositionCodec;
@@ -328,7 +335,7 @@ private:
     QString defaultFace_ = defaultFontFace;
     std::array<QString, 3> fallbackFaces_;
     QString alignment_ = "left";
-    int pixels_ = defaultFontPixels(), spacing_ = defaultLineSpacing;
+    int pixels_ = defaultFontPixels(), spacing_ = defaultLineSpacing, paragraphSpacing_ = -1, paragraphIndent_ = -1;
     int margin_ = defaultMarginPixels(), topMargin_ = defaultVerticalMarginPixels(margin_),
         bottomMargin_ = defaultVerticalMarginPixels(margin_);
     void activateFontParameters() const;
@@ -336,12 +343,14 @@ private:
     double opticalSize_ = 0;
     int weight_ = 0;
     QString bionic_ = "off";
+    bool beautifierInitials_ = false, beautifierSpacing_ = false, beautifierIndent_ = false;
     // The engine DOM version that parses this book and writes its positions.
     int domVersion_ = 0;
     QString hyphenation_ = "off";
     bool darkMode_ = false;
     bool hideNonlinearFragments_ = false;
     bool avoidWastefulStyling_ = true;
+    QString verticalSpacing_ = "off", verticalSpacingScope_ = "all";
     int wordSpacing_ = 100;
     int justificationTracking_ = 0;
     QString widowsOrphans_ = "publisher";

@@ -174,14 +174,26 @@ static void flushReaderUsing(QBackingStore *store, const QRegion &region, QWindo
     const QRegion annotationRepairs = annotationRepairRegions(readerWindow);
     if (pageAnimationPanel() == AnimationPanel::Colour && !(region & annotationRepairs).isEmpty()) {
         keyboardPixels.clear();
-        submit(region, {{region.boundingRect(), repairPolicy(dark, wide)}});
-        consumeAnnotationRepairs(readerWindow, region);
+        if (wide && (pageTurn || direction)) {
+            // Nickel turns onto and away from coloured highlights with its
+            // full-mode reading refresh, without a flash. Edits keep the cleanup.
+            const QRect screen = readerWindow->rect();
+            submit(QRegion(screen), {{screen, ordinaryPolicy(dark, wide) | bit(128)}});
+            consumeAnnotationRepairs(readerWindow, QRegion(screen));
+        } else {
+            submit(region, {{region.boundingRect(), repairPolicy(dark, wide)}});
+            consumeAnnotationRepairs(readerWindow, region);
+        }
         return;
     }
     // Firmware 4 does not take the page widget's attributes into the rectangle
     // policy: a page turn arrives with the controls' automatic policy. Give
     // the page's own rectangles the policy pageRefresh chose.
     FlushFlags policies = flags;
+    const QRect keyboardBounds = readerWindow->property("reader_keyboard_bounds").toRect();
+    for (auto &entry : policies)
+        entry.second = completeKeyboardWaveform(entry.first, keyboardBounds, entry.second,
+                                               ordinaryPolicy(dark, wide), heuristic | full | partialMode);
     if (pageWidget && pageWidget->isVisible() && pagePolicy) {
         for (auto &entry : policies) {
             // Controls can lie over the page. Only a rectangle whose centre
@@ -245,17 +257,14 @@ static void flushReaderUsing(QBackingStore *store, const QRegion &region, QWindo
         submit(QRegion(screen), {{screen, policy}});
         return;
     }
-    const QRect keyboardBounds = readerWindow->property("reader_keyboard_bounds").toRect();
-    const bool keyboardPolicy =
-        compatible && ordinaryControls && std::all_of(policies.cbegin(), policies.cend(), [&](const auto &entry) {
-            return entry.second == policies[0].second;
-        });
+    const quint64 keyboardPolicy = compatible && ordinaryControls
+        ? commonKeyboardPolicy(policies, heuristic | full | partialMode, full, heuristic) : 0;
     if (keyboardPolicy) {
         const bool keyboardOnly = std::all_of(policies.cbegin(), policies.cend(), [&](const auto &entry) {
             return keyboardBounds.contains(entry.first);
         });
         if (keyboardPixels.unchanged(dynamic_cast<QImage *>(store->paintDevice()), region, keyboardBounds,
-                                     policies[0].second, keyboardOnly))
+                                     keyboardPolicy, keyboardOnly))
             return;
     } else {
         keyboardPixels.clear();
@@ -282,9 +291,12 @@ static void flushReaderUsing(QBackingStore *store, const QRegion &region, QWindo
             const QRegion images =
                 readerWindow->property(colour ? "reader_image_repairs" : "reader_mono_repairs").value<QRegion>() &
                 readerWindow->rect();
+            // Large pictures and colour turn like Nickel: the reading waveform
+            // over the whole screen in full mode, which drives every non-white
+            // pixel without the GC16 flash. Other turns stay partial.
             if (!images.isEmpty() || (colour && readerWindow->property("reader_colour_regions").toBool())) {
                 const QRect screen = readerWindow->rect();
-                submit(QRegion(screen), {{screen, repairPolicy(dark, wide) | bit(128)}});
+                submit(QRegion(screen), {{screen, ordinaryPolicy(dark, wide) | bit(128)}});
                 return;
             }
         }

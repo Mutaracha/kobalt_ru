@@ -23,6 +23,7 @@ enum class Field {
     ChapterPercent,
     BookPercent,
     BatteryWarning,
+    BatteryPercentOnly,
 };
 // Every field, for reading saved layouts.
 inline constexpr Field fields[] = {
@@ -30,14 +31,15 @@ inline constexpr Field fields[] = {
     Field::ChapterPage,     Field::BookPage,       Field::ChapterPagesLeft, Field::ChapterAndPage,
     Field::TitleAndPage,    Field::BatteryPercent, Field::Battery,          Field::Time,
     Field::ChapterTimeLeft, Field::BookTimeLeft,   Field::ChapterPercent,   Field::BookPercent,
-    Field::BatteryWarning,
+    Field::BatteryWarning,  Field::BatteryPercentOnly,
 };
 // The fields a slot offers, grouped: the book, the chapter, the whole book,
 // the device, then the fields that need a description to explain them.
 inline constexpr Field choosableFields[] = {
-    Field::Nothing,          Field::BookTitle,      Field::Author,         Field::Chapter,  Field::ChapterPage,
-    Field::ChapterPagesLeft, Field::ChapterPercent, Field::ChapterAndPage, Field::BookPage, Field::BookPercent,
-    Field::TitleAndPage,     Field::Time,           Field::BatteryPercent, Field::Battery,  Field::BatteryWarning,
+    Field::Nothing,          Field::BookTitle,          Field::Author,         Field::Chapter,
+    Field::ChapterPage,      Field::ChapterPagesLeft,   Field::ChapterPercent, Field::ChapterAndPage,
+    Field::BookPage,         Field::BookPercent,        Field::TitleAndPage,   Field::Time,
+    Field::BatteryPercent,   Field::BatteryPercentOnly, Field::Battery,        Field::BatteryWarning,
     Field::ChapterTimeLeft,  Field::BookTimeLeft,
 };
 // Battery warning shows the battery only below this percentage.
@@ -52,15 +54,20 @@ inline constexpr bool footerSlot(int slot) {
 enum class Preset { Default, AlternativeA, AlternativeB, Custom };
 inline constexpr Preset presets[] = {Preset::Default, Preset::AlternativeA, Preset::AlternativeB, Preset::Custom};
 
-// Everything a preset decides about the header and the footer.
+// Both strips use the same sizes in 300 PPI pixels.
+inline constexpr int smallSize = 24, mediumSize = 26, largeSize = 28, maximumSize = 48;
+inline constexpr int offSize = smallSize - 1;
+int legacySize(const QString &value);
+
+// Resolved slot configuration and independent text sizes.
 struct Layout {
     std::array<Field, slotCount> slotFields{};
-    // "off", "small", "medium" or "large".
-    QString headerSize = QStringLiteral("small"), footerSize = QStringLiteral("small");
+    int headerSize = smallSize, footerSize = smallSize;
+    bool headerEnabled = true, footerEnabled = true;
     // Each slot chooses its own case.
     std::array<bool, slotCount> uppercase{{true, true, true, true, true, true}};
     bool progressBar = true;
-    // A strip is drawn when its size is not Off and one of its slots shows something.
+    // A strip is drawn when enabled and one of its slots shows something.
     bool header() const;
     bool footer() const;
     bool operator==(const Layout &other) const;
@@ -72,6 +79,8 @@ struct Layout {
 // The preset is saved per book. Custom is one layout shared by every book.
 inline constexpr auto presetKey = "header_footer";
 inline constexpr auto customKey = "header_footer_custom";
+inline constexpr auto textKey = "header_footer_text";
+QJsonObject textSettings(const Layout &layout);
 
 Layout presetLayout(Preset preset);
 QString presetValue(Preset preset);
@@ -115,6 +124,8 @@ struct Values {
 // One slot's text, and a battery icon drawn after it when `batteryIcon` is set.
 struct Content {
     QString text;
+    // Keep the combined chapter field's parts so fitting can preserve its page count.
+    QString chapterTitle, chapterPosition;
     bool batteryIcon = false;
     int battery = -1;
     bool charging = false;
@@ -122,7 +133,8 @@ struct Content {
         return text.isEmpty() && !batteryIcon;
     }
     bool operator==(const Content &other) const {
-        return text == other.text && batteryIcon == other.batteryIcon && battery == other.battery &&
+        return text == other.text && chapterTitle == other.chapterTitle && chapterPosition == other.chapterPosition &&
+               batteryIcon == other.batteryIcon && battery == other.battery &&
                charging == other.charging;
     }
     bool operator!=(const Content &other) const {

@@ -1,5 +1,8 @@
 #include "storage/reader_storage.h"
 #include "storage/annotation_database.h"
+#include "storage/profile_database.h"
+#include "storage/record_writer.h"
+#include "storage/reading_history.h"
 #include "storage/bookmark_store.h"
 #ifndef KOBALT_TEST_NO_LIBRARY
 #include "library/library_index.h"
@@ -26,12 +29,18 @@ QByteArray bytes(const QString &path) {
 void write(const QString &path, const QByteArray &value) {
     QFile file(path); require(file.open(QIODevice::WriteOnly) && file.write(value) == value.size(), "Write fixture");
 }
+// Stands in for a change made while Kobalt was closed: the profile closes
+// afterwards, so the next operation opens and checks the file again.
 void execute(const QString &directory, const QString &sql) {
     require(AnnotationDatabase::transaction(directory, [&](QSqlDatabase &db) {
         QSqlQuery query(db); return query.exec(sql);
     }), "SQL fixture");
+    storage::closeProfile();
 }
+// Kobalt holds the profile file exclusively while it is open. Close it, as
+// USB export does, before probing the file with another connection.
 QVariant rawValue(const QString &directory, const QString &sql) {
+    storage::closeProfile();
     const auto name = QStringLiteral("profile-schema-probe");
     auto db = QSqlDatabase::addDatabase("QSQLITE", name);
     db.setDatabaseName(directory + "/kobalt.sqlite");
@@ -50,6 +59,50 @@ int main(int argc, char **argv) {
     using storage::ReadStatus;
     QTemporaryDir root;
     require(root.isValid(), "Temporary profile");
+    {
+        QTemporaryDir batchRoot;
+        const storage::Paths batch{batchRoot.path()};
+        const QJsonObject oldBook{{"schema", 1}, {"book", "batch-book"}, {"position", "old"}};
+        const QJsonObject newBook{{"schema", 1}, {"book", "batch-book"}, {"position", "new"}};
+        const QJsonObject oldSpeed{{"schema", 1}, {"samples", 1}};
+        const QJsonObject newSpeed{{"schema", 1}, {"samples", 2}};
+        require(storage::writeBookState(batch, "batch-book", oldBook) &&
+                storage::writeRecord(batch.directory, "reading-speed", batch.readingSpeed(), oldSpeed), "Batch baseline");
+        ReadingHistory history(batch.directory, "batch-book", {}, {}, "Batch", "Author", [] { return 1000; });
+        history.start(0, "old");
+        history.update(100, "new");
+        auto snapshot = history.snapshot();
+        bool saved = true;
+        const auto writeBatch = [&](bool fail) {
+            storage::runOnWriterThread([&] {
+                storage::RoutineWrites routine;
+                saved = storage::writeReadingActivity(batch, "batch-book", newBook, newSpeed, [&](QSqlDatabase &db) {
+                    QSqlQuery query(db);
+                    require(query.exec("PRAGMA synchronous") && query.next() && query.value(0).toInt() == 1,
+                            "Reading batch must use WAL NORMAL");
+                    return snapshot.write(db) && !fail;
+                });
+                snapshot.complete(saved);
+            });
+        };
+        writeBatch(true);
+        require(!saved && !history.savesSucceeded(), "Failed activity must retain its history");
+        require(storage::readBookState(batch, "batch-book").object == oldBook &&
+                storage::readRecord(batch.directory, "reading-speed", batch.readingSpeed()).object == oldSpeed,
+                "History failure must roll back position and speed");
+        require(AnnotationDatabase::transaction(batch.directory, [](QSqlDatabase &db) {
+            QSqlQuery query(db);
+            return query.exec("SELECT count(*) FROM reading_sessions") && query.next() && query.value(0).toInt() == 0;
+        }), "Failed activity must roll back history too");
+        writeBatch(false);
+        require(saved && history.savesSucceeded() && storage::profileHasUnsyncedWrites(), "Retry commits the complete unsynced batch");
+        require(storage::readBookState(batch, "batch-book").object == newBook &&
+                storage::readRecord(batch.directory, "reading-speed", batch.readingSpeed()).object == newSpeed,
+                "Successful activity commits both records");
+        storage::checkpointProfile();
+        require(!storage::profileHasUnsyncedWrites(), "Lifecycle checkpoint syncs prior NORMAL commits");
+        storage::closeProfile();
+    }
     const storage::Paths paths{root.path()};
     const QString identity = "file:///books/invented.epub";
     QJsonObject state;
@@ -107,7 +160,7 @@ int main(int argc, char **argv) {
             "Future book format was changed");
     require(storage::writeJson(paths.preferences(), qt::object({{"bionic_reading", "bold"}, {"smooth_images", true},
             {"last_header_footer", "alternative_b"}, {"inherit_header_footer", true}, {"heavier_interface_text", true},
-            {"pin_stats", true}, {"hide_tab_labels", true}, {"columns", 2}, {"column_spacing", 20},
+            {"native_hide_status_bar", false}, {"pin_stats", true}, {"hide_tab_labels", true}, {"columns", 2}, {"column_spacing", 20},
             {"word_spacing", 17}, {"private_optional", "keep"}})), "Settings fixture");
     const auto clean = storage::readPreferences(paths.preferences());
     require(clean.status == ReadStatus::Ok && clean.object.value("schema") == 1 &&
@@ -115,6 +168,7 @@ int main(int argc, char **argv) {
             clean.object.value("default_menu_view").toString() == "stats" && clean.object.value("hide_tab_labels") == true &&
             clean.object.value("private_optional").toString() == "keep" && !clean.object.contains("word_spacing") &&
             !clean.object.contains("smooth_images") && !clean.object.contains("bionic_reading") &&
+            !clean.object.contains("native_hide_status_bar") &&
             !clean.object.contains("pin_stats") && !clean.object.contains("columns"), "Settings cleanup lost intent");
     require(storage::readJson(paths.preferences()) == clean.object, "Clean settings were not persisted");
     write(paths.preferences(), "{\"schema\":99,\"new_option\":true}");
@@ -160,8 +214,8 @@ int main(int argc, char **argv) {
     require(storage::prepareProfile(oldPaths) && !QFile::exists(oldMarks.folder()), "Beta 3 profile cleanup");
     require(AnnotationDatabase::transaction(beta3.path(), [&](QSqlDatabase &db) {
         QSqlQuery query(db);
-        return query.exec("PRAGMA user_version") && query.next() && query.value(0).toInt() == 2;
-    }), "Beta 3 migration did not create SQLite schema version 2");
+        return query.exec("PRAGMA user_version") && query.next() && query.value(0).toInt() == 3;
+    }), "Beta 3 migration did not create SQLite schema version 3");
     BookmarkStore newMarks(oldPaths.annotations(), "native-beta3", {}, "Invented book", oldPaths.database());
     require(newMarks.load() && newMarks.bookmarks().size() == 1 &&
             newMarks.bookmarks().first().position == mark.position &&
@@ -199,12 +253,80 @@ int main(int argc, char **argv) {
             bytes(partialDatabase.path() + "/kobalt.sqlite") == partialBytes,
             "Partial schema was repaired or replaced");
     QTemporaryDir futureDatabase;
-    execute(futureDatabase.path(), "PRAGMA user_version=3");
+    execute(futureDatabase.path(), "PRAGMA user_version=4");
     const auto futureDatabaseBytes = bytes(futureDatabase.path() + "/kobalt.sqlite");
     require(storage::readBookState(storage::Paths{futureDatabase.path()}, "new").status == ReadStatus::DatabaseError &&
             bytes(futureDatabase.path() + "/kobalt.sqlite") == futureDatabaseBytes,
             "Future SQLite schema was changed");
-
+    {
+        // Profile preparation moves unusable saved data into backups/ and
+        // starts again from defaults. The backups keep the original bytes.
+        QTemporaryDir recovery;
+        const storage::Paths recover{recovery.path()};
+        const QString backups = recovery.path() + "/backups/";
+        execute(recovery.path(), "PRAGMA user_version=4");
+        write(recover.preferences(), "{\"schema\":1,");
+        write(recover.syncAccount(), "{\"schema\":2,\"server\":\"https://sync.invented\"}");
+        const auto settingsBytes = bytes(recover.preferences());
+        const auto accountBytes = bytes(recover.syncAccount());
+        const auto databaseBytes = bytes(recover.database());
+        storage::ProfileRecovery result;
+        require(storage::prepareProfile(recover, &result) && result.settings && result.syncAccount && result.database &&
+                    !result.storageFailed && result.backups.size() == 3,
+                "Unusable saved data was not moved aside");
+        require(bytes(backups + "reader-settings.json.corrupted.bak") == settingsBytes &&
+                    bytes(backups + "kosync.json.bak") == accountBytes && bytes(backups + "kobalt.sqlite.bak") == databaseBytes,
+                "A backup changed the original bytes or got the wrong name");
+        require(storage::readJsonFile(recover.preferences()).object == QJsonObject{{"schema", 1}} &&
+                    !QFile::exists(recover.syncAccount()),
+                "Recovery did not start again from defaults");
+        require(storage::writeBookState(recover, "fresh", {{"book", "fresh"}}), "The new database is not usable");
+        result = {};
+        require(storage::prepareProfile(recover, &result) && !result.recovered(), "Usable data was moved aside");
+        // A second failure keeps the first backup. SQLite drops the log of a
+        // file that is not a database when it opens it, so only the main file
+        // reaches the backup; no stale log stays beside the new database.
+        storage::closeProfile();
+        write(recover.preferences(), "[]");
+        write(recover.database(), QByteArray(4096, 'x'));
+        write(recover.database() + "-wal", "log");
+        result = {};
+        require(storage::prepareProfile(recover, &result) && result.settings && result.database &&
+                    bytes(backups + "reader-settings.json.corrupted.bak") == settingsBytes &&
+                    bytes(backups + "reader-settings.json.corrupted.2.bak") == "[]",
+                "A second backup replaced the first");
+        require(bytes(backups + "kobalt.sqlite.corrupted.bak") == QByteArray(4096, 'x') &&
+                    !QFile::exists(recover.database() + "-wal"),
+                "A damaged database was not moved aside");
+        storage::closeProfile();
+        // Settings without a schema are older settings, not damaged ones.
+        write(recover.preferences(), "{\"dark_mode\":true}");
+        result = {};
+        require(storage::prepareProfile(recover, &result) && !result.settings &&
+                    storage::readPreferences(recover.preferences()).object.value("dark_mode") == true,
+                "Older settings were moved aside");
+        storage::closeProfile();
+        // A backup that cannot be written leaves the original in place.
+        QTemporaryDir blocked;
+        const storage::Paths stuck{blocked.path()};
+        write(blocked.path() + "/backups", "not a folder");
+        write(stuck.preferences(), "{");
+        result = {};
+        require(!storage::prepareProfile(stuck, &result) && result.storageFailed && !result.settings &&
+                    bytes(stuck.preferences()) == "{",
+                "A failed backup was not reported, or moved the original");
+        // A file that cannot be read stops preparation without changes.
+        QTemporaryDir unreadable;
+        const storage::Paths locked{unreadable.path()};
+        write(locked.preferences(), "{\"schema\":1}");
+        require(QFile::setPermissions(locked.preferences(), QFileDevice::WriteOwner), "Make settings unreadable");
+        result = {};
+        require(!storage::prepareProfile(locked, &result) && result.storageFailed &&
+                    !QFileInfo::exists(unreadable.path() + "/backups"),
+                "Unreadable settings were not reported, or were moved");
+        QFile::setPermissions(locked.preferences(), QFileDevice::ReadOwner | QFileDevice::WriteOwner);
+        storage::closeProfile();
+    }
 
 #ifndef KOBALT_TEST_NO_LIBRARY
     QTemporaryDir catalogue;

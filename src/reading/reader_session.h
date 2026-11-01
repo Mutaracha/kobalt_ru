@@ -3,6 +3,7 @@
 #include "open_request.h"
 #include "highlight_geometry.h"
 #include <QElapsedTimer>
+#include <QFileInfo>
 #include <QObject>
 #include <atomic>
 #include <functional>
@@ -85,6 +86,11 @@ struct PositionComparison {
     QString error;
 };
 
+struct SyncedPositionDescription {
+    PositionComparison comparison;
+    QString chapter;
+};
+
 // GUI-side settings and immutable frame copies. The worker owns engine access.
 // After application shutdown joins that worker, remaining models are released
 // synchronously by their GUI-side owners.
@@ -108,6 +114,8 @@ public:
     QByteArray sourceHash() const {
         return fingerprint;
     }
+    QByteArray syncDigest() const { return syncDigest_; }
+    QByteArray syncFilenameDigest() const { return syncFilenameDigest_; }
     // Whether the saved state passed to open belongs to this version of the book.
     bool savedStateMatched() const {
         return savedMatched;
@@ -131,6 +139,7 @@ public:
     bool setThickness(int steps);
     void setDarkMode(bool enabled);
     bool setHyphenation(const QString &mode);
+    bool setBookBeautifier(bool enabled);
     // Keep at most one turn behind the current turn. The latest direction wins.
     bool turn(int direction);
     bool canTurn() const;
@@ -138,6 +147,9 @@ public:
     bool go(int page);
     bool goTo(const QString &anchor);
     bool goToNative(const QString &location, std::function<void(QString)> finished);
+    bool goToSyncedPosition(const QString &position, std::function<void(QString)> finished);
+    // Resolves chapter and source order without navigating or rendering another page.
+    void describeSyncedPosition(const QString &position, std::function<void(SyncedPositionDescription)> finished);
     void nativePosition(std::function<void(QString, QString)> finished);
     void compareNativePosition(const QString &location, std::function<void(PositionComparison)> finished);
     // Source and pagination generation. Navigation within the same layout keeps it.
@@ -182,6 +194,11 @@ public:
     void resize(QSize size);
     bool busy() const {
         return running;
+    }
+    // Whether the pages beside the current one are queued or being drawn,
+    // after the session itself has reported its work done.
+    bool preparingNeighbours() const {
+        return *neighbourJobs > 0;
     }
     // Preview and later reading-command errors. Initial opening failures are
     // delivered only through the typed completion result.
@@ -304,6 +321,7 @@ public:
     }
     // Decodes on the engine worker. A cancelled or replaced source returns no image.
     void coverImage(QSize maximumSize, std::function<void(QImage)> finished, QString preferredPath = {});
+    void coverImage(QSize maximumSize, std::function<void(QImage, QFileInfo)> finished, QString preferredPath);
     QString chapterTitle() const {
         return frame.state.value("chapter_title").toString();
     }
@@ -352,6 +370,9 @@ private:
     QImage documentCover;
     OpeningResult openingResult_;
     QByteArray fingerprint;
+    QByteArray syncDigest_;
+    QByteArray syncFilenameDigest_;
+    bool importPosition(const QString &location, bool native, std::function<void(QString)> finished);
     bool savedMatched = false;
     std::shared_ptr<SourceLease> lease_;
     bool ownsLease_ = false;
@@ -382,6 +403,7 @@ private:
     std::shared_ptr<std::atomic<quint64>> newest = std::make_shared<std::atomic<quint64>>(0);
     std::shared_ptr<std::atomic<quint64>> newestLayout = std::make_shared<std::atomic<quint64>>(0);
     std::shared_ptr<std::atomic<quint64>> newestPreview = std::make_shared<std::atomic<quint64>>(0);
+    std::shared_ptr<std::atomic_int> neighbourJobs = std::make_shared<std::atomic_int>(0);
     std::shared_ptr<std::atomic_bool> searchCancelled;
     QString searchQuery;
     std::function<void(SearchBatch)> searchFinished;

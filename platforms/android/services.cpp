@@ -2,12 +2,14 @@
 #include "runtime.h"
 #include "light.h"
 #include "interfaces/reader/ui/style/fonts.h"
+#include <QCoreApplication>
 #include <QGuiApplication>
 #include <QDesktopServices>
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QPointer>
 #include <QTime>
+#include <QJniObject>
 
 namespace kobalt::android {
 namespace {
@@ -58,6 +60,10 @@ public:
 }
 ReaderHostServices readerServices() {
     ReaderHostServices result;
+    const auto model = QJniObject::getStaticObjectField("android/os/Build", "MODEL", "Ljava/lang/String;").toString().trimmed();
+    const auto maker = QJniObject::getStaticObjectField("android/os/Build", "MANUFACTURER", "Ljava/lang/String;").toString().trimmed();
+    result.deviceName = model.startsWith(maker, Qt::CaseInsensitive) ? model : (maker + " " + model).trimmed();
+    if (result.deviceName.isEmpty()) result.deviceName = QStringLiteral("Android");
     result.colorDisplay = [] {
         return true;
     };
@@ -105,6 +111,14 @@ ReaderHostServices readerServices() {
     };
     result.lightAvailable = [] {
         return lightAvailable();
+    };
+    result.textScale = [] {
+        // The system font size from Settings, read when the Library shows and when each book opens.
+        const QJniObject context = QNativeInterface::QAndroidApplication::context();
+        const auto configuration =
+            context.callObjectMethod("getResources", "()Landroid/content/res/Resources;")
+                .callObjectMethod("getConfiguration", "()Landroid/content/res/Configuration;");
+        return configuration.isValid() ? qreal(configuration.getField<jfloat>("fontScale")) : qreal(1);
     };
     result.animationsAvailable = [] {
         return false;

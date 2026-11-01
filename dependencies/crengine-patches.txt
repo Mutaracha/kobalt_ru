@@ -14,3 +14,6 @@ crengine-whitespace-fallback.patch
 crengine-page-layout.patch
 crengine-inherited-indent.patch
 crengine-compaction-diagnostics.patch
+crengine-vertical-justification.patch
+crengine-position-name-lookup.patch
+crengine-image-proportions.patch

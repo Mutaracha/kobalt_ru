@@ -1,4 +1,11 @@
+#include <QVariant>
+#include <QSqlQuery>
+#include "storage/annotation_database.h"
+#include "storage/record_writer.h"
 #include "storage/highlight_store.h"
+#include "storage/sleep_snapshot.h"
+#include "platforms/kobo/common/last_read_book.h"
+#include "platforms/kobo/common/browser_handoff.h"
 #include "support/paint_regions.h"
 #include <QElapsedTimer>
 #include "assets/assets.h"
@@ -23,8 +30,15 @@
 #include "reading/reading_density.h"
 #include "reading/sleep_screen.h"
 #include "reading/reader_session.h"
+#include "reading/kosync.h"
+#include "support/diagnostics.h"
+#include "support/main_thread.h"
+#include <QLocale>
 #include "engine/crengine/engine_activity.h"
+#include "storage/profile_database.h"
 #include "storage/reader_storage.h"
+#include "interfaces/recovery_message.h"
+#include "interfaces/benchmark_message.h"
 #include "support/reader_inputs.h"
 #include "support/book_fixtures.h"
 #include "support/engine_fixtures.h"
@@ -34,20 +48,29 @@
 
 #include <QApplication>
 #include <QBuffer>
+#include <QTcpServer>
+#include <QSslConfiguration>
+#include <QSslCertificate>
+#include <QTcpSocket>
 #include <QCheckBox>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QFontDatabase>
+#include <QImageWriter>
 #include <QJsonArray>
 #include <QLabel>
 #include <QLineEdit>
+#ifndef KOBALT_NO_SENSORS
 #include <QOrientationSensor>
+#endif
 #include <QPointer>
 #include <QPushButton>
 #include <QScreen>
+#ifndef KOBALT_NO_SENSORS
 #include <QSensorBackend>
 #include <QSensorManager>
+#endif
 #include <QSignalSpy>
 #include <QSlider>
 #include <QStyle>
@@ -55,11 +78,13 @@
 #include <QTest>
 #include <QThread>
 #include <QTimer>
+#include <QTime>
 #include <QUrl>
 #include <QtEndian>
 #include <atomic>
 #include <zlib.h>
 
+#ifndef KOBALT_NO_SENSORS
 namespace kobalt::test {
 class Backend : public QSensorBackend {
 public:
@@ -96,10 +121,33 @@ struct SensorRegistration {
 };
 }
 
+#endif
+
 using namespace kobalt;
 using test::PaintRegions;
 
 namespace {
+struct SyncNetworkState {
+    bool connected = false, interactive = false;
+    int requests = 0, cancellations = 0;
+    std::function<void(bool)> completed;
+};
+class TestSyncNetwork final : public SyncNetwork {
+public:
+    explicit TestSyncNetwork(std::shared_ptr<SyncNetworkState> state) : state(std::move(state)) {}
+    bool connected() const override { return state->connected; }
+    void prepare(bool interactive, std::function<void(bool)> done) override {
+        ++state->requests;
+        state->interactive = interactive;
+        state->completed = std::move(done);
+    }
+    void cancel() override {
+        if (state->completed) ++state->cancellations;
+        state->completed = {};
+    }
+private:
+    std::shared_ptr<SyncNetworkState> state;
+};
 // Observe queued reply delivery without delaying the worker or sleeping.
 class NativeTestApplication final : public QApplication {
 public:
@@ -109,6 +157,7 @@ public:
         const auto before = beforeEvent;
         if (before)
             before(object, event);
+        mainthread::EventDelivery delivery;
         const bool handled = QApplication::notify(object, event);
         const auto after = afterEvent;
         if (after)
@@ -190,12 +239,16 @@ public:
     ReaderSession *session() const {
         return session_;
     }
+    ReadingBook *book() const {
+        return book_;
+    }
     bool idle() const {
         return !active;
     }
     ReaderOrientation *rotation = nullptr;
     std::shared_ptr<test::HostProgress> progress;
     PositionCodec positions;
+    ReadingHistory::UtcClock utc;
     std::function<void(ReaderHostServices &)> configureServices;
     void open(const QString &path, QSize size = nativeSize) {
         Q_ASSERT(idle());
@@ -232,7 +285,8 @@ public:
             const auto baseline = progress ? progress->current : ReadingProgress{};
             auto book = std::make_unique<ReadingBook>(std::move(opening), statePath, paths, identity, hash,
                                                       progress ? test::hostReadingBridge(progress) : nullptr,
-                                                      baseline, baseline);
+                                                      baseline, baseline, QString(), utc);
+            book_ = book.get();
             auto services = desktop::readerServices();
             services.desktopUi = false;
             services.suspended = [] { return false; };
@@ -255,6 +309,12 @@ public:
         if (!active || closing)
             return;
         closing = true;
+        // Release injected save failures before fixture cleanup. The real USB
+        // barrier deliberately refuses to dispose a reader with failed saves.
+        if (progress) {
+            progress->failWrite = progress->writeBlocked = progress->holdFinish = progress->failFinish = false;
+            progress->completeFinish(true);
+        }
         if (window_)
             window_->prepareShutdown([this] { retire(); });
         else
@@ -271,6 +331,7 @@ private:
         if (window_) {
             window_->finished = {};
             delete window_.data();
+            book_ = nullptr;
         }
         opening.reset();
         ReaderSession::drain([this] {
@@ -290,6 +351,7 @@ private:
     std::shared_ptr<SourceLease> lease;
     std::unique_ptr<ReaderSession> opening;
     QPointer<ReaderSession> session_;
+    ReadingBook *book_ = nullptr;
     QPointer<ReaderWindow> window_;
     bool active = false, closing = false;
 };
@@ -403,6 +465,321 @@ private slots:
         engineActivity().pause(false);
         directory.reset();
     }
+    void teardownRemovesApplicationFilter() {
+        class Probe : public QWidget {
+        public:
+            using QWidget::QWidget;
+            bool received = false;
+            bool event(QEvent *event) override {
+                if (event->type() == QEvent::HoverEnter) {
+                    received = true;
+                    return true;
+                }
+                return QWidget::event(event);
+            }
+        };
+        bool delivered = false;
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        host.configureServices = [&](ReaderHostServices &services) {
+            services.presentation = [&](QWidget *reader) {
+                auto *probe = new Probe(reader);
+                auto presentation = std::make_unique<test::HostPresentation>();
+                presentation->resumed = [&, probe] {
+                    QEvent event(QEvent::HoverEnter);
+                    QCoreApplication::sendEvent(probe, &event);
+                    delivered = probe->received;
+                };
+                return presentation;
+            };
+        };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        host.shutdown();
+        QTRY_VERIFY(host.idle());
+        QVERIFY2(delivered, "The reader's application filter still consumed events during teardown");
+    }
+    void shutdownFinalSaveTimesOut() {
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        host.progress = std::make_shared<test::HostProgress>();
+        const auto identity = QUrl::fromLocalFile(QFileInfo(textBook).absoluteFilePath()).toString();
+        host.progress->current = {identity, "OEBPS/c1.xhtml", 100, 1, true};
+        host.positions = nickel::positionCodec();
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        QTRY_VERIFY(!host.session()->busy());
+        const int writes = host.progress->writes;
+        int completed = 0;
+        engineActivity().pause(true);
+        host.window()->prepareShutdown([&] { ++completed; });
+        const bool timedOut = QTest::qWaitFor([&] { return completed == 1; }, 4000);
+        // Always release the worker before an assertion or fixture cleanup.
+        engineActivity().pause(false);
+        QVERIFY(timedOut);
+        bool drained = false;
+        ReaderSession::drain([&] { drained = true; });
+        QTRY_VERIFY(drained);
+        QCOMPARE(completed, 1);
+        QCOMPARE(host.progress->writes, writes);
+        QVERIFY(!storage::readBookState(testPaths(), identity).object.value("position").toString().isEmpty());
+    }
+    void clockStopsWhileReaderIsHidden_data() {
+        QTest::addColumn<bool>("browser");
+        QTest::newRow("ordinary-hide") << false;
+        QTest::newRow("browser-handoff") << true;
+    }
+    void clockStopsWhileReaderIsHidden() {
+        QFETCH(bool, browser);
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QTRY_VERIFY(host.window()->isVisible());
+        QTRY_VERIFY(!host.session()->busy() && host.session()->resourceStats().value("pending_images").toInt() == 0);
+        auto *clock = host.window()->findChild<QTimer *>("rrClockTimer");
+        QVERIFY(clock);
+        QSignalSpy ticks(clock, &QTimer::timeout);
+        const auto verifyStoppedClock = [&] {
+            host.book()->stopReading();
+            QVERIFY(!host.book()->readingActive());
+            const int before = QTime::currentTime().msecsSinceStartOfDay();
+            QVERIFY(QMetaObject::invokeMethod(clock, "timeout", Qt::DirectConnection));
+            const int after = QTime::currentTime().msecsSinceStartOfDay();
+            if (before / 60000 == after / 60000) {
+                QVERIFY(clock->interval() >= 60000 - after % 60000 + 50);
+                QVERIFY(clock->interval() <= 60000 - before % 60000 + 50);
+            }
+        };
+        const auto appearance = host.session()->state();
+        const auto position = appearance.value("position");
+        const auto imageKey = host.session()->image().cacheKey();
+        BrowserHandoff handoff;
+        QDialog browserDialog;
+        browserDialog.setObjectName("N3Dialog");
+        QWidget browserView(&browserDialog);
+        browserView.setObjectName("N3BrowserView");
+        for (int cycle = 0; cycle < 3; ++cycle) {
+            QVERIFY(clock->isActive());
+            // A hide immediately before the deadline must cancel the wakeup.
+            clock->start(1);
+            if (browser) {
+                handoff.begin(host.window(), [] { return true; });
+                browserDialog.show();
+            } else {
+                host.window()->hide();
+            }
+            QVERIFY(!host.window()->isVisible());
+            QTest::qWait(100);
+            QCOMPARE(ticks.count(), 0);
+            QVERIFY(!clock->isActive());
+            if (browser) {
+                browserDialog.hide();
+            } else {
+                host.window()->show();
+            }
+            QVERIFY(host.window()->isVisible());
+            QVERIFY(clock->isActive());
+            QVERIFY(clock->interval() > 0);
+            QVERIFY(clock->interval() <= 60050);
+            QVERIFY(kobalt::appearance::same(appearance, host.session()->state()));
+            QCOMPARE(host.session()->state().value("position"), position);
+            QCOMPARE(host.session()->image().cacheKey(), imageKey);
+        }
+        verifyStoppedClock();
+        clock->start(120000);
+        QVERIFY(host.session()->updated);
+        host.session()->updated();
+        QVERIFY(host.book()->readingActive());
+        QVERIFY(clock->interval() > 0);
+        QVERIFY(clock->interval() <= 60050);
+    }
+    void backgroundCheckpointStopsBeforeOtherCallbacks() {
+        qputenv("KOBALT_ANNOTATIONS_SQLITE", "1");
+        bool suspended = false;
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        host.configureServices = [&](ReaderHostServices &services) {
+            services.suspended = [&] { return suspended; };
+        };
+        // Android registers its checkpoint callback before constructing the
+        // reader. It can be the last callback to finish before process death.
+        bool checkpointSawPausedSession = false;
+        connect(qApp, &QGuiApplication::applicationStateChanged, &host, [&](Qt::ApplicationState state) {
+            if (state != Qt::ApplicationInactive || !host.window()) return;
+            host.window()->checkpoint();
+            AnnotationDatabase::transaction(profile, [&](QSqlDatabase &db) {
+                QSqlQuery query(db);
+                if (!query.exec("SELECT COUNT(*) FROM reading_sessions WHERE status='active'") || !query.next()) return false;
+                checkpointSawPausedSession = query.value(0).toInt() == 1 && !host.book()->readingActive();
+                return true;
+            });
+        });
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(host.window()->readyForPresentation());
+        host.window()->checkpoint();
+        storage::drainWriterThread();
+        bool active = false;
+        QVERIFY(AnnotationDatabase::transaction(profile, [&](QSqlDatabase &db) {
+            QSqlQuery query(db);
+            if (!query.exec("SELECT COUNT(*) FROM reading_sessions WHERE status='active'") || !query.next()) return false;
+            active = query.value(0).toInt() == 1;
+            return true;
+        }));
+        QVERIFY(active);
+        suspended = true;
+        qApp->applicationStateChanged(Qt::ApplicationInactive);
+        QVERIFY2(checkpointSawPausedSession, "Host checkpoint left the session running until a later callback");
+    }
+    void backgroundWriteFailureRetriesWithoutCountingPause() {
+        qputenv("KOBALT_ANNOTATIONS_SQLITE", "1");
+        bool suspended = false;
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        host.configureServices = [&](ReaderHostServices &services) { services.suspended = [&] { return suspended; }; };
+        const auto value = [&](const QString &statement) {
+            QVariant result;
+            const bool ok = AnnotationDatabase::transaction(profile, [&](QSqlDatabase &db) {
+                QSqlQuery query(db);
+                if (!query.exec(statement)) return false;
+                if (query.next()) result = query.value(0);
+                return true;
+            });
+            if (!ok) QTest::qFail("Background retry fixture SQL", __FILE__, __LINE__);
+            return result;
+        };
+        connect(qApp, &QGuiApplication::applicationStateChanged, &host, [&](Qt::ApplicationState state) {
+            if (state == Qt::ApplicationInactive && host.window()) host.window()->checkpoint();
+        });
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900); canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(host.window()->readyForPresentation());
+        host.window()->checkpoint();
+        QTRY_COMPARE(value("SELECT COUNT(*) FROM reading_sessions WHERE status='active'").toInt(), 1);
+        value("CREATE TRIGGER fail_background BEFORE UPDATE ON reading_sessions BEGIN SELECT RAISE(ABORT,'test'); END");
+        suspended = true;
+        qApp->applicationStateChanged(Qt::ApplicationInactive);
+        const auto paused = inspectReader(host).value("session_reading_ms").toVariant().toLongLong();
+        QVERIFY(paused > 0);
+        QCOMPARE(value("SELECT COUNT(*) FROM reading_sessions WHERE status='active'").toInt(), 1);
+        QTest::qWait(40);
+        qApp->applicationStateChanged(Qt::ApplicationInactive);
+        QCOMPARE(inspectReader(host).value("session_reading_ms").toVariant().toLongLong(), paused);
+        value("DROP TRIGGER fail_background");
+        suspended = false;
+        qApp->applicationStateChanged(Qt::ApplicationActive);
+        host.window()->checkpoint();
+        QTRY_VERIFY(value("SELECT SUM(active_ms) FROM reading_sessions").toLongLong() >= paused);
+        QCOMPARE(value("SELECT COUNT(*) FROM reading_sessions").toInt(), 1);
+        qApp->applicationStateChanged(Qt::ApplicationActive);
+        QCOMPARE(value("SELECT COUNT(*) FROM reading_sessions").toInt(), 1);
+    }
+    void standaloneReadingHistory_data() {
+        QTest::addColumn<bool>("native");
+        QTest::newRow("standalone") << false;
+        QTest::newRow("native") << true;
+    }
+    void standaloneReadingHistory() {
+        QFETCH(bool, native);
+        qputenv("KOBALT_ANNOTATIONS_SQLITE", "1");
+        bool suspended = false;
+        qint64 utc = 100000;
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        host.utc = [&] { return utc; };
+        host.configureServices = [&](ReaderHostServices &services) {
+            services.suspended = [&] { return suspended; };
+        };
+        const auto value = [&](const QString &statement) {
+            QVariant result;
+            const bool ok = AnnotationDatabase::transaction(profile, [&](QSqlDatabase &db) {
+                QSqlQuery query(db);
+                if (!query.exec(statement) || !query.next()) return false;
+                result = query.value(0);
+                return true;
+            });
+            if (!ok) QTest::qFail("Cannot inspect history", __FILE__, __LINE__);
+            return result;
+        };
+        if (native) {
+            host.progress = std::make_shared<test::HostProgress>();
+            const auto identity = QUrl::fromLocalFile(QFileInfo(fixture()).absoluteFilePath()).toString();
+            host.progress->current = {identity, "OEBPS/c1.xhtml", 100, 1, true};
+            host.positions = nickel::positionCodec();
+        }
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(host.window()->readyForPresentation());
+        host.window()->checkpoint();
+        QTRY_COMPARE(value("SELECT COUNT(*) FROM reading_sessions WHERE status='active'").toInt(), 1);
+        QVERIFY(!host.window()->findChild<QTimer *>("rrReadingHistoryTimer"));
+        QTest::qWait(10);
+        host.book()->saveReadingActivity();
+        QTRY_VERIFY(!host.book()->savesPending());
+        QTRY_VERIFY(value("SELECT SUM(active_ms) FROM reading_sessions").toLongLong() > 0);
+        suspended = true;
+        qApp->applicationStateChanged(Qt::ApplicationInactive);
+        QCOMPARE(value("SELECT COUNT(*) FROM reading_sessions WHERE status='active'").toInt(), 1);
+        const auto paused = value("SELECT SUM(active_ms) FROM reading_sessions").toLongLong();
+        QTest::qWait(40);
+        QCOMPARE(value("SELECT SUM(active_ms) FROM reading_sessions").toLongLong(), paused);
+        suspended = false;
+        qApp->applicationStateChanged(Qt::ApplicationActive);
+        QTRY_COMPARE(value("SELECT COUNT(*) FROM reading_sessions WHERE status='active'").toInt(), 1);
+        QTest::qWait(10);
+        host.window()->checkpoint();
+        QTRY_VERIFY(value("SELECT SUM(active_ms) FROM reading_sessions").toLongLong() > paused);
+        auto *page = host.window()->findChild<QWidget *>("rrPage");
+        auto *menu = host.window()->findChild<QWidget *>("rrControlsTop");
+        auto *sessionLabel = host.window()->findChild<QLabel *>("rrMenuSession");
+        QVERIFY(page && menu && sessionLabel);
+        QVERIFY(clickAt(canvas, page->mapTo(canvas.surface(), page->rect().center())));
+        QTRY_VERIFY(menu->isVisible());
+        // Seed an already-visible session label without waiting five minutes.
+        sessionLabel->setText("Previous session");
+        sessionLabel->show();
+        suspended = true;
+        qApp->applicationStateChanged(Qt::ApplicationInactive);
+        utc += 15 * 60000;
+        suspended = false;
+        qApp->applicationStateChanged(Qt::ApplicationActive);
+        QVERIFY(sessionLabel->text().isEmpty());
+        QVERIFY(!sessionLabel->isVisible());
+        // Resumed activity stays in memory until a batch or commit point.
+        host.book()->saveReadingActivity();
+        QTRY_VERIFY(!host.book()->savesPending());
+        QTRY_COMPARE(value("SELECT COUNT(*) FROM reading_sessions").toInt(), 2);
+        host.window()->hide();
+        QCOMPARE(value("SELECT COUNT(*) FROM reading_sessions WHERE status='completed'").toInt(), 2);
+        host.window()->show();
+        host.window()->checkpoint();
+        QTRY_COMPARE(value("SELECT COUNT(*) FROM reading_sessions WHERE status='active'").toInt(), 1);
+        host.shutdown();
+        QTRY_VERIFY(host.idle());
+        QCOMPARE(value("SELECT COUNT(*) FROM reading_sessions WHERE status='active'").toInt(), 0);
+        QCOMPARE(value("SELECT COUNT(*) FROM reading_sessions WHERE status='completed'").toInt(), 3);
+    }
     void uneditedPanelTransitions_data() {
         QTest::addColumn<QString>("start");
         QTest::newRow("text") << "rrNavText";
@@ -426,6 +803,18 @@ private slots:
         auto *toolbar = host.window()->findChild<QWidget *>("rrControlsTop");
         QVERIFY(page);
         QVERIFY(toolbar);
+        if (start == "rrNavStats") {
+            auto *position = host.window()->findChild<QLabel *>("rrGraphChapterPosition");
+            QVERIFY(position);
+            const auto hiddenText = position->text();
+            const int previousPage = host.session()->page();
+            const bool rtl = host.session()->state().value("page_progression_rtl").toBool();
+            QVERIFY(clickAt(canvas, page->mapTo(canvas.surface(),
+                QPoint(rtl ? page->width() / 6 : page->width() * 5 / 6, page->height() / 2))));
+            QTRY_VERIFY(!host.session()->busy() && host.session()->page() != previousPage);
+            QCoreApplication::processEvents();
+            QCOMPARE(position->text(), hiddenText);
+        }
         const auto image = page->image.cacheKey();
         auto state = host.session()->state();
         state.remove("cached_pages");
@@ -470,6 +859,11 @@ private slots:
             QVERIFY2(!host.session()->busy(), qPrintable(start));
             QTRY_VERIFY(startPanel->isVisible());
             QVERIFY(!host.session()->busy());
+            if (start == "rrNavStats") {
+                QCOMPARE(host.window()->findChild<QLabel *>("rrGraphChapterPosition")->text(),
+                         strings::get("stats.page_of").arg(host.session()->chapterPage())
+                             .arg(host.session()->chapterPages()));
+            }
             QCOMPARE(page->image.cacheKey(), image);
             QVERIFY(toolbar->isVisible());
         }
@@ -485,6 +879,139 @@ private slots:
             QCOMPARE(page->image.cacheKey(), image);
             QVERIFY(toolbar->isVisible());
         }
+    }
+
+    void lightReplacesDefaultMenu_data() {
+        QTest::addColumn<bool>("dark");
+        QTest::addColumn<QString>("menuView");
+        QTest::addColumn<QString>("action");
+        for (bool dark : {false, true})
+            for (const auto *view : {"none", "seek", "stats"})
+                for (const auto *action : {"tab", "outside", "Text", "Layout", "Chapters", "Settings", "Seek", "Stats", "dismiss"}) {
+                    if ((QString(action) == "Seek" && QString(view) == "seek") ||
+                        (QString(action) == "Stats" && QString(view) == "stats"))
+                        continue;
+                    QTest::newRow(qPrintable(QString("%1-%2-%3").arg(view, dark ? "dark" : "light", action)))
+                        << dark << QString::fromLatin1(view) << QString::fromLatin1(action);
+                }
+    }
+    void lightReplacesDefaultMenu() {
+        QFETCH(bool, dark);
+        QFETCH(QString, menuView);
+        QFETCH(QString, action);
+        class Light final : public LightControls {
+        public:
+            bool initialize() override { return true; }
+            bool hasWarmth() const override { return false; }
+            int warmth() const override { return 0; }
+            int warmthMinimum() const override { return 0; }
+            int warmthMaximum() const override { return 0; }
+            int warmthStep() const override { return 1; }
+            bool automaticWarmth() const override { return false; }
+            int setWarmth(int) override { return -1; }
+            bool saveWarmth() override { return false; }
+            bool setAutomaticWarmth(bool) override { return false; }
+            bool beginGesture() override { return false; }
+            int setGestureLevel(int) override { return -1; }
+            void finishGesture(bool) override {}
+            int brightness() const override { return 50; }
+            bool gesturing() const override { return false; }
+        };
+        const auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.preferences(), {{"dark_mode", dark}, {"default_menu_view", menuView}}));
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        host.configureServices = [](ReaderHostServices &services) {
+            services.lightAvailable = [] { return true; };
+            services.light = [](QWidget *) { return std::make_unique<Light>(); };
+        };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy());
+        auto *page = static_cast<ReadingPage *>(host.window()->findChild<QWidget *>("rrPage"));
+        auto *toolbar = host.window()->findChild<QWidget *>("rrControlsTop");
+        auto *stats = host.window()->findChild<QWidget *>("rrChapterGraph");
+        auto *seek = dynamic_cast<ui::PageScrubber *>(host.window()->findChild<QWidget *>("rrPageScrubber"));
+        auto *light = host.window()->findChild<QWidget *>("rrLightPanel");
+        auto *tab = host.window()->findChild<QPushButton *>("rrNavLight");
+        QVERIFY(page && toolbar && stats && seek && light && tab);
+        const auto position = host.session()->state().value("position");
+        const auto image = page->image.cacheKey();
+        const QPoint paper(nativeSize.width() / 2, nativeSize.height() / 4);
+        QVERIFY(clickAt(canvas, paper));
+        QTRY_VERIFY(toolbar->isVisible());
+        QCOMPARE(stats->isVisible(), menuView == "stats");
+        if (menuView == "seek")
+            QTRY_VERIFY(seek->previewReady());
+        class DefaultShows final : public QObject {
+        public:
+            int count = 0;
+            bool eventFilter(QObject *, QEvent *event) override {
+                if (event->type() == QEvent::Show)
+                    ++count;
+                return false;
+            }
+        } defaultShows;
+        QVERIFY(click(canvas, tab));
+        QTRY_VERIFY(light->isVisible());
+        QVERIFY(!stats->isVisible());
+        QVERIFY(!seek->isVisible());
+        QVERIFY(tab->isChecked());
+        QVERIFY(toolbar->isVisible());
+        if (menuView == "stats")
+            stats->installEventFilter(&defaultShows);
+        else if (menuView == "seek")
+            seek->installEventFilter(&defaultShows);
+        if (action == "tab")
+            QVERIFY(click(canvas, tab));
+        else if (action == "outside")
+            QVERIFY(clickAt(canvas, paper));
+        else if (action == "dismiss") {
+            // Exercise full-menu dismissal directly through the page action,
+            // independently of the outside-Light event filter.
+            QVERIFY(page->tapped);
+            page->tapped(paper);
+        } else {
+            const auto name = action == "Settings" ? QString("rrSettings") : QString("rrNav%1").arg(action);
+            QVERIFY(click(canvas, host.window()->findChild<QPushButton *>(name)));
+        }
+        QTRY_VERIFY(!light->isVisible());
+        QVERIFY(!tab->isChecked());
+        const bool restoring = action == "tab" || action == "outside";
+        if (restoring) {
+            QTRY_COMPARE(stats->isVisible(), menuView == "stats");
+            QTRY_COMPARE(seek->isVisible(), menuView == "seek");
+            if (menuView == "seek")
+                QTRY_VERIFY(seek->previewReady());
+            QCOMPARE(defaultShows.count, menuView == "none" ? 0 : 1);
+            QVERIFY(toolbar->isVisible());
+        } else {
+            QCOMPARE(defaultShows.count, 0);
+            QTRY_COMPARE(stats->isVisible(), action == "Stats");
+            QTRY_COMPARE(seek->isVisible(), action == "Seek");
+            if (action == "dismiss") {
+                QVERIFY(!toolbar->isVisible());
+                QVERIFY(!host.window()->findChild<QWidget *>("rrBottomNavigation")->isVisible());
+                QVERIFY(clickAt(canvas, paper));
+                QTRY_VERIFY(toolbar->isVisible());
+                QTRY_COMPARE(stats->isVisible(), menuView == "stats");
+                QTRY_COMPARE(seek->isVisible(), menuView == "seek");
+                QCOMPARE(defaultShows.count, menuView == "none" ? 0 : 1);
+            } else {
+                const auto panel = action == "Chapters" ? "rrChoices" : action == "Settings" ? "rrGeneralSettings" : "rrMenu";
+                if (action == "Text" || action == "Layout" || action == "Chapters" || action == "Settings")
+                    QTRY_VERIFY(host.window()->findChild<QWidget *>(panel)->isVisible());
+                QVERIFY(toolbar->isVisible());
+            }
+        }
+        QCOMPARE(host.session()->state().value("position"), position);
+        QCOMPARE(page->image.cacheKey(), image);
+        QCOMPARE(storage::readJson(paths.preferences()).value("default_menu_view").toString(), menuView);
     }
 
     void appearanceApplyOnNavigation_data() {
@@ -822,7 +1349,21 @@ private slots:
         QCOMPARE(inspectReader(host)["preview_settings"].toObject(), draft);
         QCOMPARE(host.session()->state()["font_pixels"], original["font_pixels"]);
         QVERIFY(!text->isVisible());
+        QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSettingsSystem")));
+        auto *counter = host.window()->findChild<QLabel *>("rrSettingsOptionsPage");
+        QVERIFY(counter && counter->isVisible());
+        const auto settingsPage = counter->text();
+        struct ResumeWorker {
+            ~ResumeWorker() { engineActivity().pause(false); }
+        } resumeWorker;
+        engineActivity().pause(true);
         QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSettingsClose")));
+        QVERIFY(host.session()->busy() && panel->isVisible());
+        host.window()->pageButton(1);
+        QCOMPARE(counter->text(), settingsPage);
+        host.window()->pageButton(-1);
+        QCOMPARE(counter->text(), settingsPage);
+        engineActivity().pause(false);
         QTRY_VERIFY_WITH_TIMEOUT(!panel->isVisible() && !host.session()->busy(), 10000);
         QCOMPARE(host.session()->state()["font_pixels"], draft["font_pixels"]);
         QVERIFY(click(canvas, text));
@@ -1380,6 +1921,10 @@ private slots:
         auto *exit = host.window()->findChild<QPushButton *>("rrReturn");
         QVERIFY(exit);
         QTRY_VERIFY(exit->isVisible() && exit->isEnabled());
+        QCOMPARE(exit->accessibleName(), strings::get("reader.exit"));
+        auto *returnTitle = host.window()->findChild<QLabel *>("rrReturnTitle");
+        QVERIFY(returnTitle);
+        QCOMPARE(returnTitle->text(), strings::get("reader.exit"));
         QVERIFY(click(canvas, exit));
         QTRY_COMPARE_WITH_TIMEOUT(closed.count(), 1, 10000);
         QVERIFY(host.idle());
@@ -1390,6 +1935,46 @@ private slots:
         QVERIFY(host.session()->savedStateMatched());
         host.shutdown();
         QTRY_COMPARE_WITH_TIMEOUT(closed.count(), 2, 10000);
+    }
+
+    // Closing Settings guards Exit against the second half of a double tap.
+    // The guard judges a tap by when it was pressed, so a tap that only waited
+    // while a slow close held the GUI still exits. QTest gives each event a
+    // timestamp and puts a double-click interval between two clicks.
+    void exitGuardUsesTapTime() {
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened), closed(&host, &ReaderFixture::closed);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        canvas.setUpdatesEnabled(true);
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy());
+        QVERIFY(clickAt(canvas, QPoint(nativeSize.width() / 2, nativeSize.height() / 2)));
+        auto *exit = host.window()->findChild<QPushButton *>("rrReturn");
+        auto *settings = host.window()->findChild<QWidget *>("rrGeneralSettings");
+        QVERIFY(exit && settings);
+        const auto closeSettings = [&] {
+            QTRY_VERIFY(exit->isVisible() && exit->isEnabled());
+            QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSettings")));
+            QTRY_VERIFY(settings->isVisible());
+            QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSettingsClose")));
+            QTRY_VERIFY(!settings->isVisible() && exit->isVisible() && exit->isEnabled());
+        };
+        closeSettings();
+        // Pressed a few milliseconds after the close: part of a double tap.
+        QTest::lastMouseTimestamp -= QTest::mouseDoubleClickInterval;
+        QVERIFY(click(canvas, exit));
+        QTest::qWait(ui::metrics::contents::exitGuardMilliseconds + 100);
+        QCOMPARE(closed.count(), 0);
+        QVERIFY(host.window());
+        closeSettings();
+        // Pressed half a second after the close, before the guard timer ends.
+        QVERIFY(click(canvas, exit));
+        QTRY_COMPARE_WITH_TIMEOUT(closed.count(), 1, 10000);
     }
 
     void staleSearchReplyIgnored() {
@@ -1433,6 +2018,89 @@ private slots:
         QCOMPARE(status->text(), none);
         auto *row = host.window()->findChild<QPushButton *>("rrSearchResult0");
         QVERIFY(!row || !row->isVisible());
+    }
+
+    void searchHighlightClearsOnReflow_data() {
+        QTest::addColumn<bool>("dark");
+        QTest::addColumn<bool>("layout");
+        QTest::newRow("text-light") << false << false;
+        QTest::newRow("text-dark") << true << false;
+        QTest::newRow("layout-light") << false << true;
+        QTest::newRow("layout-dark") << true << true;
+    }
+    void searchHighlightClearsOnReflow() {
+        QFETCH(bool, dark);
+        QFETCH(bool, layout);
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy());
+        host.session()->setDarkMode(dark);
+        QTRY_VERIFY(!host.session()->busy());
+        QVector<SearchHit> hits;
+        bool searched = false;
+        host.session()->search("reader", [&](SearchBatch batch) {
+            hits += batch.hits;
+            searched = batch.done;
+        });
+        QTRY_VERIFY(searched);
+        QVERIFY(!hits.isEmpty());
+        QVERIFY(clickAt(canvas, QPoint(nativeSize.width() / 2, nativeSize.height() / 2)));
+        QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSearchOpen")));
+        auto *query = host.window()->findChild<QLineEdit *>("rrSearchQuery");
+        auto *status = host.window()->findChild<QLabel *>("rrSearchStatus");
+        QVERIFY(query && status);
+        query->setText("reader");
+        emit query->returnPressed();
+        QTRY_COMPARE(status->text(), strings::get("search_panel.matches").arg(hits.size()));
+        auto *result = host.window()->findChild<QPushButton *>("rrSearchResult0");
+        QTRY_VERIFY(result && result->isVisible());
+        QVERIFY(click(canvas, result));
+        QTRY_VERIFY(!host.session()->busy());
+        bool drained = false;
+        host.session()->pageSummary(host.session()->page(), [&](QString, QString) { drained = true; });
+        QTRY_VERIFY(drained);
+        auto *page = static_cast<ReadingPage *>(host.window()->findChild<QWidget *>("rrPage"));
+        QVERIFY(page);
+        QVector<QRect> rectangles;
+        drained = false;
+        host.session()->rangeRects(hits.first().start, hits.first().end, [&](QVector<QRect> result) {
+            rectangles = result;
+            drained = true;
+        });
+        QTRY_VERIFY(drained);
+        QVERIFY(!rectangles.isEmpty());
+        // Compare page pixels against the same frame with its temporary mark
+        // removed. Opening an unedited panel must keep the original highlight.
+        const auto marked = page->snapshot();
+        page->mark({});
+        QVERIFY(page->snapshot() != marked);
+        page->mark(rectangles);
+        QCOMPARE(page->snapshot(), marked);
+        QVERIFY(clickAt(canvas, QPoint(nativeSize.width() / 2, nativeSize.height() / 2)));
+        auto *tab = host.window()->findChild<QPushButton *>(layout ? "rrNavLayout" : "rrNavText");
+        QVERIFY(click(canvas, tab));
+        QCOMPARE(page->snapshot(), marked);
+        auto *step = layout ? host.window()->findChild<QPushButton *>("rrWider") : sizeStep(host);
+        QTRY_VERIFY(step && step->isVisible() && step->isEnabled());
+        QVERIFY(click(canvas, step));
+        QTRY_VERIFY(inspectReader(host)["preview_ready"].toBool() &&
+                    !inspectReader(host)["preview_busy"].toBool());
+        QVERIFY(page->image.cacheKey() != host.session()->image().cacheKey());
+        const auto preview = page->snapshot();
+        page->mark({});
+        QCOMPARE(page->snapshot(), preview);
+        QVERIFY(click(canvas, tab));
+        QTRY_VERIFY(!host.session()->busy() && !inspectReader(host)["preview_ready"].toBool());
+        const auto applied = page->snapshot();
+        page->mark({});
+        QCOMPARE(page->snapshot(), applied);
     }
 
     void searchSurvivesReflow_data() {
@@ -1569,6 +2237,7 @@ private slots:
                                      : strings::get("search_panel.matches").arg(referenceCount));
     }
 
+#ifndef KOBALT_NO_SENSORS
     void sleepRequestFreezesOrientationBeforeHandoff_data() {
         QTest::addColumn<bool>("handoff");
         QTest::newRow("completed-sleep") << true;
@@ -1663,6 +2332,7 @@ private slots:
         QCOMPARE(painted.first(), Qt::InvertedPortraitOrientation);
     }
 
+#endif
     void closeRestoresOrientationBeforeBackgroundPaint() {
         const auto paths = testPaths();
         QVERIFY(storage::writeJson(paths.preferences(), {{"orientation", int(Qt::InvertedPortraitOrientation)}}));
@@ -1721,6 +2391,150 @@ private slots:
             orientation.start(Qt::PortraitOrientation);
         }
         QCOMPARE(calls.mid(4), QList<int>({-1, int(Qt::LandscapeOrientation), int(Qt::PortraitOrientation), -2}));
+    }
+
+    void closedReaderRetainsSleepScreen_data() {
+        QTest::addColumn<QString>("mode");
+        QTest::addColumn<bool>("dark");
+        for (const auto &mode : {QString("stock"), QString("page"), QString("cover")})
+            for (bool dark : {false, true})
+                QTest::newRow(qPrintable(mode + (dark ? "-dark" : "-light"))) << mode << dark;
+    }
+    void closedReaderRetainsSleepScreen() {
+        QFETCH(QString, mode);
+        QFETCH(bool, dark);
+        const auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.preferences(), {{sleep::preferenceKey, mode}, {"dark_mode", dark}}));
+        auto state = std::make_shared<test::SleepPresentationState>();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        host.configureServices = [state](ReaderHostServices &services) {
+            services.presentation = [state](QWidget *) { return std::make_unique<test::HostPresentation>(state); };
+        };
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(coverBook);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        host.window()->show();
+        QTRY_VERIFY(host.window()->readyForPresentation());
+        bool coverReady = false;
+        host.session()->coverImage({2048, 2048}, [&](QImage) { coverReady = true; });
+        QTRY_VERIFY(coverReady);
+        host.window()->sleepReader();
+        host.window()->sleepViewReady();
+        const auto expected = state->image;
+        host.window()->wakeReader();
+        QTRY_VERIFY(host.window()->readyForPresentation());
+        const auto backdrop = host.window()->powerScreenSnapshot();
+        if (mode != "stock") {
+            QVERIFY(!backdrop.image.isNull());
+            QCOMPARE(backdrop.dark, dark);
+            QCOMPARE(reader::sleepScreenImage(backdrop.image, backdrop.progress, backdrop.remaining, dark,
+                                               -1, reader::SleepStatus::Sleeping, backdrop.dimPage), expected);
+        }
+        host.window()->close();
+        QTRY_COMPARE(state->savedCount, 1);
+        QCOMPARE(state->saved.image, backdrop.image);
+        QCOMPARE(state->saved.dark, backdrop.dark);
+        QCOMPARE(state->saved.mode, sleep::mode({{sleep::preferenceKey, mode}}));
+        QTRY_VERIFY(host.idle());
+        // Destroying the old presentation clears its active view, not the
+        // separate snapshot handed to the host.
+        QCOMPARE(state->saved.image, backdrop.image);
+    }
+    void usbRetainsBackdropBeforeReleasingReader() {
+        const auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.preferences(), {{sleep::preferenceKey, "page"}}));
+        auto state = std::make_shared<test::SleepPresentationState>();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        host.configureServices = [state](ReaderHostServices &services) {
+            services.presentation = [state](QWidget *) { return std::make_unique<test::HostPresentation>(state); };
+        };
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        host.window()->show();
+        QTRY_VERIFY(host.window()->readyForPresentation());
+        const auto expected = host.window()->powerScreenSnapshot();
+        QVERIFY(!expected.image.isNull());
+        bool released = false;
+        host.window()->prepareUsb([&] { released = true; });
+        QTRY_VERIFY(released);
+        QCOMPARE(state->savedCount, 1);
+        QCOMPARE(state->saved.image, expected.image);
+        QCOMPARE(state->saved.progress, expected.progress);
+    }
+    void persistedSleepScreenRejectsStaleAndDamagedFrames() {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const auto path = directory.path() + "/cache/sleep-screen.png";
+        sleep::Snapshot snapshot;
+        snapshot.image = QImage(100, 200, QImage::Format_RGB32);
+        snapshot.image.fill(Qt::darkGray);
+        snapshot.orientation = Qt::InvertedPortraitOrientation;
+        snapshot.progress = "42% read";
+        snapshot.remaining = "37 min to go";
+        snapshot.dark = true;
+        snapshot.mode = sleep::Mode::Page;
+        QVERIFY(storage::writeSleepSnapshot(path, snapshot, "book-stamp"));
+        const auto loaded = storage::readSleepSnapshot(path, "book-stamp", sleep::Mode::Page);
+        QCOMPARE(loaded.image, snapshot.image);
+        QCOMPARE(loaded.orientation, snapshot.orientation);
+        QCOMPARE(loaded.progress, snapshot.progress);
+        QCOMPARE(loaded.remaining, snapshot.remaining);
+        QCOMPARE(loaded.dark, snapshot.dark);
+        QCOMPARE(loaded.percent, -1);
+        snapshot.percent = 42;
+        QVERIFY(storage::writeSleepSnapshot(path, snapshot, "book-stamp"));
+        QCOMPARE(storage::readSleepSnapshot(path, "book-stamp", sleep::Mode::Page).percent, 42);
+        {
+            // Images saved before the percentage was stored still load.
+            QImageWriter writer(path, "png");
+            writer.setText("kobalt", R"({"version":1,"token":"book-stamp","mode":"page","orientation":4,)"
+                                     R"("progress":"42% read","remaining":"","dark":false,"dim":true})");
+            QVERIFY(writer.write(snapshot.image));
+        }
+        const auto older = storage::readSleepSnapshot(path, "book-stamp", sleep::Mode::Page);
+        QCOMPARE(older.image, snapshot.image);
+        QCOMPARE(older.percent, -1);
+        QVERIFY(storage::readSleepSnapshot(path, "other-book", sleep::Mode::Page).image.isNull());
+        QVERIFY(storage::readSleepSnapshot(path, "", sleep::Mode::Page).image.isNull());
+        QVERIFY(storage::readSleepSnapshot(path, "book-stamp", sleep::Mode::Cover).image.isNull());
+        QVERIFY(storage::readSleepSnapshot(path, "book-stamp", sleep::Mode::Stock).image.isNull());
+        snapshot.image = QImage(4096, 4096, QImage::Format_RGB32);
+        QVERIFY(!storage::writeSleepSnapshot(path, snapshot, "book-stamp"));
+        QVERIFY(!storage::readSleepSnapshot(path, "book-stamp", sleep::Mode::Page).image.isNull());
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        QVERIFY(file.write("damaged") > 0);
+        file.close();
+        QVERIFY(storage::readSleepSnapshot(path, "book-stamp", sleep::Mode::Page).image.isNull());
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QVERIFY(file.resize(21 * 1024 * 1024));
+        file.close();
+        QVERIFY(storage::readSleepSnapshot(path, "book-stamp", sleep::Mode::Page).image.isNull());
+    }
+    void homeSleepScreenRequiresUnambiguousLastBook() {
+        const auto name = QStringLiteral("sleep-latest-book-test");
+        {
+            auto database = QSqlDatabase::addDatabase("QSQLITE", name);
+            database.setDatabaseName(":memory:");
+            QVERIFY(database.open());
+            QSqlQuery query(database);
+            QVERIFY(query.exec("CREATE TABLE content (ContentID TEXT, ContentType INTEGER, DateLastRead TEXT)"));
+            QVERIFY(nickel::lastReadBookToken(database).isEmpty());
+            QVERIFY(query.exec("INSERT INTO content VALUES ('first', 6, '2026-10-24T09:00:00Z')"));
+            const auto token = nickel::lastReadBookToken(database, "first");
+            QVERIFY(!token.isEmpty());
+            QCOMPARE(nickel::lastReadBookToken(database), token);
+            QVERIFY(nickel::lastReadBookToken(database, "other").isEmpty());
+            QVERIFY(query.exec("INSERT INTO content VALUES ('second', 6, '2026-10-24T09:00:01Z')"));
+            QVERIFY(nickel::lastReadBookToken(database, "first").isEmpty());
+            QVERIFY(nickel::lastReadBookToken(database) != token);
+            QVERIFY(query.exec("UPDATE content SET DateLastRead = '2026-10-24T09:00:01Z' WHERE ContentID = 'first'"));
+            QVERIFY(nickel::lastReadBookToken(database).isEmpty());
+        }
+        QSqlDatabase::removeDatabase(name);
     }
 
     void customSleepScreenIsOptIn_data() {
@@ -1787,6 +2601,9 @@ private slots:
         ReaderFixture host(paths, testFonts, testPlaceholder);
         // Exercise Kobo's missing native pace, independently of standalone history.
         host.progress = std::make_shared<test::HostProgress>();
+        host.progress->current = {
+            QUrl::fromLocalFile(QFileInfo(hasCover ? coverBook : textBook).absoluteFilePath()).toString(),
+            "OEBPS/c1.xhtml", 100, 1, true};
         host.configureServices = [sleep, supported, chargeState, coverPath](ReaderHostServices &services) {
             services.coverImagePath = coverPath;
             services.battery = [chargeState] {
@@ -1829,7 +2646,7 @@ private slots:
         const auto status = chargeState == 2   ? reader::SleepStatus::Charged
                             : chargeState == 1 ? reader::SleepStatus::Charging
                                                : reader::SleepStatus::Sleeping;
-        const int percent = qBound(0, int(100.0 * host.session()->page() / qMax(1, host.session()->pages())), 100);
+        const int percent = pageProgressPercent(host.session()->page(), host.session()->pages());
         // This profile has no native reading pace and has not made forward turns.
         const auto expected = reader::sleepScreenImage(background, strings::get("sleep.percent_read").arg(percent), {},
                                                        dark, 67, status, !useCover);
@@ -1857,18 +2674,27 @@ private slots:
     void sleepScreenUpdatesWhilePluggedIn_data() {
         QTest::addColumn<QString>("mode");
         QTest::addColumn<bool>("dark");
+        QTest::addColumn<QString>("tile");
         for (const auto &mode : {QString("stock"), QString("page"), QString("cover")}) {
-            QTest::newRow(qPrintable(mode + "-light")) << mode << false;
-            QTest::newRow(qPrintable(mode + "-dark")) << mode << true;
+            QTest::newRow(qPrintable(mode + "-light")) << mode << false << QString();
+            QTest::newRow(qPrintable(mode + "-dark")) << mode << true << QString();
+        }
+        for (const auto &tile : {QString("band"), QString("bookmark")}) {
+            QTest::newRow(qPrintable("page-" + tile + "-light")) << QString("page") << false << tile;
+            QTest::newRow(qPrintable("cover-" + tile + "-dark")) << QString("cover") << true << tile;
         }
     }
     void sleepScreenUpdatesWhilePluggedIn() {
         QFETCH(QString, mode);
         QFETCH(bool, dark);
+        QFETCH(QString, tile);
         QTemporaryDir directory;
         QVERIFY(directory.isValid());
         storage::Paths paths{directory.path()};
-        QVERIFY(storage::writeJson(paths.preferences(), {{sleep::preferenceKey, mode}, {"dark_mode", dark}}));
+        QJsonObject preferences{{sleep::preferenceKey, mode}, {"dark_mode", dark}};
+        if (!tile.isEmpty())
+            preferences[sleep::tileKey] = tile;
+        QVERIFY(storage::writeJson(paths.preferences(), preferences));
         auto state = std::make_shared<test::SleepPresentationState>();
         BatteryStatus battery{66, false, false};
         std::function<void()> changed;
@@ -1914,13 +2740,19 @@ private slots:
         QCOMPARE(state->presented, 1);
         const auto initial = state->image;
         QVERIFY(!initial.isNull());
+        // A point on the page that the selected tile does not cover.
+        const QPoint outside = tile == "bookmark" ? QPoint(100, 200) : QPoint(1000, 200);
         battery.percent = 68;
         changed();
         QCOMPARE(state->updated, 1);
         QVERIFY(state->image != initial);
-        QCOMPARE(state->image.pixel(1000, 200), initial.pixel(1000, 200));
+        QCOMPARE(state->image.pixel(outside), initial.pixel(outside));
         QVERIFY(!state->damage.isEmpty());
-        QVERIFY(!state->damage.contains(QPoint(1000, 200)));
+        QVERIFY(!state->damage.contains(outside));
+        if (!tile.isEmpty()) {
+            // These tiles keep one area whether or not a time estimate is shown.
+            QCOMPARE(state->damage, reader::sleepScreenCardRect(initial.size(), false, sleep::tile(preferences)));
+        }
         const auto charging = state->image;
         changed();
         QCOMPARE(state->updated, 1);
@@ -1933,7 +2765,7 @@ private slots:
         changed();
         QCOMPARE(state->updated, 3);
         QVERIFY(state->image != charged);
-        QCOMPARE(state->image.pixel(1000, 200), initial.pixel(1000, 200));
+        QCOMPARE(state->image.pixel(outside), initial.pixel(outside));
         const auto unplugged = state->image;
         battery.percent = 20;
         changed();
@@ -1988,6 +2820,69 @@ private slots:
         QCOMPARE(reader::sleepStatusText(reader::SleepStatus::Sleeping), QString("Sleeping"));
         QCOMPARE(reader::sleepStatusText(reader::SleepStatus::Charging), QString("Charging"));
         QCOMPARE(reader::sleepStatusText(reader::SleepStatus::Charged), QString("Charged"));
+        ui::setDensity(previous);
+    }
+
+    void sleepTilesRepaintOnlyTheirArea_data() {
+        QTest::addColumn<int>("ppi");
+        QTest::addColumn<bool>("dark");
+        QTest::addColumn<int>("tileIndex");
+        for (const int ppi : {212, 300}) {
+            for (const auto tile : sleep::tiles) {
+                const auto name = QString::number(ppi) + "-" + sleep::value(tile);
+                QTest::newRow(qPrintable(name + "-light")) << ppi << false << int(tile);
+                QTest::newRow(qPrintable(name + "-dark")) << ppi << true << int(tile);
+            }
+        }
+    }
+    void sleepTilesRepaintOnlyTheirArea() {
+        QFETCH(int, ppi);
+        QFETCH(bool, dark);
+        QFETCH(int, tileIndex);
+        const auto tile = sleep::Tile(tileIndex);
+        const int previous = ui::density();
+        ui::setDensity(ppi);
+        for (const QSize size : {QSize(1072, 1448), QSize(1448, 1072)}) {
+            QImage page(size, QImage::Format_RGB32);
+            page.fill(QColor(150, 150, 150));
+            const auto paint = [&](const QImage &background, reader::SleepStatus status, bool dim, int percent = 42) {
+                return reader::sleepScreenImage(background, "42% read", "3 h 37 min to go", dark, 67, status, dim, tile,
+                                                percent);
+            };
+            const auto area = reader::sleepScreenCardRect(size, true, tile);
+            QVERIFY(QRect(QPoint(), size).contains(area));
+            const auto sleeping = paint(page, reader::SleepStatus::Sleeping, true);
+            const auto charging = paint(page, reader::SleepStatus::Charging, true);
+            const auto poweredOff = paint(page, reader::SleepStatus::PoweredOff, true);
+            QVERIFY(sleeping != charging);
+            QVERIFY(sleeping != poweredOff);
+            // A battery update refreshes only the tile's area, so nothing outside it may change.
+            for (int y = 0; y < size.height(); ++y) {
+                for (int x = 0; x < size.width(); ++x) {
+                    if (!area.contains(x, y) && charging.pixel(x, y) != sleeping.pixel(x, y))
+                        QFAIL(qPrintable(QString("tile changed %1,%2 outside its area").arg(x).arg(y)));
+                }
+            }
+            // A battery update paints over the retained frame and must give the
+            // same pixels as painting the new status once.
+            QCOMPARE(paint(charging, reader::SleepStatus::Sleeping, false), sleeping);
+            QCOMPARE(paint(sleeping, reader::SleepStatus::Charging, false), charging);
+            if (tile == sleep::Tile::Card)
+                QCOMPARE(paint(page, reader::SleepStatus::Sleeping, true, 90), sleeping);
+            else
+                QVERIFY(paint(page, reader::SleepStatus::Sleeping, true, 90) != sleeping);
+            // Snapshots saved without a percentage still paint.
+            QVERIFY(!paint(page, reader::SleepStatus::Sleeping, true, -1).isNull());
+            const auto capture = qEnvironmentVariable("KOBALT_SLEEP_TILE_CAPTURE_ROOT");
+            if (!capture.isEmpty()) {
+                QVERIFY(QDir().mkpath(capture));
+                const auto name = QString("%1/%2-%3-%4-%5").arg(capture, sleep::value(tile)).arg(ppi)
+                                      .arg(dark ? "dark" : "light").arg(size.width() > size.height() ? "landscape" : "portrait");
+                QVERIFY(sleeping.save(name + "-sleeping.png"));
+                QVERIFY(charging.save(name + "-charging.png"));
+                QVERIFY(poweredOff.save(name + "-powered-off.png"));
+            }
+        }
         ui::setDensity(previous);
     }
 
@@ -2101,6 +2996,16 @@ private slots:
         for (const auto &invalid : {QJsonValue("unknown"), QJsonValue(true), QJsonValue(QJsonValue::Null)}) {
             QCOMPARE(sleep::mode({{sleep::preferenceKey, invalid}, {"kobalt_sleep_screen", true}}), sleep::Mode::Stock);
         }
+        QCOMPARE(sleep::tile({}), sleep::Tile::Card);
+        for (const auto tile : sleep::tiles) {
+            QCOMPARE(sleep::tile({{sleep::tileKey, sleep::value(tile)}}), tile);
+            QCOMPARE(appearance::cleanPreferences({{sleep::tileKey, sleep::value(tile)}}).value(sleep::tileKey),
+                     QJsonValue(sleep::value(tile)));
+        }
+        for (const auto &invalid : {QJsonValue("unknown"), QJsonValue(true), QJsonValue(QJsonValue::Null)}) {
+            QCOMPARE(sleep::tile({{sleep::tileKey, invalid}}), sleep::Tile::Card);
+            QVERIFY(!appearance::cleanPreferences({{sleep::tileKey, invalid}}).contains(sleep::tileKey));
+        }
     }
 
     void sleepCoverFitsWithoutCroppingOrDimming() {
@@ -2150,6 +3055,35 @@ private slots:
         QCOMPARE(cover.size(), QSize(60, 30));
         QVERIFY(qGreen(cover.pixel(5, 5)) > qBlue(cover.pixel(5, 5)));
         QVERIFY(qBlue(cover.pixel(55, 5)) > qGreen(cover.pixel(55, 5)));
+        QTemporaryDir nativeCover;
+        QVERIFY(nativeCover.isValid());
+        const auto nativePath = nativeCover.path() + "/native.png";
+        QImage nativeImage(40, 60, QImage::Format_RGB32);
+        nativeImage.fill(Qt::red);
+        QVERIFY(nativeImage.save(nativePath));
+        QFileInfo provenance;
+        bool nativeDone = false;
+        host.session()->coverImage({2048, 2048}, [&](QImage image, QFileInfo source) {
+            cover = std::move(image);
+            provenance = std::move(source);
+            nativeDone = true;
+        }, nativePath);
+        QTRY_VERIFY(nativeDone);
+        QCOMPARE(cover.size(), nativeImage.size());
+        QCOMPARE(provenance.absoluteFilePath(), nativePath);
+        QFile corrupt(nativePath);
+        QVERIFY(corrupt.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        corrupt.write("broken PNG");
+        corrupt.close();
+        nativeDone = false;
+        host.session()->coverImage({2048, 2048}, [&](QImage image, QFileInfo source) {
+            cover = std::move(image);
+            provenance = std::move(source);
+            nativeDone = true;
+        }, nativePath);
+        QTRY_VERIFY(nativeDone);
+        QVERIFY(!cover.isNull());
+        QVERIFY(provenance.filePath().isEmpty());
         host.session()->coverImage({4096, 4096}, [&](QImage image) {
             cover = std::move(image);
             ++completed;
@@ -2165,6 +3099,98 @@ private slots:
         QVERIFY(cover.isNull());
     }
 
+    void wifiStatus_data() {
+        QTest::addColumn<bool>("dark");
+        QTest::addColumn<int>("ppi");
+        for (const bool dark : {false, true})
+            for (const int ppi : {300, 212})
+                QTest::newRow(qPrintable(QString("%1-%2").arg(dark ? "dark" : "light").arg(ppi))) << dark << ppi;
+    }
+    void wifiStatus() {
+        QFETCH(bool, dark);
+        QFETCH(int, ppi);
+        const int previousDensity = ui::density();
+        struct Restore { int density; ~Restore() { ui::setDensity(density); } } restore{previousDensity};
+        ui::setDensity(ppi);
+        auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.preferences(), {{"dark_mode", dark}}));
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        std::function<void(WifiStatus)> wifiChanged;
+        std::function<void(bool)> bluetoothChanged;
+        host.configureServices = [&](ReaderHostServices &services) {
+            services.observeWifi = [&](QObject *, std::function<void(WifiStatus)> changed) {
+                wifiChanged = changed;
+                changed({true, true, 4});
+            };
+            services.observeBluetooth = [&](QObject *, std::function<void(bool)> changed) {
+                bluetoothChanged = changed;
+                changed(true);
+            };
+        };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy());
+        QVERIFY(clickAt(canvas, QPoint(nativeSize.width() / 2, nativeSize.height() / 2)));
+        auto *wifi = host.window()->findChild<QWidget *>("rrMenuWifi");
+        auto *bluetooth = host.window()->findChild<QWidget *>("rrMenuBluetooth");
+        auto *battery = host.window()->findChild<QWidget *>("rrMenuBattery");
+        QVERIFY(wifi && bluetooth && battery);
+        QTRY_VERIFY(wifi->isVisible() && bluetooth->isVisible());
+        QVERIFY(wifi->geometry().right() < bluetooth->x());
+        QVERIFY(bluetooth->geometry().right() < battery->x());
+        QVERIFY(wifi->accessibleName().contains("4 of 4"));
+        const auto strong = wifi->grab().toImage();
+        const auto inkBounds = [dark](const QImage &image) {
+            QRect bounds;
+            for (int y = 0; y < image.height(); ++y)
+                for (int x = 0; x < image.width(); ++x) {
+                    const auto color = image.pixelColor(x, y);
+                    const int ink = dark ? qGray(color.rgb()) : 255 - qGray(color.rgb());
+                    if (ink > 0 && color.alpha() > 0) bounds |= QRect(x, y, 1, 1);
+                }
+            return bounds;
+        };
+        const auto wifiInk = inkBounds(strong);
+        const auto bluetoothInk = inkBounds(bluetooth->grab().toImage());
+        QVERIFY(qAbs(wifiInk.height() - 0.9 * bluetoothInk.height()) <= 1);
+        QVERIFY(qAbs(QRectF(wifiInk).center().y() - QRectF(bluetoothInk).center().y() + ui::px(1)) <= 0.5);
+        const auto capture = qEnvironmentVariable("KOBALT_WIFI_CAPTURE_DIR");
+        if (!capture.isEmpty()) {
+            QVERIFY(QDir().mkpath(capture));
+            QVERIFY(host.window()->grab().save(capture + QString("/wifi-%1-%2.png").arg(dark ? "dark" : "light").arg(ppi)));
+            QVERIFY(host.window()->grab(QRect(0, 0, host.window()->width(), ui::px(60))).save(
+                capture + QString("/wifi-statusbar-%1-%2.png").arg(dark ? "dark" : "light").arg(ppi)));
+        }
+        wifiChanged({true, true, 1});
+        QVERIFY(wifi->accessibleName().contains("1 of 4"));
+        QVERIFY(strong != wifi->grab().toImage());
+        wifiChanged({true, true, 4});
+        const int withBluetooth = wifi->x();
+        const auto bluetoothSlot = QRectF(bluetooth->geometry()).center().x();
+        bluetoothChanged(false);
+        QTRY_VERIFY(!bluetooth->isVisible());
+        QVERIFY(wifi->x() > withBluetooth);
+        QCOMPARE(QRectF(wifi->geometry()).center().x(), bluetoothSlot);
+        if (!capture.isEmpty())
+            QVERIFY(host.window()->grab(QRect(0, 0, host.window()->width(), ui::px(60))).save(
+                capture + QString("/wifi-only-statusbar-%1-%2.png").arg(dark ? "dark" : "light").arg(ppi)));
+        wifiChanged({true, false, -1});
+        QTRY_VERIFY(!wifi->isVisible());
+        wifiChanged({true, true, -1});
+        QTRY_VERIFY(!wifi->isVisible());
+        wifiChanged({true, true, 0});
+        QTRY_VERIFY(!wifi->isVisible());
+        wifiChanged({true, true, 1});
+        QTRY_VERIFY(wifi->isVisible());
+        wifiChanged({false, false, -1});
+        QTRY_VERIFY(!wifi->isVisible());
+    }
     void remoteKeyActivityRequiresActiveReading() {
         ReaderFixture host(testPaths(), testFonts, testPlaceholder);
         CloseHost cleanup{host};
@@ -2289,18 +3315,787 @@ private slots:
         }
     }
 
-    void nativeProgressAutosave_data() {
-        QTest::addColumn<bool>("sleep");
-        QTest::addColumn<QString>("outcome");
-        for (const bool sleep : {false, true}) {
-            for (const auto *outcome : {"saved", "newer", "failed"}) {
-                const auto name = QString("%1-%2").arg(sleep ? "sleep" : "background", outcome);
-                QTest::newRow(qPrintable(name)) << sleep << QString::fromLatin1(outcome);
+    void kosyncAccountGating_data() {
+        QTest::addColumn<QString>("account");
+        for (const auto *name : {"missing", "signed-out", "not-authenticated", "malformed", "future-account",
+                                 "automatic-off", "logout"})
+            QTest::newRow(name) << QString::fromLatin1(name);
+    }
+    void kosyncAccountGating() {
+        QFETCH(QString, account);
+        QTcpServer server;
+        QVERIFY(server.listen(QHostAddress::LocalHost));
+        QSignalSpy attempts(&server, &QTcpServer::newConnection);
+        const auto paths = testPaths();
+        if (account != "missing") {
+            const bool authenticated = account == "automatic-off" || account == "logout";
+            QVERIFY(storage::writeJson(paths.syncAccount(), {
+                {"schema", account == "future-account" ? 2 : 1},
+                {"server", QString("https://127.0.0.1:%1").arg(server.serverPort())},
+                {"username", account == "signed-out" ? QString() : QStringLiteral("reader")},
+                {"key", authenticated ? QString(32, 'a') : account == "malformed" ? QStringLiteral("invalid") : QString()},
+                {"device_id", "test-device"}, {"automatic", account != "automatic-off"}}));
+        }
+        const auto accountBytes = [&] {
+            QFile file(paths.syncAccount());
+            return file.open(QIODevice::ReadOnly) ? file.readAll() : QByteArray();
+        };
+        const auto original = accountBytes();
+        auto network = std::make_shared<SyncNetworkState>();
+        int factories = 0;
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        host.configureServices = [&](ReaderHostServices &services) {
+            services.syncNetwork = [&] {
+                ++factories;
+                return std::make_unique<TestSyncNetwork>(network);
+            };
+        };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        auto *timer = host.window()->findChild<QTimer *>("rrKosyncTimer");
+        QVERIFY(timer);
+        auto *manual = host.window()->findChild<QPushButton *>("rrKosyncManual");
+        QVERIFY(manual);
+        QCOMPARE(!manual->isHidden(), account == "automatic-off");
+        if (account == "logout") {
+            QVERIFY(timer->isActive());
+            auto *automatic = host.window()->findChild<QCheckBox *>("rrKosyncAutomatic");
+            QVERIFY(automatic && automatic->isChecked() && automatic->isEnabled());
+            automatic->click();
+            QVERIFY(!timer->isActive());
+            QVERIFY(!manual->isHidden());
+            automatic->click();
+            QVERIFY(timer->isActive());
+            QVERIFY(manual->isHidden());
+            auto *logout = host.window()->findChild<QPushButton *>("rrKosyncLogout");
+            QVERIFY(logout && logout->isEnabled());
+            logout->click();
+            QVERIFY(!kosync::Client(paths.syncAccount()).signedIn());
+            QVERIFY(manual->isHidden());
+        }
+        QVERIFY2(!timer->isActive(), "Inactive accounts must not schedule periodic sync work");
+        QCOMPARE(factories, account == "automatic-off" || account == "logout" ? 1 : 0);
+        bool presented = false;
+        host.window()->preparePresentation([&](bool ready) { presented = ready; });
+        QVERIFY(presented);
+        QVERIFY(!host.window()->findChild<QWidget *>("rrKosyncOpening"));
+        QVERIFY(QMetaObject::invokeMethod(timer, "timeout", Qt::DirectConnection));
+        QCOMPARE(network->requests, 0);
+        QCOMPARE(attempts.count(), 0);
+        QVERIFY(host.session()->turn(1));
+        QTRY_VERIFY(!host.session()->busy());
+        host.shutdown();
+        QTRY_VERIFY_WITH_TIMEOUT(host.idle(), 10000);
+        QCOMPARE(network->requests, 0);
+        QCOMPARE(attempts.count(), 0);
+        if (account != "logout") QCOMPARE(accountBytes(), original);
+    }
+    void kosyncOpening_data() {
+        QTest::addColumn<bool>("skip");
+        QTest::newRow("cancel-sync") << true;
+        QTest::newRow("offline-deadline") << false;
+    }
+    void kosyncOpening() {
+        QFETCH(bool, skip);
+        QTcpServer stalled;
+        QVERIFY(stalled.listen(QHostAddress::LocalHost));
+        QSignalSpy attempts(&stalled, &QTcpServer::newConnection);
+        auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.syncAccount(), {
+            {"schema", 1}, {"server", QString("https://127.0.0.1:%1").arg(stalled.serverPort())},
+            {"username", "test-reader"}, {"key", QString(32, 'a')},
+            {"device_id", "test-device"}, {"automatic", true}}));
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        const auto capture = qEnvironmentVariable("KOBALT_KOSYNC_CAPTURE");
+        host.open(capture.isEmpty() ? textBook : fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        bool prepared = false;
+        QElapsedTimer openingSync;
+        openingSync.start();
+        qint64 presentedAt = -1;
+        host.window()->preparePresentation([&](bool ready) {
+            presentedAt = openingSync.elapsed();
+            prepared = ready;
+        });
+        QVERIFY(!prepared);
+        QVERIFY(!host.window()->isVisible());
+        QVERIFY(!host.window()->findChild<QWidget *>("rrKosyncOpening"));
+        QTRY_VERIFY_WITH_TIMEOUT(prepared, 1500);
+        QVERIFY2(presentedAt >= 450 && presentedAt < 1700,
+                 qPrintable(QString("Opening presentation took %1 ms").arg(presentedAt)));
+        QVERIFY(attempts.count() > 0);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(host.window()->findChild<QWidget *>("rrKosyncOpening"));
+        QPointer<QWidget> popup = host.window()->findChild<QWidget *>("rrKosyncOpening");
+        QTRY_VERIFY(popup->isVisible());
+        QTRY_VERIFY(attempts.count() > 0);
+        const auto before = host.session()->state().value("position").toString();
+        const auto page = host.session()->page();
+        host.window()->pageButton(1);
+        QCOMPARE(host.session()->page(), page);
+        QVERIFY(!host.session()->busy());
+        auto *button = popup->findChild<QPushButton *>("rrKosyncCancel");
+        QVERIFY(button && button->isVisible());
+        QCOMPARE(button->text(), QString("Cancel sync"));
+        auto *icon = popup->findChild<QLabel *>("rrKosyncStatusIcon");
+        QVERIFY(icon && icon->isVisible() && !icon->pixmap().isNull());
+        QVERIFY(icon->parentWidget() == popup->findChild<QLabel *>("rrModalTitle")->parentWidget());
+        QVERIFY(!button->font().bold());
+        QVERIFY(popup->findChild<QLabel *>("rrModalDescription")->text().contains("Kobalt is syncing your progress"));
+        if (!capture.isEmpty()) QVERIFY(host.window()->grab().save(capture));
+        if (skip) {
+            QVERIFY(click(canvas, button));
+            QTRY_VERIFY(!popup || !popup->isVisible());
+        } else {
+            QTRY_VERIFY_WITH_TIMEOUT(!popup || !popup->isVisible(), 12000);
+        }
+        QCOMPARE(host.session()->state().value("position").toString(), before);
+        host.window()->pageButton(1);
+        QTRY_VERIFY(!host.session()->busy() && host.session()->page() > page);
+    }
+    void kosyncPasswordSleep() {
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        host.window()->findChild<QPushButton *>("rrSettings")->click();
+        host.window()->findChild<QPushButton *>("rrSettingsKosync")->click();
+        host.window()->findChild<QPushButton *>("rrKosyncPassword")->click();
+        QPointer<QLineEdit> input = host.window()->findChild<QLineEdit *>("rrKosyncInput");
+        QVERIFY(input);
+        input->setText("unfinished-password");
+        host.window()->findChild<QPushButton *>("rrKosyncPasswordReveal")->click();
+        QCOMPARE(input->echoMode(), QLineEdit::Normal);
+        host.window()->sleepReader();
+        QTRY_VERIFY(!input || !input->isVisible());
+        QVERIFY(!input || input->echoMode() == QLineEdit::Password);
+        host.window()->sleepViewReady();
+        host.window()->wakeReader();
+        QTRY_VERIFY(!host.window()->findChild<QLineEdit *>("rrKosyncInput"));
+        auto *settings = host.window()->findChild<QWidget *>("rrGeneralSettings");
+        if (!settings->isVisible())
+            host.window()->findChild<QPushButton *>("rrSettings")->click();
+        host.window()->findChild<QPushButton *>("rrSettingsKosync")->click();
+        host.window()->findChild<QPushButton *>("rrKosyncPassword")->click();
+        input = host.window()->findChild<QLineEdit *>("rrKosyncInput");
+        QVERIFY(input);
+        QCOMPARE(input->echoMode(), QLineEdit::Password);
+        QVERIFY(input->text().isEmpty());
+    }
+    void kosyncManualToolbar() {
+        const auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.syncAccount(), {
+            {"schema", 1}, {"server", "https://127.0.0.1:1"},
+            {"username", "test-reader"}, {"key", QString(32, 'a')},
+            {"device_id", "test-device"}, {"automatic", false}}));
+        auto network = std::make_shared<SyncNetworkState>();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        host.configureServices = [network](ReaderHostServices &services) {
+            services.syncNetwork = [network] { return std::make_unique<TestSyncNetwork>(network); };
+        };
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        auto *window = host.window();
+        auto *manual = window->findChild<QPushButton *>("rrKosyncManual");
+        QVERIFY(manual && !manual->isHidden());
+        manual->click();
+        QPointer<QWidget> prompt = window->findChild<QWidget *>("rrKosyncManualPrompt");
+        QVERIFY(prompt && prompt->isVisible());
+        QCOMPARE(network->requests, 0);
+        prompt->findChild<QPushButton *>("rrKosyncManualCancel")->click();
+        QVERIFY(!prompt || !prompt->isVisible());
+        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+        QVERIFY(kosync::Client(paths.syncAccount()).manualExplanation());
+        manual->click();
+        prompt = window->findChild<QWidget *>("rrKosyncManualPrompt");
+        QVERIFY(prompt && prompt->isVisible());
+        prompt->findChild<QPushButton *>("rrKosyncManualConfirm")->click();
+        QCOMPARE(network->requests, 1);
+        QVERIFY(network->interactive);
+        QVERIFY(!kosync::Client(paths.syncAccount()).manualExplanation());
+        QVERIFY(!manual->isEnabled());
+        auto complete = std::move(network->completed);
+        complete(false);
+        QVERIFY(manual->isEnabled());
+        auto *page = static_cast<ReadingPage *>(window->findChild<QWidget *>("rrPage"));
+        QCOMPARE(page->notice, strings::get("kosync.network_error"));
+        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+        manual->click();
+        QCOMPARE(network->requests, 2);
+        QVERIFY(!window->findChild<QWidget *>("rrKosyncManualPrompt"));
+        complete = std::move(network->completed);
+        complete(false);
+        window->sleepReader();
+        QCOMPARE(network->requests, 2);
+        QVERIFY(!kosync::Client(paths.syncAccount()).manualExplanation());
+    }
+    void kosyncManualConnection_data() {
+        QTest::addColumn<QString>("connection");
+        for (const auto *connection : {"permission", "connected", "desktop"})
+            QTest::newRow(connection) << QString::fromLatin1(connection);
+    }
+    void kosyncManualConnection() {
+        QFETCH(QString, connection);
+        QTcpServer stalled;
+        QVERIFY(stalled.listen(QHostAddress::LocalHost));
+        QSignalSpy attempts(&stalled, &QTcpServer::newConnection);
+        auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.syncAccount(), {
+            {"schema", 1}, {"server", QString("https://127.0.0.1:%1").arg(stalled.serverPort())},
+            {"username", "test-reader"}, {"key", QString(32, 'a')},
+            {"device_id", "test-device"}, {"automatic", false}}));
+        auto network = std::make_shared<SyncNetworkState>();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        if (connection != "desktop")
+            host.configureServices = [network](ReaderHostServices &services) {
+                services.syncNetwork = [network] { return std::make_unique<TestSyncNetwork>(network); };
+            };
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        host.window()->findChild<QPushButton *>("rrSettings")->click();
+        host.window()->findChild<QPushButton *>("rrSettingsKosync")->click();
+        auto *settings = host.window()->findChild<QWidget *>("rrGeneralSettings");
+        QTRY_VERIFY(settings->isVisible());
+        QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrKosyncNow")));
+        if (connection != "desktop") {
+            QCOMPARE(network->requests, 1);
+            QVERIFY(network->interactive);
+            QVERIFY(!host.window()->findChild<QWidget *>("rrKosyncOpening"));
+            QEventLoop permission;
+            QTimer::singleShot(connection == "permission" ? 11200 : 100, &permission, &QEventLoop::quit);
+            permission.exec();
+            QVERIFY(bool(network->completed));
+            QVERIFY(!host.window()->findChild<QPushButton *>("rrKosyncServer")->isEnabled());
+            QCOMPARE(network->cancellations, 0);
+            QCOMPARE(attempts.count(), 0);
+            auto completed = std::move(network->completed);
+            network->completed = {};
+            network->connected = connection == "connected";
+            completed(network->connected);
+        }
+        if (connection != "permission") {
+            QPointer<QWidget> popup = host.window()->findChild<QWidget *>("rrKosyncOpening");
+            QVERIFY(popup && popup->isVisible());
+            QTRY_VERIFY(attempts.count() > 0);
+            const auto capture = qEnvironmentVariable("KOBALT_KOSYNC_MANUAL_CAPTURE");
+            if (!capture.isEmpty() && connection == "connected") QVERIFY(host.window()->grab().save(capture));
+            const auto page = host.session()->page();
+            host.window()->pageButton(1);
+            QCOMPARE(host.session()->page(), page);
+            auto *cancel = popup->findChild<QPushButton *>("rrKosyncCancel");
+            QVERIFY(cancel && click(canvas, cancel));
+            QTRY_VERIFY(!popup || !popup->isVisible());
+            const auto count = attempts.count();
+            QTest::qWait(600);
+            QCOMPARE(attempts.count(), count);
+            QCOMPARE(host.window()->findChild<QLabel *>("rrKosyncStatus")->text(), strings::get("kosync.skipped"));
+        }
+        QVERIFY(settings->isVisible());
+        QVERIFY(host.window()->findChild<QPushButton *>("rrKosyncServer")->isEnabled());
+        QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSettingsClose")));
+        QTRY_VERIFY(!settings->isVisible());
+    }
+    void kosyncNetwork_data() {
+        QTest::addColumn<QString>("scenario");
+        for (const auto *scenario : {"cancel", "deadline", "ready", "sleep", "login"})
+            QTest::newRow(scenario) << QString::fromLatin1(scenario);
+    }
+    void kosyncNetwork() {
+        QFETCH(QString, scenario);
+        verifyKosyncNetwork(scenario);
+    }
+    void kosyncFinal_data() {
+        QTest::addColumn<QString>("transition");
+        QTest::addColumn<bool>("inFlight");
+        QTest::newRow("close") << "close" << false;
+        QTest::newRow("sleep") << "sleep" << false;
+        QTest::newRow("close-during-opening") << "close" << true;
+        QTest::newRow("sleep-during-opening") << "sleep" << true;
+        QTest::newRow("wake-during-final") << "wake" << false;
+        QTest::newRow("busy-event-loop") << "blocked" << false;
+        if (!qEnvironmentVariableIsEmpty("KOBALT_KOSYNC_TEST_SERVER")) {
+            QTest::newRow("https-close") << "https-close" << false;
+            QTest::newRow("https-sleep") << "https-sleep" << false;
+            QTest::newRow("https-filename-close") << "https-filename-close" << false;
+            QTest::newRow("https-filename-sleep") << "https-filename-sleep" << false;
+            QTest::newRow("https-wake-recovery") << "https-wake-recovery" << false;
+            for (const auto *state : {"handoff", "busy", "cancel", "deadline", "sleep"}) {
+                const auto name = QByteArray("https-manual-") + state;
+                QTest::newRow(name.constData()) << QString::fromLatin1(name) << false;
+            }
+            QTest::newRow("https-switch-close") << "https-switch-close" << false;
+            for (const auto *decision : {"keep", "resume", "dismiss", "invalid"}) {
+                const auto name = QByteArray("https-choice-") + decision;
+                QTest::newRow(name.constData()) << QString::fromLatin1(name) << false;
             }
         }
     }
-    void nativeProgressAutosave() {
-        QFETCH(bool, sleep);
+    void kosyncFinal() {
+        QFETCH(QString, transition);
+        QFETCH(bool, inFlight);
+        const bool live = transition.startsWith("https-");
+        if (live) transition.remove(0, 6);
+        if (live && transition == "wake-recovery") { verifyKosyncWakeRecovery(); return; }
+        if (live && transition.startsWith("manual-")) { verifyKosyncManualHandoff(transition.mid(7)); return; }
+        if (live && transition.startsWith("choice-")) {
+            verifyKosyncChoice(transition.mid(7));
+            return;
+        }
+        bool filename = transition.startsWith("filename-");
+        const bool switchMatching = transition.startsWith("switch-");
+        if (switchMatching) transition.remove(0, 7);
+        if (filename) transition.remove(0, 9);
+        QTcpServer stalled;
+        if (!live) QVERIFY(stalled.listen(QHostAddress::LocalHost));
+        QSignalSpy attempts(&stalled, &QTcpServer::newConnection);
+        auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.syncAccount(), {
+            {"schema", 1}, {"server", live ? qEnvironmentVariable("KOBALT_KOSYNC_TEST_SERVER")
+                                          : QString("https://127.0.0.1:%1").arg(stalled.serverPort())},
+            {"username", live ? qEnvironmentVariable("KOBALT_KOSYNC_TEST_USER") : QString("test-reader")},
+            {"key", QString(32, 'a')},
+            {"device_id", "test-device"}, {"automatic", true},
+            {"match_method", filename ? "filename" : "binary"}}));
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        if (live) {
+            bool prepared = false;
+            host.window()->preparePresentation([&](bool ready) { prepared = ready; });
+            QTRY_VERIFY_WITH_TIMEOUT(prepared, 1500);
+            QVERIFY(!host.window()->findChild<QWidget *>("rrKosyncOpening"));
+        }
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        if (live) {
+            auto *status = host.window()->findChild<QLabel *>("rrKosyncStatus");
+            QVERIFY(status);
+            QTRY_COMPARE_WITH_TIMEOUT(status->text(), strings::get("kosync.up_to_date"), 12000);
+            QVERIFY(kosync::Client(paths.syncAccount()).lastSync().isValid());
+            auto *timer = host.window()->findChild<QTimer *>("rrKosyncTimer");
+            QVERIFY(timer);
+            status->setText("unchanged position");
+            QVERIFY(QMetaObject::invokeMethod(timer, "timeout", Qt::DirectConnection));
+            QCOMPARE(status->text(), QString("unchanged position"));
+            QVERIFY(host.session()->go(1));
+            QTRY_VERIFY(!host.session()->busy());
+            QVERIFY(QMetaObject::invokeMethod(timer, "timeout", Qt::DirectConnection));
+            QCOMPARE(status->text(), strings::get("kosync.syncing"));
+            QTRY_COMPARE_WITH_TIMEOUT(status->text(), strings::get("kosync.up_to_date"), 12000);
+            if (switchMatching) {
+                auto *matching = host.window()->findChild<QPushButton *>("rrKosyncMatching");
+                QVERIFY(matching);
+                matching->click();
+                auto *option = host.window()->findChild<QAbstractButton *>("rrKosyncFilename");
+                QVERIFY(option);
+                option->click();
+                QCOMPARE(status->text(), strings::get("kosync.matching_changed"));
+                QVERIFY(!kosync::Client(paths.syncAccount()).lastSync().isValid());
+                auto *sync = host.window()->findChild<QPushButton *>("rrKosyncNow");
+                QVERIFY(sync);
+                sync->click();
+                QTRY_COMPARE_WITH_TIMEOUT(status->text(), strings::get("kosync.up_to_date"), 12000);
+                filename = true;
+            }
+        } else {
+            QTRY_VERIFY(host.window()->findChild<QWidget *>("rrKosyncOpening"));
+            QTRY_VERIFY(attempts.count() > 0);
+        }
+        if (!inFlight) {
+            if (!live) QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrKosyncCancel")));
+            QVERIFY(host.session()->go(1));
+            QTRY_VERIFY(!host.session()->busy());
+        }
+        const auto document = filename ? host.session()->syncFilenameDigest() : host.session()->syncDigest();
+        const auto position = host.session()->state().value("position").toString();
+        const auto identity = QUrl::fromLocalFile(QFileInfo(textBook).absoluteFilePath()).toString();
+        const int openingAttempts = attempts.count();
+        QElapsedTimer elapsed;
+        elapsed.start();
+        QPointer<ReaderWindow> window = host.window();
+        if (transition == "close") window->close();
+        else window->sleepReader();
+        if (!live) QTRY_VERIFY(window && window->pendingNetworkSync());
+        if (!live && !inFlight) QTRY_VERIFY_WITH_TIMEOUT(attempts.count() > openingAttempts, 1500);
+        QCOMPARE(storage::readBookState(paths, identity).object.value("position").toString(), position);
+        if (transition == "blocked") {
+            // CPU suspension must not depend on a timer firing on the GUI thread.
+            QTest::qSleep(2100);
+            QVERIFY(!window->pendingNetworkSync());
+            QCoreApplication::processEvents();
+        }
+        if (transition == "wake") {
+            window->wakeReader();
+            QVERIFY(!window->pendingNetworkSync());
+            QTRY_VERIFY(window->findChild<QWidget *>("rrKosyncOpening"));
+            QVERIFY(click(canvas, window->findChild<QPushButton *>("rrKosyncCancel")));
+        } else {
+            QTRY_VERIFY_WITH_TIMEOUT(!window || !window->pendingNetworkSync(), 3500);
+            QVERIFY(elapsed.elapsed() < 3500);
+            if (transition == "close") QTRY_VERIFY(host.idle());
+            else if (!live) {
+                QVERIFY(window);
+                window->wakeReader();
+                QTRY_VERIFY(window->findChild<QWidget *>("rrKosyncOpening"));
+                QVERIFY(click(canvas, window->findChild<QPushButton *>("rrKosyncCancel")));
+            }
+        }
+        if (!live && !inFlight) QVERIFY(attempts.count() > openingAttempts);
+        if (live) {
+            // A second production client observes the final position on the server.
+            kosync::Client verify(paths.syncAccount());
+            QVERIFY(verify.lastSync().isValid());
+            bool received = false;
+            QString failure;
+            kosync::Progress remote;
+            verify.pull(document, [&](kosync::Progress progress, QString error) {
+                remote = progress;
+                failure = error;
+                received = true;
+            });
+            QTRY_VERIFY_WITH_TIMEOUT(received, 12000);
+            QVERIFY2(failure.isEmpty(), qPrintable(failure));
+            QCOMPARE(remote.position, position);
+        }
+        QCOMPARE(storage::readBookState(paths, identity).object.value("position").toString(), position);
+    }
+
+    void revokedNativeDrainRetainsLocalSave() {
+        const auto paths = testPaths();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        const auto identity = QUrl::fromLocalFile(QFileInfo(textBook).absoluteFilePath()).toString();
+        host.progress = std::make_shared<test::HostProgress>();
+        host.progress->current = {identity, "OEBPS/c1.xhtml", 100, 1, true};
+        host.positions = nickel::positionCodec();
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy());
+        QCOMPARE(host.progress->writes, 0);
+        QTRY_VERIFY(!storage::readBookState(paths, identity).object.isEmpty());
+        const auto changeSql = [&](const QString &statement) {
+            return AnnotationDatabase::transaction(paths.directory, [&](QSqlDatabase &db) {
+                QSqlQuery query(db);
+                return query.exec(statement);
+            });
+        };
+        QVERIFY(changeSql("CREATE TRIGGER refuse_revoked_checkpoint BEFORE UPDATE ON book_state "
+                          "BEGIN SELECT RAISE(ABORT,'test'); END"));
+        struct RemoveFailure {
+            std::function<void()> remove;
+            ~RemoveFailure() { remove(); }
+        } restore{[&] { changeSql("DROP TRIGGER IF EXISTS refuse_revoked_checkpoint"); }};
+        QVERIFY(host.session()->go(1));
+        QTRY_VERIFY(!host.session()->busy());
+        const auto position = host.session()->state().value("position").toString();
+        host.progress->holdFinish = true;
+        int nativeReplies = 0;
+        bool nativeSaved = true;
+        host.book()->finishReading([&](bool saved) { ++nativeReplies; nativeSaved = saved; });
+        QVERIFY(host.progress->finishDone);
+        const auto lateNativeReply = host.progress->finishDone;
+        const int stops = host.progress->stopAttempts;
+        host.window()->revokeNativeReading();
+        host.window()->hide();
+        QCOMPARE(host.progress->destroyed, 1);
+        QCOMPARE(host.progress->stopAttempts, stops);
+        QCOMPARE(nativeReplies, 1);
+        QVERIFY(!nativeSaved);
+        QVERIFY(!host.book()->hasNativeProgress());
+        lateNativeReply(true);
+        QCOMPARE(nativeReplies, 1);
+        int localReplies = 0;
+        bool localSaved = true;
+        host.window()->finishStorageSave([&](bool saved) { ++localReplies; localSaved = saved; }, false);
+        QTRY_VERIFY(host.window()->findChild<QPushButton *>("rrCloseSaveRetry"));
+        QCOMPARE(localReplies, 0);
+        QCOMPARE(host.progress->finishAttempts, 1);
+        QVERIFY(changeSql("DROP TRIGGER refuse_revoked_checkpoint"));
+        host.window()->findChild<QPushButton *>("rrCloseSaveRetry")->click();
+        QTRY_COMPARE(localReplies, 1);
+        QVERIFY(localSaved);
+        bool shutdownReady = false;
+        host.window()->prepareShutdown([&] { shutdownReady = true; });
+        QTRY_VERIFY_WITH_TIMEOUT(shutdownReady, 5000);
+        QCOMPARE(storage::readBookState(paths, identity).object.value("position").toString(), position);
+        QCOMPARE(host.progress->finishAttempts, 1);
+        QCOMPARE(host.progress->stopAttempts, stops);
+    }
+
+    void closeWaitsForLocalSave() {
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened), closed(&host, &ReaderFixture::closed);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy());
+        QTRY_VERIFY(host.book()->readingActive());
+        std::atomic_bool released{false}, entered{false};
+        storage::RecordWriter blocker;
+        struct Release {
+            std::atomic_bool &released;
+            ~Release() { released = true; }
+        } release{released};
+        blocker.post([&] {
+            entered = true;
+            while (!released) QThread::msleep(1);
+            return true;
+        }, {});
+        QTRY_VERIFY(entered.load());
+        host.window()->close();
+        const auto stopped = host.book()->readingMilliseconds();
+        host.window()->close();
+        QTest::qWait(250);
+        QVERIFY(!host.window()->findChild<QWidget *>("rrSaving"));
+        QCOMPARE(closed.count(), 0);
+        QTRY_VERIFY_WITH_TIMEOUT(host.window()->findChild<QWidget *>("rrSaving"), 2000);
+        auto *saving = host.window()->findChild<QWidget *>("rrSaving");
+        QVERIFY(saving->isVisible());
+        QCOMPARE(saving->findChild<QLabel *>("rrSavingTitle")->text(), strings::get("closing.saving"));
+        QVERIFY(saving->findChild<QLabel *>("rrSavingHint")->isVisible());
+        auto *modal = dynamic_cast<ui::ModalOverlay *>(saving);
+        QVERIFY(modal && modal->inputBarrier());
+        QVERIFY(modal->card()->height() < host.window()->height() / 2);
+        QCOMPARE(host.book()->readingMilliseconds(), stopped);
+        QVERIFY(!host.window()->flushBeforeStandby());
+        released = true;
+        QTRY_COMPARE_WITH_TIMEOUT(closed.count(), 1, 10000);
+    }
+
+    void closeRetriesRequiredNativeSaves_data() {
+        QTest::addColumn<bool>("timeSave");
+        QTest::addColumn<bool>("discard");
+        QTest::addColumn<bool>("resume");
+        QTest::newRow("position") << false << false << false;
+        QTest::newRow("reading-time") << true << false << false;
+        QTest::newRow("quit-position") << false << true << false;
+        QTest::newRow("quit-reading-time") << true << true << false;
+        QTest::newRow("resume-position") << false << true << true;
+        QTest::newRow("resume-reading-time") << true << true << true;
+    }
+    void closeRetriesRequiredNativeSaves() {
+        QFETCH(bool, timeSave);
+        QFETCH(bool, discard);
+        QFETCH(bool, resume);
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        const auto identity = QUrl::fromLocalFile(QFileInfo(textBook).absoluteFilePath()).toString();
+        host.progress = std::make_shared<test::HostProgress>();
+        host.progress->current = {identity, "OEBPS/c1.xhtml", 100, 1, true};
+        host.positions = nickel::positionCodec();
+        QSignalSpy opened(&host, &ReaderFixture::opened), closed(&host, &ReaderFixture::closed);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy());
+        QCOMPARE(host.progress->writes, 0);
+        host.progress->failWrite = !timeSave;
+        host.progress->holdFinish = timeSave;
+        host.window()->close();
+        const auto stopped = host.book()->readingMilliseconds();
+        if (timeSave) {
+            QTRY_VERIFY(host.progress->finishDone);
+            QTRY_VERIFY_WITH_TIMEOUT(host.window()->findChild<QWidget *>("rrSaving"), 2000);
+            QCOMPARE(closed.count(), 0);
+            host.progress->completeFinish(false);
+        }
+        QTRY_VERIFY(host.window()->findChild<QPushButton *>("rrCloseSaveRetry"));
+        QCOMPARE(closed.count(), 0);
+        QCOMPARE(host.book()->readingMilliseconds(), stopped);
+        auto *saving = host.window()->findChild<QWidget *>("rrSaving");
+        QVERIFY(!saving || !saving->isVisible());
+        QVERIFY(!host.window()->findChild<QPushButton *>("rrCloseSaveQuit"));
+        host.progress->holdFinish = false;
+        host.progress->failWrite = discard && !timeSave;
+        host.progress->failFinish = discard && timeSave;
+        auto *retry = host.window()->findChild<QPushButton *>("rrCloseSaveRetry");
+        QVERIFY(click(canvas, retry));
+        if (discard) {
+            QTRY_VERIFY(host.window()->findChild<QPushButton *>("rrCloseSaveQuit"));
+            QCOMPARE(closed.count(), 0);
+            QCOMPARE(host.progress->finishAttempts, 2);
+            if (resume) {
+                QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrCloseSaveReturn")));
+                QTRY_VERIFY(!host.window()->findChild<QPushButton *>("rrCloseSaveQuit"));
+                host.window()->close();
+                QTRY_VERIFY(host.window()->findChild<QPushButton *>("rrCloseSaveRetry"));
+                QVERIFY(!host.window()->findChild<QPushButton *>("rrCloseSaveQuit"));
+                QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrCloseSaveRetry")));
+                QTRY_VERIFY(host.window()->findChild<QPushButton *>("rrCloseSaveQuit"));
+            }
+            const auto attempts = host.progress->finishAttempts;
+            const auto writes = host.progress->writeAttempts;
+            const auto stops = host.progress->stopAttempts;
+            const auto saved = host.progress->current;
+            QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrCloseSaveQuit")));
+            QTRY_COMPARE_WITH_TIMEOUT(closed.count(), 1, 10000);
+            QCOMPARE(host.progress->finishAttempts, attempts);
+            QCOMPARE(host.progress->writeAttempts, writes);
+            QCOMPARE(host.progress->stopAttempts, stops);
+            QCOMPARE(host.progress->current.location, saved.location);
+            return;
+        }
+        QTRY_COMPARE_WITH_TIMEOUT(closed.count(), 1, 10000);
+        QCOMPARE(host.progress->finishAttempts, 2);
+    }
+
+    void quitAfterFailedLocalSaveRetry() {
+        const auto paths = testPaths();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        const auto identity = QUrl::fromLocalFile(QFileInfo(textBook).absoluteFilePath()).toString();
+        QSignalSpy opened(&host, &ReaderFixture::opened), closed(&host, &ReaderFixture::closed);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy());
+        bool checkpointed = false;
+        host.book()->checkpointForClose([&](bool saved) { checkpointed = saved; });
+        QTRY_VERIFY(checkpointed);
+        const auto saved = storage::readBookState(paths, identity).object;
+        const auto changeSql = [&](const QString &statement) {
+            return AnnotationDatabase::transaction(paths.directory, [&](QSqlDatabase &db) {
+                QSqlQuery query(db);
+                return query.exec(statement);
+            });
+        };
+        QVERIFY(changeSql("CREATE TRIGGER refuse_quit_checkpoint BEFORE UPDATE ON book_state "
+                          "BEGIN SELECT RAISE(ABORT,'test'); END"));
+        struct RemoveFailure {
+            std::function<void()> remove;
+            ~RemoveFailure() { remove(); }
+        } restore{[&] { changeSql("DROP TRIGGER IF EXISTS refuse_quit_checkpoint"); }};
+        QVERIFY(host.session()->go(1));
+        QTRY_VERIFY(!host.session()->busy());
+        QVERIFY(host.session()->state().value("position") != saved.value("position"));
+        host.window()->close();
+        QTRY_VERIFY(host.window()->findChild<QPushButton *>("rrCloseSaveRetry"));
+        QVERIFY(!host.window()->findChild<QPushButton *>("rrCloseSaveQuit"));
+        QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrCloseSaveRetry")));
+        QTRY_VERIFY(host.window()->findChild<QPushButton *>("rrCloseSaveQuit"));
+        QCOMPARE(closed.count(), 0);
+        QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrCloseSaveQuit")));
+        QTRY_COMPARE_WITH_TIMEOUT(closed.count(), 1, 10000);
+        QCOMPARE(storage::readBookState(paths, identity).object.value("position"), saved.value("position"));
+    }
+
+    void closeWaitsForNativeTimeBeforePosition() {
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        const auto identity = QUrl::fromLocalFile(QFileInfo(textBook).absoluteFilePath()).toString();
+        host.progress = std::make_shared<test::HostProgress>();
+        host.progress->current = {identity, "OEBPS/c1.xhtml", 100, 1, true};
+        host.positions = nickel::positionCodec();
+        QSignalSpy opened(&host, &ReaderFixture::opened), closed(&host, &ReaderFixture::closed);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy());
+        QCOMPARE(host.progress->writes, 0);
+        host.progress->holdFinish = host.progress->rejectWriteWhileFinishing = true;
+        const auto attempts = host.progress->writeAttempts;
+        host.window()->close();
+        QTRY_VERIFY(host.progress->finishDone);
+        QCOMPARE(host.progress->writeAttempts, attempts);
+        QCOMPARE(closed.count(), 0);
+        QTRY_VERIFY_WITH_TIMEOUT(host.window()->findChild<QWidget *>("rrSaving"), 2000);
+        QVERIFY(!host.window()->findChild<QPushButton *>("rrCloseSaveRetry"));
+        host.progress->holdFinish = false;
+        host.progress->completeFinish(true);
+        QTRY_COMPARE_WITH_TIMEOUT(closed.count(), 1, 10000);
+        QCOMPARE(host.progress->writeAttempts, attempts + 1);
+        QCOMPARE(host.progress->finishAttempts, 1);
+    }
+
+    void nativeOpeningStatus_data() {
+        QTest::addColumn<bool>("fails");
+        QTest::newRow("saved") << false;
+        QTest::newRow("failed") << true;
+    }
+    void nativeOpeningStatus() {
+        QFETCH(bool, fails);
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        const auto identity = QUrl::fromLocalFile(QFileInfo(textBook).absoluteFilePath()).toString();
+        host.progress = std::make_shared<test::HostProgress>();
+        host.progress->current = {identity, "OEBPS/c1.xhtml", 100, 1, true};
+        host.progress->failWrite = fails;
+        host.positions = nickel::positionCodec();
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        bool prepared = false;
+        host.window()->preparePresentation([&](bool ready) { prepared = ready; });
+        QTRY_VERIFY(prepared);
+        QCOMPARE(host.progress->openingAttempts, 1);
+        QCOMPARE(host.progress->writeAttempts, 0);
+        QCOMPARE(host.progress->current.modified, qint64(100));
+        QCOMPARE(host.progress->current.location, QString("OEBPS/c1.xhtml"));
+        host.progress->failWrite = false;
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTest::qWait(2300);
+        QCOMPARE(host.progress->openingAttempts, 1);
+        QCOMPARE(host.progress->writeAttempts, 0);
+        host.window()->preparePresentation([](bool) {});
+        QTest::qWait(50);
+        QCOMPARE(host.progress->openingAttempts, 1);
+        QVERIFY(!host.window()->findChild<QTimer *>("rrNativeOpeningSaveTimer"));
+    }
+
+    void nativeProgressWaitsForSleep_data() {
+        QTest::addColumn<QString>("outcome");
+        for (const auto *outcome : {"saved", "newer", "failed"}) {
+            QTest::newRow(outcome) << QString::fromLatin1(outcome);
+        }
+    }
+    // Nickel's progress is written on the GUI thread, so reading pauses save
+    // only the local position. Sleep writes Nickel's copy.
+    void nativeProgressWaitsForSleep() {
         QFETCH(QString, outcome);
         QTemporaryDir root;
         auto paths = testPaths();
@@ -2319,47 +4114,314 @@ private slots:
         canvas.show();
         QVERIFY(QTest::qWaitForWindowExposed(&canvas));
         QTRY_VERIFY(!host.session()->busy());
-        QTRY_VERIFY(host.progress->writes > 0);
-        auto *timer = host.window()->findChild<QTimer *>("rrNativeProgressTimer");
-        QVERIFY(timer);
-        QCOMPARE(timer->interval(), 30000);
-        const int openingWrites = host.progress->writes;
-        QVERIFY(QMetaObject::invokeMethod(timer, "timeout", Qt::DirectConnection));
-        QCOMPARE(host.progress->writes, openingWrites);
+        QCOMPARE(host.progress->writes, 0);
+        const int writes = host.progress->writes;
         QVERIFY(host.session()->go(1));
         QTRY_VERIFY(!host.session()->busy());
         const auto anchor = host.session()->state().value("position").toString();
+        const auto stored = [&] {
+            return storage::readBookState(paths, identity).object.value("position").toString();
+        };
+        QTRY_COMPARE_WITH_TIMEOUT(stored(), anchor, 5000);
+        QVERIFY(host.window()->flushBeforeStandby());
+        QCOMPARE(host.progress->writes, writes);
         QString error;
         const auto expected = host.session()->savedNativePosition(&error);
         QVERIFY2(error.isEmpty(), qPrintable(error));
         QVERIFY(!expected.isEmpty());
         const double percent = 100.0 * host.session()->page() / host.session()->pages();
-        const int writes = host.progress->writes;
         if (outcome == "newer") {
             host.progress->publish({identity, "OEBPS/c3.xhtml#kobo.8.1:7", 200, 1, true});
         }
         host.progress->failWrite = outcome == "failed";
         const auto before = host.progress->current;
-        if (sleep) {
-            host.window()->sleepReader();
-        } else {
-            QVERIFY(QMetaObject::invokeMethod(timer, "timeout", Qt::DirectConnection));
-        }
+        host.window()->sleepReader();
         QCOMPARE(host.progress->writes, writes + (outcome == "saved" ? 1 : 0));
         if (outcome == "saved") {
             QCOMPARE(host.progress->current.location, expected);
             QCOMPARE(host.progress->percent, percent);
-            QVERIFY(QMetaObject::invokeMethod(timer, "timeout", Qt::DirectConnection));
-            QCOMPARE(host.progress->writes, writes + 1);
         } else {
             QVERIFY(host.progress->current == before);
         }
-        QCOMPARE(storage::readBookState(paths, identity).object.value("position").toString(), anchor);
+        QCOMPARE(stored(), anchor);
+    }
+
+    void appearanceRetryCooldown() {
+        QTemporaryDir root;
+        auto paths = testPaths();
+        paths.directory = root.path();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy() && !host.book()->savesPending());
+
+        std::atomic<int> failures{0}, attempts{0};
+        initializeDiagnostics(root.path() + "/diagnostics", false);
+        pauseDiagnostics(false);
+        setDiagnosticObserver([&](const QJsonObject &event) {
+            if (event.value("event") == QStringLiteral("appearance-settings-unsaved")) {
+                attempts = event.value("attempts").toInt();
+                ++failures;
+            }
+        });
+        struct ResetDiagnostics {
+            ~ResetDiagnostics() { setDiagnosticObserver({}); pauseDiagnostics(true); }
+        } resetDiagnostics;
+        const auto preferences = paths.preferences(), backup = preferences + ".retry-test";
+        const auto original = storage::readPreferences(preferences).object;
+        QVERIFY(QFile::rename(preferences, backup));
+        struct RestorePreferences {
+            QString preferences, backup;
+            ~RestorePreferences() { QDir().rmdir(preferences); QFile::rename(backup, preferences); }
+        } restore{preferences, backup};
+        QVERIFY(QDir().mkpath(preferences));
+        QVERIFY(host.session()->setVerticalMargins(readingPixels(40)));
+        QTRY_VERIFY(!host.session()->busy());
+        host.book()->rememberAppearance();
+        QTRY_VERIFY(!host.book()->savesPending());
+        flushDiagnostics();
+        QCOMPARE(failures.load(), 1);
+        QCOMPARE(attempts.load(), 3);
+
+        const auto turn = [&](int direction) {
+            const auto before = host.session()->state().value("position");
+            host.window()->pageButton(direction);
+            QTRY_VERIFY(!host.session()->busy() && host.session()->state().value("position") != before);
+            QTRY_VERIFY(!host.book()->savesPending());
+        };
+        for (int i = 0; i < 24; ++i) turn(i % 2 ? -1 : 1);
+        // A new edit replaces the retained snapshot without resetting cooldown.
+        QVERIFY(host.session()->setVerticalMargins(readingPixels(48)));
+        QTRY_VERIFY(!host.session()->busy());
+        host.book()->rememberAppearance();
+        const auto expectedMargin = host.book()->checkpointState().value("top_margin_pixels");
+        for (int i = 0; i < 3; ++i) {
+            host.book()->saveReadingActivity();
+            QTRY_VERIFY(!host.book()->savesPending());
+        }
+        QTest::qWait(350);
+        flushDiagnostics();
+        QCOMPARE(failures.load(), 1);
+
+        QVERIFY(QDir().rmdir(preferences));
+        QVERIFY(QFile::rename(backup, preferences));
+        // Background progress must not bypass the appearance retry policy.
+        QJsonObject snapshot;
+        QVERIFY(host.book()->checkpoint(&snapshot, true));
+        QTRY_VERIFY(!host.book()->savesPending());
+        for (int i = 0; i < 6; ++i) turn(i % 2 ? -1 : 1);
+        host.book()->saveReadingActivity();
+        QTRY_VERIFY(!host.book()->savesPending());
+        QCOMPARE(storage::readPreferences(preferences).object, original);
+
+        // An explicit commit can save during cooldown and clears its failure.
+        host.window()->checkpoint();
+        QCOMPARE(storage::readPreferences(preferences).object.value(appearance::pageMarginsKey).toObject()
+                     .value("top_margin_pixels"), expectedMargin);
+        QVERIFY(host.session()->setVerticalMargins(readingPixels(56)));
+        QTRY_VERIFY(!host.session()->busy());
+        host.book()->rememberAppearance();
+        QTRY_VERIFY(!host.book()->savesPending());
+        QCOMPARE(storage::readPreferences(preferences).object.value(appearance::pageMarginsKey).toObject()
+                     .value("top_margin_pixels"), host.book()->checkpointState().value("top_margin_pixels"));
+    }
+
+    void closeWithUnusableSettings() {
+        QTemporaryDir root;
+        auto paths = testPaths();
+        paths.directory = root.path();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy() && !host.book()->savesPending());
+        // Settings that become unusable while a book is open skip the layout
+        // memory. The reading position still saves, and the file is kept.
+        const QByteArray future = "{\"schema\":2}";
+        {
+            QFile settings(paths.preferences());
+            QVERIFY(settings.open(QIODevice::WriteOnly | QIODevice::Truncate) && settings.write(future) == future.size());
+        }
+        QVERIFY(host.session()->setVerticalMargins(readingPixels(40)));
+        QTRY_VERIFY(!host.session()->busy());
+        QJsonObject snapshot;
+        QVERIFY(host.book()->checkpoint(&snapshot));
+        bool done = false, saved = false;
+        host.book()->checkpointForClose([&](bool result) { done = true; saved = result; });
+        QTRY_VERIFY(done);
+        QVERIFY(saved);
+        QFile settings(paths.preferences());
+        QVERIFY(settings.open(QIODevice::ReadOnly));
+        QCOMPARE(settings.readAll(), future);
+    }
+
+    void recoveryNoticeAfterFirstPage() {
+        const auto paths = testPaths();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        storage::ProfileRecovery recovery;
+        recovery.settings = true;
+        const auto startup = profileRecoveryNotice(recovery, ".adds/kobalt/backups");
+        const auto message = startup.message;
+        host.configureServices = [startup](ReaderHostServices &services) { services.startupNotice = startup; };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QWidget *notice = nullptr;
+        QTRY_VERIFY((notice = host.window()->findChild<QWidget *>("rrRecoveryNotice")) && notice->isVisible());
+        auto *text = host.window()->findChild<QLabel *>("rrRecoveryNoticeMessage");
+        QVERIFY(text && text->text() == message && message.contains(".adds/kobalt/backups"));
+        auto *confirm = host.window()->findChild<QPushButton *>("rrRecoveryNoticeConfirm");
+        QVERIFY(confirm);
+        confirm->click();
+        QTRY_VERIFY(!host.window()->findChild<QWidget *>("rrRecoveryNotice"));
+    }
+
+    void benchmarkNoticeAfterRun() {
+        const auto completed = qt::object({{"id", "page.turn"}, {"status", "completed"}});
+        const auto skipped = qt::object({{"id", "panel.footnote"}, {"status", "skipped"}});
+        const auto failed =
+            qt::object({{"id", "book.close"}, {"status", "failed"}, {"reason", "the reader did not close"}});
+        const QString folder = ".adds/kobalt/diagnostics";
+        const auto finished = benchmarkNotice({completed, skipped}, true, folder);
+        QCOMPARE(finished.title, strings::get("benchmark.finished"));
+        QVERIFY(finished.message.contains(strings::get("benchmark.counts").arg(1).arg(1).arg(0)) &&
+                finished.message.contains(folder));
+        const auto aborted = benchmarkNotice({completed, failed, skipped}, true, folder);
+        QCOMPARE(aborted.title, strings::get("benchmark.failed"));
+        QVERIFY(aborted.message.contains("book.close") && aborted.message.contains("the reader did not close") &&
+                aborted.message.contains(folder));
+        QCOMPARE(benchmarkNotice({completed}, false, folder).title, strings::get("benchmark.failed"));
+        QCOMPARE(benchmarkNotice({}, true, folder).title, strings::get("benchmark.failed"));
+
+        const auto paths = testPaths();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        // A hidden window cannot show it, so the host keeps it for later.
+        QVERIFY(!host.window()->showNotice(finished));
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy());
+        QVERIFY(host.window()->showNotice(aborted));
+        auto *notice = host.window()->findChild<QWidget *>("rrBenchmarkNotice");
+        QVERIFY(notice && notice->isVisible());
+        auto *text = host.window()->findChild<QLabel *>("rrBenchmarkNoticeMessage");
+        QVERIFY(text && text->text() == aborted.message);
+        // One notice at a time.
+        QVERIFY(!host.window()->showNotice(finished));
+        auto *confirm = host.window()->findChild<QPushButton *>("rrBenchmarkNoticeConfirm");
+        QVERIFY(confirm);
+        confirm->click();
+        QTRY_VERIFY(!host.window()->findChild<QWidget *>("rrBenchmarkNotice"));
+    }
+
+    void activityBatchesAndLowBattery() {
+        QTemporaryDir root;
+        auto paths = testPaths();
+        paths.directory = root.path();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        BatteryStatus battery{50, false, false};
+        std::function<void()> batteryChanged;
+        host.configureServices = [&](ReaderHostServices &services) {
+            services.battery = [&] { return battery; };
+            services.observeBattery = [&](QObject *, std::function<void()> changed) { batteryChanged = changed; };
+        };
+        const auto identity = QUrl::fromLocalFile(QFileInfo(fixture()).absoluteFilePath()).toString();
+        host.progress = std::make_shared<test::HostProgress>();
+        host.progress->current = {identity, "OEBPS/cover.xhtml", 100, 1, true};
+        host.positions = nickel::positionCodec();
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy() && host.session()->resourceStats().value("pending_images").toInt() == 0);
+        const auto stored = [&] { return storage::readBookState(paths, identity).object.value("position").toString(); };
+        const auto current = [&] { return host.session()->state().value("position").toString(); };
+        QTRY_COMPARE(stored(), current());
+        const auto turn = [&] {
+            const auto before = current();
+            host.window()->pageButton(1);
+            QTRY_VERIFY(!host.session()->busy() && current() != before);
+            QTRY_VERIFY(!host.book()->savesPending());
+        };
+        const auto initial = stored();
+        turn();
+        QTest::qWait(2200);
+        QCOMPARE(stored(), initial);
+        QTRY_VERIFY(host.window()->flushBeforeStandby());
+        QCOMPARE(stored(), initial);
+        QVERIFY(!host.window()->findChild<QTimer *>("rrIdleSaveTimer"));
+        QVERIFY(!host.window()->findChild<QTimer *>("rrReadingHistoryTimer"));
+        QVERIFY(!host.book()->activitySaveDue());
+        QVERIFY(host.book()->activitySaveDue(0));
+        host.book()->saveReadingActivity();
+        QTRY_VERIFY(!host.book()->savesPending());
+        QCOMPARE(stored(), current());
+        QVERIFY(storage::profileHasUnsyncedWrites());
+        QCOMPARE(host.progress->writes, 0);
+
+        battery.percent = 5;
+        QVERIFY(batteryChanged);
+        batteryChanged();
+        turn();
+        QVERIFY(!host.window()->flushBeforeStandby());
+        QTRY_COMPARE(stored(), current());
+        QTRY_VERIFY(host.window()->flushBeforeStandby());
+        QVERIFY(!storage::profileHasUnsyncedWrites());
+
+        int failures = 0;
+        host.book()->onCheckpointFailed([&] { ++failures; });
+        storage::closeProfile();
+        QVERIFY(QFile::setPermissions(paths.database(), QFileDevice::ReadOwner));
+        turn();
+        QVERIFY(!host.window()->flushBeforeStandby());
+        QTRY_COMPARE(failures, 1);
+        QVERIFY(host.book()->activitySaveCoolingDown());
+        QTRY_VERIFY(host.window()->flushBeforeStandby());
+        QVERIFY(QFile::setPermissions(paths.database(), QFileDevice::ReadOwner | QFileDevice::WriteOwner));
+        host.book()->saveReadingActivity();
+        QTest::qWait(350);
+        QCOMPARE(failures, 1);
+        QVERIFY(stored() != current());
+        host.window()->checkpoint();
+        QCOMPARE(stored(), current());
+        QVERIFY(!host.book()->activitySaveCoolingDown());
+        QVERIFY(!storage::profileHasUnsyncedWrites());
+        battery.charging = true;
+        batteryChanged();
+        const auto saved = stored();
+        turn();
+        QTRY_VERIFY(host.window()->flushBeforeStandby());
+        QCOMPARE(stored(), saved);
     }
 
     void usbFinalSave_data() {
         QTest::addColumn<QString>("outcome");
-        for (const auto &outcome : {"saved", "failed", "newer", "timeout"}) {
+        for (const auto &outcome : {"saved", "failed", "persistent-failure", "persistent-retry", "battery-low", "battery-low-held", "newer", "timeout"}) {
             QTest::newRow(outcome) << QString::fromLatin1(outcome);
         }
     }
@@ -2385,19 +4447,49 @@ private slots:
         QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
         QTRY_VERIFY(!host.session()->busy());
         const int writes = host.progress->writes;
-        host.progress->failWrite = outcome == "failed";
+        host.progress->failWrite = outcome == "failed" || outcome.startsWith("persistent-") || outcome == "battery-low";
         if (outcome == "newer") {
             host.progress->publish({identity, "OEBPS/c3.xhtml#kobo.8.1:7", 200, 1, true});
         }
         const auto before = host.progress->current;
         usbEncodingReturned = false;
         delayUsbEncoding = outcome == "timeout";
+        const int attempts = host.progress->writeAttempts;
         int completed = 0;
         QElapsedTimer elapsed;
         elapsed.start();
-        host.window()->prepareUsb([&] {
-            ++completed;
-        });
+        host.progress->holdFinish = outcome == "battery-low-held";
+        if (outcome.startsWith("battery-low"))
+            host.window()->prepareShutdown([&] { ++completed; }, true);
+        else
+            host.window()->prepareUsb([&] { ++completed; });
+        if (outcome == "battery-low-held") {
+            QTRY_VERIFY(host.progress->finishDone);
+            QTest::qWait(2200);
+            QCOMPARE(completed, 0);
+            QCOMPARE(host.progress->writeAttempts, attempts);
+            QVERIFY(!host.window()->findChild<QPushButton *>("rrCloseSaveRetry"));
+            host.progress->holdFinish = false;
+            host.progress->completeFinish(true);
+            elapsed.restart();
+        }
+        if (outcome == "failed") {
+            QTRY_VERIFY(host.progress->writeAttempts > attempts);
+            QCOMPARE(completed, 0);
+            host.progress->failWrite = false;
+        }
+        if (outcome.startsWith("persistent-")) {
+            QTRY_VERIFY(host.window()->findChild<QPushButton *>("rrCloseSaveQuit"));
+            QCOMPARE(completed, 0);
+            QCOMPARE(host.progress->writeAttempts - attempts, 3);
+            QTest::qWait(300);
+            QCOMPARE(host.progress->writeAttempts - attempts, 3);
+            if (outcome == "persistent-retry") {
+                host.progress->failWrite = false;
+                host.window()->findChild<QPushButton *>("rrCloseSaveRetry")->click();
+            } else
+                host.window()->findChild<QPushButton *>("rrCloseSaveQuit")->click();
+        }
         QTRY_COMPARE_WITH_TIMEOUT(completed, 1, 3000);
         QVERIFY(elapsed.elapsed() < 2400);
         if (outcome == "timeout") {
@@ -2407,8 +4499,15 @@ private slots:
         }
         delayUsbEncoding = false;
         QCOMPARE(completed, 1);
-        QCOMPARE(host.progress->writes, writes + (outcome == "saved" ? 1 : 0));
-        if (outcome != "saved") {
+        if (outcome == "persistent-failure" || outcome == "battery-low") {
+            QCOMPARE(host.progress->writeAttempts - attempts, 3);
+            QVERIFY(host.window()->property("reader_transition_save_failed").toBool());
+            const int terminalAttempts = host.progress->writeAttempts;
+            QTest::qWait(400);
+            QCOMPARE(host.progress->writeAttempts, terminalAttempts);
+        }
+        QCOMPARE(host.progress->writes, writes + (outcome == "saved" || outcome == "failed" || outcome == "persistent-retry" || outcome == "battery-low-held" ? 1 : 0));
+        if (outcome != "saved" && outcome != "failed" && outcome != "persistent-retry" && outcome != "battery-low-held") {
             QVERIFY(host.progress->current == before);
         }
         const auto local = storage::readBookState(paths, identity).object;
@@ -2785,6 +4884,61 @@ private slots:
         QCOMPARE(store.highlights().size(), 1999);
     }
 
+    void progressPercentagesAgree_data() {
+        QTest::addColumn<int>("position");
+        QTest::newRow("first") << 0;
+        QTest::newRow("middle") << 1;
+        QTest::newRow("last") << 2;
+    }
+    void progressPercentagesAgree() {
+        QFETCH(int, position);
+        const auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.preferences(), {{sleep::preferenceKey, "page"}}));
+        auto presentation = std::make_shared<test::SleepPresentationState>();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        host.configureServices = [presentation](ReaderHostServices &services) {
+            services.presentation = [presentation](QWidget *) {
+                return std::make_unique<test::HostPresentation>(presentation);
+            };
+        };
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(nativeSize);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QVERIFY(host.session()->pages() > 7);
+        const int target = position == 0 ? 0 : position == 2 ? host.session()->pages() - 1 : host.session()->pages() / 7;
+        if (host.session()->page() != target) QVERIFY(host.session()->go(target));
+        QTRY_VERIFY(!host.session()->busy());
+        QCOMPARE(host.session()->page(), target);
+        const int percent = qRound(100.0 * target / (host.session()->pages() - 1));
+        auto *page = dynamic_cast<ReadingPage *>(host.window()->findChild<QWidget *>("rrPage"));
+        QVERIFY(page);
+        QTRY_COMPARE(page->slotContents[5].text, strings::get("common.percent").arg(percent));
+        QCOMPARE(qRound(page->progressFraction * 100), percent);
+        page->tapped(page->rect().center());
+        auto *stats = host.window()->findChild<QPushButton *>("rrNavStats");
+        QVERIFY(stats);
+        stats->click();
+        auto *graph = host.window()->findChild<QWidget *>("rrChapterGraph");
+        QTRY_VERIFY(graph && graph->isVisible());
+        auto *bookPercent = graph->findChild<QLabel *>("rrGraphBookPercent");
+        QVERIFY(bookPercent);
+        QCOMPARE(bookPercent->text(), strings::get("common.percent").arg(percent));
+        stats->click();
+        QTRY_VERIFY(!graph->isVisible());
+        QTRY_VERIFY(host.window()->readyForPresentation());
+        const auto snapshot = host.window()->powerScreenSnapshot();
+        QVERIFY(!snapshot.image.isNull());
+        QCOMPARE(snapshot.percent, percent);
+        QCOMPARE(snapshot.progress, strings::get("sleep.percent_read").arg(percent));
+        host.window()->checkpoint();
+        const auto identity = QUrl::fromLocalFile(QFileInfo(textBook).absoluteFilePath()).toString();
+        QCOMPARE(storage::readBookState(paths, identity).object.value("percent").toInt(-1), percent);
+    }
     void annotationFramesKeepFirstPaintComplete_data() {
         QTest::addColumn<QString>("markup");
         for (const auto *name : {"none", "saved", "draft", "elsewhere", "elsewhere-256", "grayscale"}) {
@@ -2918,8 +5072,8 @@ private slots:
                 QVERIFY(host.window()->findChild<QWidget *>("rrAnnotationPopover")->isVisible());
                 host.window()->findChild<QPushButton *>("rrAnnotationApply")->click();
                 QTRY_VERIFY(!host.window()->findChild<QWidget *>("rrAnnotationPopover")->isVisible());
-                QVERIFY(store.load());
-                QCOMPARE(store.highlights().first().style, QString(style));
+                // The save follows on the highlight session's writer thread.
+                QTRY_VERIFY(store.load() && store.highlights().first().style == QString(style));
                 QCOMPARE(store.highlights().first().color, QString("blue"));
                 QVERIFY(barrier());
             }
@@ -3021,7 +5175,11 @@ private slots:
             QCOMPARE(host.session()->markup().imageKey, host.session()->image().cacheKey());
         }
         if (markup == "draft") {
-            const auto persisted = storage::readJson(store.folder() + "/highlights.json");
+            QVERIFY(annotationDatabaseEnabled());
+            QVERIFY(store.load());
+            QJsonArray persisted;
+            for (const auto &highlight : store.highlights()) persisted.append(highlightJson(highlight));
+            QCOMPARE(persisted.size(), 1);
             paints.images.clear();
             paints.milliseconds.clear();
             paints.destination = 1;
@@ -3041,12 +5199,371 @@ private slots:
             QCOMPARE(paints.images.first(), page->snapshot());
             QVERIFY(host.session()->markup().request.draftStart.isEmpty());
             QCOMPARE(host.session()->markup().request.saved.size(), 1);
-            QCOMPARE(storage::readJson(store.folder() + "/highlights.json"), persisted);
+            HighlightStore reopened(paths.annotations(), identity, host.session()->sourceHash(), "test", paths.database());
+            QVERIFY(reopened.load());
+            QJsonArray actual;
+            for (const auto &highlight : reopened.highlights()) actual.append(highlightJson(highlight));
+            QCOMPARE(actual, persisted);
             QVERIFY(!host.window()->findChild<QWidget *>("rrAnnotationPopover")->isVisible());
         }
     }
 
 private:
+    void verifyKosyncManualHandoff(const QString &state) {
+        auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.syncAccount(), {
+            {"schema", 1}, {"server", qEnvironmentVariable("KOBALT_KOSYNC_TEST_SERVER")},
+            {"username", qEnvironmentVariable("KOBALT_KOSYNC_TEST_USER")}, {"key", QString(32, 'a')},
+            {"device_id", "manual-handoff"}, {"automatic", false}}));
+        auto network = std::make_shared<SyncNetworkState>();
+        bool suspended = false;
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        host.configureServices = [&](ReaderHostServices &services) {
+            services.syncNetwork = [network] { return std::make_unique<TestSyncNetwork>(network); };
+            services.suspended = [&] { return suspended; };
+        };
+        CloseHost cleanup{host};
+        struct ResumeEngine { ~ResumeEngine() { engineActivity().pause(false); } } resume;
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        kosync::Client seed(paths.syncAccount());
+        bool seeded = false;
+        QString failure;
+        seed.push(host.session()->syncDigest(), {host.session()->state().value("position").toString(), {}, {}, 0},
+                  [&](QString error) { failure = error; seeded = true; });
+        QTRY_VERIFY_WITH_TIMEOUT(seeded, 12000);
+        QVERIFY2(failure.isEmpty(), qPrintable(failure));
+        initializeDiagnostics(paths.directory + "/diagnostics");
+        pauseDiagnostics(false);
+        struct PauseDiagnostics { ~PauseDiagnostics() { pauseDiagnostics(true); } } diagnostics;
+        const auto events = [&] {
+            flushDiagnostics();
+            QFile file(paths.directory + "/diagnostics/events.jsonl");
+            if (!file.open(QIODevice::ReadOnly)) return QByteArray();
+            return file.readAll();
+        };
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        auto *status = host.window()->findChild<QLabel *>("rrKosyncStatus");
+        if (state == "busy") {
+            engineActivity().pause(true);
+            QVERIFY(host.session()->go(host.session()->page() + 1));
+            QVERIFY(host.session()->busy());
+        }
+        host.window()->findChild<QPushButton *>("rrKosyncNow")->click();
+        QCOMPARE(network->requests, 1);
+        QVERIFY(!host.window()->findChild<QWidget *>("rrKosyncOpening"));
+        // Native connection completion can precede restoring the reader.
+        suspended = state != "busy";
+        if (suspended) host.window()->hide();
+        network->connected = true;
+        auto completed = std::move(network->completed);
+        network->completed = {};
+        completed(true);
+        QTRY_VERIFY_WITH_TIMEOUT(events().contains("\"event\":\"kosync-reader-wait\""), 3000);
+        QCOMPARE(status->text(), strings::get("kosync.syncing"));
+        QVERIFY(!host.window()->findChild<QPushButton *>("rrKosyncServer")->isEnabled());
+        QVERIFY(!kosync::Client(paths.syncAccount()).lastSync().isValid());
+        QPointer<QWidget> popup = host.window()->findChild<QWidget *>("rrKosyncOpening");
+        QVERIFY(popup);
+        if (state == "deadline") {
+            QTRY_COMPARE_WITH_TIMEOUT(status->text(), strings::get("kosync.saved_locally"), 11000);
+        } else if (state == "cancel") {
+            host.window()->show();
+            QVERIFY(click(canvas, popup->findChild<QPushButton *>("rrKosyncCancel")));
+        } else if (state == "sleep") {
+            QElapsedTimer elapsed;
+            elapsed.start();
+            host.window()->sleepReader();
+            QTRY_VERIFY_WITH_TIMEOUT(!host.window()->pendingNetworkSync(), 2100);
+            QVERIFY(elapsed.elapsed() < 2100);
+        }
+        suspended = false;
+        engineActivity().pause(false);
+        host.window()->show();
+        if (state == "cancel" || state == "deadline" || state == "sleep") {
+            QTest::qWait(400);
+            QVERIFY(!kosync::Client(paths.syncAccount()).lastSync().isValid());
+        } else {
+            QTRY_COMPARE_WITH_TIMEOUT(status->text(), strings::get("kosync.up_to_date"), 3000);
+            QVERIFY(kosync::Client(paths.syncAccount()).lastSync().isValid());
+            QVERIFY(popup && popup->isVisible());
+            QCOMPARE(popup->findChild<QLabel *>("rrModalTitle")->text(), strings::get("kosync.completed"));
+            QVERIFY(!popup->findChild<QPushButton *>("rrKosyncCancel")->isVisible());
+            QVERIFY(!host.window()->flushBeforeStandby());
+            QTest::qWait(1000);
+            QVERIFY(popup && popup->isVisible());
+        }
+        QTRY_VERIFY(!popup || !popup->isVisible());
+        QCOMPARE(network->requests, 1);
+        int reads = 0;
+        for (const auto &line : events().split('\n')) {
+            const auto event = QJsonDocument::fromJson(line).object();
+            if (event.value("event").toString() == "kosync-request-started" && event.value("method").toString() == "GET")
+                ++reads;
+        }
+        QCOMPARE(reads, 1);
+    }
+    void verifyKosyncNetwork(const QString &scenario) {
+        QTcpServer stalled;
+        QVERIFY(stalled.listen(QHostAddress::LocalHost));
+        QSignalSpy attempts(&stalled, &QTcpServer::newConnection);
+        auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.syncAccount(), {
+            {"schema", 1}, {"server", QString("https://127.0.0.1:%1").arg(stalled.serverPort())},
+            {"username", "test-reader"}, {"key", QString(32, 'a')},
+            {"device_id", "test-device"}, {"automatic", true}}));
+        auto network = std::make_shared<SyncNetworkState>();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        host.configureServices = [network](ReaderHostServices &services) {
+            services.syncNetwork = [network] { return std::make_unique<TestSyncNetwork>(network); };
+        };
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        bool prepared = false;
+        host.window()->preparePresentation([&](bool ready) { prepared = ready; });
+        QCOMPARE(network->requests, 1);
+        QVERIFY(!network->interactive);
+        QCOMPARE(attempts.count(), 0);
+        QTRY_VERIFY_WITH_TIMEOUT(prepared, 1500);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QPointer<QWidget> popup;
+        QTRY_VERIFY((popup = host.window()->findChild<QWidget *>("rrKosyncOpening")) && popup->isVisible());
+        const auto lateReady = network->completed;
+        QVERIFY(bool(lateReady));
+        if (scenario == "ready") {
+            network->connected = true;
+            auto completed = std::move(network->completed);
+            network->completed = {};
+            completed(true);
+            QTRY_VERIFY(attempts.count() > 0);
+            QVERIFY(click(canvas, popup->findChild<QPushButton *>("rrKosyncCancel")));
+        } else if (scenario == "sleep") {
+            const auto position = host.session()->state().value("position").toString();
+            host.window()->sleepReader();
+            QTRY_COMPARE(network->cancellations, 1);
+            QTRY_VERIFY(!host.window()->pendingNetworkSync());
+            QCOMPARE(network->requests, 1);
+            QCOMPARE(attempts.count(), 0);
+            const auto identity = QUrl::fromLocalFile(QFileInfo(textBook).absoluteFilePath()).toString();
+            QCOMPARE(storage::readBookState(paths, identity).object.value("position").toString(), position);
+        } else if (scenario == "deadline") {
+            QTRY_VERIFY_WITH_TIMEOUT(!popup || !popup->isVisible(), 12000);
+            QCOMPARE(network->cancellations, 1);
+            QCOMPARE(attempts.count(), 0);
+        } else {
+            QVERIFY(click(canvas, popup->findChild<QPushButton *>("rrKosyncCancel")));
+            QCOMPARE(network->cancellations, 1);
+            network->connected = true;
+            lateReady(true);
+            QCoreApplication::processEvents();
+            QCOMPARE(attempts.count(), 0);
+            network->connected = false;
+            auto *timer = host.window()->findChild<QTimer *>("rrKosyncTimer");
+            QVERIFY(timer && QMetaObject::invokeMethod(timer, "timeout", Qt::DirectConnection));
+            QCOMPARE(network->requests, 1);
+            QCOMPARE(attempts.count(), 0);
+            if (scenario == "login") {
+                // Editing credentials exposes Sign in even for the saved account.
+                auto *username = host.window()->findChild<QPushButton *>("rrKosyncUsername");
+                QVERIFY(username);
+                username->click();
+                auto *input = host.window()->findChild<QLineEdit *>("rrKosyncInput");
+                QVERIFY(input);
+                input->setText("another-reader");
+                host.window()->findChild<QPushButton *>("rrKosyncEditSave")->click();
+                QTRY_VERIFY(!host.window()->findChild<QLineEdit *>("rrKosyncInput"));
+                host.window()->findChild<QPushButton *>("rrKosyncPassword")->click();
+                input = host.window()->findChild<QLineEdit *>("rrKosyncInput");
+                QVERIFY(input);
+                input->setText("fixture-password");
+                host.window()->findChild<QPushButton *>("rrKosyncEditSave")->click();
+                QTRY_VERIFY(!host.window()->findChild<QLineEdit *>("rrKosyncInput"));
+                host.window()->findChild<QPushButton *>("rrKosyncLogin")->click();
+            } else {
+                auto *sync = host.window()->findChild<QPushButton *>("rrKosyncNow");
+                QVERIFY(sync);
+                sync->click();
+            }
+            QCOMPARE(network->requests, 2);
+            QVERIFY(network->interactive);
+            QVERIFY(!host.window()->findChild<QPushButton *>("rrKosyncServer")->isEnabled());
+            const auto failed = std::move(network->completed);
+            network->completed = {};
+            failed(false);
+            QCOMPARE(attempts.count(), 0);
+            QVERIFY(host.window()->findChild<QPushButton *>("rrKosyncServer")->isEnabled());
+            if (scenario == "login") {
+                // Password consumption makes the next sign-in invalid. It must
+                // report that locally without opening another networking dialog.
+                host.window()->findChild<QPushButton *>("rrKosyncLogin")->click();
+                QCOMPARE(network->requests, 2);
+            }
+        }
+        QVERIFY(!kosync::Client(paths.syncAccount()).lastSync().isValid());
+    }
+    void verifyKosyncWakeRecovery() {
+        const QUrl destination(qEnvironmentVariable("KOBALT_KOSYNC_TEST_SERVER"));
+        QTcpServer relay;
+        QVector<QPointer<QTcpSocket>> connections;
+        int accepted = 0;
+        connect(&relay, &QTcpServer::newConnection, &relay, [&] {
+            while (auto *incoming = relay.nextPendingConnection()) {
+                ++accepted;
+                connections.append(incoming);
+                auto *upstream = new QTcpSocket(incoming);
+                connect(incoming, &QTcpSocket::readyRead, upstream, [incoming, upstream] {
+                    if (upstream->state() == QAbstractSocket::ConnectedState) upstream->write(incoming->readAll());
+                });
+                connect(upstream, &QTcpSocket::connected, incoming, [incoming, upstream] { upstream->write(incoming->readAll()); });
+                connect(upstream, &QTcpSocket::readyRead, incoming, [incoming, upstream] { incoming->write(upstream->readAll()); });
+                connect(incoming, &QTcpSocket::disconnected, incoming, &QObject::deleteLater);
+                connect(upstream, &QTcpSocket::disconnected, incoming, &QObject::deleteLater);
+                upstream->connectToHost(destination.host(), quint16(destination.port()));
+            }
+        });
+        QVERIFY(relay.listen(QHostAddress::LocalHost));
+        const auto port = relay.serverPort();
+        auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.syncAccount(), {
+            {"schema", 1}, {"server", QString("https://localhost:%1").arg(port)},
+            {"username", qEnvironmentVariable("KOBALT_KOSYNC_TEST_USER")}, {"key", QString(32, 'a')},
+            {"device_id", "wake-recovery-device"}, {"automatic", true}}));
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        // Isolate the initial state from earlier rows using the same server account.
+        kosync::Client seed(paths.syncAccount());
+        bool seeded = false;
+        QString seedError;
+        seed.push(host.session()->syncDigest(), {host.session()->state().value("position").toString(), {}, {}, 0},
+                  [&](QString error) { seedError = error; seeded = true; });
+        QTRY_VERIFY_WITH_TIMEOUT(seeded, 12000);
+        QVERIFY2(seedError.isEmpty(), qPrintable(seedError));
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        auto *status = host.window()->findChild<QLabel *>("rrKosyncStatus");
+        QVERIFY(status);
+        QTRY_COMPARE_WITH_TIMEOUT(status->text(), strings::get("kosync.up_to_date"), 12000);
+        host.window()->sleepReader();
+        QTRY_VERIFY_WITH_TIMEOUT(!host.window()->pendingNetworkSync(), 3500);
+        const auto position = host.session()->state().value("position").toString();
+        relay.close();
+        for (const auto &incoming : connections) if (incoming) incoming->abort();
+        QCoreApplication::processEvents();
+        const int before = accepted;
+        QTimer::singleShot(1000, &relay, [&] { QVERIFY(relay.listen(QHostAddress::LocalHost, port)); });
+        host.window()->wakeReader();
+        QTRY_COMPARE_WITH_TIMEOUT(status->text(), strings::get("kosync.up_to_date"), 8000);
+        QVERIFY(accepted > before);
+        QCOMPARE(host.session()->state().value("position").toString(), position);
+    }
+    void verifyKosyncChoice(const QString &decision) {
+        const bool forward = decision == "resume";
+        const bool invalid = decision == "invalid";
+        const QSize size(800, 1136);
+        auto paths = testPaths();
+        QJsonObject account{{"schema", 1}, {"server", qEnvironmentVariable("KOBALT_KOSYNC_TEST_SERVER")},
+            {"username", qEnvironmentVariable("KOBALT_KOSYNC_TEST_USER")}, {"key", QString(32, 'a')},
+            {"device_id", "choice-local"}, {"automatic", false}};
+        QVERIFY(storage::writeJson(paths.syncAccount(), account));
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), size);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), size);
+        canvas.resize(size);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        const int count = host.session()->pages();
+        QVERIFY(count > 10);
+        QVERIFY(host.session()->go(int(count * (forward ? 0.8 : 0.2))));
+        QTRY_VERIFY(!host.session()->busy());
+        const auto remotePosition = invalid ? QString("/not/a/real/position") : host.session()->state().value("position").toString();
+        const auto remoteChapter = host.session()->chapterTitle();
+        // A contradictory percentage must not reverse the source-order warning.
+        const double remotePercent = decision == "dismiss" ? 0.99 : double(host.session()->page()) / (count - 1);
+        QVERIFY(host.session()->go(int(count * 0.5)));
+        QTRY_VERIFY(!host.session()->busy());
+        const auto localPosition = host.session()->state().value("position").toString();
+        const auto localChapter = host.session()->chapterTitle();
+        const double localPercent = 100.0 * host.session()->page() / (count - 1);
+        QVERIFY(!localChapter.isEmpty() && !remoteChapter.isEmpty());
+        account["device_id"] = "choice-remote";
+        account["device_name"] = "Crosspoint X4";
+        const auto otherPath = paths.directory + "/remote-account.json";
+        QVERIFY(storage::writeJson(otherPath, account));
+        kosync::Client other(otherPath);
+        const auto document = host.session()->syncDigest();
+        bool completed = false;
+        QString failure;
+        other.push(document, {remotePosition, {}, {}, remotePercent}, [&](QString error) { failure = error; completed = true; });
+        QTRY_VERIFY_WITH_TIMEOUT(completed, 12000);
+        QVERIFY2(failure.isEmpty(), qPrintable(failure));
+        auto *sync = host.window()->findChild<QPushButton *>("rrKosyncNow");
+        QVERIFY(sync);
+        sync->click();
+        QPointer<QWidget> widget;
+        QTRY_VERIFY((widget = host.window()->findChild<QWidget *>("rrKosyncChoice")) && widget->isVisible());
+        auto *dialog = dynamic_cast<ui::ChoiceModal *>(widget.data());
+        QVERIFY(dialog);
+        auto *description = dialog->descriptionLabel();
+        const auto direction = strings::get(invalid ? "kosync.direction_unknown" : forward ? "kosync.direction_forward" : "kosync.direction_backward");
+        QTRY_VERIFY(description->text().contains(direction));
+        QVERIFY(description->text().contains(localChapter));
+        QVERIFY(description->text().contains(invalid ? strings::get("kosync.chapter_unavailable") : remoteChapter));
+        QVERIFY(description->text().contains("Crosspoint X4"));
+        QVERIFY(description->text().contains("Synced: "));
+        QVERIFY(description->text().contains("On this device · " + QLocale().toString(localPercent, 'f', 1) + "%"));
+        QVERIFY(description->text().contains("Synced position · " + QLocale().toString(remotePercent * 100, 'f', 1) + "%"));
+        QCOMPARE(description->textFormat(), Qt::PlainText);
+        QVERIFY(host.window()->rect().contains(dialog->card()->geometry()));
+        QCOMPARE(description->visibleRegion().boundingRect(), description->rect());
+        QCOMPARE(host.session()->state().value("position").toString(), localPosition);
+        if (!invalid && !forward) {
+            QCOMPARE(dialog->findChild<QLabel *>("rrModalTitle")->text(), strings::get("kosync.resume_backward_title"));
+            QCOMPARE(dialog->focusWidget(), dialog->secondaryButton());
+        }
+        const auto capture = qEnvironmentVariable("KOBALT_KOSYNC_CHOICE_CAPTURE");
+        if (!capture.isEmpty() && (decision == "keep" || forward))
+            QVERIFY(host.window()->grab().save(capture + (forward ? "-forward.png" : "-backward.png")));
+        if (decision == "dismiss") dialog->dismissed();
+        else if (decision == "keep") dialog->secondaryButton()->click();
+        else dialog->primaryButton()->click();
+        QTRY_VERIFY(!widget || !widget->isVisible());
+        auto *status = host.window()->findChild<QLabel *>("rrKosyncStatus");
+        if (decision == "keep") {
+            sync->click();
+            QTRY_COMPARE_WITH_TIMEOUT(status->text(), strings::get("kosync.up_to_date"), 12000);
+        } else if (forward) {
+            QTRY_COMPARE_WITH_TIMEOUT(status->text(), strings::get("kosync.resumed"), 12000);
+            QCOMPARE(host.session()->state().value("position").toString(), remotePosition);
+        } else if (invalid) {
+            QTRY_COMPARE_WITH_TIMEOUT(status->text(), strings::get("kosync.position_error"), 12000);
+            QCOMPARE(host.session()->state().value("position").toString(), localPosition);
+        }
+        host.window()->close();
+        QTRY_VERIFY(host.idle());
+        completed = false;
+        kosync::Progress received;
+        other.pull(document, [&](kosync::Progress value, QString error) { received = value; failure = error; completed = true; });
+        QTRY_VERIFY_WITH_TIMEOUT(completed, 12000);
+        QVERIFY2(failure.isEmpty(), qPrintable(failure));
+        QCOMPARE(received.position, decision == "keep" ? localPosition : remotePosition);
+    }
     std::unique_ptr<QTemporaryDir> directory;
 };
 
@@ -3056,6 +5573,15 @@ int main(int argc, char **argv) {
     if (QGuiApplication::platformName() != "minimal")
         return 2;
     app.setStyle("Fusion");
+    if (!qEnvironmentVariableIsEmpty("KOBALT_KOSYNC_TEST_CA")) {
+        auto ssl = QSslConfiguration::defaultConfiguration();
+        auto authorities = ssl.caCertificates();
+        const auto certificates = QSslCertificate::fromPath(qEnvironmentVariable("KOBALT_KOSYNC_TEST_CA"));
+        if (certificates.isEmpty()) return 2;
+        authorities.append(certificates);
+        ssl.setCaCertificates(authorities);
+        QSslConfiguration::setDefaultConfiguration(ssl);
+    }
     app.setQuitOnLastWindowClosed(false);
     auto &assets = test::readerAssets();
     if (!assets.available() || !ui::initializeInterfaceFonts(assets))
@@ -3072,7 +5598,12 @@ int main(int argc, char **argv) {
     if (!books.isValid() || !prepareSleepBooks(books.path()))
         return 2;
     ReaderLifecycleTests tests;
-    QTimer::singleShot(0, &app, [&] { app.exit(QTest::qExec(&tests, argc, argv)); });
+    QTimer::singleShot(0, &app, [&] {
+        // The test inspects saved data between events; the reader's own work
+        // runs inside event delivery.
+        mainthread::checkEventsOnly(true);
+        app.exit(QTest::qExec(&tests, argc, argv));
+    });
     return app.exec();
 }
 

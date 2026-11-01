@@ -25,12 +25,13 @@ class PageScrubber;
 struct ToolbarComposition {
     ui::Panel *panel = nullptr;
     QLayout *rows = nullptr;
-    QPushButton *exitAction = nullptr, *settings = nullptr, *bookmarks = nullptr, *annotate = nullptr;
+    QWidget *exitAction = nullptr;
+    QPushButton *settings = nullptr, *bookmarks = nullptr, *annotate = nullptr;
     QLabel *clock = nullptr, *session = nullptr, *battery = nullptr;
     ui::BluetoothIndicator *bluetooth = nullptr;
+    ui::WifiIndicator *wifi = nullptr;
     QPushButton *formattingWarning = nullptr;
-    QPushButton *search = nullptr;
-    // Fork-only dark mode quick toggle, parked immediately left of search.
+    QPushButton *search = nullptr, *sync = nullptr;
     QPushButton *darkTheme = nullptr;
 };
 enum class NavigationDestination { Chapters, Seek, Text, Layout, Light, Stats, Search };
@@ -55,7 +56,7 @@ public:
     explicit BottomNavigation(QWidget *parent);
     std::function<void(NavigationDestination)> activated;
     void select(int destination, bool enabled, bool lightAvailable);
-    static constexpr ui::Px barHeight = ui::metrics::chrome::actionHeight;
+    static int barHeight();
     void setPanelOpen(bool open);
     void setTextFace(const QString &face);
     void setReturnLabel(const QString &label, const QString &note);
@@ -68,9 +69,13 @@ public:
 
 protected:
     void paintEvent(QPaintEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
+    // Shows the labels unless the option hides them or one does not fit.
+    void updateLabels();
     bool panelOpen = false;
+    bool labelsHidden = false;
     QVector<QPushButton *> tabs;
     ui::CaptionButton *returnButton;
     QWidget *returnRow;
@@ -113,7 +118,7 @@ public:
         return bar->y();
     }
     int contentBottom(QSize size) const {
-        return size.height() - BottomNavigation::barHeight;
+        return size.height() - BottomNavigation::barHeight();
     }
     bool contains(QPoint global) const;
 
@@ -126,10 +131,12 @@ private:
     QWidget *exitAction, *rules, *settings, *bookmarks, *annotate, *upperEdge, *lowerEdge;
     QLabel *clock, *session, *battery;
     ui::BluetoothIndicator *bluetooth;
+    ui::WifiIndicator *wifi;
     QPushButton *formattingWarning;
-    QPushButton *search;
-    QPushButton *darkTheme;
-    QString searchStyle;
+    QPushButton *search, *sync;
+    QString searchStyle, syncStyle;
+    ui::ButtonPaintMode syncPaint = ui::ButtonPaintMode::Native;
+    QPushButton *darkTheme = nullptr;
     ui::ButtonPaintMode searchPaint = ui::ButtonPaintMode::Native;
     QString darkThemeStyle;
     ui::ButtonPaintMode darkThemePaint = ui::ButtonPaintMode::Native;
