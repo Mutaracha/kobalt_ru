@@ -862,7 +862,7 @@
 
 "annotations.color_failed" = "Не удалось сохранить цвет. Попробуйте снова.";
 
-"settings.default_menu_view" = "Стиль меню по умолчанию";
+"settings.default_menu_view" = "Стиль меню";
 "settings.default_menu_view_description" = "Выберите вид, который показывается при открытии меню чтения.";
 "settings.menu_view_none" = "По умолчанию";
 "settings.menu_view_seek" = "Режим навигации";
@@ -1035,15 +1035,15 @@
 "settings.paragraph_gap" = "Интервал";
 "settings.paragraph_indent" = "Отступ первой строки";
 "settings.paragraph_adjustments_value" = "Интервал %1 · Отступ %2";
-"settings.session_timeout" = "Новая сессия после сна";
-"settings.session_timeout_description" = "Пробуждение после этого времени начинает новую сессию чтения автоматически. Закрывать и открывать книгу не нужно.";
-"settings.session_timeout_15" = "15 минут";
-"settings.session_timeout_60" = "1 час";
-"settings.session_timeout_240" = "4 часа";
-"settings.session_timeout_360" = "6 часов";
-"settings.session_timeout_720" = "12 часов";
-"settings.session_timeout_0" = "Никогда";
-"settings.session_timeout_never_description" = "После пробуждения продолжается прежняя сессия, даже после долгого простоя.";
+"settings.session_timeout" = "Новый отсчёт времени чтения";
+"settings.session_timeout_description" = "Если устройство спало не меньше выбранного времени, после пробуждения время текущей сессии чтения начнётся с нуля. Позиция в книге и общая статистика сохраняются.";
+"settings.session_timeout_15" = "После 15 минут сна";
+"settings.session_timeout_60" = "После 1 часа сна";
+"settings.session_timeout_240" = "После 4 часов сна";
+"settings.session_timeout_360" = "После 6 часов сна";
+"settings.session_timeout_720" = "После 12 часов сна";
+"settings.session_timeout_0" = "Продолжать прежнюю сессию";
+"settings.session_timeout_never_description" = "После сна любой длительности время текущей сессии продолжает отсчитываться с прежнего значения. Время сна не учитывается как чтение.";
 "settings.section_words_letters" = "Слова и буквы";
 "settings.section_page_breaks" = "Разрывы страниц";
 "settings.section_smart_styling" = "Умные стили";

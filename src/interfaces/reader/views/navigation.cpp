@@ -16,9 +16,15 @@
 namespace kobalt::reader {
 namespace c = ui::metrics::chrome;
 namespace {
-// The tab labels are capitals, so the cap height is their ink.
+// Use one shared ink height for all translated labels. Latin H alone is
+// shorter than Cyrillic Д (in НАВИГАЦИЯ/РАСКЛАДКА); the private text painter
+// clips to this area after centering, otherwise cutting both edges of Д.
 int tabCapital(int pixels) {
-    return ui::interfaceInkBounds(QStringLiteral("H"), ui::interfaceFont(pixels)).height();
+    QString sample = QStringLiteral("H");
+    for (const auto *key : {"navigation.chapters", "navigation.seek", "navigation.text",
+                            "navigation.layout", "navigation.light", "navigation.stats"})
+        sample += QLatin1Char(' ') + strings::get(key);
+    return ui::interfaceInkBounds(sample, ui::interfaceFont(pixels)).height();
 }
 constexpr ui::Px toolbarBorder = c::heavyRule;
 class ToolbarRules final : public QWidget {

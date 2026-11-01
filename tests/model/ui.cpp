@@ -14,6 +14,7 @@
 #include "assets/font_catalog.h"
 #include "reader_inputs.h"
 #include "interfaces/reader/views/opening.h"
+#include "interfaces/reader/views/navigation.h"
 #include "interfaces/reader/settings/settings_panel.h"
 #include "host_presentation.h"
 #include "support/qt_font.h"
@@ -171,6 +172,52 @@ int main(int argc, char **argv) {
                 QFontInfo(kobalt::ui::brandFont(32)).family() == "Instrument Serif",
             "Component font substitution");
     checkPrivateInterfaceText(kobalt::test::readerAssets());
+    {
+        // The two Russian labels containing Д need more ink height than H.
+        // Render actual tabs and compare the label's rows to unclipped glyphs.
+        using namespace kobalt::ui;
+        const auto previousLocale = kobalt::strings::locale();
+        const int previousDensity = density();
+        kobalt::strings::setLocale(kobalt::strings::Locale::Russian);
+        for (int ppi : {212, 300}) {
+            setDensity(ppi);
+            QWidget host;
+            auto colors = host.palette();
+            colors.setColor(QPalette::Base, Qt::white);
+            colors.setColor(QPalette::Text, Qt::black);
+            host.setPalette(colors);
+            kobalt::reader::BottomNavigation bar(&host);
+            bar.resize(px(1200), kobalt::reader::BottomNavigation::barHeight());
+            host.resize(bar.size());
+            host.show();
+            app.processEvents();
+            const auto font = interfaceFont(metrics::chrome::tabText);
+            const int latinHeight = interfaceInkBounds(QStringLiteral("H"), font).height();
+            for (const auto *name : {"rrNavSeek", "rrNavLayout"}) {
+                auto *tab = bar.findChild<QPushButton *>(name);
+                require(tab, "Russian bottom tab missing");
+                const auto ink = interfaceInkBounds(tab->text(), font);
+                const int iconBottom = (tab->height() - metrics::chrome::tabIcon -
+                                        metrics::chrome::tabGap - latinHeight) / 2 + metrics::chrome::tabIcon;
+                const auto image = tab->grab().toImage();
+                int first = -1, last = -1;
+                for (int y = iconBottom + 1; y < image.height(); ++y) {
+                    for (int x = px(3); x < image.width() - px(3); ++x) {
+                        if (qGray(image.pixel(x, y)) < 255) {
+                            if (first < 0) first = y;
+                            last = y;
+                            break;
+                        }
+                    }
+                }
+                require(first >= 0 && last - first + 1 == ink.height(),
+                        "Russian bottom-tab label is vertically clipped");
+            }
+        }
+        setDensity(previousDensity);
+        kobalt::strings::setLocale(previousLocale);
+    }
+
     {
         using namespace kobalt::ui;
         const int savedWeight = interfaceWeight();
