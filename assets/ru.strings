@@ -955,7 +955,7 @@
 
 /* Upstream integration 2026-11-01 */
 "reader.book_beautifier" = "Нормализация книги";
-"kosync.title" = "Синхронизация";
+"kosync.title" = "KOsync";
 "kosync.description" = "Синхронизация прогресса с KOReader и Kobalt.";
 "kosync.not_set" = "Нажмите для ввода";
 "kosync.server" = "Адрес сервера";
@@ -968,7 +968,7 @@
 "kosync.sync_now" = "Синхронизировать";
 "kosync.manual_description" = "Без автосинхронизации на верхней панели появляется кнопка ручной синхронизации.";
 "kosync.manual_prompt" = "Синхронизировать прогресс с KOsync?";
-"kosync.manual_prompt_description" = "Эта кнопка запускает синхронизацию вручную. Автосинхронизация выключена: при открытии, закрытии, сне и пробуждении обмена нет. Следующие нажатия запускают обмен сразу.";
+"kosync.manual_prompt_description" = "Эта кнопка запускает синхронизацию вручную. Автосинхронизация выключена: при открытии, закрытии, сне и пробуждении синхронизация не выполняется. Следующие нажатия запускают её сразу.";
 "kosync.show_password" = "Показать";
 "kosync.hide_password" = "Скрыть";
 "kosync.show_password_accessible" = "Показать пароль";
@@ -979,14 +979,14 @@
 "kosync.signing_in" = "Вход…";
 "kosync.opening" = "Синхронизация…";
 "kosync.completed" = "Синхронизация завершена";
-"kosync.cancel_sync" = "Отменить обмен";
+"kosync.cancel_sync" = "Отменить синхронизацию";
 "kosync.opening_description" = "Kobalt синхронизирует прогресс. Подождите...";
-"kosync.skipped" = "Обмен пропущен. Позиция сохранена на устройстве.";
-"kosync.saved_locally" = "Обмен не удался. Позиция сохранена на устройстве.";
+"kosync.skipped" = "Синхронизация пропущена. Позиция сохранена на устройстве.";
+"kosync.saved_locally" = "Синхронизация не удалась. Позиция сохранена на устройстве.";
 "kosync.syncing" = "Синхронизация прогресса…";
 "kosync.up_to_date" = "Прогресс чтения актуален.";
 "kosync.pending" = "Вернитесь к чтению, чтобы выбрать позицию.";
-"kosync.retry_later" = "Ридер занят. Повторим обмен позже.";
+"kosync.retry_later" = "Ридер занят. Повторим синхронизацию позже.";
 "kosync.busy" = "Синхронизация уже выполняется.";
 "kosync.storage_error" = "Не удалось прочитать или сохранить учётную запись. Прежние данные сохранены.";
 "kosync.auth_error" = "Не удалось войти. Проверьте имя пользователя и пароль.";
@@ -1001,7 +1001,7 @@
 "kosync.resume_description" = "Другое устройство сохранило позицию %1% (%2). Выберите, какую позицию оставить.";
 "kosync.keep_local" = "Оставить текущую";
 "kosync.use_remote" = "Принять полученную";
-"kosync.kept_local" = "Ваша позиция сохранена. Отправим её при следующем обмене.";
+"kosync.kept_local" = "Ваша позиция сохранена. Отправим её при следующей синхронизации.";
 "kosync.resumed" = "Чтение продолжено с полученной позиции.";
 "library.exit_to_library" = "Библиотека";
 "common.size_extra_large_short" = "XL";
@@ -1011,7 +1011,7 @@
 "components.wifi_signal" = "Сигнал Wi-Fi: %1 из 4";
 "dictionary_panel.edit_lookup" = "Изменить запрос";
 "dictionary_panel.lookup_word" = "Слово или фраза для поиска";
-"dictionary_panel.update_lookup" = "Обновить поиск";
+"dictionary_panel.update_lookup" = "Искать";
 "dictionary_panel.cancel_edit" = "Отменить правку запроса";
 "dictionary_panel.edit_hint" = "Измените слово или фразу для поиска в словаре.";
 "error.profile_already_in_use" = "Этот профиль открыт в другом Kobalt. Закройте его там и повторите попытку.";
@@ -1048,7 +1048,7 @@
 "settings.section_page_breaks" = "Разрывы страниц";
 "settings.section_smart_styling" = "Умные стили";
 "settings.styling_preview_same" = "При всех вариантах эти образцы выглядят одинаково.";
-"settings.sleep_tile" = "Оформление экрана сна";
+"settings.sleep_tile" = "Плашка на экране сна";
 "settings.sleep_tile_card" = "Карточка";
 "settings.sleep_tile_card_description" = "По умолчанию. Карточка в левом нижнем углу.";
 "settings.sleep_tile_band" = "Нижняя полоса";
@@ -1072,7 +1072,7 @@
 "benchmark.no_scenarios" = "Сценарии не запущены. Проверьте файл сценариев и фильтр.";
 "benchmark.connect" = "Подключите Kobo к компьютеру и откройте %1 для просмотра результатов.";
 "recovery.settings" = "Настройки Kobalt недоступны. Восстановлены значения по умолчанию.";
-"recovery.sync_account" = "Учётная запись синхронизации недоступна. Войдите заново для продолжения обмена.";
+"recovery.sync_account" = "Учётная запись синхронизации недоступна. Войдите заново для продолжения синхронизации.";
 "recovery.database" = "Позиции чтения, закладки и аннотации Kobalt недоступны. Работа начата с пустыми данными.";
 "recovery.backups" = "Исходные файлы находятся в %1.";
 "settings.lookup" = "Поиск";
@@ -1105,8 +1105,8 @@
 "settings.dictionary_font_small" = "Маленький";
 "settings.dictionary_font_standard" = "Обычный";
 "settings.dictionary_font_large" = "Большой";
-"settings.dictionary_font_extra_large" = "Очень большой";
-"settings.dictionary_font_sample" = "Краткое определение.";
+"settings.dictionary_font_extra_large" = "Максимальный";
+"settings.dictionary_font_sample" = "Определение.";
 "settings.tappable_links" = "Ссылки по касанию";
 "settings.tappable_links_description" = "Как открывать сноски и ссылки при чтении.";
 "settings.tappable_links_off" = "Только долгое нажатие";
@@ -1117,7 +1117,7 @@
 "settings.tappable_links_all_description" = "Касайтесь сносок и ссылок для открытия.";
 "settings.vertical_spacing" = "Вертикальные интервалы";
 "settings.vertical_spacing_mode" = "Интервалы страницы";
-"settings.vertical_spacing_apply_to" = "Какие страницы";
+"settings.vertical_spacing_apply_to" = "Область применения";
 "settings.vertical_spacing_description" = "Заполнение почти полных страниц.";
 "settings.vertical_spacing_off" = "Обычные";
 "settings.vertical_spacing_off_description" = "Обычный межстрочный интервал, выравнивание по верху.";
@@ -1125,22 +1125,22 @@
 "settings.vertical_spacing_expand_description" = "Распределяет свободную высоту между строками. Первая строка остаётся на месте.";
 "settings.vertical_spacing_center" = "Центрировать текст";
 "settings.vertical_spacing_center_description" = "Центрирует прозу, занимающую не менее 90% высоты чтения. Межстрочный интервал не меняется.";
-"settings.vertical_spacing_scope" = "Какие страницы";
-"settings.vertical_spacing_scope_description" = "Какие пробелы по высоте корректировать.";
+"settings.vertical_spacing_scope" = "Область применения";
+"settings.vertical_spacing_scope_description" = "Когда корректировать свободное место внизу страницы.";
 "settings.vertical_spacing_scope_all" = "Все подходящие";
-"settings.vertical_spacing_scope_all_description" = "Также корректирует обычные пробелы пагинации на почти полных страницах прозы.";
-"settings.vertical_spacing_scope_protection" = "Только висячие строки";
-"settings.vertical_spacing_scope_protection_description" = "Корректирует лишь когда защита от висячих строк переносит строки, которые иначе поместились бы.";
-"kosync.last_synced" = "Последний обмен: %1";
+"settings.vertical_spacing_scope_all_description" = "Корректирует свободное место внизу всех подходящих, почти полных страниц прозы.";
+"settings.vertical_spacing_scope_protection" = "После защиты от висячих строк";
+"settings.vertical_spacing_scope_protection_description" = "Корректирует свободное место, только если защита от висячих строк перенесла строки, которые иначе поместились бы.";
+"kosync.last_synced" = "Последняя синхронизация: %1";
 "kosync.never" = "Никогда";
 "kosync.sideload_copy" = "Для KOsync скачайте копию без DRM и добавьте её на устройство отдельно.";
 "kosync.learn_more" = "Подробнее";
 "kosync.learn_more_title" = "Синхронизация Kobo и KOsync";
-"kosync.learn_more_description" = "Книги из магазина Kobo используют встроенную синхронизацию Kobo, даже без DRM. Kobalt оставляет обмен прогрессом Kobo.\n\nKOsync — отдельный сервис для KOReader и Kobalt. Для этой книги добавьте копию без DRM как отдельную загруженную вручную книгу и откройте её.\n\nНа всех устройствах используйте один файл книги. Передаётся только прогресс чтения, без книг, закладок и аннотаций.";
+"kosync.learn_more_description" = "Книги из магазина Kobo используют встроенную синхронизацию Kobo, даже без DRM. Kobalt оставляет синхронизацию их прогресса Kobo.\n\nKOsync — отдельный сервис для KOReader и Kobalt. Для этой книги добавьте копию без DRM как отдельную загруженную вручную книгу и откройте её.\n\nНа всех устройствах используйте один файл книги. Передаётся только прогресс чтения, без книг, закладок и аннотаций.";
 "kosync.device_name" = "Имя устройства";
 "kosync.device_name_saved" = "Имя устройства сохранено.";
 "kosync.matching" = "Сопоставление книг";
-"kosync.match_binary" = "По содержимому (по умолчанию)";
+"kosync.match_binary" = "По файлу";
 "kosync.match_filename" = "По имени файла";
 "kosync.match_binary_description" = "Сопоставляет одинаковые файлы книг, даже переименованные. Используйте один способ на всех устройствах.";
 "kosync.match_filename_description" = "Точное имя файла, включая расширение. Разные файлы с одинаковым именем имеют общий прогресс.";
@@ -1155,8 +1155,8 @@
 "kosync.resume_backward_title" = "Вернуться к полученной позиции?";
 "kosync.chapter_unavailable" = "Глава недоступна";
 "kosync.device_unknown" = "Неизвестное устройство";
-"kosync.time_unavailable" = "Время обмена неизвестно";
-"kosync.synced_at" = "Обмен: %1";
+"kosync.time_unavailable" = "Время синхронизации неизвестно";
+"kosync.synced_at" = "Синхронизация: %1";
 "keyboard.shift" = "Регистр";
 "keyboard.symbols" = "Символы";
 "keyboard.space" = "Пробел";
