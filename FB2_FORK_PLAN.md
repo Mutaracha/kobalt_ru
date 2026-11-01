@@ -555,3 +555,9 @@ bool plainEpub() const {
 - Слово Kobalt в кнопке выхода остаётся Instrument Serif. ReturnTitle измеряет и рисует смешанные текстовые runs на единой baseline; кириллица идёт через private font renderer, латиница — через native Qt при необходимости. sizeHint учитывает реальные шрифты. Нестандартные подписи возврата без Kobalt рисуются целиком Sans.
 - About wordmark и общий brandFont не менялись; другие места brand не затронуты. Переводы и настройки хранения не менялись. Карта 7.2: reader_build.cpp/ReturnTitle и settings_panel.cpp/rrSettingsTitle.
 - Проверки: strings parity/генерация и diff --check. Qt5 компиляция — push-CI; внешний вид смешанного заголовка требует проверки на Kobo, native UI-тесты локально недоступны.
+
+
+### 2026-11-01 — исправление компиляции baseline-правки
+
+- CI ed4deb0 и 861772b упали по одной причине: в Tab::paintEvent повторно объявлена переменная ink (существующий QColor и добавленный QRect). Это ошибка нашей правки baseline, не SDK или upstream.
+- Исправлено: QRect переименован в labelInk, обращения top/height обновлены. Общая базовая линия и смена шрифта сохранены. Результат компиляции проверяется новым Qt5-CI; прежние два запуска не считаются успешными.

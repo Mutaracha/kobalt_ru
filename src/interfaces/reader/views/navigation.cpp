@@ -122,11 +122,11 @@ protected:
         // Optical centering each word in the shared box raises labels with
         // descenders. Position each ink box relative to one common baseline.
         const auto commonInk = tabInkBounds(c::tabText);
-        const auto ink = ui::interfaceInkBounds(text(), label);
+        const auto labelInk = ui::interfaceInkBounds(text(), label);
         const int labelTop = icon.bottom() + 1 + c::tabGap;
         ui::drawOpticalText(painter,
-                            QRect(ui::px(2), labelTop + ink.top() - commonInk.top(),
-                                  width() - ui::px(4), ink.height()), text(), true);
+                            QRect(ui::px(2), labelTop + labelInk.top() - commonInk.top(),
+                                  width() - ui::px(4), labelInk.height()), text(), true);
     }
 
 private:
