@@ -193,7 +193,8 @@ int main(int argc, char **argv) {
             app.processEvents();
             const auto font = interfaceFont(metrics::chrome::tabText);
             const int latinHeight = interfaceInkBounds(QStringLiteral("H"), font).height();
-            for (const auto *name : {"rrNavSeek", "rrNavLayout"}) {
+            int commonBaseline = -1;
+            for (const auto *name : {"rrNavChapters", "rrNavSeek", "rrNavLayout", "rrNavLight", "rrNavStats"}) {
                 auto *tab = bar.findChild<QPushButton *>(name);
                 require(tab, "Russian bottom tab missing");
                 const auto ink = interfaceInkBounds(tab->text(), font);
@@ -212,6 +213,10 @@ int main(int argc, char **argv) {
                 }
                 require(first >= 0 && last - first + 1 == ink.height(),
                         "Russian bottom-tab label is vertically clipped");
+                const int baseline = first - ink.top();
+                if (commonBaseline < 0) commonBaseline = baseline;
+                require(qAbs(baseline - commonBaseline) <= 1,
+                        "Bottom-tab labels do not share a baseline");
             }
         }
         setDensity(previousDensity);

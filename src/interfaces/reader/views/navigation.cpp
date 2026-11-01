@@ -19,12 +19,15 @@ namespace {
 // Use one shared ink height for all translated labels. Latin H alone is
 // shorter than Cyrillic Д (in НАВИГАЦИЯ/РАСКЛАДКА); the private text painter
 // clips to this area after centering, otherwise cutting both edges of Д.
-int tabCapital(int pixels) {
+QRect tabInkBounds(int pixels) {
     QString sample = QStringLiteral("H");
     for (const auto *key : {"navigation.chapters", "navigation.seek", "navigation.text",
                             "navigation.layout", "navigation.light", "navigation.stats"})
         sample += QLatin1Char(' ') + strings::get(key);
-    return ui::interfaceInkBounds(sample, ui::interfaceFont(pixels)).height();
+    return ui::interfaceInkBounds(sample, ui::interfaceFont(pixels));
+}
+int tabCapital(int pixels) {
+    return tabInkBounds(pixels).height();
 }
 constexpr ui::Px toolbarBorder = c::heavyRule;
 class ToolbarRules final : public QWidget {
@@ -116,8 +119,14 @@ protected:
         if (labelsHidden)
             return;
         painter.setFont(label);
-        ui::drawOpticalText(painter, QRect(ui::px(2), icon.bottom() + 1 + c::tabGap, width() - ui::px(4), capital),
-                            text(), true);
+        // Optical centering each word in the shared box raises labels with
+        // descenders. Position each ink box relative to one common baseline.
+        const auto commonInk = tabInkBounds(c::tabText);
+        const auto ink = ui::interfaceInkBounds(text(), label);
+        const int labelTop = icon.bottom() + 1 + c::tabGap;
+        ui::drawOpticalText(painter,
+                            QRect(ui::px(2), labelTop + ink.top() - commonInk.top(),
+                                  width() - ui::px(4), ink.height()), text(), true);
     }
 
 private:
