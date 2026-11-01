@@ -99,8 +99,8 @@ protected:
             ink |= ui::interfaceInkBounds(run.first, run.second).translated(advance, 0);
             advance += ui::interfaceTextWidth(run.first, run.second);
         }
-        const int x = qRound(bounds.center().x() - ink.center().x());
-        const int baseline = qRound(bounds.center().y() - ink.center().y()) + int(m::chrome::returnTitleOffset);
+        const int x = bounds.center().x() - ink.center().x();
+        const int baseline = bounds.center().y() - ink.center().y() + int(m::chrome::returnTitleOffset);
         painter.setClipRect(bounds);
         advance = 0;
         for (const auto &run : runs) {
