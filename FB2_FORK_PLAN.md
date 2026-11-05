@@ -572,3 +572,8 @@ bool plainEpub() const {
 - Карта 7.2: изменения reader_dialogs.cpp (hint), sleep_screen.{h,cpp} (две строки), light_panel.{h,cpp} (галочка/callback), reader_build.cpp/reader_p.h/reader_settings.cpp (флаг и жесты), en/ru.strings (3 новых ключа + RU-описания), doc/storage.md, пользовательская инструкция.
 - Тесты добавлены в reader_lifecycle.cpp: RU/EN разбиение и старый snapshot; normal/quiet жест с fake LightControls (изменение и native save, отсутствие overlay), запись галочки. Существующие tile repaint-тесты используют актуальную геометрию. Native тесты локально не запускались — нет Qt SDK.
 - Валидация: паритет и скан src для en/ru; diff --check. Полная Qt5-сборка — push-CI, устройство после сборки требует визуальной проверки ленточки и отсутствия вспышки после жеста.
+
+### 2026-11-05 — уточнение названия галочки подсветки
+
+- Готово: по замечанию пользователя название заменено на «Убрать всплывающее окно с процентами подсветки» (EN: “Hide light percentage popup”). Описание и поведение quiet_light_gestures не меняются. Пользовательская инструкция обновлена.
+- Проверки: паритет и генерация EN/RU, offline checks, diff --check. Native/UI-проверки для правки только текста не повторяются; успешная Kobo Qt5 сборка поведения — d49a0af, CI 42090473055.

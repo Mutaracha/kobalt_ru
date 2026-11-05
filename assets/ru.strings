@@ -1175,6 +1175,6 @@
 
 "settings.sleep_tile_progress_hint" = "Все варианты показывают прогресс чтения.";
 
-"light_panel.quiet_gestures" = "Свайпы подсветки без индикации";
+"light_panel.quiet_gestures" = "Убрать всплывающее окно с процентами подсветки";
 
 "light_panel.quiet_gestures_description" = "Менять яркость и тёплый свет свайпом без окна процентов и обновления страницы после жеста.";
