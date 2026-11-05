@@ -897,24 +897,31 @@ private slots:
     }
     void quietLightGestures_data() {
         QTest::addColumn<bool>("quiet");
-        QTest::newRow("normal") << false;
-        QTest::newRow("quiet") << true;
+        QTest::addColumn<bool>("enabled");
+        QTest::addColumn<bool>("touchInput");
+        for (bool quiet : {false, true})
+            for (bool enabled : {false, true})
+                for (bool touch : {false, true})
+                    QTest::newRow(qPrintable(QString("%1-%2-%3").arg(quiet ? "quiet" : "normal",
+                        enabled ? "enabled" : "disabled", touch ? "touch" : "mouse"))) << quiet << enabled << touch;
     }
     void quietLightGestures() {
         QFETCH(bool, quiet);
+        QFETCH(bool, enabled);
+        QFETCH(bool, touchInput);
         class Light final : public LightControls {
         public:
-            int level = 50, saved = 0;
+            int level = 50, saved = 0, warm = 50, warmthSaved = 0;
             bool active = false;
             bool initialize() override { return true; }
-            bool hasWarmth() const override { return false; }
-            int warmth() const override { return 0; }
+            bool hasWarmth() const override { return true; }
+            int warmth() const override { return warm; }
             int warmthMinimum() const override { return 0; }
-            int warmthMaximum() const override { return 0; }
+            int warmthMaximum() const override { return 100; }
             int warmthStep() const override { return 1; }
             bool automaticWarmth() const override { return false; }
-            int setWarmth(int) override { return -1; }
-            bool saveWarmth() override { return false; }
+            int setWarmth(int value) override { warm = value; return warm; }
+            bool saveWarmth() override { ++warmthSaved; return true; }
             bool setAutomaticWarmth(bool) override { return false; }
             bool beginGesture() override { active = true; return true; }
             int setGestureLevel(int value) override { level = value; return level; }
@@ -923,7 +930,7 @@ private slots:
             bool gesturing() const override { return active; }
         };
         const auto paths = testPaths();
-        QVERIFY(storage::writeJson(paths.preferences(), {{"quiet_light_gestures", quiet}}));
+        QVERIFY(storage::writeJson(paths.preferences(), {{"quiet_light_gestures", quiet}, {"edge_light_gestures", enabled}}));
         ReaderFixture host(paths, testFonts, testPlaceholder);
         CloseHost cleanup{host};
         Light *controller = nullptr;
@@ -946,13 +953,33 @@ private slots:
         auto *page = static_cast<ReadingPage *>(host.window()->findChild<QWidget *>("rrPage"));
         auto *notice = host.window()->findChild<QWidget *>("rrBrightnessNotice");
         QVERIFY(page && notice && controller);
-        QVERIFY(page->lightStarted(false));
-        page->lightChanged(0.2);
-        QVERIFY(controller->level != 50);
-        QCOMPARE(notice->isVisible(), !quiet);
-        page->lightFinished(true);
-        QCOMPARE(controller->saved, 1);
-        QCOMPARE(notice->isVisible(), !quiet);
+        QCOMPARE(page->brightnessEdge, enabled);
+        QCOMPARE(page->warmthEdge, enabled);
+        auto *device = QTest::createTouchDevice();
+        for (bool warmth : {false, true}) {
+            const QPoint from(warmth ? page->width() - 30 : 30, page->height() * 3 / 5);
+            const QPoint to = from - QPoint(0, page->height() / 5);
+            // A real press/move/release, not a direct call to the light callbacks.
+            // The mouse variant routes through the canvas and hit testing;
+            // touch exercises the page's contact parser and gesture recognizer.
+            QCOMPARE(host.window()->childAt(page->mapTo(host.window(), from)), static_cast<QWidget *>(page));
+            if (touchInput) {
+                auto touch = QTest::touchEvent(page, device, false);
+                touch.press(0, from, page).commit();
+                touch.move(0, to, page).commit();
+                touch.release(0, to, page).commit();
+            } else {
+                const auto point = [&](QPoint p) { return canvas.mapFromScene(page->mapTo(canvas.surface(), p)); };
+                QTest::mousePress(canvas.viewport(), Qt::LeftButton, Qt::NoModifier, point(from));
+                QTest::mouseMove(canvas.viewport(), point(to));
+                QTest::mouseRelease(canvas.viewport(), Qt::LeftButton, Qt::NoModifier, point(to));
+            }
+            QCOMPARE(warmth ? controller->warm != 50 : controller->level != 50, enabled);
+            QCOMPARE(warmth ? controller->warmthSaved : controller->saved, enabled ? 1 : 0);
+            QCOMPARE(notice->isVisible(), enabled && !quiet);
+            if (notice->isVisible())
+                QTRY_VERIFY(!notice->isVisible());
+        }
         if (quiet) {
             QVERIFY(clickAt(canvas, QPoint(nativeSize.width() / 2, nativeSize.height() / 4)));
             auto *tab = host.window()->findChild<QPushButton *>("rrNavLight");
@@ -961,8 +988,12 @@ private slots:
             auto *option = host.window()->findChild<QCheckBox *>("rrQuietLightGestures");
             QTRY_VERIFY(option && option->isVisible());
             QVERIFY(option->isChecked());
-            QVERIFY(click(canvas, option));
-            QTRY_VERIFY(!storage::readJson(paths.preferences()).value("quiet_light_gestures").toBool());
+            QCOMPARE(option->isEnabled(), enabled);
+            if (enabled) {
+                QVERIFY(click(canvas, option));
+                QTRY_VERIFY(!storage::readJson(paths.preferences()).value("quiet_light_gestures").toBool());
+            }
+            QCOMPARE(storage::readJson(paths.preferences()).value("edge_light_gestures").toBool(), enabled);
         }
     }
 

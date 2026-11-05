@@ -577,3 +577,11 @@ bool plainEpub() const {
 
 - Готово: по замечанию пользователя название заменено на «Убрать всплывающее окно с процентами подсветки» (EN: “Hide light percentage popup”). Описание и поведение quiet_light_gestures не меняются. Пользовательская инструкция обновлена.
 - Проверки: паритет и генерация EN/RU, offline checks, diff --check. Native/UI-проверки для правки только текста не повторяются; успешная Kobo Qt5 сборка поведения — d49a0af, CI 42090473055.
+
+### 2026-11-05 — расследование отказа свайпов подсветки
+
+- Подтверждено пользователем: после закрытия панелей оба края не работают и с тихим режимом, и без него. Причина ещё НЕ установлена, device-pass отсутствует; предыдущая проверка прямыми callbacks не покрывала доставку ввода.
+- Готово: добавлена ограниченная событийная диагностика цепочки contact → page-contact → started/rejected(reason) → finished(requested/actual/save), а также фактических настроек master/quiet и доступности подсветки. Без per-move логирования, без текста/координат страницы, без новых IO waits/refresh. События идут в существующий bounded diagnostic log.
+- Готово: master edge_light_gestures остаётся источником enablement; lightStarted дополнительно проверяет соответствующий флаг края. После записи quiet применяется тот же applyEdgeLight, не включая master. Поведение скрытия notice не меняется. Это диагностическая сборка, не подтверждённое исправление причины сбоя.
+- Тест quietLightGestures расширен: normal/quiet × master enabled/disabled × mouse/touch, оба края, изменение/native-save и показ notice. Mouse проходит canvas/hit-test, touch — contact parser/recognizer, без прямого вызова lightStarted/lightChanged/lightFinished. Проверяется недоступность quiet checkbox при выключенном master и сохранность master при записи quiet. Native тесты не запущены локально (нет Qt SDK).
+- Проверки: en/ru parity + generation, offline suite (scratch timestamp workaround), diff --check. Kobo Qt5: push-CI. Следующий шаг: получить events.jsonl после обоих режимов на устройстве, определить точку отказа и внести адресное исправление; не объявлять проблему решённой по одной сборке.

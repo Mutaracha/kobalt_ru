@@ -317,6 +317,7 @@ private:
     int brightnessInitial = 0, warmthInitial = 0;
     bool gestureWarmth = false, warmthAutomatic = false, warmthSupported = false;
     bool quietLightGesture = false;
+    int lightGestureRequested = -1, lightGestureActual = -1;
     int pendingDarkMode = -1;
     bool applyingText = false, closing = false;
     kobalt::ChoiceScreen *choices = nullptr;

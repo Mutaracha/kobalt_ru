@@ -750,6 +750,25 @@ bool Reader::eventFilter(QObject *watched, QEvent *event) {
                        type == QEvent::MouseMove || type == QEvent::MouseButtonRelease;
     if (!touch && !mouse)
         return QWidget::eventFilter(watched, event);
+    if ((type == QEvent::TouchBegin || type == QEvent::MouseButtonPress) && isVisible() && watched->isWidgetType()) {
+        auto *target = static_cast<QWidget *>(watched);
+        if (target == this || isAncestorOf(target)) {
+            QPointF global;
+            bool hasPoint = true;
+            if (touch) {
+                const auto points = ui::touchPositions(static_cast<QTouchEvent *>(event), true);
+                hasPoint = !points.isEmpty();
+                if (hasPoint)
+                    global = points.first();
+            } else
+                global = ui::mousePosition(static_cast<QMouseEvent *>(event), true);
+            const QPoint local = mapFromGlobal(global.toPoint());
+            if (hasPoint && rect().contains(local) && (local.x() <= width() * .13 || local.x() >= width() * .87))
+                diagnostic("light-swipe-contact", {{"target", target->objectName()}, {"touch", touch},
+                                                    {"right", local.x() >= width() * .87},
+                                                    {"left_enabled", page->brightnessEdge}, {"right_enabled", page->warmthEdge}});
+        }
+    }
     bool &dismissing = touch ? dismissingFontTouch : dismissingFontMouse;
     const bool begin =
         type == QEvent::TouchBegin || type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick;

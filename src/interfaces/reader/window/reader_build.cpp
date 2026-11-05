@@ -643,6 +643,7 @@ void Reader::buildToolbar() {
         if (!writePreferences(next))
             return false;
         preferences = next;
+        applyEdgeLight();
         return true;
     };
     lightPopup->changed = [lightButton, this] {
@@ -1543,23 +1544,50 @@ void Reader::buildNotices() {
 
 void Reader::connectLightGestures() {
     page->lightStarted = [this](bool warmth) {
-        if (annotationMode || !isVisible() || services.suspended() || book->deviceTransition() || this->model->busy() ||
-            appearanceEdit.preview() || general->isVisible() || topControls->isVisible() || choices->isVisible() ||
-            dictionaryPanel->isVisible() || searchPanel->isVisible() || linksActive() || lookupPending || syncDialog || kosyncDialog ||
-            finishDialog || applyingText || lightPopup->isVisible() || exitPending)
+        // Controls owns gesture enablement; the quiet setting only owns presentation.
+        const char *blocked = !(warmth ? page->warmthEdge : page->brightnessEdge) ? "edge-disabled"
+                              : annotationMode ? "annotation-mode"
+                              : !isVisible() ? "reader-hidden"
+                              : services.suspended() ? "suspended"
+                              : book->deviceTransition() ? "device-transition"
+                              : model->busy() ? "model-busy"
+                              : appearanceEdit.preview() ? "appearance-preview"
+                              : general->isVisible() ? "settings-visible"
+                              : topControls->isVisible() ? "toolbar-visible"
+                              : choices->isVisible() ? "choices-visible"
+                              : dictionaryPanel->isVisible() ? "dictionary-visible"
+                              : searchPanel->isVisible() ? "search-visible"
+                              : linksActive() ? "links-active"
+                              : lookupPending ? "lookup-pending"
+                              : syncDialog || kosyncDialog ? "sync-dialog"
+                              : finishDialog ? "finish-dialog"
+                              : applyingText ? "applying-text"
+                              : lightPopup->isVisible() ? "light-panel-visible"
+                              : exitPending ? "exit-pending" : nullptr;
+        if (blocked) {
+            diagnostic("light-swipe-rejected", {{"reason", QString::fromLatin1(blocked)}, {"warmth", warmth},
+                                                {"quiet", preferences.value("quiet_light_gestures").toBool(false)}});
             return false;
+        }
         if (warmth) {
-            if (!light->initialize() || !light->hasWarmth())
+            if (!light->initialize() || !light->hasWarmth()) {
+                diagnostic("light-swipe-rejected", {{"reason", "warmth-unavailable"}, {"warmth", true}});
                 return false;
+            }
             warmthInitial = light->warmth();
             warmthAutomatic = light->automaticWarmth();
         } else {
-            if (!light->beginGesture())
+            if (!light->beginGesture()) {
+                diagnostic("light-swipe-rejected", {{"reason", "brightness-begin-failed"}, {"warmth", false}});
                 return false;
+            }
             brightnessInitial = light->brightness();
         }
         gestureWarmth = warmth;
         quietLightGesture = preferences.value("quiet_light_gestures").toBool(false);
+        lightGestureRequested = lightGestureActual = warmth ? warmthInitial : brightnessInitial;
+        diagnostic("light-swipe-started", {{"warmth", warmth}, {"quiet", quietLightGesture},
+                                           {"initial", lightGestureActual}});
         brightnessHide.stop();
         return true;
     };
@@ -1576,13 +1604,15 @@ void Reader::connectLightGestures() {
             const int step = qMax(1, light->warmthStep());
             const int level =
                 qBound(minimum, minimum + qRound(snapped * range / (100.0 * step)) * step, minimum + range);
-            const int value = light->setWarmth(snapped == 100 ? minimum + range : level);
+            lightGestureRequested = snapped == 100 ? minimum + range : level;
+            const int value = lightGestureActual = light->setWarmth(lightGestureRequested);
             if (value < 0)
                 return;
             if (!quietLightGesture)
                 brightnessNotice->setLevel(true, qRound(100.0 * (value - minimum) / range));
         } else {
-            const int value = light->setGestureLevel(brightnessInitial + kobalt::ui::BrightnessGesture::change(moved));
+            lightGestureRequested = brightnessInitial + kobalt::ui::BrightnessGesture::change(moved);
+            const int value = lightGestureActual = light->setGestureLevel(lightGestureRequested);
             if (value < 0)
                 return;
             if (!quietLightGesture)
@@ -1604,6 +1634,9 @@ void Reader::connectLightGestures() {
             if (warmthAutomatic)
                 light->setAutomaticWarmth(true);
         }
+        diagnostic("light-swipe-finished", {{"warmth", gestureWarmth}, {"quiet", quietLightGesture}, {"save", save},
+                                            {"requested", lightGestureRequested}, {"actual", lightGestureActual},
+                                            {"current", gestureWarmth ? light->warmth() : light->brightness()}});
         // No notice was painted: do not hide an overlay or trigger its
         // Hide-event full page refresh. Native light persistence still runs.
         if (quietLightGesture)
