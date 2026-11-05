@@ -1,6 +1,7 @@
 #include "support/qt_compat.h"
 #include "support/strings.h"
 #include "reader_model.h"
+#include "reader_fb2.h"
 #include "reader_source.h"
 #include "kobo_styles.h"
 #include "reader_render_callback.h"
@@ -10,6 +11,7 @@
 #include "document_cache.h"
 #include "engine_activity.h"
 #include "publication/publication.h"
+#include "publication/fb2.h"
 #include <lvdocview.h>
 #include <QElapsedTimer>
 #include <QDir>
@@ -328,9 +330,11 @@ bool ReaderModel::open(QByteArray bytes, QSize size, const QJsonObject &saved, Q
                        OpeningProgress progress) {
     // FB2 is a raw XML stream, not a ZIP archive, so it bypasses the EPUB
     // central-directory validation and reaches the engine as a memory stream.
+    // Probe only XML candidates, so EPUB inspection still happens just once.
     Publication probe;
     QString inspectError;
-    const bool fb2 = probe.inspect(bytes, &inspectError) && probe.format() == Publication::PublicationFormat::Fb2;
+    const bool fb2 = kobalt::fb2::matchesHead(bytes.left(65536)) && probe.inspect(bytes, &inspectError) &&
+                     probe.format() == Publication::PublicationFormat::Fb2;
     if (!fb2 && !supportedArchive(bytes, error))
         return false;
     auto source = std::make_shared<ReaderSource>();
@@ -424,7 +428,7 @@ bool ReaderModel::openSource(std::shared_ptr<ReaderSource> source, QSize size, c
                               Utf8ToUnicode(lString8(cacheName.toUtf8().constData())));
         properties->setHex(
             DOC_PROP_FILE_CRC32,
-            documentCacheChecksum(documentCachePolicy() + (loadingFb2 ? QByteArray(":fb2-v1:") : QByteArray()) +
+            documentCacheChecksum(documentCachePolicy() + fb2::cachePolicy(loadingFb2) +
                                       ":bionic-v3:" + bionic_.toUtf8(),
                                   domVersion_));
         properties->setString(DOC_PROP_FILE_SIZE, lString32::itoa(int(cacheBytes_ < 0         ? 0
@@ -654,66 +658,5 @@ bool ReaderModel::openPreview(ReaderModel &source, QSize size, QString *error) {
     settings["position"] = anchor;
     userStyleSheet_ = source.userStyleSheet_;
     return openSource(std::move(preview), size, settings, error);
-}
-bool ReaderModel::openFb2Preview(ReaderModel &source, QSize size, QString *error) {
-    auto fail = [error](const QString &message) {
-        *error = message;
-        return false;
-    };
-    auto *document = source.engine_->getDocument();
-    auto pointer = document->createXPointer(cre(source.position()));
-    auto *node = pointer.isNull() ? nullptr : pointer.getNode();
-    while (node && !node->isNodeName("section") && !node->isNodeName("body"))
-        node = node->getParentNode();
-    if (!node)
-        node = document->getRootNode();
-    QStringList paragraphs;
-    int total = 0;
-    constexpr int previewLimit = 8192;
-    for (int i = 0; i < node->getChildCount() && total < previewLimit; ++i) {
-        auto *child = node->getChildNode(i);
-        if (!child->isElement())
-            continue;
-        const auto name = qstring(child->getNodeName());
-        if (name.compare("p", Qt::CaseInsensitive) == 0 || name.compare("v", Qt::CaseInsensitive) == 0) {
-            const auto text = qstring(child->getText()).trimmed();
-            if (!text.isEmpty()) {
-                paragraphs.append(text);
-                total += text.size();
-            }
-        }
-    }
-    if (paragraphs.isEmpty()) {
-        const auto text = qstring(node->getText()).left(previewLimit).trimmed();
-        if (text.isEmpty())
-            return fail(strings::get("error.no_section_to_preview"));
-        paragraphs.append(text);
-    }
-    const auto language = qstring(source.engine_->getLanguage()).trimmed();
-    QByteArray previewBytes;
-    QXmlStreamWriter writer(&previewBytes);
-    writer.writeStartDocument("1.0", true);
-    writer.writeDefaultNamespace("http://www.gribuser.ru/xml/fictionbook/2.0");
-    writer.writeStartElement("FictionBook");
-    writer.writeStartElement("description");
-    writer.writeStartElement("title-info");
-    if (!language.isEmpty())
-        writer.writeTextElement("lang", language.left(2));
-    writer.writeEndElement(); // title-info
-    writer.writeEndElement(); // description
-    writer.writeStartElement("body");
-    writer.writeStartElement("section");
-    for (const auto &paragraph : paragraphs)
-        writer.writeTextElement("p", paragraph);
-    writer.writeEndElement(); // section
-    writer.writeEndElement(); // body
-    writer.writeEndElement(); // FictionBook
-    writer.writeEndDocument();
-    // The synthetic document has its own DOM, so the original XPointer cannot
-    // be restored. open() recognizes the bytes as FB2 and skips the EPUB path.
-    auto settings = source.state();
-    settings.remove("position");
-    userStyleSheet_ = source.userStyleSheet_;
-    return open(previewBytes, size, settings, error);
 }
 }

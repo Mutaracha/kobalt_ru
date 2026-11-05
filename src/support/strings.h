@@ -77,11 +77,13 @@ inline QString get(const char *key) {
     const Entry *entry = nullptr;
     if (locale() == Locale::Russian) {
         int count = 0;
-        entry = detail::find(detail::russianTable(&count), count, key);
+        const auto *table = detail::russianTable(&count);
+        entry = detail::find(table, count, key);
     }
     if (!entry) {
         int count = 0;
-        entry = detail::find(detail::englishTable(&count), count, key);
+        const auto *table = detail::englishTable(&count);
+        entry = detail::find(table, count, key);
     }
     if (!entry)
         return QString::fromLatin1(key);

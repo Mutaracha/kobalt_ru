@@ -11,7 +11,7 @@
 #include <QUrl>
 #include <QtEndian>
 #include <zlib.h>
-#include <cstring>
+#include "fb2.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -45,33 +45,6 @@ bool safeName(const QString &name) {
             return false;
     // These prefixes belong to Nickel's other HTTP handlers.
     return !name.startsWith("TENG/") && !name.startsWith("FONT_ROUTE/") && !name.startsWith("EPUBPATH");
-}
-// Raw-byte FictionBook recognition. The payload is never decoded here: a
-// windows-1251 book keeps its encoding declaration and CREngine decodes it.
-// The head is bounded to the first 64 KiB, which always covers the XML
-// declaration and the root element of a well-formed FB2 document.
-bool fictionBookHead(const QByteArray &head) {
-    int at = 0;
-    if (head.startsWith("\xEF\xBB\xBF"))
-        at = 3;
-    while (at < head.size() &&
-           (head[at] == '\t' || head[at] == '\r' || head[at] == '\n' || head[at] == ' '))
-        ++at;
-    const auto prefix = head.mid(at);
-    if (!prefix.startsWith("<?xml") && !prefix.startsWith("<FictionBook"))
-        return false;
-    // XML entity expansion (billion laughs) guard, mirroring cleanXml for EPUB.
-    if (head.contains("<!ENTITY"))
-        return false;
-    const int tag = head.indexOf("<FictionBook");
-    if (tag < 0)
-        return false;
-    const int after = tag + int(std::strlen("<FictionBook"));
-    if (after >= head.size())
-        return false;
-    const char delimiter = head[after];
-    return delimiter == ' ' || delimiter == '\t' || delimiter == '\r' || delimiter == '\n' ||
-           delimiter == '>';
 }
 bool readableFont(QByteArray bytes, const QByteArray &key, int prefixBytes) {
     if (bytes.isEmpty() || key.isEmpty())
@@ -309,7 +282,7 @@ bool Publication::inspect(QIODevice &source, QString *error, OpeningResult *resu
         if (head.size() != qMin(length, qint64(65536)))
             return inspectionFailure(error, result, OpeningFailureKind::Io,
                                      strings::key("error.incomplete_publication_directory"));
-        if (fictionBookHead(head)) {
+        if (fb2::matchesHead(head)) {
             format_ = PublicationFormat::Fb2;
             protected_ = false;
             if (!source.seek(0))

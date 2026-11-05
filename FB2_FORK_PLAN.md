@@ -7,7 +7,7 @@
 
 ## 0. Статусы этапов (вести в каждом изменении)
 
-> Легенда: **done** — код и тесты в ветке; **in progress** — частично; **planned** — только план. Сборка в песочнице невозможна (нет Qt SDK), поэтому статус «done» по коду подтверждается ревью и офлайн-проверками (валидатор строк, CMake configure_file, хеши манифеста, YAML), а полная компиляция и прогон тестов выполняются CI `.github/workflows/kobo-qt5-device.yml` (push в `arena/9e626d86-kobalt-ru`) и mac-tests.
+> Легенда: **done** — код и тесты в ветке; **in progress** — частично; **planned** — только план. Сборка в песочнице невозможна (нет Qt SDK), поэтому статус «done» по коду подтверждается ревью и офлайн-проверками (валидатор строк, CMake configure_file, хеши манифеста, YAML), полная Kobo Qt5-компиляция пакета выполняется CI `.github/workflows/kobo-qt5-device.yml` (push в `arena/9e626d86-kobalt-ru`). Этот workflow НЕ запускает native Qt component/model/lifecycle tests: для них требуется отдельный Qt-host и mac-tests/linux-tests.
 
 | Этап | Содержание | Статус |
 |---|---|---|
@@ -388,7 +388,7 @@ bool plainEpub() const {
 
 Все этапы 0–6 реализованы и зелёные в qt5-CI. Этот раздел — постоянный регламент поддержки: как собирать промежуточные версии, какие именно исходники отличают форк от upstream, что проверять перед пушем и как переносить правки на будущие релизы Kobalt.
 
-### 7.1. Принцип минимального вмешательства (соблюдён, обязателен и впредь)
+### 7.1. Принцип минимального вмешательства (обязателен; аудит — раздел 8)
 
 1. **Поведение EPUB — неприкосновенно.** Любая новая ветка включается явным флагом (`Publication::PublicationFormat::Fb2`, `ReaderSource::isFb2`, `ReaderModel::fb2Document_`, суффиксы `.fb2` в идентичности/путях). При значениях по умолчанию поток управления и тексты совпадают с upstream.
 2. **Новые подсистемы — в новых файлах.** Локаль (`src/support/locale.{h,cpp}`), данные (паттерны, `ru.strings`), тесты (`tests/model/fb2.cpp`, `tests/model/strings_locale.cpp`), CI-воркфлоу не правят существующую архитектуру, а подключаются через узкие точки.
@@ -398,14 +398,16 @@ bool plainEpub() const {
 
 ### 7.2. Полная карта изменений форка относительно upstream
 
+Актуальная база — `3d8514c`; отчёт по всем группам и оставшемуся долгу: [аудит 2026-11-05](doc/fork-maintenance-audit-2026-11-05.md). Исторические записи ниже не заменяют эту базу.
+
 **Только добавления (конфликты при rebase маловероятны):**
 
 | Файл/каталог | Назначение |
 |---|---|
 | `.github/workflows/kobo-qt5-device.yml` | push-CI: сборка строго qt5, валидация ZIP, артефакт `Kobalt-qt5-device`; здесь же включается `KOBALT_FORK_NAME=kobalt_ru` |
 | `FB2_FORK_PLAN.md`, `doc/fork-kobalt_ru.md` | План/регламент (этот файл) и пользовательская инструкция |
-| `assets/ru.strings` | Русская таблица, 764+ ключа, паритет с английской |
-| `assets/hyph/Russian.pattern`, `Russian_EnUS.pattern` | Паттерны переносов (LPPL, см. `assets/notices/Hyphenation-patterns`) |
+| `assets/ru.strings` | Русская таблица, паритет с английской |
+| `assets/hyph/Russian_EnUS.pattern` | Дополнительный паттерн переносов (LPPL, см. `assets/notices/Hyphenation-patterns`); `Russian.pattern` уже есть в текущем upstream |
 | `src/support/locale.{h,cpp}` | Разрешение локали: env `KOBALT_LANGUAGE` → Kobo conf → система → английский |
 | `assets/icons/phosphor/dark-theme.svg`, `assets/notices/Fluent-MIT` | Исходный SVG быстрого переключателя темы (Fluent UI, MIT, лежит рядом с Phosphor-набором, но в его манифест не входит; viewBox 24, рантайм использует только C++ снапшот) и текст лицензии |
 | `tests/model/fb2.cpp`, `tests/model/strings_locale.cpp` | Регрессии FB2 и локали |
@@ -421,8 +423,8 @@ bool plainEpub() const {
 | `assets/manifest.json` | Записи о двух русских паттернах; регенерируется штатной сборкой | Не править руками — пересобрать ассеты |
 | `src/publication/publication.{h,cpp}` | `PublicationFormat`, гейт FB2 в `inspect()`, виртуальное имя `singleFb2ResourceName`, fingerprint всего файла | FB2-ветка строго до ZIP-скана; EPUB-ветка без изменений |
 | `src/publication/local_resources.cpp` | `transferSingleFile()` — чтение цельного файла чанками с отменой/таймаутом, как у ZIP-пути | Ветка по имени виртуального ресурса |
-| `src/engine/crengine/reader_source.{h,cpp}` | `isFb2`; байпас ZIP/mimetype; `LoadDocument(stream,false)`; проверка `doc_format_fb2`; `.fb2`-суффикс кэша; `openFb2Preview()` | Все ветки за `loadingFb2`; здесь же версия DOM-кэша `:fb2-v1:` |
-| `src/engine/crengine/reader_model.{h,cpp}` | `fb2Document_`; CSS `readerFb2Css`; расширение line-height на FB2-теги; расчёт кэш-суммы с `:fb2-v1:` | При изменении парсинга/препроцессинга FB2 бампнуть `:fb2-v1:` → `:fb2-v2:` в `reader_source.cpp` и `reader_model.cpp` синхронно |
+| `src/engine/crengine/reader_source.{h,cpp}` | `isFb2`; байпас ZIP/mimetype; `LoadDocument(stream,false)`; проверка `doc_format_fb2`; `.fb2`-суффикс кэша; вызов `openFb2Preview()` | Все ветки за `loadingFb2`; реализация превью — `reader_fb2.cpp`, маркер кэша — `reader_fb2.h` |
+| `src/engine/crengine/reader_model.{h,cpp}` | `fb2Document_`; CSS `readerFb2Css`; расширение line-height на FB2-теги; расчёт кэш-суммы с `:fb2-v1:` | При изменении парсинга/препроцессинга FB2 бампнуть маркер в `reader_fb2.h`; оба вызывающих места используют `fb2::cachePolicy()` |
 | `src/engine/crengine/reader_styles.h.in` | Константы `readerFb2Css` (из `fb2.css` pinned crengine) и `readerFb2OverridesCss` | Требует `file(READ ... fb2.css)` в трёх платформенных CMakeLists |
 | `src/engine/crengine/reader_alignment.cpp` | FB2-теги в `preserve()`-наборе | Влияет только на документы, где эти теги существуют |
 | `src/engine/crengine/reader_links.cpp` | Маппинг FB2-тегов в безопасный HTML сносок; граница обхода — `body` как альтернатива `DocFragment` | EPUB-ветки (`allowed`, `aside/section/h*`) сохранены дословно |
@@ -592,3 +594,14 @@ bool plainEpub() const {
 - Готово: по просьбе пользователя удалены все добавленные в 1405f11 production-изменения диагностики (reading_page.cpp, reader.cpp, reader_build.cpp, reader_p.h, reader_settings.cpp возвращены точно к 8ddcd39). Удалены временные события, поля и диагностические изменения guard/applyEdgeLight. Штатная диагностика, главный выключатель в «Управлении» и тихий режим сохранены. Расширенные routed mouse/touch регрессионные тесты оставлены; локально не запускались из-за отсутствия Qt SDK.
 - Готово: окончательные RU-строки — название «Свайпы подсветки без индикации», подпись «Убрать всплывающее окно с процентами подсветки». EN обновлён соответственно; инструкция больше не предлагает использовать снятую диагностику, поясняет закрытие меню перед жестами. Состояние расследования выше — историческая запись, дальнейший сбор этого лога не требуется.
 - Проверки: parity/generation EN/RU, offline suite (scratch timestamp workaround), diff --check; сравнение пяти production-файлов с 8ddcd39. Kobo Qt5 — push-CI. Визуальная проверка новых формулировок на устройстве ещё не выполнена.
+
+## 8. Повторный аудит сопровождаемости относительно upstream
+
+### 2026-11-05 — первый адресный проход
+
+- **done — статический аудит:** все группы накопленной дельты относительно `nicoverbruggen/kobalt@3d8514c` сопоставлены с текущей `main` upstream (ревизия совпадает). Инвентаризация, решения оставить/вынести и риски — `doc/fork-maintenance-audit-2026-11-05.md`. Обновление upstream, смена ветки и изменение пользовательского поведения не выполнялись.
+- **done — код рефакторинга:** оригинальный ReturnTitle сохранён; только наш алгоритм смешанных шрифтов вынесен в `return_title_text.h` с узкими вызовами из `reader_build.cpp`. FB2-превью вынесено с неизменным телом в `reader_fb2.cpp` (существующие source-glob). Узкий байтовый детектор — `publication/fb2.h`; прямое открытие EPUB больше не выполняет добавочную полную FB2-инспекцию. Маркер DOM-кэша централизован в `reader_fb2.h`, значение `:fb2-v1:` и EPUB policy сохранены. Изменений storage schema и cache format нет.
+- **done — найденная ошибка переносимости:** в strings::get устранён нефиксированный порядок чтения count относительно заполнения таблицы в аргументах одного вызова. Минимальный C++17/GCC-O2 пример дал nested=0 / sequenced=2; теперь получение таблицы и поиск последовательны. Это не заявляется воспроизведением сбоя на Kobo пользователя.
+- **done — тесты по коду:** дополнены strings_locale (все записи обеих таблиц и canonical entries), fb2 (граница распознавания, ZIP/XML/BOM/entity, прежний cache marker), component ui (mixed font runs/size/paint). Native Qt-тесты **не запущены** локально — SDK отсутствует.
+- **done — локальная валидация:** parity/generation EN/RU + source scan, offline suite со scratch timestamp workaround, diff --check; source-review перемещения preview/детектора. Дельта добавлений в трёх исходных hotspot-файлах уменьшена 333→198 строк, не за счёт удаления функций. Qt5 package проверяется push-CI; native runtime/визуальная эквивалентность — отдельный host/device pass.
+- **planned — следующий приоритетный шаг:** синхронный UI-путь confirmClearCache → clearRenderingCaches нарушает требование вынесения storage IO, а storage-helper не помечает blocking. Требуются отдельное worker/lifecycle-изменение и strict-main-thread тесты, не косметическое извлечение и не AllowBlocking для маскировки. В этом проходе путь не менялся. Остальной долг и merge-checklist — в отчёте.

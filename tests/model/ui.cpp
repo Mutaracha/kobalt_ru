@@ -1,6 +1,7 @@
 #include "interfaces/reader/ui/controls/buttons.h"
 #include "interfaces/reader/ui/controls/icons.h"
 #include "interfaces/reader/ui/controls/text.h"
+#include "interfaces/reader/ui/controls/return_title_text.h"
 #include "interfaces/reader/ui/controls/rows.h"
 #include "interfaces/reader/ui/controls/options.h"
 #include "interfaces/reader/ui/controls/sliders.h"
@@ -172,6 +173,37 @@ int main(int argc, char **argv) {
                 QFontInfo(kobalt::ui::brandFont(32)).family() == "Instrument Serif",
             "Component font substitution");
     checkPrivateInterfaceText(kobalt::test::readerAssets());
+    {
+        using namespace kobalt::ui;
+        for (const auto &caption : {QStringLiteral("Return to Kobo"), QStringLiteral("Exit Kobalt"),
+                                    QString::fromUtf8("Выйти из Kobalt")}) {
+            InterfaceLabel label(caption);
+            label.setFont(interfaceFont(32));
+            QString joined;
+            for (const auto &run : returnTitleRuns(label)) {
+                joined += run.first;
+                require(run.second.family() == (run.first == "Kobalt" ? brandFont(32).family()
+                                                                        : label.font().family()),
+                        "Exit caption changed a run's font family");
+            }
+            require(joined == caption, "Exit caption lost text while splitting brand runs");
+            const auto size = returnTitleSizeHint(label);
+            require(size.width() > 0 && size.height() > 0, "Exit caption has an empty size hint");
+            QImage image(600, 100, QImage::Format_RGB32);
+            image.fill(Qt::white);
+            {
+                QPainter painter(&image);
+                painter.setPen(Qt::black);
+                paintReturnTitle(painter, image.rect(), label);
+            }
+            bool painted = false;
+            for (int y = 0; y < image.height() && !painted; ++y)
+                for (int x = 0; x < image.width() && !painted; ++x)
+                    painted = qGray(image.pixel(x, y)) < 255;
+            require(painted, "Exit caption painter produced no ink");
+        }
+    }
+
     {
         // The two Russian labels containing Д need more ink height than H.
         // Render actual tabs and compare the label's rows to unclipped glyphs.

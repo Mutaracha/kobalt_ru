@@ -1,6 +1,8 @@
 #include "reader_inputs.h"
 #include "check.h"
 #include "engine/crengine/reader_model.h"
+#include "engine/crengine/reader_fb2.h"
+#include "publication/fb2.h"
 #include "publication/publication.h"
 #include "support/qt_compat.h"
 
@@ -15,6 +17,18 @@ constexpr auto fb2Namespace = "http://www.gribuser.ru/xml/fictionbook/2.0";
 // A well-formed 1x1 PNG, small enough to stay below the resource budget.
 constexpr auto coverPngBase64 =
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
+void formatBoundaries() {
+    require(fb2::matchesHead("<FictionBook >"), "FB2 root with whitespace");
+    require(fb2::matchesHead(QByteArray("\xEF\xBB\xBF") + " \n<?xml version=\"1.0\"?><FictionBook>"),
+            "FB2 BOM and XML declaration");
+    require(!fb2::matchesHead("PK\003\004"), "ZIP must stay on the original archive path");
+    require(!fb2::matchesHead("<?xml version=\"1.0\"?><rss>"), "Other XML is not FB2");
+    require(!fb2::matchesHead("<FictionBookish>"), "FB2 root delimiter");
+    require(!fb2::matchesHead("<?xml?><!ENTITY x 'text'><FictionBook>"), "FB2 entity guard");
+    require(fb2::cachePolicy(false).isEmpty(), "EPUB cache policy must not acquire the FB2 marker");
+    require(fb2::cachePolicy(true) == QByteArray(":fb2-v1:"), "Code-only moves must preserve FB2 cache identity");
+}
 
 QByteArray utf8FictionBook() {
     QByteArray book;
@@ -151,6 +165,7 @@ void renderWindows1251() {
 
 int main(int argc, char **argv) {
     QGuiApplication app(argc, argv);
+    formatBoundaries();
     inspectFictionBook();
     rejectNonFictionBook();
     renderFictionBook();

@@ -4,6 +4,7 @@
 #include "support/qt_compat.h"
 #include "support/strings.h"
 #include "reader_model.h"
+#include "reader_fb2.h"
 #include "reader_source.h"
 #include "publication/image_policy.h"
 #include "publication/resource_cache.h"
@@ -828,7 +829,7 @@ bool ReaderModel::applyAppearance(const QJsonObject &settings, QSize size, Openi
         if (!cacheFingerprint_.isEmpty())
             engine_->getDocProps()->setHex(
                 DOC_PROP_FILE_CRC32,
-                documentCacheChecksum(documentCachePolicy() + (fb2Document_ ? QByteArray(":fb2-v1:") : QByteArray()) +
+                documentCacheChecksum(documentCachePolicy() + fb2::cachePolicy(fb2Document_) +
                                           ":bionic-v3:" + bionic_.toUtf8(),
                                       domVersion_));
         engine_->getDocument()->getProps()->setInt("kobalt.bionic.mode", bionic_ == "bold" ? 1 : 0);

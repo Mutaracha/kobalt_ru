@@ -34,6 +34,29 @@ void translatedLookup() {
             "An unknown key must resolve to itself");
 }
 
+// Exercise both compiled tables, including their first/last entries. Lookup
+// must not depend on which argument the compiler evaluates first.
+void completeTableLookup() {
+    strings::showKeys(false);
+    for (const auto locale : {strings::Locale::English, strings::Locale::Russian}) {
+        strings::setLocale(locale);
+        int count = 0;
+        const auto *table = locale == strings::Locale::English ? strings::detail::englishTable(&count)
+                                                              : strings::detail::russianTable(&count);
+        require(count > 0, "Compiled locale table is empty");
+        for (int i = 0; i < count; ++i)
+            require(strings::get(table[i].key) == QString::fromUtf8(table[i].value), table[i].key);
+    }
+    int count = 0;
+    const auto *english = strings::entries(&count);
+    strings::setLocale(strings::Locale::Russian);
+    int russianCount = 0;
+    const auto *canonical = strings::entries(&russianCount);
+    require(canonical == english && russianCount == count,
+            "Diagnostic entries must stay canonical English in Russian mode");
+    strings::setLocale(strings::Locale::English);
+}
+
 void keyDisplayMode() {
     using strings::Locale;
     strings::setLocale(Locale::Russian);
@@ -154,6 +177,7 @@ int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
     normalizeCodes();
     translatedLookup();
+    completeTableLookup();
     keyDisplayMode();
     russianPlurals();
     koboConfig();
