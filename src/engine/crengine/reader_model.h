@@ -349,6 +349,7 @@ private:
     QString hyphenation_ = "off";
     bool darkMode_ = false;
     bool hideNonlinearFragments_ = false;
+    bool inPageFootnotes_ = true;
     bool avoidWastefulStyling_ = true;
     QString verticalSpacing_ = "off", verticalSpacingScope_ = "all";
     int wordSpacing_ = 100;

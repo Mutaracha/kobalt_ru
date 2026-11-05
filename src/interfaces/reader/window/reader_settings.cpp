@@ -276,6 +276,7 @@ void Reader::openSettings() {
     settingsError->hide();
     darkOption->setChecked(model->state().value("dark_mode").toBool(false));
     inheritTextLayoutOption->setChecked(preferences.value(appearance::inheritTextLayoutKey).toBool(true));
+    inPageFootnotesOption->setChecked(model->state().value("fb2_inpage_footnotes").toBool(true));
     hideNonlinearOption->setChecked(model->state().value("hide_nonlinear_fragments").toBool(false));
     avoidWastefulStylingOption->setChecked(model->state().value("avoid_wasteful_styling").toBool(true));
     auto *displaySettings = static_cast<SettingsPanel *>(general);
@@ -529,6 +530,7 @@ void Reader::applySettings() {
     next["bold_reading"] = bionicOption->isChecked() ? QStringLiteral("bold") : QStringLiteral("off");
     next["dark_mode"] = darkOption->isChecked();
     next[appearance::inheritTextLayoutKey] = inheritTextLayoutOption->isChecked();
+    next["fb2_inpage_footnotes"] = inPageFootnotesOption->isChecked();
     next["hide_nonlinear_fragments"] = hideNonlinearOption->isChecked();
     next["avoid_wasteful_styling"] = avoidWastefulStylingOption->isChecked();
     next["vertical_justification"] = settingsVerticalSpacing;
@@ -585,6 +587,7 @@ void Reader::applySettings() {
     for (const auto *key : appearance::fallbackFontKeys)
         settings[key] = preferences.value(key).toString();
     settings["dark_mode"] = darkOption->isChecked();
+    settings["fb2_inpage_footnotes"] = inPageFootnotesOption->isChecked();
     settings["hide_nonlinear_fragments"] = hideNonlinearOption->isChecked();
     settings["avoid_wasteful_styling"] = avoidWastefulStylingOption->isChecked();
     settings["vertical_justification"] = preferences.value("vertical_justification");

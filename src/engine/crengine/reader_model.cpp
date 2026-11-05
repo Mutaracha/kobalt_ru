@@ -419,6 +419,7 @@ void ReaderModel::configure(QSize size, const QJsonObject &settings) {
     damage_.clear();
     size_ = size;
     darkMode_ = saved.value("dark_mode").toBool(false);
+    inPageFootnotes_ = saved.value("fb2_inpage_footnotes").toBool(true);
     hideNonlinearFragments_ = saved.value("hide_nonlinear_fragments").toBool(false);
     avoidWastefulStyling_ = saved.value("avoid_wasteful_styling").toBool(true);
     verticalSpacing_ = appearance::verticalSpacingMode(saved.value("vertical_justification"));
@@ -729,6 +730,8 @@ bool ReaderModel::applyAppearance(const QJsonObject &settings, QSize size, Openi
     const auto alignment = settings.value("text_alignment").toString(alignment_);
     const auto hyphenation = settings.value("hyphenation").toString(hyphenation_);
     const bool dark = settings.value("dark_mode").toBool(darkMode_);
+    const bool inPageFootnotes = settings.value("fb2_inpage_footnotes").toBool(inPageFootnotes_);
+    const bool footnotesChanged = inPageFootnotes != inPageFootnotes_;
     const bool hideNonlinear = settings.value("hide_nonlinear_fragments").toBool(hideNonlinearFragments_);
     const bool avoidWastefulStyling = settings.value("avoid_wasteful_styling").toBool(avoidWastefulStyling_);
     const auto verticalSpacing = settings.contains("vertical_justification")
@@ -761,7 +764,7 @@ bool ReaderModel::applyAppearance(const QJsonObject &settings, QSize size, Openi
     const bool bionicChanged = bionic != bionic_;
     // Outline thickness changes pixels only. Keep the formatted page and its anchors.
     const bool thicknessChanged = weight != weight_;
-    const bool styled = beautifierInitials != beautifierInitials_ || beautifierSpacing != beautifierSpacing_ ||
+    const bool styled = (fb2Document_ && footnotesChanged) || beautifierInitials != beautifierInitials_ || beautifierSpacing != beautifierSpacing_ ||
         beautifierIndent != beautifierIndent_ || fallbackFaces != fallbackFaces_ || avoidWastefulStyling != avoidWastefulStyling_ ||
                         wordSpacing != wordSpacing_ || tracking != justificationTracking_ || widowsOrphans != widowsOrphans_ ||
                         bionicChanged || axisChanged || opticalChanged || pixels != pixels_ || spacing != spacing_ ||
@@ -772,7 +775,7 @@ bool ReaderModel::applyAppearance(const QJsonObject &settings, QSize size, Openi
     const bool resized = size != size_ || columns != columns_ || columnSpacing != columnSpacing_;
     twoColumnsLandscape_ = landscapeColumns;
     columnSpacingPercent_ = gapPercent;
-    if (!verticalChanged && !styled && !resized && weight == weight_ && dark == darkMode_ && hideNonlinear == hideNonlinearFragments_)
+    if (!verticalChanged && !styled && !resized && !footnotesChanged && weight == weight_ && dark == darkMode_ && hideNonlinear == hideNonlinearFragments_)
         return true;
     if (styled || resized || verticalChanged)
         sourceIndex_.reset();
@@ -799,6 +802,7 @@ bool ReaderModel::applyAppearance(const QJsonObject &settings, QSize size, Openi
     bionic_ = bionic;
     darkMode_ = dark;
     activateFontParameters();
+    inPageFootnotes_ = inPageFootnotes;
     hideNonlinearFragments_ = hideNonlinear;
     avoidWastefulStyling_ = avoidWastefulStyling;
     verticalSpacing_ = verticalSpacing;
@@ -825,11 +829,11 @@ bool ReaderModel::applyAppearance(const QJsonObject &settings, QSize size, Openi
         engine_->setDefaultInterlineSpace(100);
         applyStyleSheet();
     }
-    if (bionicChanged) {
+    if (bionicChanged || (fb2Document_ && footnotesChanged)) {
         if (!cacheFingerprint_.isEmpty())
             engine_->getDocProps()->setHex(
                 DOC_PROP_FILE_CRC32,
-                documentCacheChecksum(documentCachePolicy() + fb2::cachePolicy(fb2Document_) +
+                documentCacheChecksum(documentCachePolicy() + fb2::cachePolicy(fb2Document_, inPageFootnotes_) +
                                           ":bionic-v3:" + bionic_.toUtf8(),
                                       domVersion_));
         engine_->getDocument()->getProps()->setInt("kobalt.bionic.mode", bionic_ == "bold" ? 1 : 0);
@@ -968,7 +972,8 @@ void ReaderModel::applyStyleSheet() {
             QString(
                 "[data-kobalt-prose=\"1\"], [data-kobalt-prose=\"1\"] span { text-align:%1 !important; text-align-last:auto !important; }")
                 .arg(alignment_);
-    const auto base = fb2 ? lString8(readerFb2Css) + lString8("\n") + lString8(fb2::overridesCss)
+    const auto base = fb2 ? lString8(readerFb2Css) + lString8("\n") + lString8(fb2::overridesCss) +
+                                lString8(inPageFootnotes_ ? fb2::inPageCss : "")
                           : lString8(readerHtmlCss) + lString8(readerOverridesCss);
     engine_->setStyleSheet(base + lString8(overrides.toUtf8().constData()) + lString8("\n") +
                            lString8(userStyleSheet_.constData()));
@@ -1409,6 +1414,7 @@ QJsonObject ReaderModel::state() const {
                                {"hyphenation", hyphenation_},
                                {"dark_mode", darkMode_},
                                {"hide_nonlinear_fragments", hideNonlinearFragments_},
+                               {"fb2_inpage_footnotes", inPageFootnotes_},
                                {"avoid_wasteful_styling", avoidWastefulStyling_},
                                {"vertical_justification", verticalSpacing_},
                                {"vertical_spacing_scope", verticalSpacingScope_},

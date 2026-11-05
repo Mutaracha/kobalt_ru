@@ -9,6 +9,29 @@
 using namespace kobalt;
 
 int main() {
+    require(appearance::bookDefaults({}).value("fb2_inpage_footnotes").toBool(),
+            "Older preferences must keep page notes enabled");
+    const auto notesOff = appearance::cleanPreferences({{"fb2_inpage_footnotes", false}, {"optional", "keep"}});
+    require(notesOff.contains("fb2_inpage_footnotes") && !notesOff.value("fb2_inpage_footnotes").toBool(true) &&
+                notesOff.value("optional").toString() == "keep", "Page-note cleanup lost false or an optional value");
+    require(!appearance::cleanPreferences({{"fb2_inpage_footnotes", "false"}}).contains("fb2_inpage_footnotes"),
+            "Non-boolean page-note preference accepted");
+    QJsonObject defaultsBook{{"fb2_inpage_footnotes", true}};
+    appearance::applyBookDefaults(defaultsBook, appearance::bookDefaults(notesOff));
+    require(!defaultsBook.value("fb2_inpage_footnotes").toBool(true), "Global page-note default not applied");
+    require(!appearance::same({{"fb2_inpage_footnotes", true}}, {{"fb2_inpage_footnotes", false}}),
+            "Retained layout ignored page-note mode");
+    QJsonObject copied;
+    appearance::copy(copied, notesOff);
+    require(copied.contains("fb2_inpage_footnotes") && !copied.value("fb2_inpage_footnotes").toBool(true),
+            "Appearance copy lost a disabled page-note mode");
+    const auto changed = appearance::afterContentChange({{"position", "old"}, {"font_pixels", 42},
+        {"dark_mode", true}, {"word_spacing", 100}, {"fb2_inpage_footnotes", false}, {"unknown", 1}});
+    require(!changed.contains("position") && !changed.contains("font_pixels") && !changed.contains("unknown") &&
+                changed.value("dark_mode").toBool() && changed.value("word_spacing").toInt() == 100 &&
+                changed.contains("fb2_inpage_footnotes") && !changed.value("fb2_inpage_footnotes").toBool(true),
+            "Content-change policy lost independent choices or retained source-bound state");
+
     require(sessionTimeout::minutes({}) == 15, "Older preferences lost the default session timeout");
     for (const auto minutes : sessionTimeout::choices) {
         const auto preferences = appearance::cleanPreferences({{sessionTimeout::preferenceKey, minutes}, {"optional", "keep"}});

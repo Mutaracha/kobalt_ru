@@ -428,7 +428,7 @@ bool ReaderModel::openSource(std::shared_ptr<ReaderSource> source, QSize size, c
                               Utf8ToUnicode(lString8(cacheName.toUtf8().constData())));
         properties->setHex(
             DOC_PROP_FILE_CRC32,
-            documentCacheChecksum(documentCachePolicy() + fb2::cachePolicy(loadingFb2) +
+            documentCacheChecksum(documentCachePolicy() + fb2::cachePolicy(loadingFb2, inPageFootnotes_) +
                                       ":bionic-v3:" + bionic_.toUtf8(),
                                   domVersion_));
         properties->setString(DOC_PROP_FILE_SIZE, lString32::itoa(int(cacheBytes_ < 0         ? 0
@@ -481,6 +481,8 @@ bool ReaderModel::openSource(std::shared_ptr<ReaderSource> source, QSize size, c
                                                 strings::key("error.the_reading_engine_could_not_open_this_epub"))
                                          : fail(OpeningFailureKind::Io, "opening.resource-read", resourceFailure);
     }
+    if (fb2Document_ && !openedFromCache_)
+        fb2::normalizeNoteTitles(engine_->getDocument()->getRootNode());
     source_->embeddedFonts = source_->parent ? source_->parent->embeddedFonts : embeddedFontCount();
     applyPublisherFontFallbacks();
     engine_->getDocument()->getProps()->setInt("kobalt.bionic.mode", bionic_ == "bold" ? 1 : 0);

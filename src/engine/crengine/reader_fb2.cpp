@@ -1,8 +1,10 @@
 #include "reader_model.h"
+#include "reader_fb2.h"
 #include "column_view.h"
 #include "support/strings.h"
 #include <lvdocview.h>
 #include <QXmlStreamWriter>
+#include <algorithm>
 
 namespace kobalt {
 namespace {
@@ -13,6 +15,57 @@ lString32 cre(const QString &s) {
     return Utf8ToUnicode(s.toUtf8().constData());
 }
 } // namespace
+
+void fb2::normalizeNoteTitles(ldomNode *root) {
+    // Iterative traversal: neither source nesting nor title markup grows the
+    // C++ call stack. Keep all DOM nodes/IDs so XPointer structure is unchanged.
+    if (!root)
+        return;
+    const auto marker = root->getDocument()->getAttrNameIndex("data-kobalt-note-number");
+    QVector<QPair<ldomNode *, bool>> pending{{root, false}};
+    while (!pending.isEmpty()) {
+        const auto entry = pending.takeLast();
+        auto *node = entry.first;
+        if (!node || !node->isElement())
+            continue;
+        bool notes = entry.second;
+        if (node->isNodeName("body")) {
+            const auto name = node->getAttributeValue("name");
+            notes = name == U"notes" || name == U"comments";
+            if (!notes)
+                continue;
+        }
+        if (notes && node->isNodeName("title") && node->getParentNode() &&
+            node->getParentNode()->isNodeName("section")) {
+            const auto before = qstring(node->getText());
+            if (before.size() <= 32) {
+                const auto number = fb2::noteNumber(before);
+                const bool numeric = !number.isEmpty() &&
+                    std::all_of(number.cbegin(), number.cend(), [](QChar c) { return c.isDigit(); });
+                node->setAttributeValue(0, marker, numeric ? U"1" : U"");
+                if (numeric && number != before) {
+                    QVector<ldomNode *> leaves{node};
+                    bool first = true;
+                    while (!leaves.isEmpty()) {
+                        auto *leaf = leaves.takeLast();
+                        if (leaf->isText()) {
+                            const bool blank = qstring(leaf->getText()).trimmed().isEmpty();
+                            leaf->setText(first && !blank ? cre(number) : lString32());
+                            if (!blank)
+                                first = false;
+                        } else {
+                            for (int i = leaf->getChildCount() - 1; i >= 0; --i)
+                                leaves.append(leaf->getChildNode(i));
+                        }
+                    }
+                }
+            }
+            continue;
+        }
+        for (int i = node->getChildCount() - 1; i >= 0; --i)
+            pending.append({node->getChildNode(i), notes});
+    }
+}
 
 bool ReaderModel::openFb2Preview(ReaderModel &source, QSize size, QString *error) {
     auto fail = [error](const QString &message) {

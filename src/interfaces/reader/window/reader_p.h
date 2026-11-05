@@ -415,7 +415,7 @@ private:
     QPushButton *linkDiscoveryToggle = nullptr;
     QLabel *linkDiscoveryExit = nullptr;
     kobalt::ui::DescribedOption *invertSwipesOption = nullptr;
-    QCheckBox *linkIndicatorOption = nullptr, *hideNonlinearOption = nullptr, *avoidWastefulStylingOption = nullptr;
+    QCheckBox *linkIndicatorOption = nullptr, *hideNonlinearOption = nullptr, *inPageFootnotesOption = nullptr, *avoidWastefulStylingOption = nullptr;
     bool revealingLinks = false;
     QString revealedPosition;
     void syncLinkDiscovery();

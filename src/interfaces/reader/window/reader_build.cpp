@@ -1248,6 +1248,7 @@ void Reader::buildSettings() {
     });
     linkIndicatorOption = settings->linkIndicatorOption;
     hideNonlinearOption = settings->hideNonlinearOption;
+    inPageFootnotesOption = settings->inPageFootnotesOption;
     avoidWastefulStylingOption = settings->avoidWastefulStylingOption;
     connect(settings->columnSpacingButton, &QPushButton::clicked, this, [this, settings] {
         settings->showColumnSpacingChoices(settingsColumnSpacing, [this, settings](int percent) {
@@ -1432,6 +1433,7 @@ void Reader::buildSettings() {
         darkOption->setChecked(false);
         animationOption->setChecked(false);
         bionicOption->setChecked(false);
+        inPageFootnotesOption->setChecked(true);
         settingsVerticalSpacing = "off";
         settingsVerticalSpacingScope = "all";
         settingsParagraphSpacing = -1;

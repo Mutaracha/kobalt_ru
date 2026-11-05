@@ -1050,7 +1050,7 @@
 "settings.styling_preview_same" = "При всех вариантах эти образцы выглядят одинаково.";
 "settings.sleep_tile" = "Плашка на экране сна";
 "settings.sleep_tile_card" = "Карточка";
-"settings.sleep_tile_card_description" = "Карточка в левом нижнем углу экрана.";
+"settings.sleep_tile_card_description" = "Область с информацией о чтении в левом нижнем углу экрана.";
 "settings.sleep_tile_band" = "Колонтитул";
 "settings.sleep_tile_band_description" = "Поле вдоль нижнего края экрана с полосой прогресса чтения.";
 "settings.sleep_tile_bookmark" = "Закладка";
@@ -1177,4 +1177,7 @@
 
 "light_panel.quiet_gestures" = "Свайпы подсветки без индикации";
 
-"light_panel.quiet_gestures_description" = "Убрать всплывающее окно с процентами подсветки";
+"light_panel.quiet_gestures_description" = "Скрывать всплывающее окно с процентами при регулировке подсветки.";
+
+"reader.inpage_footnotes" = "Сноски внизу страницы";
+"settings.inpage_footnotes_description" = "Если выключено, сноску можно открыть нажатием на ссылку.";

@@ -1451,6 +1451,18 @@ private slots:
         QCOMPARE(inspectReader(host)["preview_settings"].toObject(), draft);
         QCOMPARE(host.session()->state()["font_pixels"], original["font_pixels"]);
         QVERIFY(!text->isVisible());
+        QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSettingsStyling")));
+        auto *pageNotes = host.window()->findChild<QCheckBox *>("rrInPageFootnotes");
+        QVERIFY(pageNotes);
+        for (int page = 0; page < 8 && !pageNotes->isVisible(); ++page) {
+            host.window()->pageButton(1);
+            QTest::qWait(1);
+        }
+        QTRY_VERIFY(pageNotes->isVisible());
+        QVERIFY(pageNotes->isChecked());
+        QVERIFY(click(canvas, pageNotes));
+        QVERIFY(!pageNotes->isChecked());
+        QVERIFY(host.session()->state().value("fb2_inpage_footnotes").toBool());
         QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSettingsSystem")));
         auto *counter = host.window()->findChild<QLabel *>("rrSettingsOptionsPage");
         QVERIFY(counter && counter->isVisible());
@@ -1468,6 +1480,7 @@ private slots:
         engineActivity().pause(false);
         QTRY_VERIFY_WITH_TIMEOUT(!panel->isVisible() && !host.session()->busy(), 10000);
         QCOMPARE(host.session()->state()["font_pixels"], draft["font_pixels"]);
+        QVERIFY(!host.session()->state().value("fb2_inpage_footnotes").toBool(true));
         QVERIFY(click(canvas, text));
         QTRY_VERIFY_WITH_TIMEOUT(larger->isVisible() && larger->isEnabled() && !host.session()->busy(), 10000);
         QCOMPARE(host.session()->state()["font_pixels"], draft["font_pixels"]);

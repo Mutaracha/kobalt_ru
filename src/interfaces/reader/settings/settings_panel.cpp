@@ -505,6 +505,10 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
         check(stylingPage, "rrHideNonlinearFragments", strings::get("reader.hide_nonlinear_fragments"),
               strings::get("settings.hide_nonlinear_fragments_description"));
     stylingRows->addWidget(hideNonlinearOption);
+    inPageFootnotesOption = check(stylingPage, "rrInPageFootnotes", strings::get("reader.inpage_footnotes"),
+                                 strings::get("settings.inpage_footnotes_description"));
+    inPageFootnotesOption->setLeadingIcon(ui::ControlIcon::Dictionary);
+    stylingRows->addWidget(inPageFootnotesOption);
     for (const auto &[button, icon] :
          {std::pair{beautifierButton, ui::ControlIcon::MagicWand},
           std::pair{wordSpacingButton, ui::ControlIcon::SpreadHorizontal},

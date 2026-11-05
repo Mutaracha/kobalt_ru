@@ -15,6 +15,22 @@ struct ReaderSourceIndexProbe {
         const auto *pages = model.engine_->getPageList();
         return page >= 0 && page < pages->length() ? (*pages)[page]->footnotes.length() : 0;
     }
+    static ldomNode *noteHeading(const ReaderModel &model, const char *id) {
+        auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
+        if (node)
+            for (int i = 0; i < node->getChildCount(); ++i)
+                if (node->getChildNode(i)->isNodeName("title"))
+                    return node->getChildNode(i);
+        return nullptr;
+    }
+    static QString noteTitle(const ReaderModel &model, const char *id) {
+        const auto *title = noteHeading(model, id);
+        return title ? QString::fromUtf8(UnicodeToUtf8(title->getText()).c_str()).trimmed() : QString();
+    }
+    static bool numericNoteTitle(const ReaderModel &model, const char *id) {
+        const auto *title = noteHeading(model, id);
+        return title && title->getAttributeValue("data-kobalt-note-number") == U"1";
+    }
     static lString32 cre(const QString &text) { return Utf8ToUnicode(text.toUtf8().constData()); }
     static void clear(ReaderModel &model) { model.sourceIndex_.reset(); }
     static QPair<int, qint64> usage(const ReaderModel &model) { return model.sourceIndexUsage(); }

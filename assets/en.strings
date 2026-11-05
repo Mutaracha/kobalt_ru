@@ -709,7 +709,7 @@
 "settings.sleep_page_description" = "Dims the current page and shows reading progress and battery status.";
 "settings.sleep_tile" = "Sleep screen style";
 "settings.sleep_tile_card" = "Card";
-"settings.sleep_tile_card_description" = "Default. A card in the lower-left corner.";
+"settings.sleep_tile_card_description" = "An area with reading information in the lower-left corner.";
 "settings.sleep_tile_band" = "Footer band";
 "settings.sleep_tile_band_description" = "A strip along the bottom edge. Its top line shows how much you have read.";
 "settings.sleep_tile_bookmark" = "Bookmark";
@@ -1192,4 +1192,7 @@
 
 "light_panel.quiet_gestures" = "Light swipes without an overlay";
 
-"light_panel.quiet_gestures_description" = "Hide the popup showing light percentages";
+"light_panel.quiet_gestures_description" = "Hide the percentage popup when adjusting the light.";
+
+"reader.inpage_footnotes" = "Show footnotes at page bottom";
+"settings.inpage_footnotes_description" = "When off, tap a footnote link to open its text.";

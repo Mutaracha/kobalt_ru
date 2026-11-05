@@ -7,6 +7,16 @@
 #include <QStringList>
 
 namespace kobalt::appearance {
+QJsonObject afterContentChange(const QJsonObject &saved) {
+    QJsonObject result;
+    for (const auto *key : {"bold_reading", "dark_mode", "hide_nonlinear_fragments",
+                            "avoid_wasteful_styling", "two_columns_landscape", "column_spacing_percent",
+                            "word_spacing", "paragraph_spacing", "paragraph_indent",
+                            "justification_tracking", "widows_orphans", "fb2_inpage_footnotes"})
+        if (saved.contains(key))
+            result[key] = saved.value(key);
+    return result;
+}
 QJsonObject readerPreferences(const QJsonObject &global, const QJsonObject &book) {
     auto result = globalPreferences(global);
     if (!result.contains("bold_reading") && result.contains("bionic_reading")) {
@@ -76,7 +86,7 @@ QJsonObject cleanPreferences(QJsonObject preferences) {
         preferences.remove(key);
     for (const auto *key : {"dark_mode", "hide_tab_labels", "inherit_text_layout", "two_columns_landscape",
                             "page_animations", "show_link_indicator", "edge_light_gestures", "dense_stats_chart",
-                            "hide_nonlinear_fragments", "avoid_wasteful_styling",
+                            "hide_nonlinear_fragments", "fb2_inpage_footnotes", "avoid_wasteful_styling",
                             "minimal_annotation_mode", "show_header", "show_footer", "show_clock", "auto_rotate"})
         if (preferences.contains(key) && !preferences.value(key).isBool()) preferences.remove(key);
     for (const auto *key : beautifierKeys)
@@ -137,6 +147,7 @@ QJsonObject cleanPreferences(QJsonObject preferences) {
 }
 QJsonObject bookDefaults(const QJsonObject &preferences) {
     auto defaults = typographyDefaults();
+    defaults["fb2_inpage_footnotes"] = preferences.value("fb2_inpage_footnotes").toBool(true);
     const auto beautifier = beautifierSettings(preferences);
     for (const auto *key : beautifierKeys) defaults[key] = beautifier.value(key);
     defaults.remove("font_face");
@@ -198,6 +209,7 @@ void applyBookDefaults(QJsonObject &saved, const QJsonObject &defaults) {
     for (const auto *key : beautifierKeys) saved[key] = beautifier.value(key);
     saved.remove("book_beautifier");
     // Settings choices replace stale book values.
+    saved["fb2_inpage_footnotes"] = defaults.value("fb2_inpage_footnotes").toBool(true);
     saved["columns"] = 1;
     saved["vertical_justification"] = verticalSpacingMode(defaults.value("vertical_justification"));
     saved["vertical_spacing_scope"] = verticalSpacingScope(defaults.value("vertical_spacing_scope"));

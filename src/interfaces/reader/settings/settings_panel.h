@@ -90,7 +90,7 @@ public:
     ui::DescribedOption *darkOption = nullptr, *inheritTextLayoutOption = nullptr, *animationOption = nullptr;
     ui::DescribedOption *edgeLightOption = nullptr, *denseGraphOption = nullptr;
     ui::DescribedOption *invertSwipesOption = nullptr;
-    ui::DescribedOption *linkIndicatorOption = nullptr, *hideNonlinearOption = nullptr,
+    ui::DescribedOption *linkIndicatorOption = nullptr, *hideNonlinearOption = nullptr, *inPageFootnotesOption = nullptr,
                         *avoidWastefulStylingOption = nullptr;
     ui::DescribedOption *automaticOpeningOption = nullptr, *minimalAnnotationOption = nullptr;
     ui::CaptionButton *defaultFontButton = nullptr, *uiFontButton = nullptr, *uiMonoFontButton = nullptr,

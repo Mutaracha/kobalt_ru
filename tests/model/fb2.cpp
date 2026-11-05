@@ -28,7 +28,14 @@ void formatBoundaries() {
     require(!fb2::matchesHead("<FictionBookish>"), "FB2 root delimiter");
     require(!fb2::matchesHead("<?xml?><!ENTITY x 'text'><FictionBook>"), "FB2 entity guard");
     require(fb2::cachePolicy(false).isEmpty(), "EPUB cache policy must not acquire the FB2 marker");
-    require(fb2::cachePolicy(true) == QByteArray(":fb2-v2:"), "In-page FB2 CSS must invalidate the old parsed-book cache");
+    require(fb2::cachePolicy(true, false) != fb2::cachePolicy(true, true),
+            "Toggling page notes must not reuse the other mode's parsed cache");
+    require(fb2::cachePolicy(false, false).isEmpty(), "EPUB mode must not affect its cache key");
+    require(fb2::noteNumber("[12]") == "12" && fb2::noteNumber(" (3) ") == "3" &&
+                fb2::noteNumber("4") == "4" && fb2::noteNumber("[See 12]") == "[See 12]" &&
+                fb2::noteNumber("IV") == "IV" && fb2::noteNumber("[]") == "[]",
+            "FB2 number cleanup changed a non-numeric label or left brackets");
+    require(fb2::cachePolicy(true) == QByteArray(":fb2-v3:inpage-on:"), "In-page FB2 CSS must invalidate the old parsed-book cache");
 }
 
 QByteArray utf8FictionBook() {
@@ -126,6 +133,7 @@ void renderFictionBook() {
                         [](const ChapterLink &chapter) { return chapter.title.contains("Chapter One"); }),
             "FB2 chapter title missing from contents");
     const auto firstPage = model.pageExcerpt(0);
+    require(firstPage.contains("[1]"), "Note-title cleanup changed the bracketed reference in main text");
     require(!firstPage.contains("science_fiction"), "Raw FB2 genre metadata leaked onto the page");
     require(!firstPage.contains("test-document-id"), "document-info leaked onto the page");
     require(!model.coverImage(QSize(120, 180)).isNull(), "FB2 binary cover was not decoded");
@@ -144,16 +152,41 @@ void renderFictionBook() {
     require(ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
             "FB2 note is popup-only: no bottom-of-page footnote fragment");
     require(!model.image(model.page()).isNull(), "FB2 page with an in-page footnote did not paint");
+    const auto anchor = model.position();
+    require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})), "Page notes toggle off");
+    require(!model.state().value("fb2_inpage_footnotes").toBool(true) &&
+                ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0,
+            "Disabled page notes still reserve a bottom block");
+    bool popupWhileOff = false;
+    for (const auto &link : model.pageLinks()) {
+        const auto details = model.linkDetails(link.source);
+        if (details.kind == LinkKind::Footnote)
+            popupWhileOff = details.html.contains("Second note paragraph");
+    }
+    require(popupWhileOff, "Turning off page notes also disabled the multi-paragraph popup");
+    require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", true}})) &&
+                ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
+            "Enabling page notes did not repaginate the current book");
+    require(model.position() == anchor, "Page-note toggle lost the source anchor");
+
 
     // Both conventional FB2 note bodies use the ready-made engine mechanism.
     // An unreferenced neighbouring section must not become another page note.
     auto comments = bytes;
     comments.replace("name=\"notes\"", "name=\"comments\"");
     comments.replace("</section></body>\n<binary",
-                     "</section><section id=\"unused\"><p>Unreferenced endnote.</p></section></body>\n<binary");
+                     "</section><section id=\"unused\"><title><p>Additional remarks</p></title><p>Unreferenced endnote.</p></section></body>\n<binary");
+    comments.replace("<title><p>1</p></title>", "<title><p><strong>[1]</strong></p></title>");
     ReaderModel endnotes(test::readerFonts());
     require(endnotes.open(comments, QSize(1072, 1300), qt::object({{"font_pixels", 32}}), &error),
             qPrintable(error));
+    require(ReaderSourceIndexProbe::noteTitle(endnotes, "n1") == "1",
+            "FB2 note-number cleanup lost markup/IDs or kept brackets");
+    require(ReaderSourceIndexProbe::noteTitle(endnotes, "unused") == "Additional remarks" &&
+                !ReaderSourceIndexProbe::numericNoteTitle(endnotes, "unused"),
+            "FB2 prose heading was converted to a numeric label");
+    require(ReaderSourceIndexProbe::numericNoteTitle(endnotes, "n1"),
+            "FB2 number was not marked for superscript styling");
     require(ReaderSourceIndexProbe::inPageFootnoteCount(endnotes) == 1,
             "FB2 comments must show the referenced note only");
     ReaderModel preview(test::readerFonts());
