@@ -605,3 +605,8 @@ bool plainEpub() const {
 - **done — тесты по коду:** дополнены strings_locale (все записи обеих таблиц и canonical entries), fb2 (граница распознавания, ZIP/XML/BOM/entity, прежний cache marker), component ui (mixed font runs/size/paint). Native Qt-тесты **не запущены** локально — SDK отсутствует.
 - **done — локальная валидация:** parity/generation EN/RU + source scan, offline suite со scratch timestamp workaround, diff --check; source-review перемещения preview/детектора. Дельта добавлений в трёх исходных hotspot-файлах уменьшена 333→198 строк, не за счёт удаления функций. Qt5 package проверяется push-CI; native runtime/визуальная эквивалентность — отдельный host/device pass.
 - **planned — следующий приоритетный шаг:** синхронный UI-путь confirmClearCache → clearRenderingCaches нарушает требование вынесения storage IO, а storage-helper не помечает blocking. Требуются отдельное worker/lifecycle-изменение и strict-main-thread тесты, не косметическое извлечение и не AllowBlocking для маскировки. В этом проходе путь не менялся. Остальной долг и merge-checklist — в отчёте.
+
+### 2026-11-05 — явная зависимость вынесенного FB2-превью
+
+- CI d97b9de / 42103758678 выявил incomplete ColumnView в новом reader_fb2.cpp: раньше полное определение приходило транзитивно в reader_source.cpp. Добавлен прямой include column_view.h. Сопутствующее unused qstring было следствием ошибок компиляции вызовов engine_.
+- Тело preview и cache policy не менялись; diff --check и source string validation повторены. Полная Kobo Qt5 package-сборка запускается заново после push; native model/component тесты по-прежнему не запускались локально.

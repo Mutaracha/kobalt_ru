@@ -1,4 +1,5 @@
 #include "reader_model.h"
+#include "column_view.h"
 #include "support/strings.h"
 #include <lvdocview.h>
 #include <QXmlStreamWriter>
