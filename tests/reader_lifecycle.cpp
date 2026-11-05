@@ -895,6 +895,77 @@ private slots:
                         << dark << QString::fromLatin1(view) << QString::fromLatin1(action);
                 }
     }
+    void quietLightGestures_data() {
+        QTest::addColumn<bool>("quiet");
+        QTest::newRow("normal") << false;
+        QTest::newRow("quiet") << true;
+    }
+    void quietLightGestures() {
+        QFETCH(bool, quiet);
+        class Light final : public LightControls {
+        public:
+            int level = 50, saved = 0;
+            bool active = false;
+            bool initialize() override { return true; }
+            bool hasWarmth() const override { return false; }
+            int warmth() const override { return 0; }
+            int warmthMinimum() const override { return 0; }
+            int warmthMaximum() const override { return 0; }
+            int warmthStep() const override { return 1; }
+            bool automaticWarmth() const override { return false; }
+            int setWarmth(int) override { return -1; }
+            bool saveWarmth() override { return false; }
+            bool setAutomaticWarmth(bool) override { return false; }
+            bool beginGesture() override { active = true; return true; }
+            int setGestureLevel(int value) override { level = value; return level; }
+            void finishGesture(bool save) override { active = false; if (save) ++saved; }
+            int brightness() const override { return level; }
+            bool gesturing() const override { return active; }
+        };
+        const auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.preferences(), {{"quiet_light_gestures", quiet}}));
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        Light *controller = nullptr;
+        host.configureServices = [&controller](ReaderHostServices &services) {
+            services.lightAvailable = [] { return true; };
+            services.light = [&controller](QWidget *) {
+                auto light = std::make_unique<Light>();
+                controller = light.get();
+                return light;
+            };
+        };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy());
+        auto *page = static_cast<ReadingPage *>(host.window()->findChild<QWidget *>("rrPage"));
+        auto *notice = host.window()->findChild<QWidget *>("rrBrightnessNotice");
+        QVERIFY(page && notice && controller);
+        QVERIFY(page->lightStarted(false));
+        page->lightChanged(0.2);
+        QVERIFY(controller->level != 50);
+        QCOMPARE(notice->isVisible(), !quiet);
+        page->lightFinished(true);
+        QCOMPARE(controller->saved, 1);
+        QCOMPARE(notice->isVisible(), !quiet);
+        if (quiet) {
+            QVERIFY(clickAt(canvas, QPoint(nativeSize.width() / 2, nativeSize.height() / 4)));
+            auto *tab = host.window()->findChild<QPushButton *>("rrNavLight");
+            QVERIFY(tab);
+            QVERIFY(click(canvas, tab));
+            auto *option = host.window()->findChild<QCheckBox *>("rrQuietLightGestures");
+            QTRY_VERIFY(option && option->isVisible());
+            QVERIFY(option->isChecked());
+            QVERIFY(click(canvas, option));
+            QTRY_VERIFY(!storage::readJson(paths.preferences()).value("quiet_light_gestures").toBool());
+        }
+    }
+
     void lightReplacesDefaultMenu() {
         QFETCH(bool, dark);
         QFETCH(QString, menuView);
@@ -2971,6 +3042,21 @@ private slots:
         const auto blank = page.snapshot();
         QVERIFY(sleeping != blank);
         QCOMPARE(page.snapshot(true), blank);
+    }
+
+    void sleepRibbonRemainingHasSeparateCaptionAndDuration() {
+        const auto previous = strings::locale();
+        strings::setLocale(strings::Locale::Russian);
+        const auto russian = reader::sleepRibbonRemainingLines(QString::fromUtf8("осталось 0 ч 30 мин"));
+        strings::setLocale(previous);
+        QCOMPARE(russian, (QStringList{QString::fromUtf8("осталось"), QString::fromUtf8("0 ч 30 мин")}));
+        QCOMPARE(reader::sleepRibbonRemainingLines(QString()), QStringList());
+        strings::setLocale(strings::Locale::English);
+        const auto english = reader::sleepRibbonRemainingLines("30 min to go");
+        const auto olderSnapshot = reader::sleepRibbonRemainingLines(QString::fromUtf8("осталось 30 мин"));
+        strings::setLocale(previous);
+        QCOMPARE(english, (QStringList{"30 min", "to go"}));
+        QCOMPARE(olderSnapshot, (QStringList{QString::fromUtf8("осталось 30 мин")}));
     }
 
     void sleepTimeLeftUsesHoursAboveTwoHours() {

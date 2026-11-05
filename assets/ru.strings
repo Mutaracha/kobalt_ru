@@ -1050,11 +1050,11 @@
 "settings.styling_preview_same" = "При всех вариантах эти образцы выглядят одинаково.";
 "settings.sleep_tile" = "Плашка на экране сна";
 "settings.sleep_tile_card" = "Карточка";
-"settings.sleep_tile_card_description" = "По умолчанию. Карточка в левом нижнем углу.";
-"settings.sleep_tile_band" = "Нижняя полоса";
-"settings.sleep_tile_band_description" = "Полоса вдоль нижнего края. Верхняя линия показывает прогресс чтения.";
+"settings.sleep_tile_card_description" = "Карточка в левом нижнем углу экрана.";
+"settings.sleep_tile_band" = "Колонтитул";
+"settings.sleep_tile_band_description" = "Поле вдоль нижнего края экрана с полосой прогресса чтения.";
 "settings.sleep_tile_bookmark" = "Закладка";
-"settings.sleep_tile_bookmark_description" = "Лента от верхнего края с процентом прочитанного.";
+"settings.sleep_tile_bookmark_description" = "Ленточка в правом верхнем углу экрана.";
 "sleep.powered_off" = "Выключено";
 "dictionary_panel.dictionary_sources" = "Источники словарей: %1";
 "dictionaries.download" = "Скачать";
@@ -1172,3 +1172,9 @@
 "settings.beautifier_indent_description" = "Единый отступ первой строки прозы. Ваши явные настройки абзацев имеют приоритет.";
 "settings.beautifier_active" = "Вкл. · %1 из 3 правил";
 "common.done" = "Готово";
+
+"settings.sleep_tile_progress_hint" = "Все варианты показывают прогресс чтения.";
+
+"light_panel.quiet_gestures" = "Свайпы подсветки без индикации";
+
+"light_panel.quiet_gestures_description" = "Менять яркость и тёплый свет свайпом без окна процентов и обновления страницы после жеста.";

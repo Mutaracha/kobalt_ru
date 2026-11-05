@@ -151,3 +151,11 @@ After the move, settings start from the defaults, the sync account is signed out
 When a saved file cannot be read at all, or Kobalt cannot move it into `backups/`, Kobalt does not use the profile. Kobo shows an alert that recommends a file system repair or a device reset, and offers Kobo's built-in reader. Android and desktop refuse to open the book with the same advice. The next opening checks again.
 
 Settings that become damaged, too large or of a newer version while a book is open stay in place. The close and the synchronous checkpoint then skip the layout memory and still save the reading position. A read error still fails those saves, so the close offers Retry.
+
+## Fork light-gesture preference
+
+`quiet_light_gestures` is an optional global Boolean (missing or invalid = false).
+When true, brightness/warmth edge swipes do not paint a percentage notice or
+request the notice-cleanup page refresh. Native light persistence and cancelled
+swipe rollback remain unchanged. It keeps preference schema 1 and does not
+change book state or disposable cache formats.

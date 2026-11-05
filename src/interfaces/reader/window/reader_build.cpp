@@ -636,6 +636,15 @@ void Reader::buildToolbar() {
     applyEdgeLight();
     lightPopup = new kobalt::LightPanel(*light, this);
     lightPopup->setEdgeGesturesEnabled(page->brightnessEdge);
+    lightPopup->setQuietGestures(preferences.value("quiet_light_gestures").toBool(false));
+    lightPopup->quietGesturesChanged = [this](bool enabled) {
+        auto next = preferences;
+        next["quiet_light_gestures"] = enabled;
+        if (!writePreferences(next))
+            return false;
+        preferences = next;
+        return true;
+    };
     lightPopup->changed = [lightButton, this] {
         lightButton->setChecked(lightPopup->isVisible());
         if (navigation && lightPopup->isVisible())
@@ -1550,6 +1559,7 @@ void Reader::connectLightGestures() {
             brightnessInitial = light->brightness();
         }
         gestureWarmth = warmth;
+        quietLightGesture = preferences.value("quiet_light_gestures").toBool(false);
         brightnessHide.stop();
         return true;
     };
@@ -1569,15 +1579,19 @@ void Reader::connectLightGestures() {
             const int value = light->setWarmth(snapped == 100 ? minimum + range : level);
             if (value < 0)
                 return;
-            brightnessNotice->setLevel(true, qRound(100.0 * (value - minimum) / range));
+            if (!quietLightGesture)
+                brightnessNotice->setLevel(true, qRound(100.0 * (value - minimum) / range));
         } else {
             const int value = light->setGestureLevel(brightnessInitial + kobalt::ui::BrightnessGesture::change(moved));
             if (value < 0)
                 return;
-            brightnessNotice->setLevel(false, value);
+            if (!quietLightGesture)
+                brightnessNotice->setLevel(false, value);
         }
-        brightnessNotice->show();
-        brightnessNotice->raise();
+        if (!quietLightGesture) {
+            brightnessNotice->show();
+            brightnessNotice->raise();
+        }
     };
     page->lightFinished = [this](bool save) {
         if (!gestureWarmth)
@@ -1590,6 +1604,10 @@ void Reader::connectLightGestures() {
             if (warmthAutomatic)
                 light->setAutomaticWarmth(true);
         }
+        // No notice was painted: do not hide an overlay or trigger its
+        // Hide-event full page refresh. Native light persistence still runs.
+        if (quietLightGesture)
+            return;
         if (save)
             brightnessHide.start();
         else {

@@ -1187,3 +1187,9 @@
 "settings.beautifier_active" = "On · %1 of 3 rules";
 
 "common.done" = "Done";
+
+"settings.sleep_tile_progress_hint" = "All styles show reading progress.";
+
+"light_panel.quiet_gestures" = "Light swipes without an overlay";
+
+"light_panel.quiet_gestures_description" = "Adjust brightness and warmth by swiping, without the percentage overlay or a page refresh after the gesture.";

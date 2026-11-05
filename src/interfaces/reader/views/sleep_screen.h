@@ -4,6 +4,7 @@
 
 #include <QImage>
 #include <QString>
+#include <QStringList>
 #include <QRect>
 
 namespace kobalt::reader {
@@ -12,6 +13,8 @@ QString sleepStatusText(SleepStatus status);
 // Rounds up to whole minutes. Estimates above 120 minutes use hours and minutes.
 // A negative estimate is unavailable and has no label.
 QString sleepTimeLeft(qint64 milliseconds);
+// Separate the translated remaining-time caption from the duration for the ribbon.
+QStringList sleepRibbonRemainingLines(const QString &remaining);
 // Fits the cover without cropping. Unused space is always black.
 QImage sleepCoverBackground(const QImage &cover, QSize size);
 // The area a tile covers. It does not depend on the status, so a battery

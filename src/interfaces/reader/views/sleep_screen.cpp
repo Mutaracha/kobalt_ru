@@ -195,7 +195,7 @@ struct RibbonLines {
         detailHeight = ui::interfaceLineHeight(detail), batteryHeight = ui::interfaceLineHeight(battery);
     int height() const {
         return int(m::ribbonTop) + captionHeight + int(m::ribbonGap) + int(m::border) + int(m::ribbonGap) / 2 +
-               figureHeight + int(m::ribbonGap) / 2 + detailHeight + int(m::ribbonGap) + batteryHeight +
+               figureHeight + int(m::ribbonGap) / 2 + 2 * detailHeight + int(m::lineGap) + int(m::ribbonGap) + batteryHeight +
                int(m::ribbonGap) + int(m::ribbonNotch);
     }
 };
@@ -243,9 +243,10 @@ void paintBookmark(QPainter &painter, const QRect &ribbon, const Content &conten
     else
         centered(content.progress, lines.detail, y, lines.figureHeight);
     y += lines.figureHeight + int(m::ribbonGap) / 2;
-    if (!content.remaining.isEmpty())
-        centered(content.remaining, lines.detail, y, lines.detailHeight);
-    y += lines.detailHeight + int(m::ribbonGap);
+    const auto remainingLines = sleepRibbonRemainingLines(content.remaining);
+    for (int i = 0; i < remainingLines.size(); ++i)
+        centered(remainingLines[i], lines.detail, y + i * (lines.detailHeight + int(m::lineGap)), lines.detailHeight);
+    y += 2 * lines.detailHeight + int(m::lineGap) + int(m::ribbonGap);
     if (content.showsBattery()) {
         const auto battery = sleepBattery(content.batteryPercent);
         paintSleepBattery(painter, battery, ribbon.left() + (ribbon.width() - battery.width()) / 2, y,
@@ -265,6 +266,28 @@ QString sleepStatusText(SleepStatus status) {
         return strings::get("sleep.sleeping");
     }
     return {};
+}
+QStringList sleepRibbonRemainingLines(const QString &remaining) {
+    if (remaining.isEmpty())
+        return {};
+    const auto pattern = strings::get("sleep.time_left");
+    const int slot = pattern.indexOf(QStringLiteral("%1"));
+    if (slot >= 0) {
+        const auto prefix = pattern.left(slot), suffix = pattern.mid(slot + 2);
+        if (remaining.startsWith(prefix) && remaining.endsWith(suffix) &&
+            remaining.size() >= prefix.size() + suffix.size()) {
+            const auto duration = remaining.mid(prefix.size(), remaining.size() - prefix.size() - suffix.size()).trimmed();
+            const auto caption = (prefix + suffix).trimmed();
+            if (!duration.isEmpty() && !caption.isEmpty()) {
+                // Keep the language's order (RU: caption first; EN: time first).
+                if (prefix.trimmed().isEmpty())
+                    return {duration, caption};
+                return {caption, duration};
+            }
+        }
+    }
+    // Older saved snapshots may have been produced in another language.
+    return {remaining};
 }
 QString sleepTimeLeft(qint64 milliseconds) {
     if (milliseconds < 0) {
