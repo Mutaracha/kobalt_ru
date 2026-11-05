@@ -424,7 +424,7 @@ bool plainEpub() const {
 | `src/publication/publication.{h,cpp}` | `PublicationFormat`, гейт FB2 в `inspect()`, виртуальное имя `singleFb2ResourceName`, fingerprint всего файла | FB2-ветка строго до ZIP-скана; EPUB-ветка без изменений |
 | `src/publication/local_resources.cpp` | `transferSingleFile()` — чтение цельного файла чанками с отменой/таймаутом, как у ZIP-пути | Ветка по имени виртуального ресурса |
 | `src/engine/crengine/reader_source.{h,cpp}` | `isFb2`; байпас ZIP/mimetype; `LoadDocument(stream,false)`; проверка `doc_format_fb2`; `.fb2`-суффикс кэша; вызов `openFb2Preview()` | Все ветки за `loadingFb2`; реализация превью — `reader_fb2.cpp`, маркер кэша — `reader_fb2.h` |
-| `src/engine/crengine/reader_model.{h,cpp}` | `fb2Document_`; CSS `readerFb2Css`; расширение line-height на FB2-теги; расчёт кэш-суммы с `:fb2-v1:` | При изменении парсинга/препроцессинга FB2 бампнуть маркер в `reader_fb2.h`; оба вызывающих места используют `fb2::cachePolicy()` |
+| `src/engine/crengine/reader_model.{h,cpp}` | `fb2Document_`; CSS `readerFb2Css`; расширение line-height на FB2-теги; расчёт кэш-суммы с `fb2::cachePolicy()` (сейчас `:fb2-v2:`) | При изменении парсинга/препроцессинга FB2 бампнуть маркер в `reader_fb2.h`; оба вызывающих места используют `fb2::cachePolicy()` |
 | `src/engine/crengine/reader_styles.h.in` | Константы `readerFb2Css` (из `fb2.css` pinned crengine) и `readerFb2OverridesCss` | Требует `file(READ ... fb2.css)` в трёх платформенных CMakeLists |
 | `src/engine/crengine/reader_alignment.cpp` | FB2-теги в `preserve()`-наборе | Влияет только на документы, где эти теги существуют |
 | `src/engine/crengine/reader_links.cpp` | Маппинг FB2-тегов в безопасный HTML сносок; граница обхода — `body` как альтернатива `DocFragment` | EPUB-ветки (`allowed`, `aside/section/h*`) сохранены дословно |
@@ -610,3 +610,14 @@ bool plainEpub() const {
 
 - CI d97b9de / 42103758678 выявил incomplete ColumnView в новом reader_fb2.cpp: раньше полное определение приходило транзитивно в reader_source.cpp. Добавлен прямой include column_view.h. Сопутствующее unused qstring было следствием ошибок компиляции вызовов engine_.
 - Тело preview и cache policy не менялись; diff --check и source string validation повторены. Полная Kobo Qt5 package-сборка запускается заново после push; native model/component тесты по-прежнему не запускались локально.
+
+
+### 2026-11-06 — готовые постраничные FB2-сноски KOReader
+
+- **done — проверка предыдущего прохода:** Kobo Qt5 CI 42104324588 (`f6d3d9e`) завершён успешно; пользователь открыл FB2 на устройстве и не нашёл замечаний.
+- **done — исследование:** механизм есть уже в закреплённом `koreader/crengine@f335f7a97e240f505bb8a0dfb721fcb7912a7824`: CSS `footnote-inpage`, готовые paginator и нижний блок `LVDocView::Draw`. KOReader включает его через `frontend/ui/data/css_tweaks.lua`. Источники и границы — `doc/fb2-footnotes.md`. Своего layout/пагинатора нет; зависимость и engine patches не менялись.
+- **done — код:** FB2-override CSS перенесён из общего generated stylesheet в `reader_fb2.h`, рядом с cache marker. Для `notes` и `comments` объединены `footnote` (popup) и `footnote-inpage` (нижний блок). Размер — 80% основного; EPUB-путь и UI-настройки не менялись.
+- **done — совместимость:** FB2 policy повышена `:fb2-v1:` → `:fb2-v2:`, чтобы старые разобранные DOM/стили не скрыли изменение. EPUB marker пустой, storage schema/format и позиции чтения не менялись; ручной сброс не нужен.
+- **done — тесты по коду:** `fb2` проверяет нижние footnote fragments в engine page list, ненулевой рендер, прежний multi-paragraph popup, отдельный `comments` и отсутствие чужой несвязанной сноски в нижнем блоке. Engine internals доступны только через существующий test-only probe, без нового production API. Native Qt-тесты здесь не запускались — SDK отсутствует; package CI не заменяет их.
+- **validation:** parity/generation EN/RU и source scan — PASS; offline release suite — PASS с прежним scratch-only timestamp workaround (неизменённый strings-test сначала воспроизвёл известный mtime-сбой); diff-check — PASS. Kobo Qt5 package — push-CI. Визуальная проверка нижнего блока на Kobo ещё требуется.
+- **planned — отдельный следующий проход:** UI IO-долг `confirmClearCache` остаётся открытым. Не смешан с изменением пагинации: требуется сериализация с engine cache и сохранением/закрытием, а не маскировка `AllowBlocking`.

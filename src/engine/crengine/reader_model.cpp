@@ -968,7 +968,7 @@ void ReaderModel::applyStyleSheet() {
             QString(
                 "[data-kobalt-prose=\"1\"], [data-kobalt-prose=\"1\"] span { text-align:%1 !important; text-align-last:auto !important; }")
                 .arg(alignment_);
-    const auto base = fb2 ? lString8(readerFb2Css) + lString8("\n") + lString8(readerFb2OverridesCss)
+    const auto base = fb2 ? lString8(readerFb2Css) + lString8("\n") + lString8(fb2::overridesCss)
                           : lString8(readerHtmlCss) + lString8(readerOverridesCss);
     engine_->setStyleSheet(base + lString8(overrides.toUtf8().constData()) + lString8("\n") +
                            lString8(userStyleSheet_.constData()));

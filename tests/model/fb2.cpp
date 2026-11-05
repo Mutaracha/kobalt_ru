@@ -1,4 +1,5 @@
 #include "reader_inputs.h"
+#include "reader_source_index_probe.h"
 #include "check.h"
 #include "engine/crengine/reader_model.h"
 #include "engine/crengine/reader_fb2.h"
@@ -27,7 +28,7 @@ void formatBoundaries() {
     require(!fb2::matchesHead("<FictionBookish>"), "FB2 root delimiter");
     require(!fb2::matchesHead("<?xml?><!ENTITY x 'text'><FictionBook>"), "FB2 entity guard");
     require(fb2::cachePolicy(false).isEmpty(), "EPUB cache policy must not acquire the FB2 marker");
-    require(fb2::cachePolicy(true) == QByteArray(":fb2-v1:"), "Code-only moves must preserve FB2 cache identity");
+    require(fb2::cachePolicy(true) == QByteArray(":fb2-v2:"), "In-page FB2 CSS must invalidate the old parsed-book cache");
 }
 
 QByteArray utf8FictionBook() {
@@ -140,6 +141,21 @@ void renderFictionBook() {
         }
     }
     require(foundNote, "FB2 note reference did not resolve as a footnote");
+    require(ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
+            "FB2 note is popup-only: no bottom-of-page footnote fragment");
+    require(!model.image(model.page()).isNull(), "FB2 page with an in-page footnote did not paint");
+
+    // Both conventional FB2 note bodies use the ready-made engine mechanism.
+    // An unreferenced neighbouring section must not become another page note.
+    auto comments = bytes;
+    comments.replace("name=\"notes\"", "name=\"comments\"");
+    comments.replace("</section></body>\n<binary",
+                     "</section><section id=\"unused\"><p>Unreferenced endnote.</p></section></body>\n<binary");
+    ReaderModel endnotes(test::readerFonts());
+    require(endnotes.open(comments, QSize(1072, 1300), qt::object({{"font_pixels", 32}}), &error),
+            qPrintable(error));
+    require(ReaderSourceIndexProbe::inPageFootnoteCount(endnotes) == 1,
+            "FB2 comments must show the referenced note only");
     ReaderModel preview(test::readerFonts());
     require(preview.openPreview(model, QSize(800, 600), &error), qPrintable(error));
     require(preview.pages() > 0, "FB2 font preview rendered no pages");

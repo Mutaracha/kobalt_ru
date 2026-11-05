@@ -5,9 +5,16 @@
 
 namespace kobalt {
 // Independent copies of the pre-index algorithms for correctness and timing.
-// This probe is linked only into the focused test and opt-in benchmark.
+// Test-only engine access; no application API for pagination internals.
 struct ReaderSourceIndexProbe {
     using Ranges = QVector<QPair<QString, QString>>;
+    static int inPageFootnoteCount(const ReaderModel &model) {
+        if (!model.engine_)
+            return 0;
+        const int page = model.engine_->getCurPage(true);
+        const auto *pages = model.engine_->getPageList();
+        return page >= 0 && page < pages->length() ? (*pages)[page]->footnotes.length() : 0;
+    }
     static lString32 cre(const QString &text) { return Utf8ToUnicode(text.toUtf8().constData()); }
     static void clear(ReaderModel &model) { model.sourceIndex_.reset(); }
     static QPair<int, qint64> usage(const ReaderModel &model) { return model.sourceIndexUsage(); }
