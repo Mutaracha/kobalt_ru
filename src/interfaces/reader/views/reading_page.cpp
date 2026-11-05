@@ -10,7 +10,6 @@
 #include "interfaces/reader/ui/style/private_text.h"
 #include "interfaces/reader/ui/controls/panels.h"
 #include "support/strings.h"
-#include "support/diagnostics.h"
 #include "ui/input.h"
 #include "ui/image_damage.h"
 #include "model/page_refresh_regions.h"
@@ -890,10 +889,6 @@ void ReadingPage::beginPointer(QPointF point, const QInputEvent *event) {
     tracking = true;
     moved = consumed = false;
     origin = latest = point;
-    if (point.x() <= width() * .13 || point.x() >= width() * .87)
-        diagnostic("light-swipe-page-contact", {{"left_enabled", brightnessEdge}, {"right_enabled", warmthEdge},
-                                               {"right", point.x() >= width() * .87},
-                                               {"revealed_links", !revealedLinks.isEmpty()}});
     if (!revealedLinks.isEmpty()) {
         pressRevealedLink(point.toPoint() - QPoint(0, topHeight()));
         return;

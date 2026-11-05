@@ -983,10 +983,6 @@ void Reader::resumeAppearanceApply() {
 void Reader::applyEdgeLight() {
     page->brightnessEdge = preferences.value("edge_light_gestures").toBool(true) && services.lightAvailable();
     page->warmthEdge = page->brightnessEdge && warmthSupported;
-    diagnostic("light-swipe-settings", {{"enabled", preferences.value("edge_light_gestures").toBool(true)},
-                                        {"available", services.lightAvailable()}, {"warmth_supported", warmthSupported},
-                                        {"left_enabled", page->brightnessEdge}, {"right_enabled", page->warmthEdge},
-                                        {"quiet", preferences.value("quiet_light_gestures").toBool(false)}});
     if (lightPopup) {
         lightPopup->setEdgeGesturesEnabled(page->brightnessEdge);
         lightPopup->setQuietGestures(preferences.value("quiet_light_gestures").toBool(false));
