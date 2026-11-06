@@ -1988,7 +1988,7 @@ private slots:
 
     void clearCacheAfterSave_data() {
         QTest::addColumn<QString>("interruption");
-        for (const auto *value : {"none", "sleep", "usb", "dispose", "destroy", "delete-failure"})
+        for (const auto *value : {"none", "sleep", "usb", "dispose", "destroy", "delete-failure", "delete-failure-sleep"})
             QTest::newRow(value) << QString::fromLatin1(value);
     }
     void clearCacheAfterSave() {
@@ -2020,7 +2020,7 @@ private slots:
         QDir().mkpath(paths.documentCache());
         const auto marker = paths.documentCache() + "/disposable-test-cache";
         { QFile file(marker); QVERIFY(file.open(QIODevice::WriteOnly)); file.write("cache"); }
-        if (interruption == "delete-failure") {
+        if (interruption.startsWith("delete-failure")) {
             QVERIFY(QDir(paths.documentCache()).removeRecursively());
             QFile file(paths.documentCache());
             QVERIFY(file.open(QIODevice::WriteOnly));
@@ -2073,13 +2073,19 @@ private slots:
             host.shutdown();
         }
         if (interruption == "destroy") host.shutdown();
-        if (interruption == "delete-failure") {
+        if (interruption.startsWith("delete-failure")) {
             QTRY_VERIFY(host.window()->findChild<QWidget *>("rrClearCacheError"));
             QVERIFY(QFileInfo::exists(paths.documentCache()));
-            host.window()->findChild<QPushButton *>("rrClearCacheErrorConfirm")->click();
+            if (interruption == "delete-failure-sleep") {
+                host.window()->sleepReader();
+                host.window()->wakeReader();
+            }
+            auto *ok = host.window()->findChild<QPushButton *>("rrClearCacheErrorConfirm");
+            QVERIFY(ok && ok->isVisible() && ok->isEnabled());
+            QTest::mouseClick(ok, Qt::LeftButton);
         }
         QTRY_VERIFY_WITH_TIMEOUT(host.idle(), 10000);
-        if (interruption != "delete-failure") {
+        if (!interruption.startsWith("delete-failure")) {
             QVERIFY(!QFileInfo::exists(paths.documentCache()));
             QVERIFY(!QFileInfo::exists(paths.layoutCache()));
             QVERIFY(!host.retainedOnClose);

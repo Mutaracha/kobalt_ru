@@ -580,7 +580,8 @@ QVector<QWidget *> Reader::popups() const {
             customReplaceDialog.data(),
             annotationErrorDialog.data(),
             formattingWarningDialog.data(),
-            settingsWriteErrorDialog.data()};
+            settingsWriteErrorDialog.data(),
+            cacheClearError.data()};
 }
 
 bool Reader::popup(QObject *object) const {
@@ -610,7 +611,7 @@ bool Reader::event(QEvent *event) {
                         !searchPanel->isVisible() && !linksActive() && !lookupPending &&
                         !acknowledgments->isVisible() && !bookmarkList->isVisible() && !lightPopup->isVisible() &&
                         !busyNotice->isVisible() && !syncDialog && !kosyncDialog && !finishDialog && !annotationErrorDialog &&
-                        !formattingWarningDialog && !settingsWriteErrorDialog && !savingView && !closeSaveError && !services.suspended() &&
+                        !formattingWarningDialog && !settingsWriteErrorDialog && !savingView && !closeSaveError && !cacheClearError && !services.suspended() &&
                         page->image.text("kobalt.animation_text_only") == "true");
         // These panels hold text and line controls. Changes inside them can
         // use a partial refresh; showing the whole panel keeps its policy.
@@ -2163,9 +2164,15 @@ void Reader::completeCacheClear() {
         close();
         return;
     }
-    if (cacheClear != CacheClear::Failed || cacheClearError) return;
+    if (cacheClear != CacheClear::Failed) return;
     hideSaving();
     setEnabled(true);
+    if (cacheClearError) {
+        cacheClearError->show();
+        cacheClearError->raise();
+        cacheClearError->primaryButton()->setFocus();
+        return;
+    }
     auto *notice = new ui::NoticeModal(this,
         {strings::get("reader.clear_book_cache_failed") + "\n\n" +
              strings::get("reader.clear_book_cache_failed_detail"), strings::get("reader.clear_book_cache"), {}},
