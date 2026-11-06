@@ -5,6 +5,7 @@
 #include "usb_transition.h"
 #include "support/qt_compat.h"
 #include "support/strings.h"
+#include "support/locale.h"
 #include "book_menu.h"
 #include "browser_handoff.h"
 #include "interfaces/reader_window.h"
@@ -321,6 +322,11 @@ bool ReaderCoordinator::begin(const RetainOpening &retainOpening) {
     const auto route = kobalt::readerBookCandidateRoute(request->volume(), &nextIdentity, &nextPath);
     if (route == kobalt::ReaderBookRoute::Unsupported)
         return false;
+    // initialize() runs once when Nickel loads the module, possibly before
+    // onboard storage is ready. Re-read debug markers for every accepted book
+    // opening, before constructing any loading/error/reader UI. Never switch
+    // the locale of a reader that is already active (guarded above).
+    kobalt::strings::setLocale(kobalt::resolveLocale(environment_.paths.directory + "/diagnostics"));
     // Nickel is settled and Kobalt has built nothing for reading yet.
     kobalt::markMemoryBase();
     // The loading view draws in the interface faces. Check only those files

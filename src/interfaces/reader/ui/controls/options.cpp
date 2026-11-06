@@ -347,6 +347,11 @@ void RadioList::setTopDivider(bool shown) {
     topDivider = shown;
     arrange();
 }
+void RadioList::setBottomDivider(bool shown) {
+    bottomDivider = shown;
+    arrange();
+    updateGeometry();
+}
 void RadioList::setUniformRows(bool uniform) {
     uniformRows = uniform;
     arrange();
@@ -389,7 +394,8 @@ void RadioList::arrange() {
         auto *row = rows[index];
         const bool shown = index >= first && index < last;
         auto look = row->presentation();
-        look.dividers = Edges(Qt::BottomEdge) | (topDivider && index == first ? Edges(Qt::TopEdge) : Edges{});
+        look.dividers = (bottomDivider || index + 1 < last ? Edges(Qt::BottomEdge) : Edges{}) |
+                        (topDivider && index == first ? Edges(Qt::TopEdge) : Edges{});
         row->setPresentation(look);
         row->setVisible(shown);
         if (shown) {

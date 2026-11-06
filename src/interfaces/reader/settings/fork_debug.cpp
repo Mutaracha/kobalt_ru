@@ -70,13 +70,17 @@ private:
         card->title(strings::get("debug.language_title"));
         auto *message = card->message(strings::get("debug.language_restart"));
         auto *choices = new ui::RadioList(card);
-        choices->setTopDivider(true);
+        // The modal action owns its top rule. Do not add a second rule under
+        // the final radio row (or an unnecessary one above the first row).
+        choices->setBottomDivider(false);
         choices->add("rrDebugLanguageEnglish", QStringLiteral("English"));
         choices->add("rrDebugLanguageRussian", QString::fromUtf8("Русский"));
         choices->add("rrDebugLanguageAutomatic", strings::get("debug.language_automatic"));
         card->rows()->addWidget(choices);
         auto *cancel = ui::makeModalButton(card, {strings::get("common.cancel"), "rrDebugLanguageClose"}, false);
-        card->actions()->addWidget(cancel);
+        // ModalButton has no intrinsic minimum height: the standard adaptive
+        // action layout must measure its text/padding at the current scale.
+        card->adaptiveActions({cancel});
         const auto dismiss = [this, popup] {
             popup->hide();
             popup->deleteLater();

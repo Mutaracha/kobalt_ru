@@ -3147,6 +3147,29 @@ int main(int argc, char **argv) {
         require(popup && popup->isVisible(), "Five label taps did not open debug language choices");
         auto *english = popup->findChild<QCheckBox *>("rrDebugLanguageEnglish");
         require(english, "Missing English debug choice");
+        app.processEvents();
+        auto *close = popup->findChild<QPushButton *>("rrDebugLanguageClose");
+        require(close && close->height() >= kobalt::ui::metrics::control::outlinedHeight,
+                "Debug modal action bypassed adaptive height measurement");
+        require(close->rect().height() >= close->fontMetrics().height() +
+                    2 * kobalt::ui::metrics::control::outlinedVerticalPadding,
+                "Debug modal action clips its text or padding");
+        for (const QSize size : {QSize(600, 800), QSize(1072, 1448)}) {
+            host.resize(size);
+            app.processEvents();
+            require(close->height() >= close->fontMetrics().height() +
+                        2 * kobalt::ui::metrics::control::outlinedVerticalPadding &&
+                        popup->rect().contains(QRect(close->mapTo(popup, QPoint()), close->size())),
+                    "Resized debug modal clips its action");
+        }
+        auto *automatic = popup->findChild<QCheckBox *>("rrDebugLanguageAutomatic");
+        auto *ru = popup->findChild<QCheckBox *>("rrDebugLanguageRussian");
+        auto *lastRow = dynamic_cast<kobalt::ui::DescribedOption *>(automatic);
+        auto *firstRow = dynamic_cast<kobalt::ui::DescribedOption *>(english);
+        require(lastRow && firstRow && ru && !lastRow->presentation().dividers.testFlag(Qt::BottomEdge) &&
+                    !firstRow->presentation().dividers.testFlag(Qt::TopEdge) &&
+                    firstRow->presentation().dividers.testFlag(Qt::BottomEdge),
+                "Debug choices have duplicate outer rules or missing internal separators");
         const auto locale = kobalt::strings::locale();
         english->click();
         QElapsedTimer waiting;
@@ -3155,6 +3178,10 @@ int main(int argc, char **argv) {
             app.processEvents(QEventLoop::AllEvents, 10);
         require(popup->findChild<QPushButton *>("rrDebugLanguageClose")->isEnabled(),
                 "Debug language UI completion timed out");
+        app.processEvents();
+        require(close->height() >= close->fontMetrics().height() +
+                    2 * kobalt::ui::metrics::control::outlinedVerticalPadding,
+                "Saved debug modal clips the OK button");
         require(kobalt::debugLanguage(diagnostics.path()) == kobalt::DebugLanguage::English &&
                     kobalt::strings::locale() == locale,
                 "Hidden choice failed to persist English or changed the live locale");

@@ -177,22 +177,44 @@ void diagnosticOverride() {
     const auto automatic = resolveLocale(path);
     require(debugLanguage(path) == DebugLanguage::Automatic, "Missing markers must be automatic");
     require(writeDebugLanguage(path, DebugLanguage::Russian) && resolveLocale(path) == strings::Locale::Russian,
-            "lang_ru must override automatic locale");
+            ".lang_ru must override automatic locale");
     require(writeDebugLanguage(path, DebugLanguage::English) && resolveLocale(path) == strings::Locale::English &&
-                !QFileInfo::exists(path + "/lang_ru"), "English selection must replace the Russian marker");
-    { QFile ru(path + "/lang_ru"); require(ru.open(QIODevice::WriteOnly), "second marker"); }
+                !QFileInfo::exists(path + "/.lang_ru"), "English selection must replace the Russian marker");
+    { QFile ru(path + "/.lang_ru"); require(ru.open(QIODevice::WriteOnly), "second marker"); }
     require(resolveLocale(path) == strings::Locale::English, "Both markers must deterministically select English");
     qputenv("KOBALT_LANGUAGE", "ru");
-    require(resolveLocale(path) == strings::Locale::Russian, "Environment override must retain first priority");
+    require(resolveLocale(path) == strings::Locale::English, "Explicit marker must override the inherited environment");
     qunsetenv("KOBALT_LANGUAGE");
+    { QFile legacy(path + "/lang_en"); require(legacy.open(QIODevice::WriteOnly), "legacy marker"); }
+    require(writeDebugLanguage(path, DebugLanguage::Russian) && !QFileInfo::exists(path + "/lang_en") &&
+                QFileInfo::exists(path + "/.lang_ru") && resolveLocale(path) == strings::Locale::Russian,
+            "New selection must use hidden files and remove legacy markers");
+    // Simulate the next reader opening: both resolved strings and locale must
+    // change, not just the marker file. The live UI writer never does this.
+    const auto before = strings::locale();
+    strings::setLocale(strings::Locale::Russian);
+    require(writeDebugLanguage(path, DebugLanguage::English), "save next-opening English");
+    strings::setLocale(resolveLocale(path));
+    require(strings::locale() == strings::Locale::English &&
+                strings::get("common.cancel") == QStringLiteral("Cancel"), "Next opening did not use English strings");
+    strings::setLocale(before);
     { QFile other(path + "/keep.json"); require(other.open(QIODevice::WriteOnly), "other diagnostic file"); }
     require(writeDebugLanguage(path, DebugLanguage::Automatic) && debugLanguage(path) == DebugLanguage::Automatic &&
                 resolveLocale(path) == automatic && QFileInfo::exists(path + "/keep.json"),
             "Automatic must remove only language markers and restore normal resolution");
-    require(QDir().mkpath(path + "/lang_ru"), "blocking marker directory");
+    { QFile legacy(path + "/lang_en"); require(legacy.open(QIODevice::WriteOnly), "legacy fallback marker"); }
+    require(resolveLocale(path) == strings::Locale::English, "Legacy English marker no longer works");
+    { QFile hidden(path + "/.lang_ru"); require(hidden.open(QIODevice::WriteOnly), "hidden priority marker"); }
+    require(resolveLocale(path) == strings::Locale::Russian, "Legacy marker overrode an explicit hidden marker");
+    require(writeDebugLanguage(path, DebugLanguage::Automatic) && !QFileInfo::exists(path + "/lang_en"),
+            "Automatic must also remove legacy overrides");
+    qputenv("KOBALT_LANGUAGE", "ru");
+    require(resolveLocale(path) == strings::Locale::Russian, "Automatic lost environment fallback");
+    qunsetenv("KOBALT_LANGUAGE");
+    require(QDir().mkpath(path + "/.lang_ru"), "blocking marker directory");
     require(debugLanguage(path) == DebugLanguage::Automatic &&
                 !writeDebugLanguage(path, DebugLanguage::Russian), "Marker directories must not be accepted or removed");
-    require(QDir().rmdir(path + "/lang_ru"), "remove marker directory");
+    require(QDir().rmdir(path + "/.lang_ru"), "remove marker directory");
     require(!writeDebugLanguage(QString(), DebugLanguage::English), "Empty diagnostics path accepted");
     qputenv("KOBALT_LANGUAGE", originalEnvironment);
 }

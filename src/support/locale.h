@@ -5,7 +5,7 @@
 
 namespace kobalt {
 // Resolve the interface locale once at startup. The order is:
-// KOBALT_LANGUAGE for tests, diagnostics lang_en/lang_ru markers, Kobo config,
+// diagnostics .lang_en/.lang_ru markers, KOBALT_LANGUAGE, Kobo config,
 // then the operating-system locale. Every unknown value falls back to English.
 strings::Locale resolveLocale(const QString &diagnosticsDirectory = QString::fromLatin1(debugLanguageDirectory));
 // Read a Kobo-style INI file. A Russian entry in ApplicationPreferences/

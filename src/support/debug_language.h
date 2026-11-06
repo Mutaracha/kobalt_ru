@@ -6,7 +6,8 @@ class QObject;
 namespace kobalt {
 inline constexpr auto debugLanguageDirectory = "/mnt/onboard/.adds/kobalt/diagnostics";
 enum class DebugLanguage { Automatic, English, Russian };
-// Empty regular marker files only; if both exist, English wins deterministically.
+// Hidden .lang_en/.lang_ru markers; English wins if both exist.
+// Legacy unprefixed markers are read only when no hidden marker exists.
 DebugLanguage debugLanguage(const QString &directory);
 // Worker-only write helper. Never touches other diagnostics/profile files.
 bool writeDebugLanguage(const QString &directory, DebugLanguage language);

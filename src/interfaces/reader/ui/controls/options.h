@@ -92,6 +92,8 @@ public:
     void setCurrent(int index);
     void setMinimumRowHeight(int pixels);
     void setTopDivider(bool shown);
+    // Suppress only the final row edge when the next control owns the rule.
+    void setBottomDivider(bool shown);
     // False lets each row take the height it needs.
     void setUniformRows(bool uniform);
     int rowHeight(int width) const;
@@ -111,7 +113,7 @@ protected:
 private:
     QVector<DescribedOption *> rows;
     int minimum = 0, first = 0, count = -1;
-    bool topDivider = false, uniformRows = true;
+    bool topDivider = false, bottomDivider = true, uniformRows = true;
     void arrange();
 };
 }

@@ -114,6 +114,14 @@ them when adding features or rebasing onto upstream; see section 8 of
   stylesheet, geometry and paint path. The five-tap handler in `fork_debug.cpp`
   opens only a standard modal; never add visible hints/buttons to that row.
   Language marker selection is startup-only, not a partial live retranslation.
+  Use hidden `.lang_en`/`.lang_ru`; explicit markers beat the environment.
+  Kobo must resolve again at the accepted new-book boundary before any UI is
+  built, not just early Nickel module initialization; never retranslate a live
+  reader. Read legacy names only as fallback and remove them on UI selection.
+  ModalButton must use adaptiveActions for measured text/padding height. Avoid
+  duplicate rules at RadioList/action boundaries via the list's final-edge
+  option, preserving default dividers for existing callers. Test actual action
+  height before and after saving, not only callback or marker success.
   Serialize marker writes off the GUI thread, weakly guard completion, and wait
   for workers only at application shutdown. Marker files are diagnostics, not
   preferences migrations or book data. Do not touch other diagnostics files.

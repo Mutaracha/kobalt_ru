@@ -34,14 +34,16 @@ strings::Locale localeFromKoboConfig(const QString &confPath) {
 }
 
 strings::Locale resolveLocale(const QString &diagnosticsDirectory) {
-    const auto forced = qgetenv("KOBALT_LANGUAGE");
-    if (!forced.isEmpty())
-        return strings::normalizeLocaleCode(QString::fromLatin1(forced));
+    // A persistent explicit debug choice wins even if Nickel's environment
+    // carries a locale override. Automatic retains the previous ENV/config chain.
     switch (debugLanguage(diagnosticsDirectory)) {
     case DebugLanguage::English: return strings::Locale::English;
     case DebugLanguage::Russian: return strings::Locale::Russian;
     case DebugLanguage::Automatic: break;
     }
+    const auto forced = qgetenv("KOBALT_LANGUAGE");
+    if (!forced.isEmpty())
+        return strings::normalizeLocaleCode(QString::fromLatin1(forced));
     // On a Kobo the firmware config is authoritative when it exists. Desktop
     // and Android builds have no such file and follow the system locale.
     if (QFileInfo::exists(QString::fromLatin1(koboReaderConf)))

@@ -15,6 +15,9 @@ namespace kobalt {
 DebugLanguage debugLanguage(const QString &directory) {
     if (directory.isEmpty()) return DebugLanguage::Automatic;
     const QDir dir(directory);
+    if (QFileInfo(dir.filePath(".lang_en")).isFile()) return DebugLanguage::English;
+    if (QFileInfo(dir.filePath(".lang_ru")).isFile()) return DebugLanguage::Russian;
+    // Read older markers only as a fallback. The next UI choice removes them.
     if (QFileInfo(dir.filePath("lang_en")).isFile()) return DebugLanguage::English;
     if (QFileInfo(dir.filePath("lang_ru")).isFile()) return DebugLanguage::Russian;
     return DebugLanguage::Automatic;
@@ -29,19 +32,22 @@ bool writeDebugLanguage(const QString &directory, DebugLanguage language) {
         return (!info.exists() && !info.isSymLink()) || QFile::remove(path);
     };
     if (language == DebugLanguage::Automatic) {
-        const bool en = remove("lang_en");
-        const bool ru = remove("lang_ru");
-        return en && ru;
+        bool ok = true;
+        for (const auto *name : {".lang_en", ".lang_ru", "lang_en", "lang_ru"})
+            ok = remove(name) && ok;
+        return ok;
     }
     if (!QDir().mkpath(directory)) return false;
     // Commit the new marker before removing the old one: a failed create must
     // not silently discard a working override. Report any cleanup failure.
-    const auto target = dir.filePath(language == DebugLanguage::English ? "lang_en" : "lang_ru");
+    const auto target = dir.filePath(language == DebugLanguage::English ? ".lang_en" : ".lang_ru");
     const QFileInfo info(target);
     if (info.isSymLink() || (info.exists() && !info.isFile())) return false;
     QSaveFile marker(target);
     if (!marker.open(QIODevice::WriteOnly) || !marker.commit()) return false;
-    return remove(language == DebugLanguage::English ? "lang_ru" : "lang_en");
+    bool ok = remove(language == DebugLanguage::English ? ".lang_ru" : ".lang_en");
+    for (const auto *legacy : {"lang_en", "lang_ru"}) ok = remove(legacy) && ok;
+    return ok;
 }
 namespace {
 QThreadPool &languagePool() {
