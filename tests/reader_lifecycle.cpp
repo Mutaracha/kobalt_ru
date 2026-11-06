@@ -1,4 +1,5 @@
 #include <QVariant>
+#include <QDynamicPropertyChangeEvent>
 #include <QSqlQuery>
 #include "storage/annotation_database.h"
 #include "storage/record_writer.h"
@@ -246,6 +247,7 @@ public:
     bool idle() const {
         return !active;
     }
+    bool documentCache = false, retainedOnClose = false;
     ReaderOrientation *rotation = nullptr;
     std::shared_ptr<test::HostProgress> progress;
     PositionCodec positions;
@@ -272,6 +274,7 @@ public:
         session_ = opening.get();
         OpenRequest request{identity, path, readerInterface().readingViewport(size, preferences), saved,
                             {}, paths.layoutCache(), lease, source->resources(lease)};
+        if (documentCache) request.documentCachePath = paths.documentCache();
         request.appearanceDefaults = appearance::bookDefaults(preferences);
         request.positions = positions;
         session_->open(std::move(request), [this, identity, statePath, size](OpeningResult outcome) {
@@ -300,7 +303,8 @@ public:
             window_->setWindowFlags(Qt::Widget);
             window_->setWindowModality(Qt::NonModal);
             window_->resize(size);
-            window_->finished = [this](std::unique_ptr<ReaderSession>) {
+            window_->finished = [this](std::unique_ptr<ReaderSession> retained) {
+                retainedOnClose = bool(retained);
                 QTimer::singleShot(0, this, [this] { shutdown(); });
             };
             emit opened();
@@ -1929,6 +1933,163 @@ private slots:
         QTRY_VERIFY(!host.session()->busy() && host.session()->page() == 2);
         host.window()->pageButton(-1);
         QTRY_VERIFY(!host.session()->busy() && host.session()->page() == 1);
+    }
+
+    void clearCacheSaveFailureAndCancellation_data() {
+        QTest::addColumn<QString>("action");
+        for (const auto *value : {"save-failure", "sleep", "usb"})
+            QTest::newRow(value) << QString::fromLatin1(value);
+    }
+    void clearCacheSaveFailureAndCancellation() {
+        QFETCH(QString, action);
+        const auto paths = testPaths();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        host.progress = std::make_shared<test::HostProgress>();
+        host.positions = nickel::positionCodec();
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        host.window()->show();
+        QTRY_VERIFY(!host.session()->busy());
+        QDir().mkpath(paths.documentCache());
+        const auto marker = paths.documentCache() + "/keep-until-saved";
+        { QFile file(marker); QVERIFY(file.open(QIODevice::WriteOnly)); file.write("cache"); }
+        host.progress->holdFinish = action != "save-failure";
+        host.progress->failFinish = action == "save-failure";
+        host.window()->findChild<QPushButton *>("rrConfirmClearCache")->click();
+        if (action == "save-failure") {
+            QTRY_VERIFY(host.window()->findChild<QWidget *>("rrCloseSaveError"));
+            QVERIFY(!host.window()->property("reader_cache_clear_running").toBool());
+            host.window()->findChild<QPushButton *>("rrCloseSaveReturn")->click();
+        } else {
+            QTRY_VERIFY(host.progress->finishPending);
+            if (action == "sleep") {
+                host.window()->sleepReader();
+                host.progress->holdFinish = false;
+                host.progress->completeFinish(true);
+                host.window()->wakeReader();
+            } else {
+                bool handoff = false;
+                host.window()->prepareUsb([&] { handoff = true; });
+                host.progress->holdFinish = false;
+                host.progress->completeFinish(true);
+                QTRY_VERIFY_WITH_TIMEOUT(handoff, 10000);
+            }
+        }
+        QVERIFY(QFileInfo::exists(marker)); // No delete without the close save.
+        host.progress->failFinish = host.progress->holdFinish = false;
+        host.shutdown();
+        QTRY_VERIFY_WITH_TIMEOUT(host.idle(), 10000);
+        QVERIFY(QFileInfo::exists(marker));
+    }
+
+    void clearCacheAfterSave_data() {
+        QTest::addColumn<QString>("interruption");
+        for (const auto *value : {"none", "sleep", "usb", "dispose", "destroy", "delete-failure"})
+            QTest::newRow(value) << QString::fromLatin1(value);
+    }
+    void clearCacheAfterSave() {
+        QFETCH(QString, interruption);
+        const auto paths = testPaths();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{host};
+        host.documentCache = true;
+        host.positions = nickel::positionCodec();
+        host.progress = std::make_shared<test::HostProgress>();
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        host.window()->show();
+        QTRY_VERIFY(!host.session()->busy());
+        // Warm a real parsed-book cache through the unmodified normal close.
+        host.window()->close();
+        QTRY_VERIFY_WITH_TIMEOUT(host.idle(), 10000);
+        QVERIFY(host.retainedOnClose);
+        QVERIFY(!QDir(paths.documentCache()).entryList(QDir::Files).isEmpty());
+        host.retainedOnClose = false;
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 2, 30000);
+        host.window()->show();
+        QTRY_VERIFY(!host.session()->busy());
+        QVERIFY(host.session()->go(1));
+        QTRY_VERIFY(!host.session()->busy());
+        const auto position = host.session()->state().value("position").toString();
+        QDir().mkpath(paths.documentCache());
+        const auto marker = paths.documentCache() + "/disposable-test-cache";
+        { QFile file(marker); QVERIFY(file.open(QIODevice::WriteOnly)); file.write("cache"); }
+        if (interruption == "delete-failure") {
+            QVERIFY(QDir(paths.documentCache()).removeRecursively());
+            QFile file(paths.documentCache());
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            file.write("blocker");
+        }
+        // Stop the real engine queue exactly at the terminal commit boundary.
+        // The GUI must continue delivering timers; no wait or deletion on it.
+        class Pause final : public QObject {
+        public:
+            bool entered = false;
+            ~Pause() override { engineActivity().pause(false); }
+            bool eventFilter(QObject *object, QEvent *event) override {
+                if (event->type() == QEvent::DynamicPropertyChange &&
+                    static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName() == "reader_cache_clear_running" &&
+                    object->property("reader_cache_clear_running").toBool()) {
+                    entered = true;
+                    engineActivity().pause(true);
+                }
+                return false;
+            }
+        } pause;
+        host.window()->installEventFilter(&pause);
+        auto *confirm = host.window()->findChild<QPushButton *>("rrConfirmClearCache");
+        QVERIFY(confirm);
+        confirm->click();
+        QTRY_VERIFY_WITH_TIMEOUT(pause.entered, 10000);
+        QVERIFY(host.window()->pendingStorageSave());
+        QVERIFY(QFileInfo::exists(paths.documentCache()));
+        QCOMPARE(storage::readBookState(paths, host.book()->identity()).object.value("position").toString(), position);
+        bool timerDelivered = false;
+        QTimer::singleShot(0, host.window(), [&] { timerDelivered = true; });
+        QTRY_VERIFY(timerDelivered);
+        bool handoff = false;
+        if (interruption == "sleep") host.window()->sleepReader();
+        if (interruption == "usb") host.window()->prepareUsb([&] { handoff = true; });
+        if (interruption == "dispose") host.window()->finishStorageSave([&](bool saved) { handoff = saved; });
+        if (interruption == "destroy") {
+            // The queued job owns the engine and paths, not a Reader pointer.
+            delete host.window();
+        }
+        if (interruption == "usb" || interruption == "dispose") QVERIFY(!handoff);
+        engineActivity().pause(false);
+        if (interruption == "sleep") {
+            QTRY_VERIFY(!host.window()->property("reader_cache_clear_running").toBool());
+            QVERIFY(!host.idle()); // Completion cannot raise UI over sleep.
+            host.window()->wakeReader();
+        }
+        if (interruption == "usb" || interruption == "dispose") {
+            QTRY_VERIFY_WITH_TIMEOUT(handoff, 10000);
+            host.shutdown();
+        }
+        if (interruption == "destroy") host.shutdown();
+        if (interruption == "delete-failure") {
+            QTRY_VERIFY(host.window()->findChild<QWidget *>("rrClearCacheError"));
+            QVERIFY(QFileInfo::exists(paths.documentCache()));
+            host.window()->findChild<QPushButton *>("rrClearCacheErrorConfirm")->click();
+        }
+        QTRY_VERIFY_WITH_TIMEOUT(host.idle(), 10000);
+        if (interruption != "delete-failure") {
+            QVERIFY(!QFileInfo::exists(paths.documentCache()));
+            QVERIFY(!QFileInfo::exists(paths.layoutCache()));
+            QVERIFY(!host.retainedOnClose);
+            // Neither queued close work nor a retained-cache save recreates it.
+            bool drained = false;
+            ReaderSession::drain([&] { drained = true; });
+            QTRY_VERIFY(drained);
+            QVERIFY(!QFileInfo::exists(paths.documentCache()));
+            host.open(fixture(), nativeSize);
+            QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 3, 30000);
+            QCOMPARE(host.session()->state().value("position").toString(), position);
+        }
     }
 
     void closeWithPendingBookmark() {

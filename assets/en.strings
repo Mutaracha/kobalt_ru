@@ -1202,3 +1202,5 @@
 "debug.language_automatic" = "Automatic (device language)";
 "debug.language_saved" = "Saved. Exit Kobalt and open a book again to apply the language.";
 "debug.language_failed" = "Could not save the language. Check the diagnostics folder and try again.";
+
+"reader.clear_book_cache_failed_detail" = "Reading progress is saved. Some cache files may remain. Kobalt will close; reopen a book to try clearing the cache again.";

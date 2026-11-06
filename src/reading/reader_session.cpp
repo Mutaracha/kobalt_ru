@@ -12,6 +12,7 @@
 #include "publication/publication.h"
 #include "publication/layout_compatibility.h"
 #include "storage/layout_cache.h"
+#include "storage/reader_storage.h"
 #include <QFile>
 #include <QFileInfo>
 #include <QFontInfo>
@@ -227,7 +228,7 @@ ReaderSession::ReaderSession(std::shared_ptr<ReaderModel> retainedModel, QString
       model(std::move(retainedModel)) {}
 
 std::unique_ptr<ReaderSession> ReaderSession::retained() {
-    if (running || !openingResult_.ready() || !frame.error.isEmpty() || fingerprint.isEmpty())
+    if (cachesDiscarded || running || !openingResult_.ready() || !frame.error.isEmpty() || fingerprint.isEmpty())
         return {};
     // Stop background image work before queuing eviction. The existing close
     // barrier drains this job before it releases Nickel's publication service.
@@ -278,6 +279,23 @@ std::unique_ptr<ReaderSession> ReaderSession::retained() {
         },
         Qt::QueuedConnection);
     return retained;
+}
+void ReaderSession::clearRenderingCaches(const storage::Paths &paths, std::function<void(bool)> finished) {
+    // Invalidate GUI continuations before the FIFO barrier. No subsequent
+    // image/search/turn continuation may start work or retain this document.
+    cachesDiscarded = retiring = true;
+    newest->store(++revision);
+    cancelSource();
+    const auto engine = model;
+    const QPointer<ReaderSession> guard(this);
+    qt::invoke(engineWorker(), [engine, paths, guard, finished] {
+        EngineJob activity;
+        engine->discardDocument();
+        const bool ok = storage::clearRenderingCaches(paths);
+        qt::invoke(qApp, [guard, finished, ok] {
+            if (guard && finished) finished(ok);
+        }, Qt::QueuedConnection);
+    }, Qt::QueuedConnection);
 }
 void ReaderSession::cancelSource() {
     layoutReady_ = false;
@@ -1965,6 +1983,7 @@ void ReaderSession::clearRenderProgress() {
         renderProgressChanged();
 }
 void ReaderSession::request(bool appearanceChange, RenderReason reason) {
+    if (cachesDiscarded) return;
     cancelPendingTurn();
     turning = false;
     if (appearanceChange) {
@@ -1985,6 +2004,10 @@ void ReaderSession::request(bool appearanceChange, RenderReason reason) {
         dispatch();
 }
 void ReaderSession::dispatch(bool pageTurn) {
+    if (cachesDiscarded) {
+        running = turning = false;
+        return;
+    }
     running = true;
     turning = pageTurn;
     const auto positions = positions_;

@@ -148,6 +148,11 @@ void Reader::prepareUsb(std::function<void()> finished) {
     prepareTransition(std::move(finished), true);
 }
 void Reader::prepareTransition(std::function<void()> finished, bool usb) {
+    if (cacheClearCommitted()) {
+        finishCacheClearTransition([finished](bool) { finished(); });
+        return;
+    }
+    cacheClear = CacheClear::None; // USB/shutdown wins before deletion commits.
     book->retryFailedReadingSave();
     const auto request = ++closeRequest;
     setProperty("reader_transition_save_failed", false);
@@ -350,6 +355,10 @@ void Reader::sleepReader() {
         pageScrubber->cancel();
     if (lifecycleHidden)
         return;
+    if (cacheClear == CacheClear::Requested) {
+        cacheClear = CacheClear::None; // Sleep cancels an uncommitted action.
+        exitPending = false;
+    }
     ++closeRequest;
     exportRunning = false;
     hideSaving();
@@ -371,13 +380,15 @@ void Reader::sleepReader() {
     page->animationDirection = 0;
     setProperty("reader_animation_direction", 0);
     appearanceEdit.clearContinuation();
-    saveNativeProgress();
-    checkpoint();
-    // Fold waiting saves into the main profile file before a long sleep.
-    bookmarks->flush();
-    highlights->flush();
-    kobalt::storage::checkpointProfile();
-    flushDiagnostics(1000);
+    if (!cacheClearCommitted()) {
+        saveNativeProgress();
+        checkpoint();
+        // Fold waiting saves into the main profile file before a long sleep.
+        bookmarks->flush();
+        highlights->flush();
+        kobalt::storage::checkpointProfile();
+        flushDiagnostics(1000);
+    } // Committed cleanup already acknowledged the final durable checkpoint.
     closeSearch();
     dismissLookup();
     lifecycleHidden = true;
@@ -456,6 +467,15 @@ void Reader::sleepViewReady() {
 }
 
 void Reader::wakeReader() {
+    if (cacheClearCommitted()) {
+        sleepImage = {};
+        presentation->clearSleepScreen();
+        lifecycleHidden = false;
+        showFullScreen();
+        setEnabled(false);
+        completeCacheClear(); // Never resume a retired DOM after sleep.
+        return;
+    }
     cancelKosync();
     kosyncStarted = false;
     sleepImage = {};
@@ -512,6 +532,7 @@ void Reader::saveNativeProgress() {
 }
 
 void Reader::progressTick() {
+    if (cacheClearCommitted()) return;
     if (closing || exportRunning)
         return;
     if (services.suspended() || book->deviceTransition() || !isVisible()) {
@@ -1012,6 +1033,8 @@ void Reader::resizeEvent(QResizeEvent *) {
         finishDialog->setGeometry(rect());
     if (savingView)
         savingView->setGeometry(rect());
+    if (cacheClearError)
+        cacheClearError->setGeometry(rect());
     if (closeSaveError)
         closeSaveError->setGeometry(rect());
     resizeText();
@@ -2106,9 +2129,79 @@ void Reader::finishExitSaved(quint64 request) {
         kobalt::qt::later(10, this, [this, request] { finishExitSaved(request); });
         return;
     }
+    if (cacheClear == CacheClear::Requested) {
+        clearCachesForExit();
+        return;
+    }
     if (savingView) showSaving(100);
     closing = true;
     close();
+}
+void Reader::clearCachesForExit() {
+    cacheClear = CacheClear::Running;
+    setProperty("reader_cache_clear_running", true);
+    setEnabled(false);
+    showSaving(100);
+    appearanceEdit.resetPreview(); // Retire preview mappings before the FIFO job.
+    const QPointer<Reader> guard(this);
+    model->clearRenderingCaches(book->paths(), [guard](bool ok) {
+        if (!guard) return;
+        guard->cacheClear = ok ? CacheClear::Complete : CacheClear::Failed;
+        guard->setProperty("reader_cache_clear_running", false);
+        guard->completeCacheClear();
+    });
+}
+void Reader::completeCacheClear() {
+    if (lifecycleHidden || services.suspended() || closing)
+        return;
+    if (cacheClear == CacheClear::Running) {
+        showSaving(100);
+        return;
+    }
+    if (cacheClear == CacheClear::Complete) {
+        closing = true;
+        close();
+        return;
+    }
+    if (cacheClear != CacheClear::Failed || cacheClearError) return;
+    hideSaving();
+    setEnabled(true);
+    auto *notice = new ui::NoticeModal(this,
+        {strings::get("reader.clear_book_cache_failed"), strings::get("reader.clear_book_cache_failed_detail"), {}},
+        {strings::get("common.ok"), "rrClearCacheErrorConfirm"});
+    cacheClearError = notice;
+    notice->setObjectName("rrClearCacheError");
+    const auto leave = [this, notice] {
+        notice->hide();
+        notice->deleteLater();
+        closing = true;
+        close();
+    };
+    connect(notice->primaryButton(), &QPushButton::clicked, this, leave);
+    notice->dismissed = leave;
+    notice->fitCard();
+    notice->show();
+    notice->raise();
+    notice->primaryButton()->setFocus();
+    for (auto *widget : notice->findChildren<QWidget *>()) textRefresh(widget);
+}
+void Reader::finishCacheClearTransition(std::function<void(bool)> finished) {
+    // Final save was acknowledged before Running. Only the cleanup barrier
+    // remains; never map from a retired DOM or re-save a just-deleted cache.
+    if (!lifecycleHidden) {
+        ++closeRequest;
+        hideSaving();
+        if (cacheClearError) cacheClearError->hide();
+    }
+    lifecycleHidden = closing = true;
+    exitPending = exportRunning = false;
+    setEnabled(false);
+    hideSaving();
+    if (pendingStorageSave()) {
+        qt::later(10, this, [this, finished] { finishCacheClearTransition(finished); });
+        return;
+    }
+    finished(true); // Cache deletion failure does not mean reading save failed.
 }
 void Reader::transitionSaveError(std::function<void()> retry, std::function<void()> discard) {
     if (closeSaveError) return;
@@ -2191,6 +2284,7 @@ void Reader::failExit(quint64 request, const QString &error) {
         textRefresh(widget);
 }
 void Reader::cancelExit() {
+    cacheClear = CacheClear::None;
     closeSaveRetried = false;
     ++closeRequest;
     exitPending = exportRunning = false;
@@ -2202,10 +2296,15 @@ void Reader::cancelExit() {
     refresh();
 }
 bool Reader::pendingStorageSave() const {
-    return book->savesPending() || book->readingSavePending() || bookmarks->saving() || highlights->saving() || annotationSaving ||
+    return cacheClear == CacheClear::Running || book->savesPending() || book->readingSavePending() || bookmarks->saving() || highlights->saving() || annotationSaving ||
            (reportWriter && !reportWriter->idle());
 }
 void Reader::finishStorageSave(std::function<void(bool)> finished, bool nativeAllowed) {
+    if (cacheClearCommitted()) {
+        finishCacheClearTransition(std::move(finished));
+        return;
+    }
+    cacheClear = CacheClear::None;
     ++closeRequest;
     exitPending = exportRunning = false;
     closing = lifecycleHidden = true;
@@ -2293,12 +2392,13 @@ void Reader::saveSoon() {
 }
 void Reader::runIdleSave(bool beforeStandby) {
     standbyFlushQueued = false;
-    if (!localSaveDue || closing || exportRunning || lifecycleHidden || model->busy() || book->savesPending()) return;
+    if (!localSaveDue || cacheClearCommitted() || closing || exportRunning || lifecycleHidden || model->busy() || book->savesPending()) return;
     localSaveDue = false;
     book->saveReadingActivity(lowBattery || beforeStandby);
 }
 
 bool Reader::flushBeforeStandby() {
+    if (cacheClear == CacheClear::Running) return false;
     // Standby pauses Qt timers. Let the visible confirmation dismiss first.
     auto *notice = dynamic_cast<KosyncNotice *>(kosyncDialog.data());
     if (!lifecycleHidden && notice && notice->completing())

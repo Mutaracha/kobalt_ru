@@ -4,6 +4,7 @@
 #include "support/qt_compat.h"
 #include "support/strings.h"
 #include "reader_model.h"
+#include "support/main_thread.h"
 #include "reader_fb2.h"
 #include "reader_source.h"
 #include "publication/image_policy.h"
@@ -361,6 +362,15 @@ QByteArray ReaderModel::documentCachePolicy() const {
     }
     return cachePolicy_ +
            ":user-css-v1:" + QCryptographicHash::hash(userStyleSheet_, QCryptographicHash::Sha256).toHex();
+}
+void ReaderModel::discardDocument() {
+    mainthread::BlockingOperation operation("discard-document-cache");
+    releaseImages();
+    sourceIndex_.reset();
+    engine_.reset();
+    source_.reset();
+    cacheDirectory_.clear();
+    cacheFingerprint_.clear();
 }
 bool ReaderModel::saveDocumentCache() {
     if (!engine_ || cacheDirectory_.isEmpty() || cacheFingerprint_.isEmpty() || !resourceError().isEmpty() || !pages())

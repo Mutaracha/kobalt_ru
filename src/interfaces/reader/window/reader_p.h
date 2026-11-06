@@ -272,6 +272,13 @@ private:
     bool finishChoiceResolved = false;
     bool importingProgress = false, comparingProgress = false;
     bool exitPending = false, exportRunning = false;
+    enum class CacheClear { None, Requested, Running, Complete, Failed };
+    CacheClear cacheClear = CacheClear::None;
+    bool cacheClearCommitted() const { return cacheClear >= CacheClear::Running; }
+    void clearCachesForExit();
+    void completeCacheClear();
+    void finishCacheClearTransition(std::function<void(bool)> finished);
+    QPointer<kobalt::ui::NoticeModal> cacheClearError;
     bool lifecycleHidden = false;
     QImage sleepImage, sleepCover;
     QFileInfo sleepCoverSource;

@@ -505,7 +505,12 @@ bool prepareProfile(const Paths &paths, ProfileRecovery *recovery) {
 }
 
 bool clearRenderingCaches(const Paths &paths) {
+    mainthread::BlockingOperation operation("clear-rendering-caches");
     if (paths.directory.isEmpty())
+        return false;
+    // Do not traverse a substituted cache directory into non-cache user data.
+    if (QFileInfo(paths.documentCache()).isSymLink() ||
+        QFileInfo(QFileInfo(paths.layoutCache()).absolutePath()).isSymLink())
         return false;
     bool ok = true;
     // CREngine owns .cache/ and removes files it does not recognize, so the

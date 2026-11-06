@@ -137,6 +137,9 @@ public:
     }
     // Writes the parsed book and its pages to the cache, for the next opening.
     bool saveDocumentCache();
+    // Terminal operation on the engine worker, after the final progress save.
+    // Release mapped DOM/cache files before deleting their directory.
+    void discardDocument();
     // Shared count, on the owning engine thread. Populates the Stats graph
     // from source anchors. Counts visible source text once, including
     // non-linear spine fragments; excludes SVG and ruby annotation text.

@@ -82,5 +82,19 @@ int main(int argc, char **argv) {
     expect(storage::clearRenderingCaches(paths), "retry succeeds after blocker is gone");
     expect(!QFileInfo::exists(paths.documentCache()), "cache removed on retry");
 
+    // Never traverse cache-directory symlinks into saved or external data.
+    const auto outside = directory.path() + "/external";
+    expect(QDir().mkpath(outside), "external directory");
+    { QFile keep(outside + "/keep"); expect(keep.open(QIODevice::WriteOnly), "external data"); }
+    expect(QFile::link(outside, paths.documentCache()), "symlink document cache");
+    expect(!storage::clearRenderingCaches(paths), "symlink document cache rejected");
+    expect(QFileInfo::exists(outside + "/keep"), "symlink target preserved");
+    expect(QFile::remove(paths.documentCache()), "remove cache symlink");
+    const auto layoutDirectory = QFileInfo(paths.layoutCache()).absolutePath();
+    expect(QFile::link(outside, layoutDirectory), "symlink layout cache directory");
+    expect(!storage::clearRenderingCaches(paths), "symlink layout directory rejected");
+    expect(QFileInfo::exists(outside + "/keep"), "layout symlink target preserved");
+    expect(QFile::remove(layoutDirectory), "remove layout symlink");
+
     return 0;
 }

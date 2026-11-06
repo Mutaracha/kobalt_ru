@@ -130,17 +130,25 @@ them when adding features or rebasing onto upstream; see section 8 of
   separately which checks were executed, added-but-unrun, reused or still need
   device review. Update the plan, both locales and user instructions together.
 
-### Open priority: cache-clear IO/lifecycle
+### Cache-clear IO/lifecycle contract
 
-`confirmClearCache -> storage::clearRenderingCaches()` is still synchronous on
-the GUI thread and **not fixed** by any refactoring above. Keep it on the task
-list until a separate tested change moves deletion off the UI thread, serializes
-with active CREngine/cache jobs, preserves the normal progress save and auto-exit,
-and prevents the retained close from recreating the just-deleted cache. Cover
-save/delete failures, delayed workers, window destruction, sleep/USB interruption
-and reopen behavior. Delete only disposable parsed/layout caches, never profile
-DB/settings/book state/annotations. Do not hide the debt using AllowBlocking or
-a cosmetic blocking guard. Do not reuse this destructive path for language flags.
+The clear-cache action requests the normal asynchronous close, not a parallel
+progress-save implementation. Only after local/native/annotation/sync saves are
+acknowledged may ReaderSession retire its continuations and enqueue deletion on
+the shared engine worker. Release preview and mapped DOM/cache files before
+deleting `.cache/` and `cache/reopen-layout.json`; reject cache-directory symlinks.
+The terminal session must return no retained model and cannot dispatch more
+render jobs. Never recreate the cache during close or change saved-data formats.
+Before commit, cancellation/save failure/sleep/USB leaves caches alone. After
+commit, sleep defers close/error UI until wake; USB/shutdown/disposal must await
+the cleanup completion, without remapping or re-saving a retired document. Include
+cleanup in pending-storage and standby barriers. Guard GUI completion weakly;
+the worker owns engine and paths even after window destruction. Delete failure
+is not a progress-save failure: report remaining caches and close safely; retry
+from a fresh opening. Keep delayed-worker/save-failure/deletion-failure/lifetime/
+sleep/USB/reopen tests. Do not replace this protocol with AllowBlocking or use
+this destructive path for diagnostics/language flags. Native/device validation
+must still be reported separately from successful cross-compilation.
 
 ## Arena environment notes (verified 2026-10-29)
 
