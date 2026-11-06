@@ -2167,7 +2167,8 @@ void Reader::completeCacheClear() {
     hideSaving();
     setEnabled(true);
     auto *notice = new ui::NoticeModal(this,
-        {strings::get("reader.clear_book_cache_failed"), strings::get("reader.clear_book_cache_failed_detail"), {}},
+        {strings::get("reader.clear_book_cache_failed") + "\n\n" +
+             strings::get("reader.clear_book_cache_failed_detail"), strings::get("reader.clear_book_cache"), {}},
         {strings::get("common.ok"), "rrClearCacheErrorConfirm"});
     cacheClearError = notice;
     notice->setObjectName("rrClearCacheError");
@@ -2190,7 +2191,6 @@ void Reader::finishCacheClearTransition(std::function<void(bool)> finished) {
     // remains; never map from a retired DOM or re-save a just-deleted cache.
     if (!lifecycleHidden) {
         ++closeRequest;
-        hideSaving();
         if (cacheClearError) cacheClearError->hide();
     }
     lifecycleHidden = closing = true;

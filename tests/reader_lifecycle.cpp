@@ -1937,7 +1937,7 @@ private slots:
 
     void clearCacheSaveFailureAndCancellation_data() {
         QTest::addColumn<QString>("action");
-        for (const auto *value : {"save-failure", "sleep", "usb"})
+        for (const auto *value : {"save-failure", "native-write-failure", "sleep", "usb"})
             QTest::newRow(value) << QString::fromLatin1(value);
     }
     void clearCacheSaveFailureAndCancellation() {
@@ -1955,10 +1955,12 @@ private slots:
         QDir().mkpath(paths.documentCache());
         const auto marker = paths.documentCache() + "/keep-until-saved";
         { QFile file(marker); QVERIFY(file.open(QIODevice::WriteOnly)); file.write("cache"); }
-        host.progress->holdFinish = action != "save-failure";
+        const bool saveFailure = action == "save-failure" || action == "native-write-failure";
+        host.progress->holdFinish = !saveFailure;
         host.progress->failFinish = action == "save-failure";
+        host.progress->failWrite = action == "native-write-failure";
         host.window()->findChild<QPushButton *>("rrConfirmClearCache")->click();
-        if (action == "save-failure") {
+        if (saveFailure) {
             QTRY_VERIFY(host.window()->findChild<QWidget *>("rrCloseSaveError"));
             QVERIFY(!host.window()->property("reader_cache_clear_running").toBool());
             host.window()->findChild<QPushButton *>("rrCloseSaveReturn")->click();
@@ -1978,7 +1980,7 @@ private slots:
             }
         }
         QVERIFY(QFileInfo::exists(marker)); // No delete without the close save.
-        host.progress->failFinish = host.progress->holdFinish = false;
+        host.progress->failWrite = host.progress->failFinish = host.progress->holdFinish = false;
         host.shutdown();
         QTRY_VERIFY_WITH_TIMEOUT(host.idle(), 10000);
         QVERIFY(QFileInfo::exists(marker));
