@@ -1,13 +1,13 @@
 #pragma once
 #include "support/strings.h"
+#include "support/debug_language.h"
 
-class QString;
 
 namespace kobalt {
 // Resolve the interface locale once at startup. The order is:
-// KOBALT_LANGUAGE for tests, the Kobo eReader.conf selection when present,
+// KOBALT_LANGUAGE for tests, diagnostics lang_en/lang_ru markers, Kobo config,
 // then the operating-system locale. Every unknown value falls back to English.
-strings::Locale resolveLocale();
+strings::Locale resolveLocale(const QString &diagnosticsDirectory = QString::fromLatin1(debugLanguageDirectory));
 // Read a Kobo-style INI file. A Russian entry in ApplicationPreferences/
 // ExtraLocales wins first (localization patches always set it, while old
 // patches leave CurrentLocale at "C"); CurrentLocale is consulted afterwards.

@@ -82,6 +82,58 @@ Every fork feature stays behind an explicit flag or in a separate file so the EP
 
 Interim device builds come from the push-triggered `.github/workflows/kobo-qt5-device.yml` (artifact `Kobalt-qt5-device`); a local SDK build is `KOBALT_FORK_NAME=kobalt_ru bash platforms/kobo/build.sh qt5`. `KOBALT_FORK_NAME` defaults to empty, which hides the fork row on the About page and preserves the stock layout; only the fork workflow sets it. The fork row is a single added label (`kobalt_ru · <UTC build time>` from `KOBALT_BUILD_TIME`); never change the stock version/commit rows. The "Clear book cache" action may only delete disposable caches via `storage::clearRenderingCaches()` (`.cache/` and `cache/reopen-layout.json`) — never the database, settings, annotations or per-book state — and must keep the confirm-then-exit flow. Before pushing, run the offline checks that need no Qt SDK: `cmake -DTEST_TMP_ROOT=$(mktemp -d) -P platforms/strings-test.cmake`, the en/ru string parity check, `bash platforms/ci/test.sh` when `jq` is available, and `git diff --check`. On a Mac, also run the `model` ctest group (`fb2`, `strings_locale`, `local_resources`, `nickel_book_menu`, `reading_book`). The complete pre-push checklist is section 7.5 of the plan. User-facing behavior of the fork is documented in Russian in `doc/fork-kobalt_ru.md`; update it together with user-visible changes.
 
+## Refactoring contracts for new fork work
+
+These are maintenance requirements, not just a historical changelog. Preserve
+them when adding features or rebasing onto upstream; see section 8 of
+`FB2_FORK_PLAN.md` for decisions and validation evidence.
+
+- Keep upstream frames/classes in place where a small hook suffices. For the
+  mixed-font exit title, reuse `return_title_text.h` for our brand runs; do not
+  replace upstream ReturnTitle or its palette/large-scale layout/painting frame.
+- FB2 head recognition stays in `publication/fb2.h`; do not run the extra full
+  FB2 inspection on the normal ZIP/EPUB path. FB2 preview and numeric note-title
+  preprocessing stay in `reader_fb2.cpp`, with explicit concrete engine includes.
+  Do not modify main-text reference labels or remove DOM nodes/IDs to restyle notes.
+- Keep FB2 CSS/cache-policy changes together in `reader_fb2.h`. Popup hints are
+  unconditional; in-page CSS is conditional on the default-on appearance key.
+  Update policy in its single helper only when the parsed result/default CSS
+  changes, not for releases or code moves. Preserve the empty EPUB salt.
+- Register new layout-affecting choices in appearance state, clean/default/apply,
+  copy/equality and retained-layout checks. `afterContentChange()` is a narrow
+  whitelist: never substitute all appearance keys or retain stale source-bound
+  positions when a book fingerprint changes. Test missing keys and explicit false.
+- Acquire locale string tables/counts before calling lookup in a separate
+  statement; never rely on C++ function-argument evaluation order. Keep canonical
+  English diagnostics and the Russian fallback/key-display behavior unchanged.
+- Main Settings rows must receive their shared Presentation through the existing
+  construction factory (and explicit shared styling for embedded external rows).
+  Do not restore the fragile late registry or change global widget defaults.
+- Hidden diagnostics must be isolated and inactive by default. The fork About
+  label remains an InterfaceLabel with its original text, alignment, font,
+  stylesheet, geometry and paint path. The five-tap handler in `fork_debug.cpp`
+  opens only a standard modal; never add visible hints/buttons to that row.
+  Language marker selection is startup-only, not a partial live retranslation.
+  Serialize marker writes off the GUI thread, weakly guard completion, and wait
+  for workers only at application shutdown. Marker files are diagnostics, not
+  preferences migrations or book data. Do not touch other diagnostics files.
+- New helpers must have explicit owners/lifetime/threading and focused tests.
+  Validate the actual UI presentation, not merely clicks and persistence. State
+  separately which checks were executed, added-but-unrun, reused or still need
+  device review. Update the plan, both locales and user instructions together.
+
+### Open priority: cache-clear IO/lifecycle
+
+`confirmClearCache -> storage::clearRenderingCaches()` is still synchronous on
+the GUI thread and **not fixed** by any refactoring above. Keep it on the task
+list until a separate tested change moves deletion off the UI thread, serializes
+with active CREngine/cache jobs, preserves the normal progress save and auto-exit,
+and prevents the retained close from recreating the just-deleted cache. Cover
+save/delete failures, delayed workers, window destruction, sleep/USB interruption
+and reopen behavior. Delete only disposable parsed/layout caches, never profile
+DB/settings/book state/annotations. Do not hide the debt using AllowBlocking or
+a cosmetic blocking guard. Do not reuse this destructive path for language flags.
+
 ## Arena environment notes (verified 2026-10-29)
 
 Arena runs this checkout in a Linux sandbox, not on the development Mac described above. At the last check `git`, `gh`, `python3`, `g++` and `jq` were available; `cmake`, `qmake` and `docker` were not on PATH. Do not assume a native Qt SDK or Kobo container engine is available. Recheck tools with `command -v` every session. If needed, install CMake in a disposable venv (e.g. `/tmp/kobalt-tools`); this is agent-only validation tooling, never an application build dependency. Native desktop/UI tests need a suitable Qt host; the push-triggered Kobo Qt5 workflow verifies the device build.

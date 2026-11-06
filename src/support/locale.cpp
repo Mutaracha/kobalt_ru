@@ -33,10 +33,15 @@ strings::Locale localeFromKoboConfig(const QString &confPath) {
     return strings::normalizeLocaleCode(code);
 }
 
-strings::Locale resolveLocale() {
+strings::Locale resolveLocale(const QString &diagnosticsDirectory) {
     const auto forced = qgetenv("KOBALT_LANGUAGE");
     if (!forced.isEmpty())
         return strings::normalizeLocaleCode(QString::fromLatin1(forced));
+    switch (debugLanguage(diagnosticsDirectory)) {
+    case DebugLanguage::English: return strings::Locale::English;
+    case DebugLanguage::Russian: return strings::Locale::Russian;
+    case DebugLanguage::Automatic: break;
+    }
     // On a Kobo the firmware config is authoritative when it exists. Desktop
     // and Android builds have no such file and follow the system locale.
     if (QFileInfo::exists(QString::fromLatin1(koboReaderConf)))

@@ -1196,3 +1196,9 @@
 
 "reader.inpage_footnotes" = "Show footnotes at page bottom";
 "settings.inpage_footnotes_description" = "When off, tap a footnote link to open its text.";
+
+"debug.language_title" = "Debug interface language";
+"debug.language_restart" = "Select a language for the next reader launch. The current interface will not change.";
+"debug.language_automatic" = "Automatic (device language)";
+"debug.language_saved" = "Saved. Exit Kobalt and open a book again to apply the language.";
+"debug.language_failed" = "Could not save the language. Check the diagnostics folder and try again.";

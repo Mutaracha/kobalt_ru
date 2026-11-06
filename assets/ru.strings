@@ -1181,3 +1181,9 @@
 
 "reader.inpage_footnotes" = "Сноски внизу страницы";
 "settings.inpage_footnotes_description" = "Если выключено, сноску можно открыть нажатием на ссылку.";
+
+"debug.language_title" = "Язык интерфейса для отладки";
+"debug.language_restart" = "Выберите язык для следующего запуска ридера. Текущий интерфейс не изменится.";
+"debug.language_automatic" = "Автоматически (язык устройства)";
+"debug.language_saved" = "Сохранено. Выйдите из Kobalt и снова откройте книгу, чтобы применить язык.";
+"debug.language_failed" = "Не удалось сохранить язык. Проверьте папку diagnostics и повторите попытку.";

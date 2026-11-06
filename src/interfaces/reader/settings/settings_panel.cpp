@@ -9,6 +9,7 @@
 #include "interfaces/reader/ui/style/theme.h"
 #include "interfaces/reader/ui/panel_timing.h"
 #include "settings_panel.h"
+#include "fork_debug.h"
 #include "interfaces/reader/panels/dictionary_panel.h"
 #include "reading/appearance_settings.h"
 #include "support/strings.h"
@@ -639,7 +640,7 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     commit->setAlignment(Qt::AlignCenter);
     build->addWidget(commit);
     commit->setVisible(inputs.commitVisible);
-    // Fork builds add one read-only row below the untouched stock rows:
+    // Fork builds add one label below the untouched stock rows:
     // fork name plus the UTC build time. Latin-only text keeps the same font
     // rendering path as the original 24 px commit label.
     if (inputs.forkVisible) {
@@ -651,6 +652,7 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
         fork->setAlignment(Qt::AlignCenter);
         readerStyle(fork, styles::font(m::about::commitText));
         build->addWidget(fork);
+        installForkLanguageDebug(fork, this, inputs.debugLanguageDirectory);
     }
     buildRule("rrAboutBuildBottom");
     aboutRows->addSpacing(m::about::sectionGap);

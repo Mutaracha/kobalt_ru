@@ -17,6 +17,8 @@
 #include "interfaces/reader/views/opening.h"
 #include "interfaces/reader/views/navigation.h"
 #include "interfaces/reader/settings/settings_panel.h"
+#include "interfaces/reader/settings/fork_debug.h"
+#include "support/debug_language.h"
 #include "host_presentation.h"
 #include "support/qt_font.h"
 #include "support/strings.h"
@@ -29,6 +31,8 @@
 #include <QLineEdit>
 #include <QDir>
 #include <QTemporaryDir>
+#include <QElapsedTimer>
+#include <QEventLoop>
 #include <QFile>
 #include "storage/reader_storage.h"
 #include "interfaces/reader/ui/style/metrics.h"
@@ -3110,6 +3114,53 @@ int main(int argc, char **argv) {
             require(counter->text() == first, "Folder paging did not return to its first page");
             library.dismiss();
         }
+    }
+    {
+        QTemporaryDir diagnostics;
+        require(diagnostics.isValid(), "Debug language UI directory");
+        QWidget host;
+        host.resize(1072, 1448);
+        kobalt::ui::InterfaceLabel label("kobalt_ru · 2026-11-06 00:00 UTC", &host);
+        label.setGeometry(120, 100, 800, 60);
+        label.setAlignment(Qt::AlignCenter);
+        host.show();
+        app.processEvents();
+        const auto before = label.grab().toImage();
+        const auto beforeFont = label.font();
+        const auto beforeStyle = label.styleSheet();
+        kobalt::reader::installForkLanguageDebug(&label, &host, diagnostics.path());
+        const auto tap = [&] {
+            const auto point = label.rect().center();
+            QMouseEvent down(QEvent::MouseButtonPress, QPointF(point), label.mapToGlobal(point),
+                             Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+            QMouseEvent up(QEvent::MouseButtonRelease, QPointF(point), label.mapToGlobal(point),
+                           Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
+            QApplication::sendEvent(&label, &down);
+            QApplication::sendEvent(&label, &up);
+        };
+        for (int i = 0; i < 4; ++i) tap();
+        require(!host.findChild<QWidget *>("rrDebugLanguage"), "Debug language opens before five taps");
+        require(label.grab().toImage() == before && label.font() == beforeFont && label.styleSheet() == beforeStyle,
+                "Hidden gesture changed fork-label rendering");
+        tap();
+        auto *popup = host.findChild<QWidget *>("rrDebugLanguage");
+        require(popup && popup->isVisible(), "Five label taps did not open debug language choices");
+        auto *english = popup->findChild<QCheckBox *>("rrDebugLanguageEnglish");
+        require(english, "Missing English debug choice");
+        const auto locale = kobalt::strings::locale();
+        english->click();
+        QElapsedTimer waiting;
+        waiting.start();
+        while (!popup->findChild<QPushButton *>("rrDebugLanguageClose")->isEnabled() && waiting.elapsed() < 10000)
+            app.processEvents(QEventLoop::AllEvents, 10);
+        require(popup->findChild<QPushButton *>("rrDebugLanguageClose")->isEnabled(),
+                "Debug language UI completion timed out");
+        require(kobalt::debugLanguage(diagnostics.path()) == kobalt::DebugLanguage::English &&
+                    kobalt::strings::locale() == locale,
+                "Hidden choice failed to persist English or changed the live locale");
+        popup->findChild<QPushButton *>("rrDebugLanguageClose")->click();
+        require(!popup->isVisible() && label.grab().toImage() == before,
+                "Closing debug dialog changed the fork row");
     }
     QWidget reader;
     reader.resize(1072, 1448);

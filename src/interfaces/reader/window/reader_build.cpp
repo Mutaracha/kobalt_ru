@@ -17,6 +17,7 @@
 #include "interfaces/reader/window/font_registration.h"
 #include "platform/api/kobo_refresh.h"
 #include "support/diagnostics.h"
+#include "support/debug_language.h"
 #include "interfaces/reader/ui/style/metrics.h"
 #include "interfaces/reader/ui/panel_timing.h"
 #include "storage/reader_storage.h"
@@ -1156,6 +1157,7 @@ void Reader::buildSettings() {
     settingsInputs.forkName = QString::fromLatin1(kobaltForkName);
     settingsInputs.forkVisible = kobaltForkName[0] != '\0';
     settingsInputs.forkBuildTime = QString::fromLatin1(kobaltBuildTime);
+    settingsInputs.debugLanguageDirectory = QString::fromLatin1(kobalt::debugLanguageDirectory);
     settingsInputs.qtMajor = QT_VERSION >> 16;
     settingsInputs.downloadableDictionaries = services.downloadableDictionaries;
     settingsInputs.animationsSupported = services.animationsAvailable();

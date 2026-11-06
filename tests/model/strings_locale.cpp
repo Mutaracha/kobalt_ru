@@ -4,8 +4,13 @@
 
 #include <QCoreApplication>
 #include <QFile>
+#include <QFileInfo>
 #include <QTemporaryDir>
 #include <QTextStream>
+#include <QDir>
+#include <QEventLoop>
+#include <QTimer>
+#include "support/main_thread.h"
 
 using namespace kobalt;
 
@@ -163,6 +168,59 @@ void koboConfig() {
             "Missing config file must fall back to English");
 }
 
+void diagnosticOverride() {
+    QTemporaryDir directory;
+    require(directory.isValid(), "debug language directory");
+    const auto path = directory.path();
+    const auto originalEnvironment = qgetenv("KOBALT_LANGUAGE");
+    qunsetenv("KOBALT_LANGUAGE");
+    const auto automatic = resolveLocale(path);
+    require(debugLanguage(path) == DebugLanguage::Automatic, "Missing markers must be automatic");
+    require(writeDebugLanguage(path, DebugLanguage::Russian) && resolveLocale(path) == strings::Locale::Russian,
+            "lang_ru must override automatic locale");
+    require(writeDebugLanguage(path, DebugLanguage::English) && resolveLocale(path) == strings::Locale::English &&
+                !QFileInfo::exists(path + "/lang_ru"), "English selection must replace the Russian marker");
+    { QFile ru(path + "/lang_ru"); require(ru.open(QIODevice::WriteOnly), "second marker"); }
+    require(resolveLocale(path) == strings::Locale::English, "Both markers must deterministically select English");
+    qputenv("KOBALT_LANGUAGE", "ru");
+    require(resolveLocale(path) == strings::Locale::Russian, "Environment override must retain first priority");
+    qunsetenv("KOBALT_LANGUAGE");
+    { QFile other(path + "/keep.json"); require(other.open(QIODevice::WriteOnly), "other diagnostic file"); }
+    require(writeDebugLanguage(path, DebugLanguage::Automatic) && debugLanguage(path) == DebugLanguage::Automatic &&
+                resolveLocale(path) == automatic && QFileInfo::exists(path + "/keep.json"),
+            "Automatic must remove only language markers and restore normal resolution");
+    require(QDir().mkpath(path + "/lang_ru"), "blocking marker directory");
+    require(debugLanguage(path) == DebugLanguage::Automatic &&
+                !writeDebugLanguage(path, DebugLanguage::Russian), "Marker directories must not be accepted or removed");
+    require(QDir().rmdir(path + "/lang_ru"), "remove marker directory");
+    require(!writeDebugLanguage(QString(), DebugLanguage::English), "Empty diagnostics path accepted");
+    qputenv("KOBALT_LANGUAGE", originalEnvironment);
+}
+
+void asynchronousDiagnosticOverride() {
+    QTemporaryDir directory;
+    require(directory.isValid(), "async language directory");
+    QEventLoop loop;
+    QTimer timeout;
+    timeout.setSingleShot(true);
+    QObject::connect(&timeout, &QTimer::timeout, &loop, [] { qFatal("Debug language writer timed out"); });
+    timeout.start(10000);
+    bool stale = false, finished = false;
+    auto *gone = new QObject;
+    mainthread::Interaction interactive([] { return true; });
+    writeDebugLanguageAsync(directory.path(), DebugLanguage::English, gone, [&](bool) { stale = true; });
+    delete gone;
+    writeDebugLanguageAsync(directory.path(), DebugLanguage::Russian, &loop, [&](bool ok) {
+        require(ok, "async marker write failed");
+        finished = true;
+        loop.quit();
+    });
+    require(!finished, "Debug language completion was synchronous");
+    loop.exec();
+    require(finished && !stale && debugLanguage(directory.path()) == DebugLanguage::Russian,
+            "Async writes raced, lost completion or called a deleted UI owner");
+}
+
 void environmentOverride() {
     using strings::Locale;
     qputenv("KOBALT_LANGUAGE", "ru_RU");
@@ -182,6 +240,8 @@ int main(int argc, char **argv) {
     russianPlurals();
     koboConfig();
     environmentOverride();
+    diagnosticOverride();
+    asynchronousDiagnosticOverride();
     // Do not leak the selector into any later in-process use.
     strings::setLocale(strings::Locale::English);
     std::puts("PASS: locale normalization, translated lookup, key mode, Russian plurals and config resolution");

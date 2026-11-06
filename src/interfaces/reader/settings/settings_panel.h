@@ -34,6 +34,7 @@ struct SettingsPanelInputs {
     bool forkVisible = false;
     // Configure-time UTC build stamp shown next to the fork name.
     QString forkBuildTime;
+    QString debugLanguageDirectory;
     bool animationsSupported = false, lightSupported = false, warmthSupported = false;
     bool debugProgressAvailable = false;
     bool downloadableDictionaries = true;
