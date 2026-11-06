@@ -13,6 +13,7 @@
 #include "interfaces/reader_interface.h"
 #include "interfaces/reader_window.h"
 #include "interfaces/reader/ui/controls/page_scrubber.h"
+#include "interfaces/reader/ui/controls/options.h"
 #include "interfaces/reader/ui/dialogs/modals.h"
 #include "interfaces/reader/ui/style/fonts.h"
 #include "interfaces/reader/ui/style/metrics.h"
@@ -1454,6 +1455,12 @@ private slots:
         QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSettingsStyling")));
         auto *pageNotes = host.window()->findChild<QCheckBox *>("rrInPageFootnotes");
         QVERIFY(pageNotes);
+        auto *noteRow = dynamic_cast<ui::DescribedOption *>(pageNotes);
+        auto *neighbour = dynamic_cast<ui::DescribedOption *>(
+            host.window()->findChild<QCheckBox *>("rrHideNonlinearFragments"));
+        QVERIFY(noteRow && neighbour);
+        QVERIFY(noteRow->presentation() == neighbour->presentation());
+        QCOMPARE(noteRow->presentation().indicator, ui::DescribedOption::Indicator::Square);
         for (int page = 0; page < 8 && !pageNotes->isVisible(); ++page) {
             host.window()->pageButton(1);
             QTest::qWait(1);

@@ -3116,6 +3116,29 @@ int main(int argc, char **argv) {
     reader.show();
     {
         kobalt::reader::SettingsPanel settings(&reader, {});
+        // Constructor-time styling must cover every main-page option. Merely
+        // using DescribedOption leaves its default Toggle and zero inset.
+        auto *notes = settings.inPageFootnotesOption;
+        require(notes && notes->objectName() == "rrInPageFootnotes", "Missing page-notes settings row");
+        const auto expected = settings.hideNonlinearOption->presentation();
+        using namespace kobalt::ui;
+        require(expected.indicator == DescribedOption::Indicator::Square && expected.pressedFill &&
+                    expected.dividers == Edges(Qt::BottomEdge) &&
+                    expected.horizontalInset == int(metrics::chrome::inset) &&
+                    expected.labelPixels == int(metrics::chrome::labelText) &&
+                    expected.descriptionPixels == int(metrics::chrome::descriptionText) &&
+                    expected.indicatorSize == QSize(metrics::chrome::checkSize, metrics::chrome::checkSize) &&
+                    expected.minimumRowHeight == int(metrics::chrome::optionHeight),
+                "Settings rows lost their canonical list-action metrics");
+        int checkedRows = 0;
+        for (auto *box : settings.findChildren<QCheckBox *>()) {
+            auto *option = dynamic_cast<DescribedOption *>(box);
+            require(option && option->presentation() == expected,
+                    qPrintable("Main Settings option bypasses shared styling: " + box->objectName()));
+            ++checkedRows;
+        }
+        require(checkedRows >= 16 && notes->font() == settings.hideNonlinearOption->font(),
+                "Main Settings style coverage or inherited typography is incomplete");
         settings.setGeometry(reader.rect());
         settings.show();
         app.processEvents();

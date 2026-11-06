@@ -168,6 +168,20 @@ private:
     QVector<QRect> gaps;
     int edgeHeight = 0;
 };
+// Apply the main Settings row contract at construction, not through a second
+// hand-maintained registry. Dialog radio/preview rows have their own styling.
+void styleSettingsOption(ReaderOption *option) {
+    auto presentation = option->presentation();
+    presentation.indicator = ui::DescribedOption::Indicator::Square;
+    presentation.pressedFill = true;
+    presentation.dividers = Qt::BottomEdge;
+    presentation.horizontalInset = c::inset;
+    presentation.labelPixels = c::labelText;
+    presentation.descriptionPixels = c::descriptionText;
+    presentation.indicatorSize = {c::checkSize, c::checkSize};
+    presentation.minimumRowHeight = c::optionHeight;
+    option->setPresentation(presentation);
+}
 QPushButton *actionButton(QWidget *parent, QBoxLayout *layout, const char *name, const QString &text) {
     auto *button = new ui::Button(text, parent);
     button->setObjectName(name);
@@ -300,6 +314,7 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     auto check = [](QWidget *parent, const char *name, const QString &text, const QString &description) {
         auto *box = new ReaderOption(text, description, parent);
         box->setObjectName(name);
+        styleSettingsOption(box);
         return box;
     };
     darkOption =
@@ -727,33 +742,8 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
         optionPage = 0;
     });
     settingsTabButtons.first()->setChecked(true);
-    QVector<ui::DescribedOption *> options = {avoidWastefulStylingOption,
-                                              hideNonlinearOption,
-                                              linkIndicatorOption,
-                                              invertSwipesOption,
-                                              darkOption,
-                                              bionicOption,
-                                              landscapeColumnsOption,
-                                              animationOption,
-                                              inheritTextLayoutOption,
-                                              edgeLightOption,
-                                              denseGraphOption,
-                                              hideTabLabelsOption,
-                                              automaticOpeningOption,
-                                              minimalAnnotationOption,
-                                              kosync->automaticOption()};
-    for (auto *option : options) {
-        auto presentation = option->presentation();
-        presentation.indicator = ui::DescribedOption::Indicator::Square;
-        presentation.pressedFill = true;
-        presentation.dividers = Qt::BottomEdge;
-        presentation.horizontalInset = c::inset;
-        presentation.labelPixels = c::labelText;
-        presentation.descriptionPixels = c::descriptionText;
-        presentation.indicatorSize = {c::checkSize, c::checkSize};
-        presentation.minimumRowHeight = c::optionHeight;
-        option->setPresentation(presentation);
-    }
+    // This row is constructed by the embedded KOsync page, not check().
+    styleSettingsOption(kosync->automaticOption());
     generalOptions->setContentsMargins(0, 0, 0, 0);
     defaultsRows->setContentsMargins(0, 0, 0, 0);
     resetRow->setStretch(0, 0);

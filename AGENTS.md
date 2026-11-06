@@ -44,6 +44,12 @@ Before changing UI, identify the closest existing control or screen. Trace its c
 
 Preserve the existing typography, caption/value alignment, padding, dividers and interaction behavior unless the user requests a change. Use established preview content when suitable.
 
+For this fork's main Settings rows, use the local `check()` factory in `settings_panel.cpp`: it applies `styleSettingsOption()` at construction. An embedded page's option constructed elsewhere must explicitly receive that same presentation. Do not reintroduce a second hand-maintained list of controls to style later. `DescribedOption` alone defaults to a toggle with different insets and typography; never change its global defaults to fix one screen. Modal radios, previews, light-panel options and other surfaces keep their own presentation.
+
+Every new Settings option must be compared with its nearest existing row, including square indicator/size, `chrome` label and description metrics, leading-icon alignment, horizontal insets, row height, bottom divider and pressed state. Check automatic paging and text wrapping in the surrounding screen, not just an isolated widget. Add assertions on the actual `Presentation` in component/routed tests; successful toggling or persistence alone is insufficient. If a native SDK or device visual comparison is unavailable, explicitly report it as unverified rather than declaring visual consistency.
+
+Keep new fork behavior isolated behind its format/feature flag or in a focused helper, preserve upstream paths and saved-data compatibility, and update both EN/RU strings, `FB2_FORK_PLAN.md`, agent guidance and user instructions when relevant. Do not mix unrelated architecture or lifecycle changes into a visual correction. Continue refactoring in small testable steps after the correction, recording completed work separately from remaining debt.
+
 For new layout controls, make the units understandable without reading implementation details. The preview must visibly demonstrate the setting.
 
 Share an early screenshot for a new or substantially redesigned control. Include both its entry in the surrounding UI and its opened state. Do this before broad polishing and gallery generation.
