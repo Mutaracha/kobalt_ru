@@ -765,3 +765,5 @@ bool plainEpub() const {
 - До финального билда расширены проверки EPUB: unreferenced и FOOTNOTE_IGNORE не дают нижний блок; реальное сохранение/восстановление parsed-cache on/off. Приватные markers из исходника очищаются, вложенные блоки не дублируются; whitespace-regex переиспользуется, а не компилируется на каждом DOM-узле.
 
 - Первый focused native CI завершился ошибкой до CTest; подробный log endpoint недоступен из sandbox. Добавлен вывод последнего фрагмента native build log в check summary, как уже сделано для Qt5 job. Финальный результат пока не заявлен.
+
+- Native job повторно завершился до CTest; GitHub не выдаёт step summary через Checks API, а raw logs перенаправляются на недоступный host. Добавлены error annotations с сообщениями компилятора/тестов для читаемой диагностики без доступа к внешнему blob storage. Qt5 package первого прогона ff09937 собран/проверен, но это не финальный handoff.
