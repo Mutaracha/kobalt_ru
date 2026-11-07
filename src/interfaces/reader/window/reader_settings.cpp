@@ -988,7 +988,6 @@ void Reader::applyEdgeLight() {
     page->warmthEdge = page->brightnessEdge && warmthSupported;
     if (lightPopup) {
         lightPopup->setEdgeGesturesEnabled(page->brightnessEdge);
-        lightPopup->setQuietGestures(preferences.value("quiet_light_gestures").toBool(false));
     }
 }
 

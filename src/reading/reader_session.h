@@ -10,7 +10,6 @@
 #include <memory>
 
 namespace kobalt {
-namespace storage { struct Paths; }
 struct BookmarkLocations {
     QVector<int> pages, order;
 };
@@ -110,9 +109,6 @@ public:
     void open(OpenRequest request, std::function<void(OpeningResult)> finished, OpeningProgress progress = {});
     // A fresh facade prevents callbacks from the closed reader reaching a reopen.
     std::unique_ptr<ReaderSession> retained();
-    // Terminal: caller has saved progress and must close, including on failure.
-    // Serialized with all engine jobs; owns work even if the UI disappears.
-    void clearRenderingCaches(const storage::Paths &, std::function<void(bool)> finished);
     void cancelSource();
     void revokeSource();
     QByteArray sourceHash() const {
@@ -393,7 +389,7 @@ private:
     int pendingTurn = 0;
     bool loadingImage = false;
     bool preview_ = false;
-    bool retiring = false, cachesDiscarded = false;
+    bool retiring = false;
     bool layoutReady_ = false;
     RenderProgress renderProgress_;
     QElapsedTimer renderTimer;

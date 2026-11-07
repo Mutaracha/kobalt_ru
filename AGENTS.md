@@ -80,7 +80,7 @@ The priority target is the Kobo **Qt5** package (`Kobalt-qt5.zip`, firmware 4.x)
 
 Every fork feature stays behind an explicit flag or in a separate file so the EPUB/upstream code paths keep their original behavior; the full change map and conflict-resolution rules are section 7.2 of `FB2_FORK_PLAN.md`. Read it before rebasing onto a new upstream release, and bump the shared DOM-cache marker (`:fb2-vN:` in `reader_fb2.h`, used by `reader_source.cpp` and `reader_model.cpp`) if FB2 parsing or default FB2 CSS changes. FB2-only override CSS lives beside this marker in `reader_fb2.h`; keep popup `footnote` unconditional, and gate bottom-page `footnote-inpage` CSS on the default-on `fb2_inpage_footnotes` appearance key. Numeric note-title normalization belongs to the FB2-only helper; never strip brackets in the main text. Include the on/off mode in FB2 cache policy, appearance equality/copy and global defaults. The Kobo Qt5 SDK predates Qt 5.10: do not use APIs such as `QStringView`.
 
-Interim device builds come from the push-triggered `.github/workflows/kobo-qt5-device.yml` (artifact `Kobalt-qt5-device`); a local SDK build is `KOBALT_FORK_NAME=kobalt_ru bash platforms/kobo/build.sh qt5`. `KOBALT_FORK_NAME` defaults to empty, which hides the fork row on the About page and preserves the stock layout; only the fork workflow sets it. The fork row is a single added label (`kobalt_ru · <UTC build time>` from `KOBALT_BUILD_TIME`); never change the stock version/commit rows. The "Clear book cache" action may only delete disposable caches via `storage::clearRenderingCaches()` (`.cache/` and `cache/reopen-layout.json`) — never the database, settings, annotations or per-book state — and must keep the confirm-then-exit flow. Before pushing, run the offline checks that need no Qt SDK: `cmake -DTEST_TMP_ROOT=$(mktemp -d) -P platforms/strings-test.cmake`, the en/ru string parity check, `bash platforms/ci/test.sh` when `jq` is available, and `git diff --check`. On a Mac, also run the `model` ctest group (`fb2`, `strings_locale`, `local_resources`, `nickel_book_menu`, `reading_book`). The complete pre-push checklist is section 7.5 of the plan. User-facing behavior of the fork is documented in Russian in `doc/fork-kobalt_ru.md`; update it together with user-visible changes.
+Interim device builds come from the push-triggered `.github/workflows/kobo-qt5-device.yml` (artifact `Kobalt-qt5-device`); a local SDK build is `KOBALT_FORK_NAME=kobalt_ru bash platforms/kobo/build.sh qt5`. `KOBALT_FORK_NAME` defaults to empty, which hides the fork row on the About page and preserves the stock layout; only the fork workflow sets it. The fork row is a single added label (`kobalt_ru · <UTC build time>` from `KOBALT_BUILD_TIME`); never change the stock version/commit rows. Before pushing, run the offline checks that need no Qt SDK: `cmake -DTEST_TMP_ROOT=$(mktemp -d) -P platforms/strings-test.cmake`, the en/ru string parity check, `bash platforms/ci/test.sh` when `jq` is available, and `git diff --check`. On a Mac, also run the `model` ctest group (`fb2`, `strings_locale`, `local_resources`, `nickel_book_menu`, `reading_book`). The complete pre-push checklist is section 7.5 of the plan. User-facing behavior of the fork is documented in Russian in `doc/fork-kobalt_ru.md`; update it together with user-visible changes.
 
 ## Refactoring contracts for new fork work
 
@@ -130,26 +130,6 @@ them when adding features or rebasing onto upstream; see section 8 of
   separately which checks were executed, added-but-unrun, reused or still need
   device review. Update the plan, both locales and user instructions together.
 
-### Cache-clear IO/lifecycle contract
-
-The clear-cache action requests the normal asynchronous close, not a parallel
-progress-save implementation. Only after local/native/annotation/sync saves are
-acknowledged may ReaderSession retire its continuations and enqueue deletion on
-the shared engine worker. Release preview and mapped DOM/cache files before
-deleting `.cache/` and `cache/reopen-layout.json`; reject cache-directory symlinks.
-The terminal session must return no retained model and cannot dispatch more
-render jobs. Never recreate the cache during close or change saved-data formats.
-Before commit, cancellation/save failure/sleep/USB leaves caches alone. After
-commit, sleep defers close/error UI until wake; USB/shutdown/disposal must await
-the cleanup completion, without remapping or re-saving a retired document. Include
-cleanup in pending-storage and standby barriers. Guard GUI completion weakly;
-the worker owns engine and paths even after window destruction. Delete failure
-is not a progress-save failure: report remaining caches and close safely; retry
-from a fresh opening. Keep delayed-worker/save-failure/deletion-failure/lifetime/
-sleep/USB/reopen tests. Do not replace this protocol with AllowBlocking or use
-this destructive path for diagnostics/language flags. Native/device validation
-must still be reported separately from successful cross-compilation.
-
 ## Arena environment notes (verified 2026-10-29)
 
 Arena runs this checkout in a Linux sandbox, not on the development Mac described above. At the last check `git`, `gh`, `python3`, `g++` and `jq` were available; `cmake`, `qmake` and `docker` were not on PATH. Do not assume a native Qt SDK or Kobo container engine is available. Recheck tools with `command -v` every session. If needed, install CMake in a disposable venv (e.g. `/tmp/kobalt-tools`); this is agent-only validation tooling, never an application build dependency. Native desktop/UI tests need a suitable Qt host; the push-triggered Kobo Qt5 workflow verifies the device build.
@@ -175,3 +155,7 @@ One conversation thread usually means one worktree and one branch. When the user
 After successful integration, normally remove the worker's worktree and feature branch unless the user asks to keep them. Before removal, verify that the worktree has no uncommitted changes and that all intended changes are integrated. Preserve any needed test evidence or other artifacts before removing the worktree.
 
 Use lowercase release-stage words in commit messages, including `alpha` and `beta`, even when part of a release name. The abbreviation `RC` may remain uppercase.
+
+## beta6 integration scope
+
+Use upstream frontlight gesture feedback, without the fork quiet-light UI, key or migration. Cache cleanup is deferred until after beta; do not restore its action, helper, worker retirement, lifecycle barriers or special tests. Never delete device caches as part of removing the feature. Use upstream progress/save, retaining necessary FB2 integration. Keep FB2 formatting/settings aligned with the shared EPUB implementation as upstream evolves; do not freeze a separate formatting implementation.

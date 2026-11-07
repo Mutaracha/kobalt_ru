@@ -272,13 +272,6 @@ private:
     bool finishChoiceResolved = false;
     bool importingProgress = false, comparingProgress = false;
     bool exitPending = false, exportRunning = false;
-    enum class CacheClear { None, Requested, Running, Complete, Failed };
-    CacheClear cacheClear = CacheClear::None;
-    bool cacheClearCommitted() const { return cacheClear >= CacheClear::Running; }
-    void clearCachesForExit();
-    void completeCacheClear();
-    void finishCacheClearTransition(std::function<void(bool)> finished);
-    QPointer<kobalt::ui::NoticeModal> cacheClearError;
     bool lifecycleHidden = false;
     QImage sleepImage, sleepCover;
     QFileInfo sleepCoverSource;
@@ -323,7 +316,6 @@ private:
     QTimer brightnessHide;
     int brightnessInitial = 0, warmthInitial = 0;
     bool gestureWarmth = false, warmthAutomatic = false, warmthSupported = false;
-    bool quietLightGesture = false;
     int pendingDarkMode = -1;
     bool applyingText = false, closing = false;
     kobalt::ChoiceScreen *choices = nullptr;

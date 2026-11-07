@@ -615,7 +615,7 @@ if(BUILD_TESTING)
         endforeach()
     endfunction()
     kobalt_regressions(model storage_assets android_assets profile_storage record_writer main_thread reading_history bookmark_store highlight_store annotation_database appearance_settings header_footer
-        layout_cache rendering_cache resource_cache layout_compatibility reading_pace reading_speed engine_activity
+        layout_cache resource_cache layout_compatibility reading_pace reading_speed engine_activity
         local_resources zip_resource diagnostics crash_reports dictionary_store image_damage page_pixels
         logical_word_counter brightness_gesture qt_compat page_refresh_regions screen_refresh plain_archive reading_progress
         library kosync strings_locale)

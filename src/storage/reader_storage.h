@@ -71,13 +71,5 @@ struct ProfileRecovery {
 // files and tidies known transient files. Unknown files and failed imports
 // are kept. Safe to retry after an interruption.
 bool prepareProfile(const Paths &, ProfileRecovery *recovery = nullptr);
-// Remove only the disposable rendering caches: CREngine parsed books under
-// .cache/ and the layout inspection cache cache/reopen-layout.json. Settings,
-// the database, bookmarks, annotations and per-book reading state live outside
-// these paths and are never touched. Missing caches count as success; false is
-// returned when a target cannot be removed or its directory is a symlink.
-// Blocking IO: run on the engine worker after final save and DOM release;
-// never call directly from interactive UI. Safe to retry.
-bool clearRenderingCaches(const Paths &);
 void archiveImportedSource(const QString &directory, const QString &source);
 }

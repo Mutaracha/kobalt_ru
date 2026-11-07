@@ -56,15 +56,7 @@ LightPanel::LightPanel(LightControls &light, QWidget *parent) : ui::Panel(parent
     automaticWarmth = new ui::DescribedOption(strings::get("light_panel.automatic_warmth"),
                                               strings::get("light_panel.automatic_warmth_description"), this);
     automaticWarmth->setObjectName("rrAutomaticWarmth");
-    quietGestures = new ui::DescribedOption(strings::get("light_panel.quiet_gestures"),
-                                            strings::get("light_panel.quiet_gestures_description"), this);
-    quietGestures->setObjectName("rrQuietLightGestures");
-    connect(quietGestures, &QCheckBox::clicked, this, [this](bool enabled) {
-        if (quietGesturesChanged && !quietGesturesChanged(enabled))
-            quietGestures->setChecked(!enabled);
-        layoutPanel();
-    });
-    for (auto *option : {automaticBrightness, automaticWarmth, quietGestures}) {
+    for (auto *option : {automaticBrightness, automaticWarmth}) {
         auto presentation = option->presentation();
         presentation.indicator = ui::DescribedOption::Indicator::Square;
         presentation.labelPixels = m::chrome::labelText;
@@ -105,7 +97,6 @@ LightPanel::LightPanel(LightControls &light, QWidget *parent) : ui::Panel(parent
     automaticLayout->addWidget(automaticBrightness);
     automaticLayout->addWidget(automaticWarmth);
     rows->addWidget(automaticRows);
-    rows->addWidget(quietGestures);
     swipeTip = new ui::InterfaceLabel(this);
     swipeTip->setObjectName("rrLightSwipeTip");
     swipeTip->setWordWrap(true);
@@ -177,15 +168,11 @@ bool LightPanel::open() {
         changed();
     return true;
 }
-void LightPanel::setQuietGestures(bool enabled) {
-    quietGestures->setChecked(enabled);
-}
 void LightPanel::setEdgeGesturesEnabled(bool enabled) {
     if (edgeGesturesEnabled == enabled) {
         return;
     }
     edgeGesturesEnabled = enabled;
-    quietGestures->setEnabled(enabled);
     swipeRow->setVisible(enabled);
     layoutPanel();
 }

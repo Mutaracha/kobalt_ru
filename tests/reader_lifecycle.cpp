@@ -1,5 +1,4 @@
 #include <QVariant>
-#include <QDynamicPropertyChangeEvent>
 #include <QSqlQuery>
 #include "storage/annotation_database.h"
 #include "storage/record_writer.h"
@@ -247,7 +246,6 @@ public:
     bool idle() const {
         return !active;
     }
-    bool documentCache = false, retainedOnClose = false;
     ReaderOrientation *rotation = nullptr;
     std::shared_ptr<test::HostProgress> progress;
     PositionCodec positions;
@@ -274,7 +272,6 @@ public:
         session_ = opening.get();
         OpenRequest request{identity, path, readerInterface().readingViewport(size, preferences), saved,
                             {}, paths.layoutCache(), lease, source->resources(lease)};
-        if (documentCache) request.documentCachePath = paths.documentCache();
         request.appearanceDefaults = appearance::bookDefaults(preferences);
         request.positions = positions;
         session_->open(std::move(request), [this, identity, statePath, size](OpeningResult outcome) {
@@ -303,8 +300,7 @@ public:
             window_->setWindowFlags(Qt::Widget);
             window_->setWindowModality(Qt::NonModal);
             window_->resize(size);
-            window_->finished = [this](std::unique_ptr<ReaderSession> retained) {
-                retainedOnClose = bool(retained);
+            window_->finished = [this](std::unique_ptr<ReaderSession>) {
                 QTimer::singleShot(0, this, [this] { shutdown(); });
             };
             emit opened();
@@ -900,108 +896,6 @@ private slots:
                         << dark << QString::fromLatin1(view) << QString::fromLatin1(action);
                 }
     }
-    void quietLightGestures_data() {
-        QTest::addColumn<bool>("quiet");
-        QTest::addColumn<bool>("enabled");
-        QTest::addColumn<bool>("touchInput");
-        for (bool quiet : {false, true})
-            for (bool enabled : {false, true})
-                for (bool touch : {false, true})
-                    QTest::newRow(qPrintable(QString("%1-%2-%3").arg(quiet ? "quiet" : "normal",
-                        enabled ? "enabled" : "disabled", touch ? "touch" : "mouse"))) << quiet << enabled << touch;
-    }
-    void quietLightGestures() {
-        QFETCH(bool, quiet);
-        QFETCH(bool, enabled);
-        QFETCH(bool, touchInput);
-        class Light final : public LightControls {
-        public:
-            int level = 50, saved = 0, warm = 50, warmthSaved = 0;
-            bool active = false;
-            bool initialize() override { return true; }
-            bool hasWarmth() const override { return true; }
-            int warmth() const override { return warm; }
-            int warmthMinimum() const override { return 0; }
-            int warmthMaximum() const override { return 100; }
-            int warmthStep() const override { return 1; }
-            bool automaticWarmth() const override { return false; }
-            int setWarmth(int value) override { warm = value; return warm; }
-            bool saveWarmth() override { ++warmthSaved; return true; }
-            bool setAutomaticWarmth(bool) override { return false; }
-            bool beginGesture() override { active = true; return true; }
-            int setGestureLevel(int value) override { level = value; return level; }
-            void finishGesture(bool save) override { active = false; if (save) ++saved; }
-            int brightness() const override { return level; }
-            bool gesturing() const override { return active; }
-        };
-        const auto paths = testPaths();
-        QVERIFY(storage::writeJson(paths.preferences(), {{"quiet_light_gestures", quiet}, {"edge_light_gestures", enabled}}));
-        ReaderFixture host(paths, testFonts, testPlaceholder);
-        CloseHost cleanup{host};
-        Light *controller = nullptr;
-        host.configureServices = [&controller](ReaderHostServices &services) {
-            services.lightAvailable = [] { return true; };
-            services.light = [&controller](QWidget *) {
-                auto light = std::make_unique<Light>();
-                controller = light.get();
-                return light;
-            };
-        };
-        QSignalSpy opened(&host, &ReaderFixture::opened);
-        host.open(fixture(), nativeSize);
-        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
-        Canvas canvas(host.window(), nativeSize);
-        canvas.resize(900, 900);
-        canvas.show();
-        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
-        QTRY_VERIFY(!host.session()->busy());
-        auto *page = static_cast<ReadingPage *>(host.window()->findChild<QWidget *>("rrPage"));
-        auto *notice = host.window()->findChild<QWidget *>("rrBrightnessNotice");
-        QVERIFY(page && notice && controller);
-        QCOMPARE(page->brightnessEdge, enabled);
-        QCOMPARE(page->warmthEdge, enabled);
-        auto *device = QTest::createTouchDevice();
-        for (bool warmth : {false, true}) {
-            const QPoint from(warmth ? page->width() - 30 : 30, page->height() * 3 / 5);
-            const QPoint to = from - QPoint(0, page->height() / 5);
-            // A real press/move/release, not a direct call to the light callbacks.
-            // The mouse variant routes through the canvas and hit testing;
-            // touch exercises the page's contact parser and gesture recognizer.
-            QCOMPARE(host.window()->childAt(page->mapTo(host.window(), from)), static_cast<QWidget *>(page));
-            if (touchInput) {
-                auto touch = QTest::touchEvent(page, device, false);
-                touch.press(0, from, page).commit();
-                touch.move(0, to, page).commit();
-                touch.release(0, to, page).commit();
-            } else {
-                const auto point = [&](QPoint p) { return canvas.mapFromScene(page->mapTo(canvas.surface(), p)); };
-                QTest::mousePress(canvas.viewport(), Qt::LeftButton, Qt::NoModifier, point(from));
-                QTest::mouseMove(canvas.viewport(), point(to));
-                QTest::mouseRelease(canvas.viewport(), Qt::LeftButton, Qt::NoModifier, point(to));
-            }
-            QCOMPARE(warmth ? controller->warm != 50 : controller->level != 50, enabled);
-            QCOMPARE(warmth ? controller->warmthSaved : controller->saved, enabled ? 1 : 0);
-            QCOMPARE(notice->isVisible(), enabled && !quiet);
-            if (notice->isVisible())
-                QTRY_VERIFY(!notice->isVisible());
-        }
-        if (quiet) {
-            QVERIFY(clickAt(canvas, QPoint(nativeSize.width() / 2, nativeSize.height() / 4)));
-            auto *tab = host.window()->findChild<QPushButton *>("rrNavLight");
-            QVERIFY(tab);
-            QVERIFY(click(canvas, tab));
-            auto *option = host.window()->findChild<QCheckBox *>("rrQuietLightGestures");
-            QTRY_VERIFY(option && option->isVisible());
-            QVERIFY(option->isChecked());
-            QCOMPARE(option->isEnabled(), enabled);
-            if (enabled) {
-                QVERIFY(click(canvas, option));
-                QTRY_VERIFY(!storage::readJson(paths.preferences()).value("quiet_light_gestures").toBool());
-            }
-            QCOMPARE(storage::readJson(paths.preferences()).value("edge_light_gestures").toBool(), enabled);
-        }
-    }
-
     void lightReplacesDefaultMenu() {
         QFETCH(bool, dark);
         QFETCH(QString, menuView);
@@ -1933,171 +1827,6 @@ private slots:
         QTRY_VERIFY(!host.session()->busy() && host.session()->page() == 2);
         host.window()->pageButton(-1);
         QTRY_VERIFY(!host.session()->busy() && host.session()->page() == 1);
-    }
-
-    void clearCacheSaveFailureAndCancellation_data() {
-        QTest::addColumn<QString>("action");
-        for (const auto *value : {"save-failure", "native-write-failure", "sleep", "usb"})
-            QTest::newRow(value) << QString::fromLatin1(value);
-    }
-    void clearCacheSaveFailureAndCancellation() {
-        QFETCH(QString, action);
-        const auto paths = testPaths();
-        ReaderFixture host(paths, testFonts, testPlaceholder);
-        CloseHost cleanup{host};
-        host.progress = std::make_shared<test::HostProgress>();
-        host.positions = nickel::positionCodec();
-        QSignalSpy opened(&host, &ReaderFixture::opened);
-        host.open(fixture(), nativeSize);
-        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
-        host.window()->show();
-        QTRY_VERIFY(!host.session()->busy());
-        QDir().mkpath(paths.documentCache());
-        const auto marker = paths.documentCache() + "/keep-until-saved";
-        { QFile file(marker); QVERIFY(file.open(QIODevice::WriteOnly)); file.write("cache"); }
-        const bool saveFailure = action == "save-failure" || action == "native-write-failure";
-        host.progress->holdFinish = !saveFailure;
-        host.progress->failFinish = action == "save-failure";
-        host.progress->failWrite = action == "native-write-failure";
-        host.window()->findChild<QPushButton *>("rrConfirmClearCache")->click();
-        if (saveFailure) {
-            QTRY_VERIFY(host.window()->findChild<QWidget *>("rrCloseSaveError"));
-            QVERIFY(!host.window()->property("reader_cache_clear_running").toBool());
-            host.window()->findChild<QPushButton *>("rrCloseSaveReturn")->click();
-        } else {
-            QTRY_VERIFY(host.progress->finishPending);
-            if (action == "sleep") {
-                host.window()->sleepReader();
-                host.progress->holdFinish = false;
-                host.progress->completeFinish(true);
-                host.window()->wakeReader();
-            } else {
-                bool handoff = false;
-                host.window()->prepareUsb([&] { handoff = true; });
-                host.progress->holdFinish = false;
-                host.progress->completeFinish(true);
-                QTRY_VERIFY_WITH_TIMEOUT(handoff, 10000);
-            }
-        }
-        QVERIFY(QFileInfo::exists(marker)); // No delete without the close save.
-        host.progress->failWrite = host.progress->failFinish = host.progress->holdFinish = false;
-        host.shutdown();
-        QTRY_VERIFY_WITH_TIMEOUT(host.idle(), 10000);
-        QVERIFY(QFileInfo::exists(marker));
-    }
-
-    void clearCacheAfterSave_data() {
-        QTest::addColumn<QString>("interruption");
-        for (const auto *value : {"none", "sleep", "usb", "dispose", "destroy", "delete-failure", "delete-failure-sleep"})
-            QTest::newRow(value) << QString::fromLatin1(value);
-    }
-    void clearCacheAfterSave() {
-        QFETCH(QString, interruption);
-        const auto paths = testPaths();
-        ReaderFixture host(paths, testFonts, testPlaceholder);
-        CloseHost cleanup{host};
-        host.documentCache = true;
-        host.positions = nickel::positionCodec();
-        host.progress = std::make_shared<test::HostProgress>();
-        QSignalSpy opened(&host, &ReaderFixture::opened);
-        host.open(fixture(), nativeSize);
-        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
-        host.window()->show();
-        QTRY_VERIFY(!host.session()->busy());
-        // Warm a real parsed-book cache through the unmodified normal close.
-        host.window()->close();
-        QTRY_VERIFY_WITH_TIMEOUT(host.idle(), 10000);
-        QVERIFY(host.retainedOnClose);
-        QVERIFY(!QDir(paths.documentCache()).entryList(QDir::Files).isEmpty());
-        host.retainedOnClose = false;
-        host.open(fixture(), nativeSize);
-        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 2, 30000);
-        host.window()->show();
-        QTRY_VERIFY(!host.session()->busy());
-        QVERIFY(host.session()->go(1));
-        QTRY_VERIFY(!host.session()->busy());
-        const auto position = host.session()->state().value("position").toString();
-        QDir().mkpath(paths.documentCache());
-        const auto marker = paths.documentCache() + "/disposable-test-cache";
-        { QFile file(marker); QVERIFY(file.open(QIODevice::WriteOnly)); file.write("cache"); }
-        if (interruption.startsWith("delete-failure")) {
-            QVERIFY(QDir(paths.documentCache()).removeRecursively());
-            QFile file(paths.documentCache());
-            QVERIFY(file.open(QIODevice::WriteOnly));
-            file.write("blocker");
-        }
-        // Stop the real engine queue exactly at the terminal commit boundary.
-        // The GUI must continue delivering timers; no wait or deletion on it.
-        class Pause final : public QObject {
-        public:
-            bool entered = false;
-            ~Pause() override { engineActivity().pause(false); }
-            bool eventFilter(QObject *object, QEvent *event) override {
-                if (event->type() == QEvent::DynamicPropertyChange &&
-                    static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName() == "reader_cache_clear_running" &&
-                    object->property("reader_cache_clear_running").toBool()) {
-                    entered = true;
-                    engineActivity().pause(true);
-                }
-                return false;
-            }
-        } pause;
-        host.window()->installEventFilter(&pause);
-        auto *confirm = host.window()->findChild<QPushButton *>("rrConfirmClearCache");
-        QVERIFY(confirm);
-        confirm->click();
-        QTRY_VERIFY_WITH_TIMEOUT(pause.entered, 10000);
-        QVERIFY(host.window()->pendingStorageSave());
-        QVERIFY(QFileInfo::exists(paths.documentCache()));
-        QCOMPARE(storage::readBookState(paths, host.book()->identity()).object.value("position").toString(), position);
-        bool timerDelivered = false;
-        QTimer::singleShot(0, host.window(), [&] { timerDelivered = true; });
-        QTRY_VERIFY(timerDelivered);
-        bool handoff = false;
-        if (interruption == "sleep") host.window()->sleepReader();
-        if (interruption == "usb") host.window()->prepareUsb([&] { handoff = true; });
-        if (interruption == "dispose") host.window()->finishStorageSave([&](bool saved) { handoff = saved; });
-        if (interruption == "destroy") {
-            // The queued job owns the engine and paths, not a Reader pointer.
-            delete host.window();
-        }
-        if (interruption == "usb" || interruption == "dispose") QVERIFY(!handoff);
-        engineActivity().pause(false);
-        if (interruption == "sleep") {
-            QTRY_VERIFY(!host.window()->property("reader_cache_clear_running").toBool());
-            QVERIFY(!host.idle()); // Completion cannot raise UI over sleep.
-            host.window()->wakeReader();
-        }
-        if (interruption == "usb" || interruption == "dispose") {
-            QTRY_VERIFY_WITH_TIMEOUT(handoff, 10000);
-            host.shutdown();
-        }
-        if (interruption == "destroy") host.shutdown();
-        if (interruption.startsWith("delete-failure")) {
-            QTRY_VERIFY(host.window()->findChild<QWidget *>("rrClearCacheError"));
-            QVERIFY(QFileInfo::exists(paths.documentCache()));
-            if (interruption == "delete-failure-sleep") {
-                host.window()->sleepReader();
-                host.window()->wakeReader();
-            }
-            auto *ok = host.window()->findChild<QPushButton *>("rrClearCacheErrorConfirm");
-            QVERIFY(ok && ok->isVisible() && ok->isEnabled());
-            QTest::mouseClick(ok, Qt::LeftButton);
-        }
-        QTRY_VERIFY_WITH_TIMEOUT(host.idle(), 10000);
-        if (!interruption.startsWith("delete-failure")) {
-            QVERIFY(!QFileInfo::exists(paths.documentCache()));
-            QVERIFY(!QFileInfo::exists(paths.layoutCache()));
-            QVERIFY(!host.retainedOnClose);
-            // Neither queued close work nor a retained-cache save recreates it.
-            bool drained = false;
-            ReaderSession::drain([&] { drained = true; });
-            QTRY_VERIFY(drained);
-            QVERIFY(!QFileInfo::exists(paths.documentCache()));
-            host.open(fixture(), nativeSize);
-            QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 3, 30000);
-            QCOMPARE(host.session()->state().value("position").toString(), position);
-        }
     }
 
     void closeWithPendingBookmark() {

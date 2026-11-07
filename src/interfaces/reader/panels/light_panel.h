@@ -16,9 +16,6 @@ public:
     ~LightPanel() override;
     bool open();
     void setEdgeGesturesEnabled(bool enabled);
-    void setQuietGestures(bool enabled);
-    // Return false to roll back the checkbox after a failed settings write.
-    std::function<bool(bool)> quietGesturesChanged;
     std::function<void()> changed;
     std::function<QRect(int)> placement;
 
@@ -30,7 +27,7 @@ private:
     ui::SettingSlider *brightnessSlider, *warmthSlider;
     QLabel *brightnessValue, *warmthValue, *swipeTip;
     QWidget *warmthRow, *swipeRow, *automaticRows;
-    ui::DescribedOption *automaticBrightness, *automaticWarmth, *quietGestures;
+    ui::DescribedOption *automaticBrightness, *automaticWarmth;
     QTimer poll;
     bool updating = false, warmthAutomatic = false, edgeGesturesEnabled = true;
     int warmthOriginal = -1;

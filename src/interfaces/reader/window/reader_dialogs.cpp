@@ -884,7 +884,7 @@ void Reader::openSleepTile() {
                         auto next = preferences;
                         next[sleep::tileKey] = sleep::value(sleep::tiles[index]);
                         saveSleepPreferences(next);
-                    }, strings::get("settings.sleep_tile_progress_hint"));
+                    });
 }
 
 void Reader::openSleepChoice(const QString &name, const QString &optionPrefix, const QString &heading,

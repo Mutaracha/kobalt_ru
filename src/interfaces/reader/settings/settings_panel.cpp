@@ -433,22 +433,6 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     readerStyle(resetDefaults, styles::font(m::text::secondary));
     resetDefaults->setFixedHeight(m::about::actionHeight);
     resetRow->addStretch(1);
-    // Disposable rendering caches only; reading progress lives elsewhere and
-    // is kept. The confirmation modal warns that Kobalt closes afterwards.
-    auto *cacheRow = kobalt::ui::horizontalRow();
-    defaultsRows->addLayout(cacheRow);
-    cacheRow->addStretch(1);
-    clearCacheButton = ui::makeCaptionButton(defaultsPage, cacheRow, "rrClearBookCache",
-                                             strings::get("reader.clear_book_cache"), [this] {
-                                                 settingsPages->setCurrentIndex(DefaultsSettings);
-                                                 clearCacheDialog->fitCard();
-                                                 clearCacheDialog->show();
-                                                 clearCacheDialog->raise();
-                                                 clearCacheDialog->setFocus();
-                                             });
-    readerStyle(clearCacheButton, styles::font(m::text::secondary));
-    clearCacheButton->setFixedHeight(m::about::actionHeight);
-    cacheRow->addStretch(1);
     defaultsRows->addStretch(1);
     auto *stylingPage = new QWidget(settingsPages);
     stylingPage->setObjectName("rrStylingOptions");
@@ -715,26 +699,6 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     restoreDialog->dismissed = [this] {
         dismissRestore();
     };
-    clearCacheDialog =
-        new ui::ChoiceModal(parent,
-                            {strings::get("reader.clear_book_cache_detail"),
-                             strings::get("reader.clear_book_cache_prompt"),
-                             {}},
-                            {strings::get("common.cancel"), "rrKeepClearCache"},
-                            {strings::get("reader.clear_book_cache_confirm"), "rrConfirmClearCache"});
-    clearCacheDialog->setObjectName("rrClearCacheConfirmation");
-    clearCacheDialog->setDimmed(true);
-    keepClearCache = clearCacheDialog->secondaryButton();
-    confirmClearCache = clearCacheDialog->primaryButton();
-    connect(keepClearCache, &QPushButton::clicked, this, [this] {
-        dismissClearCache();
-    });
-    connect(confirmClearCache, &QPushButton::clicked, this, [this] {
-        dismissClearCache();
-    });
-    clearCacheDialog->dismissed = [this] {
-        dismissClearCache();
-    };
     settingsError = new ui::InterfaceLabel(this);
     settingsError->setWordWrap(true);
     settingsError->hide();
@@ -755,14 +719,14 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     cacheRow->setStretch(1, 1);
     cacheRow->setStretch(2, 0);
     for (auto *button :
-         {resetDefaults, clearCacheButton, refreshButton, columnSpacingButton, sleepScreenButton, sleepTileButton, sessionTimeoutButton, pageNavigationButton,
+         {resetDefaults, refreshButton, columnSpacingButton, sleepScreenButton, sleepTileButton, sessionTimeoutButton, pageNavigationButton,
           tapZonesButton, tappableLinksButton, navigationBarButton,
           menuViewButton, uiFontButton, uiMonoFontButton, headerFooterFontButton, headerFooterWeightButton,
           dictionaryFontButton, dictionaryFontSizeButton,
           defaultFontButton, serifFontButton, sansFontButton, monoFontButton, beautifierButton, wordSpacingButton, paragraphSpacingButton, trackingButton, widowsOrphansButton, verticalSpacingButton, verticalSpacingScopeButton}) {
         button->setRule(Qt::BottomEdge);
         // Both Defaults-tab actions open a confirmation modal before doing anything.
-        if (button == resetDefaults || button == clearCacheButton)
+        if (button == resetDefaults)
             button->setCaption(strings::get("settings.asks_first"));
         ui::readerStyle(
             button,
@@ -1568,15 +1532,8 @@ void SettingsPanel::dismissRestore() {
     restoreDialog->hide();
     resetDefaults->setFocus();
 }
-void SettingsPanel::dismissClearCache() {
-    if (!clearCacheDialog || clearCacheDialog->isHidden())
-        return;
-    clearCacheDialog->hide();
-    clearCacheButton->setFocus();
-}
 void SettingsPanel::hideEvent(QHideEvent *event) {
     dismissRestore();
-    dismissClearCache();
     dismissFontChoices();
     if (stylingHidden)
         stylingHidden();

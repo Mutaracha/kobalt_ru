@@ -587,15 +587,6 @@ void Reader::buildToolbar() {
     applyEdgeLight();
     lightPopup = new kobalt::LightPanel(*light, this);
     lightPopup->setEdgeGesturesEnabled(page->brightnessEdge);
-    lightPopup->setQuietGestures(preferences.value("quiet_light_gestures").toBool(false));
-    lightPopup->quietGesturesChanged = [this](bool enabled) {
-        auto next = preferences;
-        next["quiet_light_gestures"] = enabled;
-        if (!writePreferences(next))
-            return false;
-        preferences = next;
-        return true;
-    };
     lightPopup->changed = [lightButton, this] {
         lightButton->setChecked(lightPopup->isVisible());
         if (navigation && lightPopup->isVisible())
@@ -1394,14 +1385,6 @@ void Reader::buildSettings() {
         for (auto *widget : acknowledgments->findChildren<QWidget *>())
             textRefresh(widget);
     });
-    connect(settings->confirmClearCache, &QPushButton::clicked, this, [this] {
-        if (cacheClear != CacheClear::None || closing || exitPending || lifecycleHidden)
-            return;
-        cacheClear = CacheClear::Requested;
-        // The normal asynchronous close must acknowledge progress, annotations,
-        // native state and sync before the engine worker may delete anything.
-        close();
-    });
     connect(settings->confirmDefaults, &QPushButton::clicked, this, [this] {
         restoringDefaults = true;
         settingsUiFontFace.clear();
@@ -1495,7 +1478,6 @@ void Reader::connectLightGestures() {
             brightnessInitial = light->brightness();
         }
         gestureWarmth = warmth;
-        quietLightGesture = preferences.value("quiet_light_gestures").toBool(false);
         brightnessHide.stop();
         return true;
     };
@@ -1515,19 +1497,15 @@ void Reader::connectLightGestures() {
             const int value = light->setWarmth(snapped == 100 ? minimum + range : level);
             if (value < 0)
                 return;
-            if (!quietLightGesture)
-                brightnessNotice->setLevel(true, qRound(100.0 * (value - minimum) / range));
+            brightnessNotice->setLevel(true, qRound(100.0 * (value - minimum) / range));
         } else {
             const int value = light->setGestureLevel(brightnessInitial + kobalt::ui::BrightnessGesture::change(moved));
             if (value < 0)
                 return;
-            if (!quietLightGesture)
-                brightnessNotice->setLevel(false, value);
+            brightnessNotice->setLevel(false, value);
         }
-        if (!quietLightGesture) {
-            brightnessNotice->show();
-            brightnessNotice->raise();
-        }
+        brightnessNotice->show();
+        brightnessNotice->raise();
     };
     page->lightFinished = [this](bool save) {
         if (!gestureWarmth)
@@ -1540,10 +1518,6 @@ void Reader::connectLightGestures() {
             if (warmthAutomatic)
                 light->setAutomaticWarmth(true);
         }
-        // No notice was painted: do not hide an overlay or trigger its
-        // Hide-event full page refresh. Native light persistence still runs.
-        if (quietLightGesture)
-            return;
         if (save)
             brightnessHide.start();
         else {

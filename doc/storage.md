@@ -152,33 +152,6 @@ When a saved file cannot be read at all, or Kobalt cannot move it into `backups/
 
 Settings that become damaged, too large or of a newer version while a book is open stay in place. The close and the synchronous checkpoint then skip the layout memory and still save the reading position. A read error still fails those saves, so the close offers Retry.
 
-## Fork light-gesture preference
+## Retired fork options
 
-`quiet_light_gestures` is an optional global Boolean (missing or invalid = false).
-When true, brightness/warmth edge swipes do not paint a percentage notice or
-request the notice-cleanup page refresh. Native light persistence and cancelled
-swipe rollback remain unchanged. It keeps preference schema 1 and does not
-change book state or disposable cache formats.
-
-
-## Explicit rendering-cache cleanup
-
-The fork's clear-cache action first completes the ordinary asynchronous close
-save (book progress, native reconciliation, annotations and sync). A save failure
-leaves caches intact and offers the existing save retry/cancel choices. No new
-saved-data format or cache format is introduced.
-
-After that acknowledgement, cleanup is terminal: preview continuations are
-released, the shared engine FIFO closes mapped DOM/cache files, then removes only
-`.cache/` and `cache/reopen-layout.json`. The session cannot retain its document
-or dispatch further render work, so close cannot recreate the deleted cache.
-The low-level helper is blocking and must not run in an interactive GUI callback;
-it rejects symlinked cache directories rather than traversing external data.
-
-Sleep or USB before this terminal boundary cancels the deletion request. Sleep
-after it postpones exit/error UI until wake. USB, shutdown and disposal wait for
-the worker barrier before releasing storage; they do not map/save the retired
-DOM again. The worker owns its engine and paths independently of the window.
-Deletion can fail partially; progress remains saved, an error is shown before
-closing, and the user can retry after reopening a book. A forced process exit
-can leave disposable caches partially cleared, but never rolls back saved data.
+The fork quiet-light option is replaced by upstream beta6 feedback controls, without a legacy-key migration. Cache cleanup is deferred until after beta; no cleanup action is provided. Existing device caches and durable data are not deleted by this removal.

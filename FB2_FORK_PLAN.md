@@ -678,3 +678,20 @@ bool plainEpub() const {
 - **tests added, not yet executed:** lifecycle cases cover delayed worker/UI timer, acknowledged position before deletion, save failure, sleep/USB before commit, sleep/USB/disposal/destruction during cleanup, delete failure, no retained resave and reopen position. Fixture opt-in warms the real document cache through normal close before testing cleanup. Rendering-cache model adds external symlink protection. Native Qt SDK is unavailable locally; these tests must not be described as executed merely because the package compiles.
 - **documentation/strings:** AGENTS open-debt section replaced by implementation contracts; storage and user instructions updated. New EN/RU key only: reader.clear_book_cache_failed_detail; existing approved labels/descriptions unchanged.
 - **validation:** production strings-test reproduced the known local mtime flake; production test unchanged. EN/RU parity and source generation — PASS; offline release suite with scratch-only timestamp workaround — PASS; diff-check — PASS. Portable engine-activity pause/drain test compiled with g++ and executed — PASS. Native Qt lifecycle/rendering-cache tests added but unrun (no Qt SDK). Kobo Qt5 package — push-CI; device review remains required. Review additionally checked ModalContent description/title order, native-write failure cancellation, error-popup refresh/input registration and re-enabling the existing error modal after sleep/wake.
+
+
+### 2026-11-07 — согласование RU beta6 и проверка длины
+
+- Пользователь согласовал остальные предложенные переводы; описание свайпов должно явно указывать самую границу экрана. Итог: «Свайпы у самой границы экрана: слева — яркость, справа — теплота подсветки».
+- Проверены длины согласованных уточнений против en.strings тега v1.0-beta.6; длинные формулировки сокращены: «Выносить пунктуацию и знаки переноса в боковые поля», «Вид оставшегося времени». Отчёт: doc/translation-length-beta6.md. Проверка символов не заменяет UI/device проверку.
+- Дополнительно составлен список существующих RU строк, превышающих EN более чем на 25% и минимум на 8 символов; ранее согласованные переводы не менялись. Полный новый словарь beta6 пока не внесён, полная проверка его длины остаётся этапом интеграции.
+- В этом изменении только отчёт/план; assets/ru.strings и реализация beta6 не изменены. Сборка и UI-тесты не запускались.
+
+### 2026-11-07 — подготовка интеграции beta6
+
+- Сверены файлы с origin/arena/9e626d86-kobalt-ru (2f127ba): отличие только в новом плане/отчёте. Восстановлен локальный указатель ветки/index через mixed reset без перезаписи файлов; резервная копия в ignored .cache/beta6.
+- Загружен upstream v1.0-beta.6 (7ff437e); общая база подтверждена: 3d8514c.
+- Удалены fork quiet-light UI/key/gesture implementation и специальные тесты; миграция не добавляется. До переноса beta6 действует прежнее upstream поведение.
+- Удалены cache-cleanup UI/confirmation/helper/worker retirement/save barriers/специальные тесты и регистрация model test. Общий progress/save возвращён к состоянию до cleanup; дальнейшее обновление — из beta6. Данные/кэши устройства не удаляются.
+- Обновлены AGENTS, storage и пользовательская инструкция: cache cleanup отложена, FB2 следует общему оформлению EPUB. Исторические журналы не переписаны.
+- Интеграция beta6, полный перевод, сборка и runtime-проверки пока не завершены.

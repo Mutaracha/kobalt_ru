@@ -47,7 +47,6 @@ public:
     SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs);
     ~SettingsPanel() override;
     void dismissRestore();
-    void dismissClearCache();
     void showFontChoices(const QString &title, const QVector<ReadingFont> &fonts, const QString &current,
                          const QString &emptyLabel, std::function<void(const QString &)> chosen,
                          std::function<void(const QStringList &)> prepareFonts = {});
@@ -107,9 +106,8 @@ public:
     ui::CaptionButton *pageNavigationButton = nullptr, *tapZonesButton = nullptr, *navigationBarButton = nullptr,
                       *tappableLinksButton = nullptr;
     ui::DescribedOption *bionicOption = nullptr;
-    ui::CaptionButton *refreshButton = nullptr, *resetDefaults = nullptr, *clearCacheButton = nullptr;
+    ui::CaptionButton *refreshButton = nullptr, *resetDefaults = nullptr;
     QPushButton *keepDefaults = nullptr, *confirmDefaults = nullptr;
-    QPushButton *keepClearCache = nullptr, *confirmClearCache = nullptr;
     QPushButton *openAcknowledgments = nullptr, *debugProgress = nullptr;
     DictionariesPage *dictionaries = nullptr;
     KosyncPage *kosync = nullptr;
@@ -131,7 +129,6 @@ private:
     void fitRail(int availableHeight = 0);
     QLabel *aboutDescription = nullptr;
     QPointer<ui::ChoiceModal> restoreDialog;
-    QPointer<ui::ChoiceModal> clearCacheDialog;
     QHash<int, StyleSample> stylingSamples;
     // The open styling sheet, if any, and the option its preview shows.
     QPointer<QWidget> stylingPreview;
