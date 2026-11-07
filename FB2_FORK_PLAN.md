@@ -767,3 +767,5 @@ bool plainEpub() const {
 - Первый focused native CI завершился ошибкой до CTest; подробный log endpoint недоступен из sandbox. Добавлен вывод последнего фрагмента native build log в check summary, как уже сделано для Qt5 job. Финальный результат пока не заявлен.
 
 - Native job повторно завершился до CTest; GitHub не выдаёт step summary через Checks API, а raw logs перенаправляются на недоступный host. Добавлены error annotations с сообщениями компилятора/тестов для читаемой диагностики без доступа к внешнему blob storage. Qt5 package первого прогона ff09937 собран/проверен, но это не финальный handoff.
+
+- Диагностика native CI: CMake останавливался до компиляции — fork-тест model.strings-locale после beta6 не имел area label. Добавлен settings label без отключения теста/guard; локальная сверка зарегистрированных model/engine/UI/desktop имён больше не находит этот пробел. Это исправление конфигурации native validation, не алгоритма сносок.
