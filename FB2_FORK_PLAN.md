@@ -783,3 +783,5 @@ bool plainEpub() const {
 - EPUB/appearance/document-cache native checks теперь проходят. FB2 footnote/popup/off-on assertions прошли; последующий title probe ожидал title как непосредственного ребёнка section после rendering, хотя движок может добавлять wrappers. Probe теперь ищет title в поддереве и печатает фактический текст/marker при несовпадении. Runtime-код FB2 по-прежнему не менялся. Полный FB2 PASS пока не заявляется.
 
 - Последний native failure локализован в windows-1251 fixture: d0e5f1f2 кодирует «Рест», но assertion и комментарий ожидают «Тест». Исправлены исходные байты на d2e5f1f2 (подтверждено независимым CP1251 decode); проверка результата не ослаблена, декодер/EPUB/FB2 runtime не менялись. Повторная Qt5/native сборка ожидается.
+
+- Повторный native run прошёл EPUB/appearance/document-cache и FB2 footnote cases, но обнаружил отдельный sharedNormalization failure (ранее этот regression не запускался). Добавлена диагностика DOM/paragraph markers и computed styles без изменения runtime/ожиданий; причина ещё выясняется.

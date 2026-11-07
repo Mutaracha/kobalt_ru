@@ -43,6 +43,28 @@ struct ReaderSourceIndexProbe {
         auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
         return node ? QString::fromUtf8(UnicodeToUtf8(node->getAttributeValue(name)).c_str()) : QString();
     }
+    static QString normalizationDiagnostic(const EngineDocument &model, const char *id) {
+        auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
+        QStringList result;
+        for (; node; node = node->getParentNode()) {
+            const auto str = [](const lString32 &value) {
+                return QString::fromUtf8(UnicodeToUtf8(value).c_str());
+            };
+            result.append(QString("%1[paragraph=%2,beautify=%3,text=%4]")
+                          .arg(str(node->getNodeName()), str(node->getAttributeValue("data-kobalt-paragraph")),
+                               str(node->getAttributeValue("data-kobalt-beautify")))
+                          .arg(str(node->getText()).size()));
+            const auto style = node->getStyle();
+            if (!style.isNull())
+                result.append(QString("align=%1 white=%2 indent=%3 margins=%4,%5,%6,%7 padding=%8,%9,%10,%11")
+                              .arg(int(style->text_align)).arg(int(style->white_space)).arg(style->text_indent.value)
+                              .arg(style->margin[0].value).arg(style->margin[1].value)
+                              .arg(style->margin[2].value).arg(style->margin[3].value)
+                              .arg(style->padding[0].value).arg(style->padding[1].value)
+                              .arg(style->padding[2].value).arg(style->padding[3].value));
+        }
+        return result.join(" | ");
+    }
     static lString32 cre(const QString &text) { return Utf8ToUnicode(text.toUtf8().constData()); }
 
     static void clear(EngineDocument &model) { model.sourceIndex_.reset(); }

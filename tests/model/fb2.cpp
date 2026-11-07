@@ -224,7 +224,8 @@ void sharedNormalization() {
     QString error;
     require(model.open(bytes, QSize(800, 1000), {}, &error), qPrintable(error));
     require(ReaderSourceIndexProbe::nodeAttribute(model, "prose", "data-kobalt-beautify") == "body",
-            "FB2 ordinary prose bypassed shared normalization");
+            qPrintable(QString("FB2 ordinary prose bypassed shared normalization: %1")
+                       .arg(ReaderSourceIndexProbe::normalizationDiagnostic(model, "prose"))));
     for (const auto *id : {"epigraph", "note-prose"})
         require(ReaderSourceIndexProbe::nodeAttribute(model, id, "data-kobalt-beautify").isEmpty(),
                 "FB2 normalization flattened a semantic block");
