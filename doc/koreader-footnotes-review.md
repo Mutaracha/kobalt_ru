@@ -66,3 +66,11 @@ comparison двух readers. Внешний вид, перенос длинны�
 повторные ссылки нужно сравнить на одном Kobo, с одной книгой, одинаковым
 шрифтом/размером/полями и перечисленными tweaks KOReader. Сравнение разных
 профилей KOReader не доказывает ошибку стандартного профиля.
+
+### Проверенный результат
+
+Код/тесты `63864f5`: [CI 42413555935](https://github.com/Mutaracha/kobalt_ru/actions/runs/42413555935)
+PASS. Focused native links/FB2/document-cache/appearance-settings PASS (5m33s),
+Kobo Qt5 build/package/contents PASS (6m6s).
+[Пакет для устройства](https://github.com/Mutaracha/kobalt_ru/actions/runs/42413555935/artifacts/13590533161).
+Ограничения проверки перечислены выше: это не запуск KOReader UI и не Kobo A/B.

@@ -19,6 +19,15 @@ Native Qt/UI/lifecycle и device runtime проверки не выполнен�
 работа с engine boxing у note titles; FB2 cache policy v5, позиции не меняются.
 Полная native/UI/lifecycle suite и визуальная проверка Kobo остаются невыполненными.
 
+## Последующая сверка с KOReader
+
+Код/тесты `63864f5`: CI 42413555935 PASS, focused native и Qt5 package.
+[Результаты/источники/намеренные отличия](koreader-footnotes-review.md).
+Общий закреплённый CREngine не менялся; частная EPUB DOM-классификация удалена,
+используется стандартный CSS-профиль, FB2 sections обрабатываются на всех уровнях.
+EPUB cache v2 / FB2 v6 перестраивают disposable cache без изменения durable data.
+Kobo визуальное A/B и полная UI/lifecycle suite по-прежнему не выполнялись.
+
 ## База и выполненная подготовка
 
 - Fork до обновления: `2f127ba`; upstream: `v1.0-beta.6`, `7ff437e`.

@@ -19,6 +19,18 @@ popup/off-on, cache restore, FB2 footnotes/номер/CP1251/shared normalizatio
 код `38d8f11953594a00be12d6b7c40ffa7ba422ddb2`.
 Полная native/UI/lifecycle suite и визуальная проверка на Kobo не выполнялись.
 
+### Актуальный билд после сверки с KOReader
+
+**63864f5: CI 42413555935 PASS.** Стандартные CSS-профили KOReader на том же
+CREngine вместо частной EPUB DOM-разметки; FB2 nested sections и размеры
+75%/85%, отдельные popup/inpage hints. Native `engine.links`, `engine.fb2`,
+`engine.document-cache`, `model.appearance-settings` PASS (job 5m33s),
+Kobo Qt5 build/package/content checks PASS (6m6s).
+[Пакет Kobalt-qt5-device](https://github.com/Mutaracha/kobalt_ru/actions/runs/42413555935/artifacts/13590533161).
+Подробности и намеренно сохранённые fork-отличия: doc/koreader-footnotes-review.md.
+Сам KOReader UI, полная native/UI/lifecycle suite и визуальное сравнение двух
+приложений на Kobo не запускались.
+
 ## 0. Статусы этапов (вести в каждом изменении)
 
 > Легенда: **done** — код и тесты в ветке; **in progress** — частично; **planned** — только план. Сборка в песочнице невозможна (нет Qt SDK), поэтому статус «done» по коду подтверждается ревью и офлайн-проверками (валидатор строк, CMake configure_file, хеши манифеста, YAML), полная Kobo Qt5-компиляция пакета выполняется CI `.github/workflows/kobo-qt5-device.yml` (push в `arena/9e626d86-kobalt-ru`). Workflow теперь также запускает focused native проверки EPUB/FB2 notes на закреплённом Linux SDK; полные native UI/lifecycle suites остаются отдельной проверкой.
@@ -818,3 +830,10 @@ bool plainEpub() const {
 - Первый KOReader-profile CI: Qt5 package PASS; native FB2/appearance/document-cache PASS. Новый EPUB font probe искал сырой id=note, хотя EPUB importer префиксует IDs именем spine fragment, и возвращал 0. Probe переведён на реальный resolved target XPointer; ожидания 80% не ослаблены, runtime не менялся. Повторный native результат ожидается.
 
 - Следующий native run выявил реальную границу legacy-size tweak самого KOReader: inline style=footnote-inpage устанавливается после stylesheet/late conditional, поэтому без type/role может сохранять исходный размер. Подтверждено порядком setNodeStyle в lvrend.cpp. Для этого случая добавлен отдельный reference-engine с CSS-профилем KOReader и сравнением шрифта; для стандартных type/role строгая проверка 80%, в том числе против publisher 300% !important, сохранена. Runtime не менялся.
+
+### 2026-11-07 — результат проверки KOReader-профилей
+
+- Финальный code/test tip 63864f5317b73cf9fe043b4e783ebd0bc81ff150: workflow 42413555935 success. Native links/FB2/document-cache/appearance-settings PASS, Qt5 build/package/contents/offline checks PASS. Artifact Kobalt-qt5-device id 13590533161; native report id 13590458254.
+- Подтверждены стандартные EPUB type/role и alternate namespace, разделение hints, source ignore, 80% против publisher !important, reference-engine сравнение inline inpage hint, nested blocks, длинное continuation, off/on/popup/font/columns/cache; FB2 nested hint/font inheritance и прежние regression cases прошли.
+- Код сохранён/отправлен только в текущую ветку; новые настройки/строки, dependency patches, собственный splitter и сохранение прогресса не добавлялись. Последующие изменения документации не требуют новой бинарной сборки.
+- Не выполнены запуск KOReader как приложения, полная native/UI/lifecycle suite и визуальный/физический Kobo A/B. Профили и общий engine сближены, но полного pixel/UI parity это не доказывает; согласованные superscript labels/default-on comments сохранены намеренно.
