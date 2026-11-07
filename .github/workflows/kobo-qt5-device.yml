@@ -34,17 +34,34 @@ jobs:
       - name: Build and run focused native checks in the pinned Linux SDK
         run: |
           set -euo pipefail
-          image=$(sh platforms/sdk-image.sh linux)
-          docker pull "$image"
-          cache=$(cmake -P dependencies/cache.cmake)
-          mkdir -p "$cache"
-          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
-            --volume "$PWD:/work" --volume "$cache:/dependency-cache" \
-            --workdir /work/platforms/desktop "$image" bash -euc '
-              cmake --preset linux -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
-              cmake --build ../../build/desktop-linux --parallel 4 --target kobalt-desktop-tests kobalt-links-tests kobalt-fb2-tests kobalt-document-cache-tests kobalt-appearance-settings-tests
-              ctest --preset linux --output-on-failure -R "^(engine\.(links|fb2|document-cache)|model\.appearance-settings)$"
-            '
+          log="$RUNNER_TEMP/native-footnotes.log"
+          set +e
+          (
+            set -euo pipefail
+            image=$(sh platforms/sdk-image.sh linux)
+            docker pull "$image"
+            cache=$(cmake -P dependencies/cache.cmake)
+            mkdir -p "$cache"
+            docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+              --volume "$PWD:/work" --volume "$cache:/dependency-cache" \
+              --workdir /work/platforms/desktop "$image" bash -euc '
+                cmake --preset linux -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
+                cmake --build ../../build/desktop-linux --parallel 4 --target kobalt-desktop-tests kobalt-links-tests kobalt-fb2-tests kobalt-document-cache-tests kobalt-appearance-settings-tests
+                ctest --preset linux --output-on-failure -R "^(engine\.(links|fb2|document-cache)|model\.appearance-settings)$"
+              '
+          ) >"$log" 2>&1
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ]; then
+            {
+              echo '### Native footnote checks failed'
+              echo '```'
+              tail -150 "$log"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          tail -40 "$log"
+          exit "$status"
       - name: Preserve native test results
         if: always()
         uses: actions/upload-artifact@v7

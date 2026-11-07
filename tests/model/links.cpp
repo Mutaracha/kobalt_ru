@@ -213,7 +213,7 @@ void inPageNotes()
         require(model.openResources(resources, sizes, QSize(1072, 1300),
                                     qt::object({{"font_pixels", 32}}), &error), qPrintable(error));
         require((ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0) == testCase.inPage,
-                qPrintable("EPUB page-note recognition failed: " + attribute));
+                qPrintable(QString("EPUB page-note recognition failed: %1").arg(QString::fromUtf8(attribute))));
         if (!testCase.referenced)
             continue;
         if (!testCase.inPage) {

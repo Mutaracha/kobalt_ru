@@ -763,3 +763,5 @@ bool plainEpub() const {
 - Статус: код готов к CI, проверочный Qt5 package и native job ожидают запуска. Полная native/UI/lifecycle suite и визуальная проверка Kobo не выполнялись.
 
 - До финального билда расширены проверки EPUB: unreferenced и FOOTNOTE_IGNORE не дают нижний блок; реальное сохранение/восстановление parsed-cache on/off. Приватные markers из исходника очищаются, вложенные блоки не дублируются; whitespace-regex переиспользуется, а не компилируется на каждом DOM-узле.
+
+- Первый focused native CI завершился ошибкой до CTest; подробный log endpoint недоступен из sandbox. Добавлен вывод последнего фрагмента native build log в check summary, как уже сделано для Qt5 job. Финальный результат пока не заявлен.
