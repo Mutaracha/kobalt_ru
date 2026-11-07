@@ -513,7 +513,7 @@ void Navigation::update(QSize size, const NavigationState &state)
     rules->raise();
     const int syncActions = sync && !sync->isHidden() ? 1 : 0;
     const int rightActions = (formattingWarning && !formattingWarning->isHidden() ? 3 : 2)
-            + (annotate ? 1 : 0) + (search ? 1 : 0) + syncActions;
+            + (annotate ? 1 : 0) + (search ? 1 : 0) + syncActions + (darkTheme ? 1 : 0);
     // A large interface scale can leave too little room for the exit caption.
     // The arrow then keeps a cell of its own, as each action does.
     // When the caption nearly reaches the actions, the exit action meets them,
@@ -588,14 +588,7 @@ void Navigation::update(QSize size, const NavigationState &state)
         formattingWarning->setGeometry(size.width() - ((annotate ? 4 : 3) + (search ? 1 : 0) + syncActions + (darkTheme ? 1 : 0)) * chrome::cellWidth,
                                        statusHeight(), chrome::cellWidth, chrome::actionHeight);
     }
-    const int rightActions =
-        (formattingWarning && !formattingWarning->isHidden() ? 3 : 2) + (annotate ? 1 : 0) + (search ? 1 : 0) + syncActions + (darkTheme ? 1 : 0);
-    // A large interface scale can leave too little room for the exit caption.
-    // The arrow then keeps a cell of its own, as each action does.
-    const int exitWidth = exitAction->sizeHint().width();
-    exitAction->setGeometry(0, statusHeight(),
-                            exitWidth <= size.width() - rightActions * chrome::cellWidth ? exitWidth : int(chrome::cellWidth),
-                            chrome::actionHeight);
+    exitAction->setGeometry(0, statusHeight(), exitCell, chrome::actionHeight);
     if (rules->property("right_actions").toInt() != rightActions) {
         rules->setProperty("right_actions", rightActions);
         rules->update();

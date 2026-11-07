@@ -507,11 +507,13 @@ void Reader::syncReadingControls()
                          && panels->currentIndex()
                                  != int(kobalt::reader::AppearancePage::Typography));
     findChild<QPushButton *>("rrSettings")->setChecked(general->isVisible());
+    if (toolbarComposition.darkTheme)
+        toolbarComposition.darkTheme->setChecked(session->state().value("dark_mode").toBool(false));
     const bool settingsOpen = general->isVisible();
     for (auto *action : std::initializer_list<QWidget *>{
                  toolbarComposition.exitAction, toolbarComposition.settings,
                  toolbarComposition.bookmarks, toolbarComposition.annotate,
-                 toolbarComposition.search })
+                 toolbarComposition.search, toolbarComposition.darkTheme })
         if (action)
             action->setVisible(!settingsOpen);
     toolbarComposition.formattingWarning->setVisible(!settingsOpen && session->formattingWarning());
