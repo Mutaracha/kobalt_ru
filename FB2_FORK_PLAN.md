@@ -9,6 +9,16 @@
 
 **Код beta6 перенесён, Kobo Qt5 package проверен.** Upstream 7ff437e интегрирован merge-коммитом 7b523d8; проверенный code tip — 8fef806. Финальный CI 42398893518 PASS (6m14s), artifact Kobalt-qt5-device. Нативные model/UI/lifecycle suites и проверка на устройстве **не выполнены**. Cache cleanup полностью удалена и отложена; собственная quiet-light implementation заменена upstream beta6 без миграции. Подробности: doc/beta6-integration.md. Нижняя таблица и журнал сохраняют историю прежних этапов.
 
+### Проверочный EPUB/FB2 билд после beta6
+
+**38d8f11: CI 42411361845 PASS.** Kobo Qt5 package/build/content checks прошли
+(4m34s); focused native `engine.links`, `engine.fb2`, `engine.document-cache`,
+`model.appearance-settings` прошли (job 4m58s). Это включает EPUB bottom notes,
+popup/off-on, cache restore, FB2 footnotes/номер/CP1251/shared normalization.
+[Пакет Kobalt-qt5-device](https://github.com/Mutaracha/kobalt_ru/actions/runs/42411361845/artifacts/13589392574),
+код `38d8f11953594a00be12d6b7c40ffa7ba422ddb2`.
+Полная native/UI/lifecycle suite и визуальная проверка на Kobo не выполнялись.
+
 ## 0. Статусы этапов (вести в каждом изменении)
 
 > Легенда: **done** — код и тесты в ветке; **in progress** — частично; **planned** — только план. Сборка в песочнице невозможна (нет Qt SDK), поэтому статус «done» по коду подтверждается ревью и офлайн-проверками (валидатор строк, CMake configure_file, хеши манифеста, YAML), полная Kobo Qt5-компиляция пакета выполняется CI `.github/workflows/kobo-qt5-device.yml` (push в `arena/9e626d86-kobalt-ru`). Workflow теперь также запускает focused native проверки EPUB/FB2 notes на закреплённом Linux SDK; полные native UI/lifecycle suites остаются отдельной проверкой.
@@ -789,3 +799,10 @@ bool plainEpub() const {
 - Найдена настоящая причина sharedNormalization: openSource выбирал fb2Document_ после configure(), хотя configure уже устанавливает CSS для парсинга. Свежий FB2 получал HTML интервалы, из-за которых общий beautifier защищал обычные абзацы как scene gaps. Выбор формата перенесён перед configure (без дополнительного DOM прохода); это также устраняет наследование прежнего формата при повторном использовании EngineDocument. FB2 parsed-cache policy v5 перестраивает только одноразовый rendering cache, прогресс/IDs/JSON/schema сохранены. EPUB policy не меняется. Никакие regression assertions не удалены.
 
 - С корректным parse-time FB2 CSS тест выявил run-in autoBoxing уже до normalizeNoteTitles: прямой parent больше не обязательно section. Normalizer использует штатный getUnboxedParent(), пропуская только внутренние engine boxes, не издательские контейнеры. Существующий regression с многоабзацной сноской/вложенным [1] теперь проверяет и этот путь; FB2 CSS/cache v5 сохранены. Qt5 e8f2f13 package PASS, финальный native результат ещё ожидается.
+
+### 2026-11-07 — итог EPUB bottom-footnote verification
+
+- Финальный code tip 38d8f11, workflow 42411361845 success: focused Linux native regressions PASS и Kobo Qt5 package PASS. Артефакт Kobalt-qt5-device id 13589392574 (Kobalt-qt5.zip и build metadata); native report id 13590180051.
+- EPUB: готовый CREngine splitter, семантические blocks/namespace/role/class/hints, cross-XHTML, popup при выключении, source anchor, font/columns и on/off cache restore проверены focused suite.
+- FB2: готовые нижние сноски и comments, заголовки/номер, декодирование CP1251 и общий normalization marker теперь действительно проверены native CI. Исправлены байты fixture, выбор format CSS до configure и обход штатных boxing parents у note title; assertions не ослаблены.
+- Документация/agent guidance/storage policy обновлены. Это не полный набор UI/lifecycle tests и не проверка физических e-ink страниц; перенос длинных сносок и внешний вид необходимо проверить на Kobo.

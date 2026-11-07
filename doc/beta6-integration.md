@@ -8,6 +8,17 @@ Native Qt/UI/lifecycle и device runtime проверки не выполнен�
 Разделы ниже содержат последовательность работ; ранние статусы «не завершено»
 относятся к соответствующим промежуточным этапам, а не финальной сборке.
 
+## Последующий проверочный билд с EPUB-сносками
+
+Код `38d8f11`: [CI 42411361845](https://github.com/Mutaracha/kobalt_ru/actions/runs/42411361845)
+успешен. Kobo Qt5 cross-build/package/content checks и focused native checks
+`engine.links`, `engine.fb2`, `engine.document-cache`, `model.appearance-settings`
+прошли. [Kobalt-qt5-device](https://github.com/Mutaracha/kobalt_ru/actions/runs/42411361845/artifacts/13589392574).
+Общий переключатель теперь включает EPUB-сноски; подробности в
+[описании механизма](fb2-footnotes.md). Исправлены parse-time выбор FB2 CSS и
+работа с engine boxing у note titles; FB2 cache policy v5, позиции не меняются.
+Полная native/UI/lifecycle suite и визуальная проверка Kobo остаются невыполненными.
+
 ## База и выполненная подготовка
 
 - Fork до обновления: `2f127ba`; upstream: `v1.0-beta.6`, `7ff437e`.

@@ -220,7 +220,7 @@ numeric links as page notes. Use CREngine's footnote-inpage mechanism, not an
 application footer/page splitter. applyAppearance must reflow both formats when
 the existing switch changes. Keep the legacy fb2_inpage_footnotes storage key for
 compatibility; it now controls both formats. Preserve unconditional popup
-recognition when switched off, FB2 CSS/cache identity and upstream save/progress.
+recognition when switched off, FB2-specific CSS/separate cache policy and upstream save/progress.
 Initial-load and changed-setting cache checksums must use the same EPUB mode
 salt. The device workflow runs focused Linux engine checks (links, FB2,
 document-cache, appearance-settings) separately from the Qt5 package; neither
