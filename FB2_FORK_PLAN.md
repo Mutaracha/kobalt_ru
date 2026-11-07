@@ -775,3 +775,5 @@ bool plainEpub() const {
 - Native targets после исправлений успешно скомпилировались; CTest запущен и обнаружил failing assertions. Расширена диагностика на штатный префикс requireAt «FAIL » (не «FAIL:»), чтобы получить точную строку без недоступных raw logs. До успешного прогона готовность runtime не заявляется.
 
 - Native assertions: новые inPageNotes (включая on/off cache restore), FB2 и document-cache уже проходят. Оставшиеся failures: прежний appearance key-count guard не учитывал существующий fb2_inpage_footnotes (исправлен ожидаемый размер), а legacy links fixture ожидал все ссылки на одной странице — теперь длинная нижняя сноска закономерно занимает её часть. Для прежней classification matrix задан off; её исходные assertions сохранены, default-on отдельно покрывается inPageNotes. Новых изменений алгоритма ради прохождения тестов не потребовалось.
+
+- Финальная малая оптимизация DOM classification: отсутствующие type/role/class немедленно возвращают false, без конвертации QString и regex split на каждом обычном узле. Семантика общих popup-правил не меняется.

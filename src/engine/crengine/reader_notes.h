@@ -15,6 +15,8 @@ inline bool token(ldomNode *node, const char *name, const char *value, bool anyN
             ? node->getAttributeValue(LXML_NS_ANY, node->getDocument()->getAttrNameIndex(
                       Utf8ToUnicode(name).c_str()))
             : node->getAttributeValue(name);
+    if (attribute.empty())
+        return false;
     return QString::fromUtf8(UnicodeToUtf8(attribute).c_str())
             .split(whitespace, qt::skipEmptyParts)
             .contains(value, Qt::CaseInsensitive);
