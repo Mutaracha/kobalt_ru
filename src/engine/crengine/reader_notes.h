@@ -10,12 +10,13 @@ namespace kobalt::notes {
 // links/chapter targets. Namespace prefixes are not significant in EPUB.
 inline bool token(ldomNode *node, const char *name, const char *value, bool anyNamespace = false)
 {
+    static const QRegularExpression whitespace("\\s+");
     const auto attribute = anyNamespace
             ? node->getAttributeValue(LXML_NS_ANY, node->getDocument()->getAttrNameIndex(
                       Utf8ToUnicode(name).c_str()))
             : node->getAttributeValue(name);
     return QString::fromUtf8(UnicodeToUtf8(attribute).c_str())
-            .split(QRegularExpression("\\s+"), qt::skipEmptyParts)
+            .split(whitespace, qt::skipEmptyParts)
             .contains(value, Qt::CaseInsensitive);
 }
 
@@ -40,21 +41,27 @@ inline QByteArray epubCachePolicy(bool fb2, bool inPage)
 inline void markEpubNotes(ldomDocument *document)
 {
     const auto attribute = document->getAttrNameIndex("data-kobalt-inpage-note");
-    QVector<ldomNode *> pending{document->getRootNode()};
+    struct Frame { ldomNode *node; bool inNote; };
+    QVector<Frame> pending{{document->getRootNode(), false}};
     while (!pending.isEmpty()) {
-        auto *node = pending.takeLast();
+        const auto frame = pending.takeLast();
+        auto *node = frame.node;
         if (!node || !node->isElement())
             continue;
         const auto style = node->getStyle();
+        // Do not trust source-supplied private markers, even inside a note.
+        if (node->hasAttribute(attribute))
+            node->setAttributeValue(0, attribute, U"");
         const bool excluded = !style.isNull() && STYLE_HAS_CR_HINT(style, FOOTNOTE_IGNORE);
         const bool hinted = !style.isNull() && STYLE_HAS_CR_HINT(style, FOOTNOTE);
-        if (!excluded && !node->isNodeName("a") && (noteElement(node) || hinted)) {
+        const bool marked = !frame.inNote && !excluded && !node->isNodeName("a")
+                && (noteElement(node) || hinted);
+        if (marked) {
             node->setAttributeValue(0, attribute, U"1");
             // One complete note, not overlapping fragments for nested markup.
-            continue;
         }
         for (int i = node->getChildCount() - 1; i >= 0; --i)
-            pending.append(node->getChildNode(i));
+            pending.append({node->getChildNode(i), frame.inNote || marked});
     }
 }
 

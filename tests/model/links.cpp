@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QGuiApplication>
 #include <QMap>
+#include <QTemporaryDir>
 #include <cstdio>
 #include "check.h"
 
@@ -168,12 +169,16 @@ kobalt::LinkDetails inspectNote(const NoteCase &test, bool dark)
 void inPageNotes()
 {
     using namespace kobalt;
-    const QVector<QByteArray> attributes{
-        "epub:type='footnote'", "role='doc-endnote'", "ops:type='sidebar ENDNOTE'",
-        "class='footnote'", "style='-cr-hint:footnote'"
+    struct Case { QByteArray attribute; bool referenced = true; bool inPage = true; };
+    const QVector<Case> cases{
+        {"epub:type='footnote'"}, {"role='doc-endnote'"}, {"ops:type='sidebar ENDNOTE'"},
+        {"class='footnote'"}, {"style='-cr-hint:footnote'"},
+        {"epub:type='footnote' style='-cr-hint:footnote-ignore'", true, false},
+        {"epub:type='footnote'", false, false}
     };
-    for (const auto &attribute : attributes) {
-        const QMap<QString, QByteArray> files{
+    for (const auto &testCase : cases) {
+        const auto &attribute = testCase.attribute;
+        QMap<QString, QByteArray> files{
             {"mimetype", "application/epub+zip"},
             {"META-INF/container.xml",
              "<container xmlns='urn:oasis:names:tc:opendocument:xmlns:container' version='1.0'><rootfiles><rootfile full-path='book.opf' media-type='application/oebps-package+xml'/></rootfiles></container>"},
@@ -183,8 +188,10 @@ void inPageNotes()
              "<html xmlns='http://www.w3.org/1999/xhtml' xmlns:epub='http://www.idpf.org/2007/ops'><body><p>Opening text <a epub:type='noteref' href='notes.xhtml#note'>1</a> and following text.</p><p>Another ordinary paragraph.</p></body></html>"},
             {"notes.xhtml",
              "<html xmlns='http://www.w3.org/1999/xhtml' xmlns:epub='http://www.idpf.org/2007/ops' xmlns:ops='http://www.idpf.org/2007/ops'><body><aside "
-                     + attribute + "><p id='note'>First note paragraph.</p><p>Continuation of the same note.</p></aside><aside epub:type='footnote' id='unused'><p>Unreferenced note.</p></aside></body></html>"}
+                     + attribute + "><p id='note'>First note paragraph.</p><p>Continuation of the same note.</p></aside><aside epub:type='footnote' id='unused'><p>Unreferenced note.</p></aside><p id='passage'>A chapter passage.</p></body></html>"}
         };
+        if (!testCase.referenced)
+            files["c.xhtml"].replace("notes.xhtml#note", "notes.xhtml#passage");
         QMap<QString, qint64> sizes;
         for (auto it = files.cbegin(); it != files.cend(); ++it)
             sizes[it.key()] = it.value().size();
@@ -195,11 +202,26 @@ void inPageNotes()
                     return sink(bytes.constData(), bytes.size());
                 }, std::make_shared<std::atomic_bool>(false));
         EngineDocument model(test::readerFonts());
+        QTemporaryDir cacheRoot;
+        require(cacheRoot.isValid(), "Cannot create EPUB notes cache directory");
+        const auto cacheDirectory = cacheRoot.path() + "/.cache";
+        const auto cache = [&](EngineDocument &target) {
+            target.setDocumentCache(cacheDirectory, QByteArray(64, 'a'), "epub-page-notes", 1024 * 1024);
+        };
+        cache(model);
         QString error;
         require(model.openResources(resources, sizes, QSize(1072, 1300),
                                     qt::object({{"font_pixels", 32}}), &error), qPrintable(error));
-        require(ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
-                qPrintable("EPUB semantic note is popup-only: " + attribute));
+        require((ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0) == testCase.inPage,
+                qPrintable("EPUB page-note recognition failed: " + attribute));
+        if (!testCase.referenced)
+            continue;
+        if (!testCase.inPage) {
+            for (const auto &link : model.pageLinks())
+                require(model.linkDetails(link.source).html.contains("Continuation"),
+                        "Excluding the in-page block disabled explicit popup");
+            continue;
+        }
         require(!model.image(0).isNull(), "EPUB page notes did not paint");
         const auto origin = model.position();
         QString source;
@@ -222,6 +244,20 @@ void inPageNotes()
         require(model.applyAppearance(qt::object({{"font_pixels", 40}, {"columns", 2}})) &&
                     ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
                 "EPUB page notes disappeared after font/column reflow");
+        require(model.saveDocumentCache(), "Cannot cache EPUB page notes");
+        EngineDocument restored(test::readerFonts());
+        cache(restored);
+        require(restored.openResources(resources, sizes, QSize(1072, 1300), model.state(), &error) &&
+                    restored.openedFromCache() &&
+                    ReaderSourceIndexProbe::inPageFootnoteCount(restored) > 0,
+                "Restored EPUB cache lost page notes");
+        require(restored.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})) &&
+                    restored.saveDocumentCache(), "Cannot cache disabled EPUB page notes");
+        EngineDocument off(test::readerFonts());
+        cache(off);
+        require(off.openResources(resources, sizes, QSize(1072, 1300), restored.state(), &error) &&
+                    off.openedFromCache() && ReaderSourceIndexProbe::inPageFootnoteCount(off) == 0,
+                "Disabled EPUB mode reused the enabled cache or failed to save its identity");
     }
     require(notes::epubCachePolicy(false, true) != notes::epubCachePolicy(false, false),
             "EPUB page-note modes share parsed cache identity");

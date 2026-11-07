@@ -761,3 +761,5 @@ bool plainEpub() const {
 - Существующий ключ fb2_inpage_footnotes/default true сохранён для совместимости; новый UI и новые строки не нужны. Off оставляет popup; live toggle EPUB теперь запускает reflow и обновляет checksum.
 - Добавлены regression cases в engine.links: cross-XHTML multi-paragraph note, namespace/roles/classes/CSS hint, off/on, source anchor, font/columns. В device workflow добавлен отдельный focused Linux job (links, fb2, document-cache, appearance-settings).
 - Статус: код готов к CI, проверочный Qt5 package и native job ожидают запуска. Полная native/UI/lifecycle suite и визуальная проверка Kobo не выполнялись.
+
+- До финального билда расширены проверки EPUB: unreferenced и FOOTNOTE_IGNORE не дают нижний блок; реальное сохранение/восстановление parsed-cache on/off. Приватные markers из исходника очищаются, вложенные блоки не дублируются; whitespace-regex переиспользуется, а не компилируется на каждом DOM-узле.
