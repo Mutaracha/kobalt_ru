@@ -449,8 +449,12 @@ int main(int argc, char **argv)
     require(file.open(QIODevice::ReadOnly), "Cannot open link fixture");
     kobalt::EngineDocument model(kobalt::test::readerFonts());
     QString error;
+    // This legacy classification fixture puts every reference on one page.
+    // A long bottom note intentionally changes that pagination. Test its old
+    // routing matrix with page notes off; inPageNotes() above tests default-on
+    // pagination, popup, reflow and both cache modes independently.
     require(model.open(file.readAll(), QSize(1072, 1300),
-                       kobalt::qt::object({ { "font_pixels", 32 } }), &error),
+                       kobalt::qt::object({ { "font_pixels", 32 }, { "fb2_inpage_footnotes", false } }), &error),
             qPrintable(error));
     linkDecoration();
     noteMatching();
