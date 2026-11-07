@@ -169,12 +169,27 @@ kobalt::LinkDetails inspectNote(const NoteCase &test, bool dark)
 void inPageNotes()
 {
     using namespace kobalt;
-    struct Case { QByteArray attribute; bool referenced = true; bool inPage = true; };
+    struct Case {
+        QByteArray attribute;
+        bool referenced = true;
+        bool inPage = true;
+        bool ignoreSource = false;
+        bool longNote = false;
+        bool nested = false;
+    };
     const QVector<Case> cases{
-        {"epub:type='footnote'"}, {"role='doc-endnote'"}, {"ops:type='sidebar ENDNOTE'"},
-        {"class='footnote'"}, {"style='-cr-hint:footnote'"},
-        {"epub:type='footnote' style='-cr-hint:footnote-ignore'", true, false},
-        {"epub:type='footnote'", false, false}
+        {"epub:type='footnote'"}, {"role='doc-endnote'"}, {"ops:type='sidebar endnote'"},
+        {"type='note'"}, {"role='doc-rearnote'"},
+        {"epub:type='footnote' style='font-size:300% !important'"},
+        {"class='footnote'", true, false}, {"class='endnote'", true, false},
+        {"style='-cr-hint:footnote'", true, false},
+        {"style='-cr-hint:footnote-inpage'"},
+        {"epub:type='footnote' style='-cr-hint:footnote-ignore'"},
+        {"data-kobalt-inpage-note='1'", true, false},
+        {"epub:type='footnote'", true, false, true},
+        {"epub:type='footnote'", false, false},
+        {"epub:type='footnote'", true, true, false, true},
+        {"epub:type='footnote'", true, true, false, false, true}
     };
     for (const auto &testCase : cases) {
         const auto &attribute = testCase.attribute;
@@ -192,6 +207,19 @@ void inPageNotes()
         };
         if (!testCase.referenced)
             files["c.xhtml"].replace("notes.xhtml#note", "notes.xhtml#passage");
+        if (testCase.ignoreSource)
+            files["c.xhtml"].replace("epub:type='noteref'", "style='-cr-hint:noteref-ignore'");
+        if (testCase.longNote) {
+            QByteArray paragraphs;
+            for (int i = 0; i < 80; ++i)
+                paragraphs += "<p>Long note paragraph " + QByteArray::number(i)
+                        + " with enough words to continue across several reading pages.</p>";
+            files["notes.xhtml"].replace("<p>Continuation", paragraphs + "<p>Continuation");
+        }
+        if (testCase.nested) {
+            files["notes.xhtml"].replace("<p id='note'>", "<div epub:type='footnote'><p id='note'>");
+            files["notes.xhtml"].replace("same note.</p></aside>", "same note.</p></div></aside>");
+        }
         QMap<QString, qint64> sizes;
         for (auto it = files.cbegin(); it != files.cend(); ++it)
             sizes[it.key()] = it.value().size();
@@ -217,12 +245,20 @@ void inPageNotes()
         if (!testCase.referenced)
             continue;
         if (!testCase.inPage) {
+            if (testCase.ignoreSource)
+                continue;
             for (const auto &link : model.pageLinks())
                 require(model.linkDetails(link.source).html.contains("Continuation"),
                         "Excluding the in-page block disabled explicit popup");
             continue;
         }
         require(!model.image(0).isNull(), "EPUB page notes did not paint");
+        const auto notePixels = ReaderSourceIndexProbe::nodeFontPixels(model, "note");
+        require(notePixels >= 24 && notePixels <= 27,
+                qPrintable(QString("KOReader 80% inpage font lost to publisher CSS: %1").arg(notePixels)));
+        if (testCase.longNote)
+            require(ReaderSourceIndexProbe::footnotePageCount(model) > 1,
+                    "Long EPUB note did not continue on later pages");
         const auto origin = model.position();
         QString source;
         for (const auto &link : model.pageLinks())

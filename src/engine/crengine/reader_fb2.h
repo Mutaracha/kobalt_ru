@@ -7,8 +7,8 @@ namespace kobalt::fb2 {
 // Parsed FB2 cache identity. Bump for incompatible parser/preprocessing or
 // default CSS changes. Include the page-note mode; EPUB has a separate policy.
 inline QByteArray cachePolicy(bool enabled, bool inPage = true) {
-    return !enabled ? QByteArray() : inPage ? QByteArray(":fb2-v5:inpage-on:")
-                                           : QByteArray(":fb2-v5:inpage-off:");
+    return !enabled ? QByteArray() : inPage ? QByteArray(":fb2-v6:inpage-on:")
+                                           : QByteArray(":fb2-v6:inpage-off:");
 }
 // Only unambiguous numeric labels are normalized; prose/roman labels are kept.
 inline QString noteNumber(QString text) {
@@ -34,12 +34,13 @@ a[type="note"] { color: black; }
 )rrcss";
 // Ready-made KOReader/CREngine pagination, not a separate footer widget.
 inline constexpr auto inPageCss = R"rrcss(
-body[name="notes"] > section,
-body[name="comments"] > section {
-    -cr-hint: footnote footnote-inpage;
+body[name="notes"] section,
+body[name="comments"] section {
+    -cr-hint: footnote-inpage;
     margin: 0 !important;
-    font-size: 0.8urem;
 }
+body[name="notes"] > section { font-size: 0.75urem; }
+body[name="comments"] > section { font-size: 0.85urem; }
 body[name="notes"] > title,
 body[name="comments"] > title {
     margin-bottom: 0;

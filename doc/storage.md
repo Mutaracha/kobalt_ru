@@ -198,9 +198,10 @@ The fork quiet-light option is replaced by upstream beta6 feedback controls, wit
 The existing boolean `fb2_inpage_footnotes` now controls FB2 and EPUB bottom
 notes. Its name is retained for checkpoint/default compatibility; no migration
 or schema bump is needed. Default remains true. EPUB parsed-cache identity adds
-`:epub-notes-v1:inpage-on:` or `:epub-notes-v1:inpage-off:` at both initial load
+`:epub-notes-v2:inpage-on:` or `:epub-notes-v2:inpage-off:` at both initial load
 and live appearance changes. This prevents reuse of pre-marker EPUB caches and
-caches rendered in the other mode. FB2 policy now uses `:fb2-v5:inpage-on:` /
-`:fb2-v5:inpage-off:` to rebuild markers previously classified against HTML
-parse-time margins; format selection now precedes engine configuration. Old
+caches rendered in the other mode. FB2 policy now uses `:fb2-v6:inpage-on:` /
+`:fb2-v6:inpage-off:` to rebuild styles after aligning nested sections and font sizes with KOReader.
+EPUB v2 replaces private DOM markers with standard CSS; old markers are no
+longer read. The mode also controls the engine PROP_FOOTNOTES flag. Old
 cache files are not deleted; XPointer positions and progress storage are unchanged.

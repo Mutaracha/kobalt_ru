@@ -1,115 +1,45 @@
-# FB2: готовые сноски внизу страницы
+# Нижние сноски EPUB / FB2
 
-Проверено 2026-11-06. Это подключение существующего механизма KOReader/CREngine,
-не собственная реализация раскладки. Закреплённая зависимость не обновляется.
+Текущая реализация следует стандартным CSS-профилям KOReader на том же
+закреплённом CREngine f335f7a97e24. Полная карта исходников, отличий и проверок:
+[сверка с KOReader](koreader-footnotes-review.md).
 
-## Источники
+## Владение механизмом
 
-- [KOReader css_tweaks.lua](https://github.com/koreader/koreader/blob/41027902e1984d99d4ae0ec02b5ccd9c1194249d/frontend/ui/data/css_tweaks.lua):
-  `footnote-inpage_fb2` включён по умолчанию; `footnote-inpage_fb2_comments`
-  использует тот же механизм для endnotes. Основная подсказка —
-  `-cr-hint: footnote-inpage`. Размеры и margin/padding также задаются CSS.
-- [Закреплённый lvrend.cpp](https://github.com/koreader/crengine/blob/f335f7a97e240f505bb8a0dfb721fcb7912a7824/crengine/src/lvrend.cpp):
-  `renderBlockElementEnhanced` собирает IDs блока с `FOOTNOTE_INPAGE`,
-  регистрирует ссылки и передаёт их готовому page splitter.
-- [Закреплённый lvdocview.cpp](https://github.com/koreader/crengine/blob/f335f7a97e240f505bb8a0dfb721fcb7912a7824/crengine/src/lvdocview.cpp):
-  `PROP_FOOTNOTES` по умолчанию true; `Draw` резервирует место, рисует
-  сноски у нижнего края страницы и разделитель. Длинные сноски разбивает движок.
-- [Закреплённый lvstsheet.cpp](https://github.com/koreader/crengine/blob/f335f7a97e240f505bb8a0dfb721fcb7912a7824/crengine/src/lvstsheet.cpp):
-  CSS parser поддерживает несколько hints одновременно. `footnote` и
-  `footnote-inpage` — разные, совместимые биты, а не альтернативные режимы.
+- `reader_notes.h`: общие semantic popup helpers и EPUB CSS type/role. Нет
+  собственного EPUB marker/DOM walk. Позднее правило задаёт EPUB 80% как в
+  KOReader `inpage_footnote_font-size_smaller`.
+- `reader_fb2.h`: отдельные FB2 popup hints, условный нижний вывод для всех
+  section внутри notes/comments; размер только на верхних section, 75%/85%.
+- `reader_fb2.cpp`: согласованная нормализация только числовых заголовков
+  примечаний и preview. `getUnboxedParent()` учитывает engine run-in boxing.
+  IDs и DOM nodes не удаляются, номера в основном тексте не меняются.
+- `engine_document.cpp`: одна настройка `fb2_inpage_footnotes`, её reflow,
+  CSS и PROP_FOOTNOTES. Off не отключает popup.
+- `reader_source.cpp`: выбор формата до configure/parse, mode-aware checksum.
+- CREngine lvrend/lvpagesplitter/lvdocview: внутренние IDs, reservation,
+  separator, длинное continuation, вложенные hints, повторные ссылки, отрисовка.
+  Нового footer-widget и патча зависимости нет.
 
-## Интеграция и сопровождение
+## Совместимость
 
-Оставляем FB2-only CSS в `fb2::overridesCss` (`reader_fb2.h`), подключённом
-существующей FB2-веткой `EngineDocument::applyStyleSheet`. Блоки `section` внутри
-стандартных `body[name="notes"]` / `body[name="comments"]` уже распознавались
-для popup; добавляем им `footnote-inpage`, не заменяя `footnote`. Примечания
-уменьшены до 80% основного шрифта. В отличие от defaults KOReader, сразу
-включены оба стандартных body: это сохраняет одинаковую обработку тех типов
-сносок, которые форк уже открывает по тапу. Переключатель `fb2_inpage_footnotes` теперь добавлен в «Стили → Содержимое
-книги» (default true). CSS разделён на unconditional popup hints и условный
-`inPageCss`; выключение не меняет hint `footnote`. Нового footer-widget нет.
+Одна default-on настройка сохранена. Notes и comments FB2 включены; уменьшенные
+надстрочные номера без скобок — согласованное отличие от KOReader. Для EPUB
+popup hints/classnames не являются стандартным in-page профилем, как и в
+KOReader. Optional Wikipedia/classic/extension/flatten tweaks не включены
+автоматически. Несвязанные обычные цифровые ссылки не угадываются.
 
-Общий generated stylesheet больше не содержит наш FB2 override. Своего
-нижнего виджета, поиска маркеров на странице, изменения page splitter или
-патча зависимости нет. Изначально EPUB CSS/props не менялись; расширение EPUB описано ниже. Штатное нелинейное тело
-сносок не удаляется из документа: переходы и popup продолжают работать.
+EPUB policy `:epub-notes-v2:inpage-on/off:`, FB2 `:fb2-v6:inpage-on/off:`
+перестраивают только разобранный rendering cache. Initial load и live toggle
+используют одинаковые salts. Storage schema/позиции XPointer/аннотации прежние.
+Пересчёт страниц ожидаем и не означает потерю позиции.
 
-Policy `:fb2-v5:inpage-on:` / `:fb2-v5:inpage-off:` инвалидирует только старый разобранный FB2-кэш, поскольку
-изменяются сохранённые стили/разбиение. Позиции чтения остаются XPointer,
-schema и форматы хранилища прежние. Пересчёт номера страницы после reflow
-ожидаем; он не означает сброс прогресса.
+## Проверка
 
-Проверки `tests/model/fb2.cpp` читают engine page list через test-only probe:
-нижний блок действительно имеет footnote fragments, ссылка продолжает
-давать multi-paragraph popup, комментарии также поддерживаются, несвязанная
-сноска не добавляется. Это не заменяет визуальный smoke test. Native Qt SDK
-в sandbox отсутствует; эти тесты добавлены, но здесь не выполнены.
-
-Для проверки на Kobo: открыть FB2 с короткой и многоабзацной сносками;
-проверить нижний блок, тап по той же ссылке, перелистывание назад/вперёд,
-смену размера текста и длинную сноску. Позиция после повторного открытия
-должна сохраняться. Дополнительно полезны два столбца и скрытие нелинейных
-фрагментов. Нестандартные body/неверные ссылки специально не угадываем.
-
-Синхронная очистка кэша из UI — отдельный открытый IO/lifecycle-долг первого
-аудита; этот change не объявляет его исправленным.
-
-
-## Обновление 2026-11-06 по проверке на устройстве
-
-Пользователь подтвердил вывод нижних сносок в сборке `5b1164d` (Kobo Qt5 CI
-42113076354 — success). [Три исходных скриншота](screenshots/device-2026-11-06/README.md)
-сохранены как ориентиры прежнего UI, а не как новые golden screenshots.
-
-Для цифровых заголовков стандартных сносок добавлен служебный атрибут
-`data-kobalt-note-number="1"`. Нормализация выполняется в `reader_fb2.cpp`
-только после свежего FB2-parse, до вычисления стилей/пагинации; кэш уже
-содержит эти маркеры. `[12]` / `(12)` → `12`, произвольный текст и римские
-обозначения не угадываются. DOM-элементы и IDs не удаляются, текст заголовка
-меняется внутри существующих text nodes. Основной текст не обрабатывается.
-Обход итеративный, без зависимости C++ стека от глубины XML.
-
-Только `inPageCss` оформляет отмеченный номер через `vertical-align: super`,
-65% размера текста сноски и отделяющий неразрывный пробел. При выключении
-сносок нижний блок и этот стиль не подключаются. Размер текста сноски — 80%
-основного; новый номер — 65% от него. Структура хранения и dependency pin не
-меняются. Mode входит в FB2 cache policy и retained-layout appearance keys.
-
-Дополнены model `fb2`, `appearance_settings` и routed lifecycle
-`appearanceSettingsRetainsDraft`. Native/визуальные проверки новых номеров
-не выполнялись в sandbox; обязательны на native Qt host / Kobo.
-
-
-## 2026-11-07 — тот же механизм для EPUB
-
-`reader_notes.h` выделяет существующие semantic token/noteElement правила из
-popup-кода без изменения их значения. Свежий EPUB DOM получает атрибут
-`data-kobalt-inpage-note="1"` для распознанных блоков: EPUB type, DPUB role,
-класс footnote/endnote или computed hint FOOTNOTE. FOOTNOTE_IGNORE исключается;
-ссылки a и вложенные дубли блоков не маркируются. Это не эвристика по цифрам
-и не извлечение/копирование текста. IDs, text nodes и ссылки сохраняются.
-
-Условный CSS включает `footnote footnote-inpage` и размер 0.8urem. Page splitter,
-разделитель и перенос длинной сноски остаются в закреплённом CREngine.
-Нелинейные spine-фрагменты остаются на месте, popup не выключается вместе
-с нижним выводом. Общая настройка и её default-on/key сохранены без нового UI.
-
-EPUB cache salt учитывает версию маркеров и режим; initial load и live toggle
-используют одинаковую policy. FB2 CSS не изменён; cache policy v5 также
-исправляет классификацию общих normalization markers: формат выбирается до
-configure, поэтому FB2 парсится со своим stylesheet, а не с HTML margins. Source hooks:
-reader_source.cpp (свежий DOM и checksum), engine_document.cpp (CSS, reflow,
-checksum после изменения), reader_links.cpp (общая семантика). Новых hooks
-в UI, lifecycle и зависимости CREngine нет.
-
-`tests/model/links.cpp::inPageNotes` проверяет реальные page fragments для
-сносок из другого XHTML, alternate namespace, roles/classes/CSS hint,
-многоабзацный popup, off/on, точный source anchor, размер текста и столбцы.
-Существующие FB2 и document-cache regressions включены в focused Linux CI.
-Финальный результат CI и ограничения проверки фиксируются в FB2_FORK_PLAN.md.
-
-Дополнены проверки unreferenced/FOOTNOTE_IGNORE и реального on/off cache restore.
-Приватный атрибут из исходного EPUB очищается в полном обходе, включая вложенные
-элементы сносок. Разметка блока не копируется из издательского служебного атрибута.
+`tests/model/links.cpp::inPageNotes`, `tests/model/fb2.cpp`, appearance-settings
+и document-cache входят в focused native job device workflow. Точные результаты
+новой версии см. в FB2_FORK_PLAN.md; добавленный тест не равен выполненному.
+Проверка на Kobo: короткие/длинные сноски, несколько/повторные ссылки, номер и
+разделитель, off/on с popup, размер текста/столбцы, закрытие и повторное открытие.
+Для сравнения с KOReader нужны одна книга, одинаковые шрифт/поля и профили;
+само наличие общего backend не гарантирует pixel-identical layout.

@@ -2,7 +2,6 @@
 #include "support/qt_compat.h"
 #include <QByteArray>
 #include <QRegularExpression>
-#include <QVector>
 #include <lvtinydom.h>
 
 namespace kobalt::notes {
@@ -33,47 +32,24 @@ inline bool noteElement(ldomNode *node)
 
 inline QByteArray epubCachePolicy(bool fb2, bool inPage)
 {
-    return fb2 ? QByteArray() : inPage ? QByteArray(":epub-notes-v1:inpage-on:")
-                                      : QByteArray(":epub-notes-v1:inpage-off:");
+    return fb2 ? QByteArray() : inPage ? QByteArray(":epub-notes-v2:inpage-on:")
+                                      : QByteArray(":epub-notes-v2:inpage-off:");
 }
 
-// Called on fresh EPUB DOMs, after initial styles, before final style init.
-// Keep text, IDs, links and XPointers intact. Mark independently of the switch
-// so toggling needs only stylesheet reflow, never a reload or another DOM walk.
-inline void markEpubNotes(ldomDocument *document)
-{
-    const auto attribute = document->getAttrNameIndex("data-kobalt-inpage-note");
-    struct Frame { ldomNode *node; bool inNote; };
-    QVector<Frame> pending{{document->getRootNode(), false}};
-    while (!pending.isEmpty()) {
-        const auto frame = pending.takeLast();
-        auto *node = frame.node;
-        if (!node || !node->isElement())
-            continue;
-        const auto style = node->getStyle();
-        // Do not trust source-supplied private markers, even inside a note.
-        if (node->hasAttribute(attribute))
-            node->setAttributeValue(0, attribute, U"");
-        const bool excluded = !style.isNull() && STYLE_HAS_CR_HINT(style, FOOTNOTE_IGNORE);
-        const bool hinted = !style.isNull() && STYLE_HAS_CR_HINT(style, FOOTNOTE);
-        const bool marked = !frame.inNote && !excluded && !node->isNodeName("a")
-                && (noteElement(node) || hinted);
-        if (marked) {
-            node->setAttributeValue(0, attribute, U"1");
-            // One complete note, not overlapping fragments for nested markup.
-        }
-        for (int i = node->getChildCount() - 1; i >= 0; --i)
-            pending.append({node->getChildNode(i), frame.inNote || marked});
-    }
-}
-
-// Existing KOReader/CREngine page splitter owns reservation, separator,
-// continuation and rendering. Unreferenced notes are not page footnotes.
+// Standard EPUB semantics, resolved by CREngine's own CSS/footnote pipeline.
+// KOReader css_tweaks.lua (9040116701c8): footnote-inpage_epub and
+// inpage_footnote_font-size_smaller. Popup hints/classification stay separate.
 inline constexpr auto epubInPageCss = R"rrcss(
-[data-kobalt-inpage-note="1"] {
-    -cr-hint: footnote footnote-inpage;
+*[type~="note"], *[type~="endnote"], *[type~="footnote"], *[type~="rearnote"],
+*[role~="doc-note"], *[role~="doc-endnote"], *[role~="doc-footnote"], *[role~="doc-rearnote"] {
+    -cr-only-if: -fb2-document;
+    -cr-hint: footnote-inpage;
     margin: 0 !important;
-    font-size: 0.8urem;
+}
+*, autoBoxing {
+    -cr-hint: late;
+    -cr-only-if: -fb2-document inpage-footnote;
+    font-size: 0.8urem !important;
 }
 )rrcss";
 } // namespace kobalt::notes

@@ -211,22 +211,25 @@ decoration is EPUB-only. Keep the focused sharedNormalization model regression,
 and do not claim it ran when only the device package was cross-compiled.
 
 
-### EPUB bottom-footnote integration
+### EPUB / FB2 bottom-footnote integration
 
-reader_notes.h owns shared semantic note recognition (used by reader_links.cpp)
-and EPUB DOM markers/CSS/cache policy. Mark only fresh EPUB DOMs after initial
-styles in reader_source.cpp; never rewrite source IDs/text or infer arbitrary
-numeric links as page notes. Use CREngine's footnote-inpage mechanism, not an
-application footer/page splitter. applyAppearance must reflow both formats when
-the existing switch changes. Keep the legacy fb2_inpage_footnotes storage key for
-compatibility; it now controls both formats. Preserve unconditional popup
-recognition when switched off, FB2-specific CSS/separate cache policy and upstream save/progress.
-Initial-load and changed-setting cache checksums must use the same EPUB mode
-salt. The device workflow runs focused Linux engine checks (links, FB2,
-document-cache, appearance-settings) separately from the Qt5 package; neither
-replaces the full native/UI/lifecycle suite or Kobo visual tests.
+Use the standard KOReader CSS profiles on our pinned CREngine, not a parallel
+EPUB DOM classifier or private markers. reader_notes.h owns semantic popup
+helpers and EPUB in-page CSS. Popup FOOTNOTE/FOOTNOTE_IGNORE and in-page
+FOOTNOTE_INPAGE are independent; do not auto-promote popup hints/classes to
+in-page notes. NOTEREF_IGNORE is evaluated on source links by CREngine.
+Use late/inpage-footnote CSS for the legacy EPUB 80% size. FB2 descendant
+sections receive hints, with sizes only on the top-level sections (75% notes,
+85% comments), never repeated shrinkage at each nesting level. Preserve the
+agreed superscript numeric labels and default-on FB2 comments as explicit fork
+choices. Do not enable optional KOReader classic/Wikipedia/extension/flattening
+profiles globally. See doc/koreader-footnotes-review.md for snapshot and scope.
 
-Select fb2Document_ before configure() in openSource: configure installs the
-format's parse-time stylesheet. Never classify fresh FB2 paragraphs against
-HTML margins, or reuse the previous format's stylesheet. FB2 cache policy v5
-invalidates the earlier misclassified DOM markers; reading anchors stay intact.
+Keep fb2_inpage_footnotes and global/default compatibility. Apply PROP_FOOTNOTES
+at configure and live reflow, so off disables publisher in-page hints too,
+without disabling popup. Keep initial-load/live-toggle mode salts identical;
+EPUB v2 and FB2 v6 invalidate earlier rendering styles, not reading data.
+Select fb2Document_ before configure() installs the parse-time stylesheet.
+Use getUnboxedParent() for FB2 run-in title normalization. No page splitter,
+dependency or save/progress fork is needed. Native engine checks and Qt5
+package CI do not replace complete UI/lifecycle tests or Kobo visual comparison.

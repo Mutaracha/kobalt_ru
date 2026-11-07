@@ -15,6 +15,21 @@ struct ReaderSourceIndexProbe {
         const auto *pages = model.engine_->getPageList();
         return page >= 0 && page < pages->length() ? (*pages)[page]->footnotes.length() : 0;
     }
+    static int footnotePageCount(const EngineDocument &model) {
+        const auto *pages = model.engine_->getPageList();
+        int result = 0;
+        for (int i = 0; i < pages->length(); ++i)
+            result += (*pages)[i]->footnotes.length() > 0;
+        return result;
+    }
+    static int nodeFontPixels(const EngineDocument &model, const char *id) {
+        auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
+        return node ? node->getFont()->getSize() : 0;
+    }
+    static bool inPageHint(const EngineDocument &model, const char *id) {
+        auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
+        return node && !node->getStyle().isNull() && STYLE_HAS_CR_HINT(node->getStyle(), FOOTNOTE_INPAGE);
+    }
     static ldomNode *noteHeading(const EngineDocument &model, const char *id) {
         auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
         QVector<ldomNode *> pending;

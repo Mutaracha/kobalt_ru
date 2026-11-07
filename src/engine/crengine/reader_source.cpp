@@ -608,8 +608,6 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
             root->initNodeStyleRecursive(nullptr);
             stylesheet->pop();
         }
-        if (!fb2Document_)
-            notes::markEpubNotes(document);
         markBodyAlignment(document);
         // Prose normalization and chapter layout are shared across formats.
         // Only Kobo link decorations depend on the EPUB spine vocabulary.

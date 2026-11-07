@@ -806,3 +806,11 @@ bool plainEpub() const {
 - EPUB: готовый CREngine splitter, семантические blocks/namespace/role/class/hints, cross-XHTML, popup при выключении, source anchor, font/columns и on/off cache restore проверены focused suite.
 - FB2: готовые нижние сноски и comments, заголовки/номер, декодирование CP1251 и общий normalization marker теперь действительно проверены native CI. Исправлены байты fixture, выбор format CSS до configure и обход штатных boxing parents у note title; assertions не ослаблены.
 - Документация/agent guidance/storage policy обновлены. Это не полный набор UI/lifecycle tests и не проверка физических e-ink страниц; перенос длинных сносок и внешний вид необходимо проверить на Kobo.
+
+### 2026-11-07 — сверка с KOReader по просьбе пользователя
+
+- Изучен фиксированный snapshot KOReader 9040116701c8, CSS tweaks/defaults, ReaderStyleTweak и ReaderLink. Цепочка submodule base 1c9682506757 → crengine f335f7a97e24 совпадает с нашим pinned backend. Карта источников и deliberate differences: doc/koreader-footnotes-review.md.
+- Удалён самостоятельный EPUB DOM marker pass; используются стандартные CSS type/role и late/inpage-footnote 80%. Popup и in-page hints больше не смешиваются. Optional classnames/Wikipedia/extension tweaks не включаются автоматически, как и в defaults KOReader.
+- FB2 hint теперь на всех descendant sections; размеры KOReader 75% notes/85% comments только на верхнем уровне. Сохранены согласованные надстрочные номера и default-on comments. Off использует штатный PROP_FOOTNOTES в configure/live toggle и сохраняет popup.
+- EPUB cache v2 / FB2 v6 перестраивают только disposable cache. Прогресс, XPointers, durable schemas, зависимости и splitter не менялись.
+- Добавлены focused regressions: отдельные hints/source ignore, publisher !important size, явный inpage hint/off-on/cache, недоверенный старый marker, длинное EPUB continuation и nested blocks/FB2 sections. Native и Qt5 CI для этой версии ещё не выполнялись; визуальная идентичность KOReader не заявлена.

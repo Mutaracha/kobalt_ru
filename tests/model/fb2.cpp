@@ -35,7 +35,7 @@ void formatBoundaries() {
                 fb2::noteNumber("4") == "4" && fb2::noteNumber("[See 12]") == "[See 12]" &&
                 fb2::noteNumber("IV") == "IV" && fb2::noteNumber("[]") == "[]",
             "FB2 number cleanup changed a non-numeric label or left brackets");
-    require(fb2::cachePolicy(true) == QByteArray(":fb2-v5:inpage-on:"), "In-page FB2 CSS must invalidate the old parsed-book cache");
+    require(fb2::cachePolicy(true) == QByteArray(":fb2-v6:inpage-on:"), "In-page FB2 CSS must invalidate the old parsed-book cache");
 }
 
 QByteArray utf8FictionBook() {
@@ -206,6 +206,19 @@ void renderFictionBook() {
     require(goToNoteReference(endnotes), "FB2 comments lost the bracketed source reference");
     require(ReaderSourceIndexProbe::inPageFootnoteCount(endnotes) == 1,
             "FB2 comments must show the referenced note only");
+    // Match KOReader's descendant section rule, not just direct body children.
+    auto nestedBytes = bytes;
+    nestedBytes.replace("<section id=\"n1\">", "<section id=\"group\"><section id=\"n1\">");
+    nestedBytes.replace("</section></body>\n<binary", "</section></section></body>\n<binary");
+    EngineDocument nestedNotes(test::readerFonts());
+    require(nestedNotes.open(nestedBytes, QSize(1072, 1300), qt::object({{"font_pixels", 32}}), &error),
+            qPrintable(error));
+    require(goToNoteReference(nestedNotes) && ReaderSourceIndexProbe::inPageHint(nestedNotes, "n1") &&
+                ReaderSourceIndexProbe::inPageFootnoteCount(nestedNotes) > 0,
+            "Nested FB2 sections did not receive KOReader's inpage hint");
+    const auto nestedPixels = ReaderSourceIndexProbe::nodeFontPixels(nestedNotes, "n1");
+    require(nestedPixels >= 23 && nestedPixels <= 25,
+            "Nested FB2 footnote must inherit 75%, not shrink again at each section");
     EngineDocument preview(test::readerFonts());
     require(preview.openPreview(model, QSize(800, 600), &error), qPrintable(error));
     require(preview.pages() > 0, "FB2 font preview rendered no pages");

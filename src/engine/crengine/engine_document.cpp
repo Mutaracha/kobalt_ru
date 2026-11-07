@@ -681,6 +681,7 @@ void EngineDocument::configure(QSize size, const QJsonObject &settings)
     // Non-linear content, such as footnote asides and linear="no" spine items,
     // gets its own pages so that page turns can skip it.
     properties->setInt(PROP_NONLINEAR_PAGEBREAK, 1);
+    properties->setInt(PROP_FOOTNOTES, inPageFootnotes_);
     // Loading the dictionaries forces algorithmic hyphenation and ignores lang
     // attributes. Use each language's rules instead. Hyphenation itself stays
     // under the CSS hyphens property.
@@ -1058,6 +1059,7 @@ bool EngineDocument::applyAppearance(const QJsonObject &settings, QSize size,
         setExtraFontWeight(0);
         auto properties = LVCreatePropsContainer();
         properties->setInt(PROP_FONT_BASE_WEIGHT, LVRendGetBaseFontWeight());
+        properties->setInt(PROP_FOOTNOTES, inPageFootnotes_);
         properties->setInt(PROP_FORMAT_SPACE_WIDTH_SCALE_PERCENT, wordSpacing_);
         properties->setInt(PROP_FORMAT_MAX_ADDED_LETTER_SPACING_PERCENT, justificationTracking_);
         properties->setInt(PROP_FLOATING_PUNCTUATION, hangingPunctuation_);
