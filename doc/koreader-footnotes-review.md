@@ -103,3 +103,14 @@ source notes 4/5, реальные bottom fragments на их страницах
 Fork workflow передаёт путь к книге из пользовательского коммита; обычный
 portable native suite не зависит от наличия этого коммерческого издания.
 Результат нового CI фиксируется в FB2_FORK_PLAN.md.
+
+### Проверенный InDesign fix
+
+[CI 42418333826](https://github.com/Mutaracha/kobalt_ru/actions/runs/42418333826),
+код `ab6d9a0`: PASS. Portable native regressions и отдельный прогон
+пользовательского EPUB (source notes 4/5, реальные fragments, paint, off/popup)
+прошли. Kobo Qt5 package/content checks прошли.
+[Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/42418333826/artifacts/13592458337).
+Исходная книга byte-for-byte сохранена. На физическом Kobo новая версия здесь
+не проверялась; после установки достаточно заново открыть книгу, rendering
+cache v3 перестроится автоматически без удаления прогресса.

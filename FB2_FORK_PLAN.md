@@ -31,6 +31,17 @@ Kobo Qt5 build/package/content checks PASS (6m6s).
 Сам KOReader UI, полная native/UI/lifecycle suite и визуальное сравнение двух
 приложений на Kobo не запускались.
 
+### Актуальный проверочный билд: пользовательский EPUB InDesign
+
+**ab6d9a0: CI 42418333826 PASS.** Добавлено узкое CSS-правило
+`._idFootnotes > ._idFootnote` для EPUB 2 экспорта InDesign, без изменения
+пользовательской книги из коммита 02953e6. Focused native EPUB/FB2/cache/settings
+и отдельный реальный прогон исходной книги (source notes 4/5, bottom fragments,
+paint, off/popup) прошли, job 4m54s. Qt5 build/package/content checks PASS, 7m42s.
+[Пакет Kobalt-qt5-device](https://github.com/Mutaracha/kobalt_ru/actions/runs/42418333826/artifacts/13592458337).
+EPUB cache v3 перестраивается автоматически; сохранённые позиции не удаляются.
+Физическая проверка этой версии на Kobo остаётся за пользователем.
+
 ## 0. Статусы этапов (вести в каждом изменении)
 
 > Легенда: **done** — код и тесты в ветке; **in progress** — частично; **planned** — только план. Сборка в песочнице невозможна (нет Qt SDK), поэтому статус «done» по коду подтверждается ревью и офлайн-проверками (валидатор строк, CMake configure_file, хеши манифеста, YAML), полная Kobo Qt5-компиляция пакета выполняется CI `.github/workflows/kobo-qt5-device.yml` (push в `arena/9e626d86-kobalt-ru`). Workflow теперь также запускает focused native проверки EPUB/FB2 notes на закреплённом Linux SDK; полные native UI/lifecycle suites остаются отдельной проверкой.
@@ -844,3 +855,10 @@ bool plainEpub() const {
 - В стандартный CSS добавлен узкий InDesign publisher-profile, без book-specific путей/номеров, DOM pass или классификации всех цифровых ссылок. Группа целиком, source/backlinks и standalone-класс вне группы не помечаются. EPUB policy v3 пересоздаёт disposable cache; FB2 v6/CSS/save/progress не менялись.
 - Добавлен portable synthetic regression (похожая структура, но оригинальные тестовые тексты) и opt-in --publisher-notes PATH на самом пользовательском EPUB для source notes 4/5, fragment/paint и off/popup. В device workflow вызов вынесен отдельно с timeout/temporary-root/headless контрактом, не добавляет коммерческую книгу как обязательную зависимость общей native suite.
 - Source/diff checks PASS. Native, real-book и Qt5 CI для этой правки ещё не запускались; визуальная проверка Kobo не заявлена.
+
+### 2026-11-08 — итог проверки InDesign EPUB
+
+- Code tip ab6d9a0052bd87b1aba25daa71c22a4f7956f5f7, workflow 42418333826 success. Native job 4m54s включает portable regressions и дополнительный --publisher-notes на неизменённой книге из 02953e6. Реальные ссылки 4/5 найдены, положительные bottom fragments/paint и off/popup/стабильный target подтверждены.
+- Qt5 production offline/build/package/contents PASS, job 7m42s. Artifact Kobalt-qt5-device id 13592458337, native results id 13592467913. Новая бинарная сборка после docs-only фиксации результатов не требуется.
+- git diff 02953e6 по пользовательскому EPUB пуст: файл не перепаковывался и не исправлялся. Новые тестовые тексты синтетические; коммерческие текст/шрифты не копировались в fixtures или runtime assets.
+- Осталось: физический Kobo screenshot smoke для той же книги/настроек. Native engine validation не является полной UI/lifecycle suite или подтверждением визуального A/B с KOReader.

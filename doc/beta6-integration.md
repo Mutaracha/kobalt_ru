@@ -28,6 +28,15 @@ Native Qt/UI/lifecycle и device runtime проверки не выполнен�
 EPUB cache v2 / FB2 v6 перестраивают disposable cache без изменения durable data.
 Kobo визуальное A/B и полная UI/lifecycle suite по-прежнему не выполнялись.
 
+## Исправление по пользовательскому EPUB InDesign
+
+Код `ab6d9a0`: CI 42418333826 PASS. Узкий publisher-profile
+`._idFootnotes > ._idFootnote`; EPUB cache v3, FB2 не менялся. Portable native
+проверки и отдельный прогон исходного EPUB из коммита 02953e6 со сносками 4/5
+успешны; Qt5 package/content checks успешны. Детали в
+[koreader-footnotes-review.md](koreader-footnotes-review.md).
+Исходный EPUB не изменён, физическая проверка Kobo пока не выполнена.
+
 ## База и выполненная подготовка
 
 - Fork до обновления: `2f127ba`; upstream: `v1.0-beta.6`, `7ff437e`.
