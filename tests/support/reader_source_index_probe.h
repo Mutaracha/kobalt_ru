@@ -31,6 +31,10 @@ struct ReaderSourceIndexProbe {
         const auto *title = noteHeading(model, id);
         return title && title->getAttributeValue("data-kobalt-note-number") == U"1";
     }
+    static QString nodeAttribute(const EngineDocument &model, const char *id, const char *name) {
+        auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
+        return node ? QString::fromUtf8(UnicodeToUtf8(node->getAttributeValue(name)).c_str()) : QString();
+    }
     static lString32 cre(const QString &text) { return Utf8ToUnicode(text.toUtf8().constData()); }
 
     static void clear(EngineDocument &model) { model.sourceIndex_.reset(); }

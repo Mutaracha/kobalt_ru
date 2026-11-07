@@ -20,7 +20,7 @@ ldomNode *leadingImage(ldomNode *root)
         }
         if (!node->isElement())
             continue;
-        if (node->isNodeName("img") || node->isNodeName("svg"))
+        if (node->isNodeName("img") || node->isNodeName("svg") || node->isNodeName("image"))
             return node;
         if (node->isNodeName("head") || node->isNodeName("style") || node->isNodeName("script"))
             continue;

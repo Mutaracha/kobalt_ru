@@ -203,3 +203,9 @@ regression coverage; distinguish code moves/refactoring from behavior changes.
   the approved InterfaceLabel rendering and attach debug input without repainting.
 - sleep_ribbon_text owns only translated caption splitting; sleep screen modes,
   remaining-time calculation and lifecycle belong to upstream beta6.
+
+FB2 must not bypass markBeautifierContent/markChapterLeadingImages: those markers
+feed the shared settings. Preserve FB2 semantic blocks and secondary notes/comments
+bodies in the same classifier; allow FB2 inline/image vocabulary. Only Kobo link
+decoration is EPUB-only. Keep the focused sharedNormalization model regression,
+and do not claim it ran when only the device package was cross-compiled.

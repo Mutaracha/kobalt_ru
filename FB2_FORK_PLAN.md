@@ -732,3 +732,5 @@ bool plainEpub() const {
 
 - **Qt5 CI 42398378939 для f125493 — PASS, 4m51s**, offline checks/package/contents/artifact успешны. После этого внесена заключительная правка plural аннотаций; финальный code tip требует своей CI-проверки.
 - RU файл выровнен по группам/Arguments comments EN beta6 для последующего сопровождения. Длины проверены по всему словарю, новые/изменённые строки и приоритетные длинные подписи перечислены в doc/translation-length-beta6.md. Согласованные длинные подписи не переименованы без необходимости; device clipping не проверялся.
+
+- Аудит общего форматирования обнаружил прежний FB2 bypass в вызовах markBeautifierContent/markChapterLeadingImages. Он удалён: обе функции теперь общие; только Kobo link decoration остаётся EPUB-only. Общие правила распознают FB2 image/inline/semantic tags, notes/comments защищены от нормализации обычной прозы. Добавлен model regression sharedNormalization с проверкой маркера обычной прозы и защиты эпиграфа/сноски (добавлен, **не запускался** без Qt SDK). Это не копия EPUB форматирования и не отдельная FB2 normalization pipeline.

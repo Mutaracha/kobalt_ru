@@ -196,6 +196,23 @@ void renderFictionBook() {
     require(model.pages() > 0, "Hyphenation change removed the FB2 pages");
 }
 
+// Both formats must use the shared normalization markers; semantic blocks stay protected.
+void sharedNormalization() {
+    const QByteArray prose = "A regular prose paragraph with enough ordinary words to exceed the normalization threshold and exercise the same marker pipeline used for EPUB books.";
+    const auto bytes = QByteArray("<FictionBook xmlns=\"http://www.gribuser.ru/xml/fictionbook/2.0\"><body><section>")
+        + "<p id=\"prose\">" + prose + "</p><epigraph><p id=\"epigraph\">" + prose
+        + "</p></epigraph></section></body><body name=\"notes\"><section><title><p>1</p></title><p id=\"note-prose\">"
+        + prose + "</p></section></body></FictionBook>";
+    EngineDocument model(test::readerFonts());
+    QString error;
+    require(model.open(bytes, QSize(800, 1000), {}, &error), qPrintable(error));
+    require(ReaderSourceIndexProbe::nodeAttribute(model, "prose", "data-kobalt-beautify") == "body",
+            "FB2 ordinary prose bypassed shared normalization");
+    for (const auto *id : {"epigraph", "note-prose"})
+        require(ReaderSourceIndexProbe::nodeAttribute(model, id, "data-kobalt-beautify").isEmpty(),
+                "FB2 normalization flattened a semantic block");
+}
+
 void renderWindows1251() {
     const auto bytes = windows1251FictionBook();
     Publication publication;
@@ -219,5 +236,6 @@ int main(int argc, char **argv) {
     rejectNonFictionBook();
     renderFictionBook();
     renderWindows1251();
+    sharedNormalization();
     std::puts("PASS: FB2 inspection, cp1251 decoding, rendering, contents, cover, footnotes and preview");
 }

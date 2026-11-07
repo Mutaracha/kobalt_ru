@@ -19,7 +19,8 @@ bool special(ldomNode *node)
                                      "table",      "ul",    "ol",      "dl",     "pre",
                                      "code",       "math",  "ruby",    "nav",    "header",
                                      "footer",     "h1",    "h2",      "h3",     "h4",
-                                     "h5",         "h6" };
+                                     "h5",         "h6", "title", "subtitle", "epigraph", "poem", "stanza",
+                                     "v", "text-author", "cite", "annotation", "date" };
     if (tags.contains(text(node->getNodeName())))
         return true;
     static const QRegularExpression names(
@@ -142,7 +143,7 @@ void markBeautifierContent(ldomDocument *document)
                 continue;
             const auto name = text(child->getNodeName());
             static const QSet<QString> inlineTags{ "span", "i",   "em",  "b",    "strong",
-                                                   "a",    "sup", "sub", "small" };
+                                                   "a",    "sup", "sub", "small", "emphasis", "strikethrough" };
             // CREngine boxes floats during parsing. Keep those internal nodes;
             // reflow updates their rendering when the source float is disabled.
             const bool leadingBox =

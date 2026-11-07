@@ -604,13 +604,12 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
             stylesheet->pop();
         }
         markBodyAlignment(document);
-        // Both markers target EPUB DocFragment spine structure and Kobo link
-        // decorations. FB2 books have neither; their layout comes from fb2.css.
-        if (!fb2Document_) {
-            markBeautifierContent(document);
-            markChapterLeadingImages(engine_.get());
+        // Prose normalization and chapter layout are shared across formats.
+        // Only Kobo link decorations depend on the EPUB spine vocabulary.
+        markBeautifierContent(document);
+        markChapterLeadingImages(engine_.get());
+        if (!fb2Document_)
             markKoboLinkDecorations();
-        }
         // Loading computed styles before the body markers existed, including in previews.
         engine_->getDocument()->forceReinitStyles();
     }

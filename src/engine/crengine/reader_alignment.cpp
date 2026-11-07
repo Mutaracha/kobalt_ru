@@ -13,6 +13,11 @@ QString text(const lString32 &value)
     return QString::fromUtf8(UnicodeToUtf8(value).c_str());
 }
 bool preserve(ldomNode *node, const QString &name) {
+    if (name == "body") {
+        const auto kind = text(node->getAttributeValue("name"));
+        if (kind == "notes" || kind == "comments")
+            return true;
+    }
     static const QSet<QString> elements{"h1",      "h2",         "h3",      "h4",    "h5",     "h6",     "header",
                                         "figure",  "figcaption", "caption", "table", "img",    "image",  "svg",
                                         "picture", "object",     "video",   "audio", "canvas", "iframe", "pre",

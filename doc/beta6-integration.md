@@ -76,3 +76,8 @@
   save delta; форматная FB2 адаптация расположена отдельно в publication/source.
 - Native Qt/UI/device suites не запускались; переносы текста и действительное
   сохранение прогресса на устройстве требуют проверки пользователя.
+
+Последний аудит удалил старый FB2-only обход shared beautifier/chapter markers.
+Теперь нормализация прозы идёт через общий код с распознаванием FB2 semantic и
+inline/image vocabulary; эпиграфы и notes/comments исключены. Добавлен model
+regression sharedNormalization (не выполнен локально: Qt SDK отсутствует).
