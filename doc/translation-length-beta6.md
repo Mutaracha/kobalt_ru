@@ -49,7 +49,7 @@
 | `bookmarks.icon_image` | Image | Изображение | 5/11 |
 | `bookmarks.icon_search` | Search | Поиск | 6/5 |
 | `bookmarks.icon_eye` | Eye | Глаз | 3/4 |
-| `bookmarks.icon_lock` | Lock | Навесной замок | 4/14 |
+| `bookmarks.icon_lock` | Lock | Замок | 4/5 |
 | `bookmarks.icon_books` | Books | Книги | 5/5 |
 | `bookmarks.icon_castle` | Castle | Замок | 6/5 |
 | `bookmarks.icon_anchor` | Anchor | Якорь | 6/5 |
@@ -77,7 +77,7 @@
 | `kosync.when_close` | When you close the book | При закрытии книги | 23/18 |
 | `kosync.when_close_description` | Syncs your progress if you're online. | Синхронизировать прогресс при наличии сети. | 37/43 |
 | `kosync.interval_description` | Choose how often Kobalt syncs your progress while a book is open. Syncing more often uses more battery. | Выберите частоту синхронизации при открытой книге. Более частая синхронизация расходует больше заряда. | 103/102 |
-| `kosync.interval_0` | Every page | На каждой странице | 10/18 |
+| `kosync.interval_0` | Every page | Постоянно | 10/9 |
 | `kosync.interval_1` | Every minute | Каждую минуту | 12/13 |
 | `kosync.interval_5` | Every 5 minutes | Каждые 5 минут | 15/14 |
 | `kosync.interval_15` | Every 15 minutes | Каждые 15 минут | 16/15 |
@@ -90,23 +90,23 @@
 | `kosync.wifi_wait_outcome` | Longest battery life | Дольше работает от батареи | 20/26 |
 | `kosync.wifi_wake` | Turn on Wi-Fi | Включать Wi-Fi | 13/14 |
 | `kosync.wifi_wake_picture` | Turn on Wi-Fi, sync, then turn it off again | Включить Wi-Fi, выполнить синхронизацию и снова выключить | 43/57 |
-| `kosync.wifi_wake_outcome` | Other devices stay up to date | На других устройствах актуальный прогресс | 29/41 |
+| `kosync.wifi_wake_outcome` | Other devices stay up to date | Прогресс на устройствах актуален. | 29/33 |
 | `kosync.manual_prompt` | Would you like to sync progress with KOSync? | Синхронизировать прогресс с KOSync? | 44/35 |
 | `kosync.native_sync` | This book uses Kobo’s built-in sync system. KOSync is unavailable for this copy. | Эта книга использует встроенную синхронизацию Kobo. KOSync для этой копии недоступен. | 80/85 |
 | `kosync.kobo_cloud` | This book uses Kobo Cloud to sync reading progress. KOSync is unavailable for this copy. | Эта книга синхронизирует прогресс через Kobo Cloud. KOSync недоступен для этой копии. | 88/85 |
 | `library.count_one` | %1 book | %1 книга | 7/8 |
 | `dictionary_panel.search_in_book` | Search in book | Найти в книге | 14/13 |
 | `header_footer.preset.phone` | Phone | Телефон | 5/7 |
-| `image.title` | Image Viewer | Просмотр изображений | 12/20 |
+| `image.title` | Image Viewer | Просмотреть | 12/11 |
 | `image.loading` | Loading image… | Загрузка изображения… | 14/21 |
-| `image.close` | Close image | Закрыть изображение | 11/19 |
-| `image.fit` | Fit image | Уместить изображение | 9/20 |
+| `image.close` | Close image | Закрыть | 11/7 |
+| `image.fit` | Fit image | Вписать | 9/7 |
 | `image.zoom_suggestion` | Zoom image | Увеличить изображение | 10/21 |
 | `image.dismiss_suggestion` | Dismiss image suggestion | Скрыть предложение | 24/18 |
 | `image.zoom_in` | Zoom in | Увеличить | 7/9 |
 | `image.zoom_out` | Zoom out | Уменьшить | 8/9 |
 | `settings.light_gesture_feedback` | Show frontlight gesture pop-up | Индикация регулировки подсветки | 30/31 |
-| `settings.light_gesture_feedback_description` | Show the level after a pause in swiping. Turn off to adjust the light without a pop-up or its cleanup refresh. | Показывать всплывающее окно с уровнем в процентах после паузы в свайпе. | 110/71 |
+| `settings.light_gesture_feedback_description` | Show the level after a pause in swiping. Turn off to adjust the light without a pop-up or its cleanup refresh. | Показывать всплывающее окно с процентами после изменения подсветки свайпом. | 110/75 |
 | `reader.edge_light` | Swipe along edges to adjust frontlight | Регулировка подсветки свайпами | 38/30 |
 | `settings.animations_uncertain_description` | Page animations may not be supported on this device. Turn this off if they do not work correctly. | Анимация страниц может не поддерживаться устройством. Выключите, если она работает некорректно. | 97/95 |
 | `settings.animations_description` | Page animations are supported on this device. | Анимация страниц поддерживается на этом устройстве. | 45/51 |
@@ -147,8 +147,8 @@
 | `settings.beautifier_summary` | Choose a preset or customize how publisher styling is adjusted. | Выберите набор правил или настройте оформление издателя. | 63/56 |
 | `settings.beautifier_description` | Experimental. Applies to all books. Uncheck all rules to turn off. Book files are never changed. | Экспериментально. Действует во всех книгах. Снимите все галочки для отключения. Файлы книг не меняются. | 96/103 |
 | `settings.beautifier_initials_description` | Turn text drop caps into ordinary letters. | Превращать текстовые буквицы в обычные буквы. | 42/45 |
-| `settings.beautifier_spacing_description` | Keep recognized scene breaks and special passages. | Сохранять распознанные разрывы сцен и особые фрагменты. | 50/55 |
-| `settings.beautifier_indent_description` | Your paragraph adjustments take priority. | Ваши настройки абзацев имеют приоритет. | 41/39 |
+| `settings.beautifier_spacing_description` | Keep recognized scene breaks and special passages. | Убирает пустое место между абзацами. Разрывы сцен сохраняются. | 50/62 |
+| `settings.beautifier_indent_description` | Your paragraph adjustments take priority. | Единая красная строка; ваши отступы важнее. | 41/43 |
 | `settings.normalization_recommended` | Recommended | Рекомендуемый | 11/13 |
 | `settings.normalization_full` | Full | Полный | 4/6 |
 | `settings.normalization_custom` | Custom | Свой | 6/4 |
@@ -197,14 +197,26 @@
 
 - `bookmarks.modify`: EN 22, RU 30 — «Изменить закреплённую закладку».
 - `bookmarks.edit_pin`: EN 20, RU 30 — «Изменить закреплённую закладку».
-- `bookmarks.icon_lock`: EN 4, RU 14 — «Навесной замок».
-- `kosync.interval_0`: EN 10, RU 18 — «На каждой странице».
-- `kosync.wifi_wake_outcome`: EN 29, RU 41 — «На других устройствах актуальный прогресс».
-- `image.title`: EN 12, RU 20 — «Просмотр изображений».
-- `image.close`: EN 11, RU 19 — «Закрыть изображение».
-- `image.fit`: EN 9, RU 20 — «Уместить изображение».
 - `image.zoom_suggestion`: EN 10, RU 21 — «Увеличить изображение».
 - `settings.sleep_tile`: EN 15, RU 23 — «Индикатор на экране сна».
 - `bookmarks.add_current`: EN 21, RU 37 — «Добавить закладку на текущую страницу».
 - `bookmarks.remove_current`: EN 22, RU 35 — «Удалить закладку с текущей страницы».
 - `keyboard.caps_lock`: EN 12, RU 23 — «Верхний регистр включён».
+
+## Уточнения после проверки на устройстве
+
+| Ключ | EN | RU | Длина EN/RU |
+|---|---|---|---|
+| `settings.light_gesture_feedback_description` | Show the level after a pause in swiping. Turn off to adjust the light without a pop-up or its cleanup refresh. | Показывать всплывающее окно с процентами после изменения подсветки свайпом. | 110/75 |
+| `settings.beautifier_spacing_description` | Keep recognized scene breaks and special passages. | Убирает пустое место между абзацами. Разрывы сцен сохраняются. | 50/62 |
+| `settings.beautifier_indent_description` | Your paragraph adjustments take priority. | Единая красная строка; ваши отступы важнее. | 41/43 |
+| `marks.sort_newest` | Newest first | Недавно добавленные | 12/19 |
+| `marks.sort_newest_description` | Recently created items come first. | От последних добавленных к первым. | 34/34 |
+| `marks.sort_oldest` | Oldest first | Давно добавленные | 12/17 |
+| `marks.sort_oldest_description` | Items created longest ago come first. | От первых добавленных к последним. | 37/34 |
+| `bookmarks.icon_lock` | Lock | Замок | 4/5 |
+| `kosync.interval_0` | Every page | Постоянно | 10/9 |
+| `kosync.wifi_wake_outcome` | Other devices stay up to date | Прогресс на устройствах актуален. | 29/33 |
+| `image.title` | Image Viewer | Просмотреть | 12/11 |
+| `image.close` | Close image | Закрыть | 11/7 |
+| `image.fit` | Fit image | Вписать | 9/7 |

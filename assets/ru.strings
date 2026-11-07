@@ -45,7 +45,7 @@
 "bookmarks.icon_image" = "Изображение";
 "bookmarks.icon_search" = "Поиск";
 "bookmarks.icon_eye" = "Глаз";
-"bookmarks.icon_lock" = "Навесной замок";
+"bookmarks.icon_lock" = "Замок";
 "bookmarks.icon_books" = "Книги";
 "bookmarks.icon_castle" = "Замок";
 "bookmarks.icon_anchor" = "Якорь";
@@ -94,7 +94,7 @@
 "kosync.when_close" = "При закрытии книги";
 "kosync.when_close_description" = "Синхронизировать прогресс при наличии сети.";
 "kosync.interval_description" = "Выберите частоту синхронизации при открытой книге. Более частая синхронизация расходует больше заряда.";
-"kosync.interval_0" = "На каждой странице";
+"kosync.interval_0" = "Постоянно";
 "kosync.interval_1" = "Каждую минуту";
 "kosync.interval_5" = "Каждые 5 минут";
 "kosync.interval_15" = "Каждые 15 минут";
@@ -107,7 +107,7 @@
 "kosync.wifi_wait_outcome" = "Дольше работает от батареи";
 "kosync.wifi_wake" = "Включать Wi-Fi";
 "kosync.wifi_wake_picture" = "Включить Wi-Fi, выполнить синхронизацию и снова выключить";
-"kosync.wifi_wake_outcome" = "На других устройствах актуальный прогресс";
+"kosync.wifi_wake_outcome" = "Прогресс на устройствах актуален.";
 "kosync.sync_now" = "Синхронизировать";
 "kosync.manual_prompt" = "Синхронизировать прогресс с KOSync?";
 "kosync.manual_prompt_description" = "Эта кнопка запускает синхронизацию вручную. Автосинхронизация выключена: при открытии, закрытии, сне и пробуждении синхронизация не выполняется. Следующие нажатия запускают её сразу.";
@@ -505,10 +505,10 @@
 
 /* image */
 "image.unavailable" = "Не удалось загрузить изображение";
-"image.title" = "Просмотр изображений";
+"image.title" = "Просмотреть";
 "image.loading" = "Загрузка изображения…";
-"image.close" = "Закрыть изображение";
-"image.fit" = "Уместить изображение";
+"image.close" = "Закрыть";
+"image.fit" = "Вписать";
 "image.zoom_suggestion" = "Увеличить изображение";
 "image.dismiss_suggestion" = "Скрыть предложение";
 "image.zoom_in" = "Увеличить";
@@ -594,7 +594,7 @@
 "reader.defaults_selected" = "Выбраны значения по умолчанию";
 "reader.duplicate_current_update" = "Продублировать текущее обновление";
 "settings.light_gesture_feedback" = "Индикация регулировки подсветки";
-"settings.light_gesture_feedback_description" = "Показывать всплывающее окно с уровнем в процентах после паузы в свайпе.";
+"settings.light_gesture_feedback_description" = "Показывать всплывающее окно с процентами после изменения подсветки свайпом.";
 "reader.edge_light" = "Регулировка подсветки свайпами";
 "reader.enable_page_animations" = "Анимация перелистывания";
 "reader.exit" = "Выйти из Kobalt";
@@ -1184,10 +1184,10 @@
 "annotations.summary_one" = "%1 аннотация";
 "error.saved_data_unavailable" = "Не удалось загрузить сохранённые данные. Исходные файлы сохранены.";
 "marks.sort_button" = "Сортировать";
-"marks.sort_newest" = "Сначала новые";
-"marks.sort_newest_description" = "Сначала идут недавно созданные элементы.";
-"marks.sort_oldest" = "Сначала старые";
-"marks.sort_oldest_description" = "Сначала идут элементы, созданные раньше всех.";
+"marks.sort_newest" = "Недавно добавленные";
+"marks.sort_newest_description" = "От последних добавленных к первым.";
+"marks.sort_oldest" = "Давно добавленные";
+"marks.sort_oldest_description" = "От первых добавленных к последним.";
 "marks.sort_position" = "По порядку в книге";
 "marks.sort_position_description" = "Сначала идут более ранние фрагменты книги.";
 "marks.sort_title" = "Сортировать по";
@@ -1265,9 +1265,9 @@
 "settings.beautifier_initials" = "Нормализовать буквицы";
 "settings.beautifier_initials_description" = "Превращать текстовые буквицы в обычные буквы.";
 "settings.beautifier_spacing" = "Убрать интервалы абзацев";
-"settings.beautifier_spacing_description" = "Сохранять распознанные разрывы сцен и особые фрагменты.";
+"settings.beautifier_spacing_description" = "Убирает пустое место между абзацами. Разрывы сцен сохраняются.";
 "settings.beautifier_indent" = "Единые отступы абзацев";
-"settings.beautifier_indent_description" = "Ваши настройки абзацев имеют приоритет.";
+"settings.beautifier_indent_description" = "Единая красная строка; ваши отступы важнее.";
 
 "common.done" = "Готово";
 
