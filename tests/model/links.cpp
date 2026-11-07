@@ -253,9 +253,6 @@ void inPageNotes()
             continue;
         }
         require(!model.image(0).isNull(), "EPUB page notes did not paint");
-        const auto notePixels = ReaderSourceIndexProbe::nodeFontPixels(model, "note");
-        require(notePixels >= 24 && notePixels <= 27,
-                qPrintable(QString("KOReader 80% inpage font lost to publisher CSS: %1").arg(notePixels)));
         if (testCase.longNote)
             require(ReaderSourceIndexProbe::footnotePageCount(model) > 1,
                     "Long EPUB note did not continue on later pages");
@@ -266,6 +263,12 @@ void inPageNotes()
                 source = link.source;
         require(!source.isEmpty(), "EPUB page note lost the source link");
         const auto popup = model.linkDetails(source);
+        // EPUB import prefixes IDs with the spine fragment; inspect the
+        // resolved XPointer, not the publisher's unqualified "note" id.
+        const auto notePixels = ReaderSourceIndexProbe::fontPixelsAt(model, popup.target);
+        require(notePixels >= 24 && notePixels <= 27,
+                qPrintable(QString("KOReader 80% inpage font lost to publisher CSS: %1 (%2)")
+                           .arg(notePixels).arg(QString::fromUtf8(attribute))));
         require(popup.kind == LinkKind::Footnote && popup.html.contains("Continuation") &&
                     !popup.html.contains("Unreferenced"), "EPUB note popup lost its boundary");
         require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})) &&

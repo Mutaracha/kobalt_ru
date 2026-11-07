@@ -814,3 +814,5 @@ bool plainEpub() const {
 - FB2 hint теперь на всех descendant sections; размеры KOReader 75% notes/85% comments только на верхнем уровне. Сохранены согласованные надстрочные номера и default-on comments. Off использует штатный PROP_FOOTNOTES в configure/live toggle и сохраняет popup.
 - EPUB cache v2 / FB2 v6 перестраивают только disposable cache. Прогресс, XPointers, durable schemas, зависимости и splitter не менялись.
 - Добавлены focused regressions: отдельные hints/source ignore, publisher !important size, явный inpage hint/off-on/cache, недоверенный старый marker, длинное EPUB continuation и nested blocks/FB2 sections. Native и Qt5 CI для этой версии ещё не выполнялись; визуальная идентичность KOReader не заявлена.
+
+- Первый KOReader-profile CI: Qt5 package PASS; native FB2/appearance/document-cache PASS. Новый EPUB font probe искал сырой id=note, хотя EPUB importer префиксует IDs именем spine fragment, и возвращал 0. Probe переведён на реальный resolved target XPointer; ожидания 80% не ослаблены, runtime не менялся. Повторный native результат ожидается.

@@ -26,6 +26,13 @@ struct ReaderSourceIndexProbe {
         auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
         return node ? node->getFont()->getSize() : 0;
     }
+    static int fontPixelsAt(const EngineDocument &model, const QString &position) {
+        const auto pointer = model.engine_->getDocument()->createXPointer(cre(position));
+        auto *node = pointer.isNull() ? nullptr : pointer.getNode();
+        if (node && !node->isElement())
+            node = node->getParentNode();
+        return node ? node->getFont()->getSize() : 0;
+    }
     static bool inPageHint(const EngineDocument &model, const char *id) {
         auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
         return node && !node->getStyle().isNull() && STYLE_HAS_CR_HINT(node->getStyle(), FOOTNOTE_INPAGE);
