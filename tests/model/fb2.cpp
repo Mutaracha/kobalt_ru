@@ -117,6 +117,20 @@ void rejectNonFictionBook() {
     require(!publication.inspect(archive, &error), "A ZIP archive was accepted as FB2");
 }
 
+// A cover/title/epigraph may precede the first reference; do not assume page 0.
+bool goToNoteReference(EngineDocument &model) {
+    for (int page = 0; page < model.pages(); ++page) {
+        if (!model.go(page))
+            return false;
+        for (const auto &link : model.pageLinks()) {
+            const auto details = model.linkDetails(link.source);
+            if (details.kind == LinkKind::Footnote && details.label == "[1]")
+                return true;
+        }
+    }
+    return false;
+}
+
 void renderFictionBook() {
     const auto bytes = utf8FictionBook();
     EngineDocument model(test::readerFonts());
@@ -133,10 +147,10 @@ void renderFictionBook() {
                         [](const ChapterLink &chapter) { return chapter.title.contains("Chapter One"); }),
             "FB2 chapter title missing from contents");
     const auto firstPage = model.pageExcerpt(0);
-    require(firstPage.contains("[1]"), "Note-title cleanup changed the bracketed reference in main text");
     require(!firstPage.contains("science_fiction"), "Raw FB2 genre metadata leaked onto the page");
     require(!firstPage.contains("test-document-id"), "document-info leaked onto the page");
     require(!model.coverImage(QSize(120, 180)).isNull(), "FB2 binary cover was not decoded");
+    require(goToNoteReference(model), "FB2 bracketed reference disappeared or was changed by title cleanup");
     bool foundNote = false;
     for (const auto &link : model.pageLinks()) {
         const auto details = model.linkDetails(link.source);
@@ -187,6 +201,7 @@ void renderFictionBook() {
             "FB2 prose heading was converted to a numeric label");
     require(ReaderSourceIndexProbe::numericNoteTitle(endnotes, "n1"),
             "FB2 number was not marked for superscript styling");
+    require(goToNoteReference(endnotes), "FB2 comments lost the bracketed source reference");
     require(ReaderSourceIndexProbe::inPageFootnoteCount(endnotes) == 1,
             "FB2 comments must show the referenced note only");
     EngineDocument preview(test::readerFonts());
