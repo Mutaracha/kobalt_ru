@@ -715,9 +715,6 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     resetRow->setStretch(0, 0);
     resetRow->setStretch(1, 1);
     resetRow->setStretch(2, 0);
-    cacheRow->setStretch(0, 0);
-    cacheRow->setStretch(1, 1);
-    cacheRow->setStretch(2, 0);
     for (auto *button :
          {resetDefaults, refreshButton, columnSpacingButton, sleepScreenButton, sleepTileButton, sessionTimeoutButton, pageNavigationButton,
           tapZonesButton, tappableLinksButton, navigationBarButton,
@@ -725,7 +722,7 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
           dictionaryFontButton, dictionaryFontSizeButton,
           defaultFontButton, serifFontButton, sansFontButton, monoFontButton, beautifierButton, wordSpacingButton, paragraphSpacingButton, trackingButton, widowsOrphansButton, verticalSpacingButton, verticalSpacingScopeButton}) {
         button->setRule(Qt::BottomEdge);
-        // Both Defaults-tab actions open a confirmation modal before doing anything.
+        // The Defaults-tab reset action opens a confirmation modal.
         if (button == resetDefaults)
             button->setCaption(strings::get("settings.asks_first"));
         ui::readerStyle(

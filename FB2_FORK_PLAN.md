@@ -695,3 +695,10 @@ bool plainEpub() const {
 - Удалены cache-cleanup UI/confirmation/helper/worker retirement/save barriers/специальные тесты и регистрация model test. Общий progress/save возвращён к состоянию до cleanup; дальнейшее обновление — из beta6. Данные/кэши устройства не удаляются.
 - Обновлены AGENTS, storage и пользовательская инструкция: cache cleanup отложена, FB2 следует общему оформлению EPUB. Исторические журналы не переписаны.
 - Интеграция beta6, полный перевод, сборка и runtime-проверки пока не завершены.
+
+### 2026-11-07 — результаты пробного merge и проверок подготовки
+
+- Пробный merge beta6 выявил 48 конфликтных файлов; конфликтные группы и правила переноса записаны в doc/beta6-integration.md. Пробное слияние отменено; незавершённый merge не оставлен и не опубликован. Beta6 ещё не интегрирована.
+- Штатный CMake parity EN/RU PASS. Первоначальный вспомогательный Python check ошибочно требовал одинаковый порядок параметров; штатный parser правильно допускает перестановку с сохранением кратности. Production переводы из-за этого не менялись.
+- Production offline suite воспроизвёл известную timestamp-flake strings-test.cmake:69. Полный suite с scratch-only ожиданием 5 секунд + touch входного fixture PASS; production test не ослаблен.
+- Qt5 CI 42396111503 для b602d57 выявил три оставшихся cacheRow layout calls после удаления действия. Они удалены; повторная сборка требуется. Native Qt/UI/device tests не запускались.
