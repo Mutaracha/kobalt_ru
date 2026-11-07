@@ -1,4 +1,12 @@
-# Интеграция beta6 — рабочий статус
+# Интеграция beta6 — результат переноса
+
+**Текущий результат:** upstream beta6 включён, финальный code tip `8fef806`
+успешно собран и упакован для Kobo Qt5.
+[CI 42398893518](https://github.com/Mutaracha/kobalt_ru/actions/runs/42398893518) —
+PASS, 6m14s; [artifact Kobalt-qt5-device](https://github.com/Mutaracha/kobalt_ru/actions/runs/42398893518/artifacts/13584957064).
+Native Qt/UI/lifecycle и device runtime проверки не выполнены.
+Разделы ниже содержат последовательность работ; ранние статусы «не завершено»
+относятся к соответствующим промежуточным этапам, а не финальной сборке.
 
 ## База и выполненная подготовка
 

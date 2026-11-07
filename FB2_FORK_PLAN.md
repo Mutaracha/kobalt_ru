@@ -7,7 +7,7 @@
 
 ## Текущий этап: интеграция beta6 (2026-11-07)
 
-**Код перенесён; финальная проверка в процессе.** Upstream 7ff437e интегрирован merge-коммитом 7b523d8. Подробности: doc/beta6-integration.md. Qt5 CI 42398378939 для f125493 PASS (4m51s). Заключительная правка plural аннотаций требует повторной сборки. Native/UI/device suites не запускались. Cache cleanup полностью удалена и отложена, собственная quiet-light implementation заменена upstream beta6 без миграции. Нижняя таблица и журнал содержат историю прежних этапов.
+**Код beta6 перенесён, Kobo Qt5 package проверен.** Upstream 7ff437e интегрирован merge-коммитом 7b523d8; проверенный code tip — 8fef806. Финальный CI 42398893518 PASS (6m14s), artifact Kobalt-qt5-device. Нативные model/UI/lifecycle suites и проверка на устройстве **не выполнены**. Cache cleanup полностью удалена и отложена; собственная quiet-light implementation заменена upstream beta6 без миграции. Подробности: doc/beta6-integration.md. Нижняя таблица и журнал сохраняют историю прежних этапов.
 
 ## 0. Статусы этапов (вести в каждом изменении)
 
@@ -734,3 +734,12 @@ bool plainEpub() const {
 - RU файл выровнен по группам/Arguments comments EN beta6 для последующего сопровождения. Длины проверены по всему словарю, новые/изменённые строки и приоритетные длинные подписи перечислены в doc/translation-length-beta6.md. Согласованные длинные подписи не переименованы без необходимости; device clipping не проверялся.
 
 - Аудит общего форматирования обнаружил прежний FB2 bypass в вызовах markBeautifierContent/markChapterLeadingImages. Он удалён: обе функции теперь общие; только Kobo link decoration остаётся EPUB-only. Общие правила распознают FB2 image/inline/semantic tags, notes/comments защищены от нормализации обычной прозы. Добавлен model regression sharedNormalization с проверкой маркера обычной прозы и защиты эпиграфа/сноски (добавлен, **не запускался** без Qt SDK). Это не копия EPUB форматирования и не отдельная FB2 normalization pipeline.
+
+
+### 2026-11-07 — завершение переноса beta6 и Qt5 package verification
+
+- **8fef806: CI 42398893518 PASS, 6m14s.** Успешны production offline checks в GitHub, cross compilation, check-package, archive contents и публикация artifact Kobalt-qt5-device (id 13584957064). Это финальный код с shared FB2 normalization и plural fix, не прежний подготовительный пакет.
+- CMake EN/RU parity, все source literal references и diff-check PASS. Локальный offline suite со scratch-only timestamp workaround PASS (с описанными upstream fixture warnings); production scripts не менялись.
+- Git ancestor check подтверждает beta6 7ff437e. Source scan: нет cache-cleanup/quiet-light implementation и старых include paths. Общие reader/progress/save реализации сохранены upstream.
+- План, AGENTS, пользовательская инструкция, карта интеграции и RU length review актуализированы. Согласованные длинные подписи отмечены для UI review; визуальная проверка не подменяется подсчётом символов.
+- **Осталось вне выполненной проверки:** native Qt model/UI/lifecycle tests (включая добавленный sharedNormalization) и Kobo runtime: EPUB/FB2, сохранение после сна/выхода, footnotes on/off, settings, язык и clipping новых строк. Кросс-сборка не подтверждает эти сценарии.
