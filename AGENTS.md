@@ -225,3 +225,8 @@ Initial-load and changed-setting cache checksums must use the same EPUB mode
 salt. The device workflow runs focused Linux engine checks (links, FB2,
 document-cache, appearance-settings) separately from the Qt5 package; neither
 replaces the full native/UI/lifecycle suite or Kobo visual tests.
+
+Select fb2Document_ before configure() in openSource: configure installs the
+format's parse-time stylesheet. Never classify fresh FB2 paragraphs against
+HTML margins, or reuse the previous format's stylesheet. FB2 cache policy v5
+invalidates the earlier misclassified DOM markers; reading anchors stay intact.

@@ -503,8 +503,11 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
     if (!initializeFonts())
         return fail(OpeningFailureKind::HostUnavailable,
                     strings::key("error.the_reading_font_is_unavailable"));
-    configure(size, saved);
+    // configure() installs the format stylesheet before parsing. Selecting
+    // the format afterwards made fresh FB2 normalization see HTML paragraph
+    // margins (and reused EPUB documents inherit the previous FB2 stylesheet).
     fb2Document_ = loadingFb2;
+    configure(size, saved);
     openedFromCache_ = false;
     // Stream loading does not set a filename. CREngine uses its presence to
     // distinguish a loaded document from its internal blank/error document,

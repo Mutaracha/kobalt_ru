@@ -35,7 +35,7 @@ void formatBoundaries() {
                 fb2::noteNumber("4") == "4" && fb2::noteNumber("[See 12]") == "[See 12]" &&
                 fb2::noteNumber("IV") == "IV" && fb2::noteNumber("[]") == "[]",
             "FB2 number cleanup changed a non-numeric label or left brackets");
-    require(fb2::cachePolicy(true) == QByteArray(":fb2-v4:inpage-on:"), "In-page FB2 CSS must invalidate the old parsed-book cache");
+    require(fb2::cachePolicy(true) == QByteArray(":fb2-v5:inpage-on:"), "In-page FB2 CSS must invalidate the old parsed-book cache");
 }
 
 QByteArray utf8FictionBook() {
