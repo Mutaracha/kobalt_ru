@@ -5,6 +5,10 @@
 
 ---
 
+## Текущий этап: интеграция beta6 (2026-11-07)
+
+**Код перенесён; финальная проверка в процессе.** Upstream 7ff437e интегрирован merge-коммитом 7b523d8. Подробности: doc/beta6-integration.md. Qt5 CI 42398378939 для f125493 PASS (4m51s). Заключительная правка plural аннотаций требует повторной сборки. Native/UI/device suites не запускались. Cache cleanup полностью удалена и отложена, собственная quiet-light implementation заменена upstream beta6 без миграции. Нижняя таблица и журнал содержат историю прежних этапов.
+
 ## 0. Статусы этапов (вести в каждом изменении)
 
 > Легенда: **done** — код и тесты в ветке; **in progress** — частично; **planned** — только план. Сборка в песочнице невозможна (нет Qt SDK), поэтому статус «done» по коду подтверждается ревью и офлайн-проверками (валидатор строк, CMake configure_file, хеши манифеста, YAML), полная Kobo Qt5-компиляция пакета выполняется CI `.github/workflows/kobo-qt5-device.yml` (push в `arena/9e626d86-kobalt-ru`). Этот workflow НЕ запускает native Qt component/model/lifecycle tests: для них требуется отдельный Qt-host и mac-tests/linux-tests.
@@ -723,3 +727,8 @@ bool plainEpub() const {
 
 - Первый CI кандидата 42398018109 прошёл offline checks, но выявил двойные объявления rightActions/exitWidth при объединении toolbar layout. Исправлено: сохранён upstream adaptive exitCell/inline-status layout, fork theme учитывается в общем числе действий. Возвращены checked/visibility quick-theme в reader_refresh, потерянные из-за rename. Нужна повторная Qt5-сборка.
 - Локальный полный offline suite со scratch-only timestamp workaround завершился exit 0; в Git-free fixture имеются предупреждения upstream о недостающем validation-record.cmake (не скрыты, production scripts не менялись). Native tests по-прежнему не запускались.
+
+- Заключительный source audit восстановил plural helper в полностью заменённом bookmark_list beta6: annotations summary больше не выводит необработанный %1 и использует RU one/few/many. Ожидаемый FB2 cache marker в model test обновлён до v4; дубли includes после переноса тестов убраны. Общий reader.cpp/progress/reading_book/native_reading_save совпадает с beta6, без cleanup delta.
+
+- **Qt5 CI 42398378939 для f125493 — PASS, 4m51s**, offline checks/package/contents/artifact успешны. После этого внесена заключительная правка plural аннотаций; финальный code tip требует своей CI-проверки.
+- RU файл выровнен по группам/Arguments comments EN beta6 для последующего сопровождения. Длины проверены по всему словарю, новые/изменённые строки и приоритетные длинные подписи перечислены в doc/translation-length-beta6.md. Согласованные длинные подписи не переименованы без необходимости; device clipping не проверялся.

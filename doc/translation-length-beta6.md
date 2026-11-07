@@ -1,6 +1,8 @@
-# RU beta6: внесённые строки
+# Проверка RU beta6
 
-Длины — Unicode-символы, не ширина глифов. Размещение в UI требует проверки на устройстве.
+Проверены все ключи, параметры и длины словаря. Ни число символов, ни сборка не доказывают отсутствие clipping; визуальная проверка на Kobo ещё не выполнена. Утверждённые подписи не сокращаются автоматически ради коэффициента.
+
+## Новые и изменённые строки
 
 | Ключ | EN | RU | Длина EN/RU |
 |---|---|---|---|
@@ -92,6 +94,7 @@
 | `kosync.manual_prompt` | Would you like to sync progress with KOSync? | Синхронизировать прогресс с KOSync? | 44/35 |
 | `kosync.native_sync` | This book uses Kobo’s built-in sync system. KOSync is unavailable for this copy. | Эта книга использует встроенную синхронизацию Kobo. KOSync для этой копии недоступен. | 80/85 |
 | `kosync.kobo_cloud` | This book uses Kobo Cloud to sync reading progress. KOSync is unavailable for this copy. | Эта книга синхронизирует прогресс через Kobo Cloud. KOSync недоступен для этой копии. | 88/85 |
+| `library.count_one` | %1 book | %1 книга | 7/8 |
 | `dictionary_panel.search_in_book` | Search in book | Найти в книге | 14/13 |
 | `header_footer.preset.phone` | Phone | Телефон | 5/7 |
 | `image.title` | Image Viewer | Просмотр изображений | 12/20 |
@@ -131,6 +134,8 @@
 | `bookmarks.remove_pinned_description` | The bookmark and its shortcut will be removed from this book. | Закладка и её ярлык будут удалены из этой книги. | 61/48 |
 | `bookmarks.add_current` | Bookmark current page | Добавить закладку на текущую страницу | 21/37 |
 | `bookmarks.remove_current` | Remove bookmarked page | Удалить закладку с текущей страницы | 22/35 |
+| `chapter_contents.summary_one` | Contents · %1 chapter | Содержание · %1 глава | 21/21 |
+| `annotations.summary_one` | %1 annotation | %1 аннотация | 13/12 |
 | `settings.vertical_spacing_expand_short` | Expand | Растянуть | 6/9 |
 | `settings.vertical_spacing_center_short` | Center | По центру | 6/9 |
 | `settings.vertical_spacing_scope_all_short` | All pages | Все страницы | 9/12 |
@@ -185,3 +190,21 @@
 | `debug.language_failed` | Could not save the language. Check the diagnostics folder and try again. | Не удалось сохранить язык. Проверьте папку diagnostics и повторите попытку. | 72/75 |
 | `about.fork` | %1 | %1 | 2/2 |
 | `about.fork_build` | %1 · %2 | %1 · %2 | 7/7 |
+
+## Подписи для приоритетной проверки в интерфейсе
+
+Порог: RU длиннее EN более чем на 25% и минимум на 8 символов. Пункт действия может переноситься иначе, чем подпись/кнопка. Не означает автоматически дефект.
+
+- `bookmarks.modify`: EN 22, RU 30 — «Изменить закреплённую закладку».
+- `bookmarks.edit_pin`: EN 20, RU 30 — «Изменить закреплённую закладку».
+- `bookmarks.icon_lock`: EN 4, RU 14 — «Навесной замок».
+- `kosync.interval_0`: EN 10, RU 18 — «На каждой странице».
+- `kosync.wifi_wake_outcome`: EN 29, RU 41 — «На других устройствах актуальный прогресс».
+- `image.title`: EN 12, RU 20 — «Просмотр изображений».
+- `image.close`: EN 11, RU 19 — «Закрыть изображение».
+- `image.fit`: EN 9, RU 20 — «Уместить изображение».
+- `image.zoom_suggestion`: EN 10, RU 21 — «Увеличить изображение».
+- `settings.sleep_tile`: EN 15, RU 23 — «Индикатор на экране сна».
+- `bookmarks.add_current`: EN 21, RU 37 — «Добавить закладку на текущую страницу».
+- `bookmarks.remove_current`: EN 22, RU 35 — «Удалить закладку с текущей страницы».
+- `keyboard.caps_lock`: EN 12, RU 23 — «Верхний регистр включён».

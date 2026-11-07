@@ -62,3 +62,17 @@
 идёт из beta6. Fork presentation/About attachment вынесены в fork_settings, а
 разделение ribbon caption — в sleep_ribbon_text. Новые UI/переводы требуют
 проверки на устройстве; успешная генерация строк не доказывает отсутствие clipping.
+
+## Результат первой успешной сборки кандидата
+
+- Merge-кандидат `7b523d8` действительно включает upstream `7ff437e` вторым родителем.
+- После исправления adaptive toolbar layout коммит `f125493` прошёл Qt5 CI
+  [42398378939](https://github.com/Mutaracha/kobalt_ru/actions/runs/42398378939), 4m51s.
+- Заключительный audit обнаружил потерянный plural hook в новом bookmark_list;
+  он восстановлен и требует повторной CI-проверки финального кода.
+- Полные CMake parity и source string-reference generation — PASS. Source scan
+  не нашёл cleanup/quiet-light implementation или старых include paths.
+- Reader/progress/reading_book/native_reading_save используют код beta6 без fork
+  save delta; форматная FB2 адаптация расположена отдельно в publication/source.
+- Native Qt/UI/device suites не запускались; переносы текста и действительное
+  сохранение прогресса на устройстве требуют проверки пользователя.
