@@ -1,4 +1,4 @@
-#include "reader_model.h"
+#include "engine_document.h"
 #include "reader_fb2.h"
 #include "column_view.h"
 #include "support/strings.h"
@@ -67,7 +67,7 @@ void fb2::normalizeNoteTitles(ldomNode *root) {
     }
 }
 
-bool ReaderModel::openFb2Preview(ReaderModel &source, QSize size, QString *error) {
+bool EngineDocument::openFb2Preview(EngineDocument &source, QSize size, QString *error) {
     auto fail = [error](const QString &message) {
         *error = message;
         return false;

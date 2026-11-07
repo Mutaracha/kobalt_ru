@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 get_filename_component(KOBALT_ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
-foreach(retired KOBALT_DEPENDENCIES KOBALT_DEPENDENCY_CACHE KOBALT_ASSETS)
+foreach(retired KOBALT_DEPENDENCIES KOBALT_ASSETS)
     unset(${retired} CACHE)
 endforeach()
 set(KOBALT_QT_MAJOR "6" CACHE STRING "Kobo Qt ABI: 5 or 6")
@@ -28,7 +28,8 @@ else()
     set(KOBALT_SYSTEM_FONT_DIRECTORY "/usr/share/fonts")
 endif()
 
-add_subdirectory("${KOBALT_ROOT}/dependencies" "${CMAKE_CURRENT_BINARY_DIR}/dependencies")
+include("${KOBALT_ROOT}/dependencies/cache.cmake")
+kobalt_dependencies()
 add_subdirectory("${KOBALT_ROOT}/assets" "${CMAKE_CURRENT_BINARY_DIR}/assets")
 set(source "${KOBALT_ROOT}/src")
 
@@ -82,13 +83,18 @@ endforeach()
 string(APPEND embedded "{NULL, NULL, 0}};\n")
 file(CONFIGURE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/embedded_resources.h" CONTENT "${embedded}" @ONLY)
 
+# syntax.cmake repeats the source selection, compile flags and definitions
+# below, also for the evaluation package. Change both files together.
 file(GLOB_RECURSE shared CONFIGURE_DEPENDS "${source}/*.cpp" "${source}/*.h")
 # The scenario player is built only into evaluation packages.
 list(FILTER shared EXCLUDE REGEX "/src/scenario/")
-list(FILTER shared EXCLUDE REGEX "/(library|interfaces/library)/")
-file(GLOB adapters CONFIGURE_DEPENDS "common/*.cpp" "common/*.h" "qt${KOBALT_QT_MAJOR}/*.cpp" "qt${KOBALT_QT_MAJOR}/*.h" "display/*.cpp")
-add_library(kobalt MODULE ${shared} ${adapters} common/install.c common/startup_recovery.c "${hooks}/nh.c" "${hooks}/resources.c"
-    "${CMAKE_CURRENT_BINARY_DIR}/nhplugin.h")
+list(FILTER shared EXCLUDE REGEX "/(library|app/library)/")
+file(GLOB adapters CONFIGURE_DEPENDS "common/*.cpp" "common/*.h" "nickel-qt${KOBALT_QT_MAJOR}/*.cpp" "nickel-qt${KOBALT_QT_MAJOR}/*.h" "display/*.cpp")
+# The application objects are compiled once. The mod library links them, and
+# so do the Kobo adapter tests (KOBALT_BUILD_TESTS). NickelHook's loader stays
+# in the mod library only.
+add_library(kobalt-code OBJECT ${shared} ${adapters} common/install.c common/startup_recovery.c)
+add_library(kobalt MODULE "${hooks}/nh.c" "${hooks}/resources.c" "${CMAKE_CURRENT_BINARY_DIR}/nhplugin.h")
 set_source_files_properties("${source}/reading/reading_timer.cpp" PROPERTIES
     COMPILE_DEFINITIONS KOBALT_READING_CLOCK_BOOTTIME=1)
 option(KOBALT_SQLITE_ANNOTATIONS_DEFAULT "Use SQLite annotation storage by default" ON)
@@ -99,18 +105,21 @@ else()
     set_source_files_properties("${source}/storage/annotation_database.cpp" PROPERTIES
         COMPILE_DEFINITIONS KOBALT_SQLITE_ANNOTATIONS_DEFAULT=0)
 endif()
-target_include_directories(kobalt PRIVATE "${hooks}" "${CMAKE_CURRENT_BINARY_DIR}"
-    "${source}/interfaces/reader/ui/controls")
-target_include_directories(kobalt SYSTEM PRIVATE "${CRENGINE_SOURCE}/crengine/include" "${CRENGINE_BUILD}"
-    "${prefix}/include" "${prefix}/include/harfbuzz" "${prefix}/include/freetype2" "${prefix}/include/fribidi")
-target_compile_options(kobalt PRIVATE -Wall -Wextra -Werror -Wno-missing-field-initializers -fvisibility=hidden
-    "-iquote${KOBALT_ROOT}" "-iquote${source}")
-target_compile_definitions(kobalt PRIVATE KOBALT_READER_HARDWARE KOBALT_PAGE_ANIMATIONS
-    KOBALT_VERSION="${KOBALT_VERSION}" NH_VERSION="${KOBALT_VERSION}"
-    KOBALT_CONFIG_DIR="/mnt/onboard/.adds/kobalt" KOBALT_SYSTEM_FONT_DIRECTORY="${KOBALT_SYSTEM_FONT_DIRECTORY}")
+option(KOBALT_PAGE_ANIMATIONS "Enable page animations on compatible display backends" ON)
 # Keep parsed books across app updates when the rendering dependencies are compatible.
 include("${KOBALT_ROOT}/platforms/cache-policy.cmake")
-target_compile_definitions(kobalt PRIVATE KOBALT_LAYOUT_POLICY="${layout_policy}")
+foreach(target kobalt-code kobalt)
+    target_include_directories(${target} PRIVATE "${hooks}" "${CMAKE_CURRENT_BINARY_DIR}")
+    target_include_directories(${target} SYSTEM PRIVATE "${CRENGINE_SOURCE}/crengine/include" "${CRENGINE_BUILD}"
+        "${prefix}/include" "${prefix}/include/harfbuzz" "${prefix}/include/freetype2" "${prefix}/include/fribidi")
+    target_compile_options(${target} PRIVATE -Wall -Wextra -Werror -Wno-missing-field-initializers -fvisibility=hidden
+        "-iquote${KOBALT_ROOT}" "-iquote${source}")
+    target_compile_definitions(${target} PRIVATE KOBALT_READER_HARDWARE
+        $<$<BOOL:${KOBALT_PAGE_ANIMATIONS}>:KOBALT_PAGE_ANIMATIONS>
+        KOBALT_VERSION="${KOBALT_VERSION}" NH_VERSION="${KOBALT_VERSION}"
+        KOBALT_CONFIG_DIR="/mnt/onboard/.adds/kobalt" KOBALT_SYSTEM_FONT_DIRECTORY="${KOBALT_SYSTEM_FONT_DIRECTORY}"
+        KOBALT_LAYOUT_POLICY="${layout_policy}")
+endforeach()
 
 set(engine "${CMAKE_CURRENT_BINARY_DIR}/libcrengine-reader.a")
 add_custom_command(OUTPUT "${engine}"
@@ -118,21 +127,30 @@ add_custom_command(OUTPUT "${engine}"
         --redefine-sym FT_Render_Glyph=kobalt_font_render_glyph "${CRENGINE_BUILD}/libcrengine.a" "${engine}"
     DEPENDS "${CRENGINE_BUILD}/libcrengine.a" VERBATIM)
 add_custom_target(reader-engine DEPENDS "${engine}")
-add_dependencies(reader-engine kobalt-dependencies)
 add_dependencies(kobalt reader-engine)
-target_link_libraries(kobalt PRIVATE Qt${KOBALT_QT_MAJOR}::Widgets Qt${KOBALT_QT_MAJOR}::GuiPrivate
-    Qt${KOBALT_QT_MAJOR}::Network Qt${KOBALT_QT_MAJOR}::Sensors Qt${KOBALT_QT_MAJOR}::Sql Qt${KOBALT_QT_MAJOR}::DBus
+set(qt_libraries Qt${KOBALT_QT_MAJOR}::Widgets Qt${KOBALT_QT_MAJOR}::GuiPrivate
+    Qt${KOBALT_QT_MAJOR}::Network Qt${KOBALT_QT_MAJOR}::Sensors Qt${KOBALT_QT_MAJOR}::Sql Qt${KOBALT_QT_MAJOR}::DBus)
+if(KOBALT_QT_MAJOR EQUAL 5)
+    list(APPEND qt_libraries Qt5::WidgetsPrivate)
+endif()
+set(kobalt_libraries ${qt_libraries}
     "${engine}" "${prefix}/lib/libharfbuzz.a" "${prefix}/lib/libxxhash.a" "${prefix}/lib/libutf8proc.a"
     "${prefix}/lib/libjpeg.a" "${prefix}/lib/liblunasvg.a" "${prefix}/lib/libfreetype.a"
     "${prefix}/lib/libfribidi.a" "${prefix}/lib/libunibreak.a" "${KOBALT_TEST_PNG}" z dl pthread)
-if(KOBALT_QT_MAJOR EQUAL 5)
-    target_link_libraries(kobalt PRIVATE Qt5::WidgetsPrivate)
-endif()
+target_link_libraries(kobalt-code PRIVATE ${qt_libraries})
+target_link_libraries(kobalt PRIVATE kobalt-code ${kobalt_libraries})
 # An evaluation package adds the scenario player, its scenario file, the test
 # books and the diagnostics switch. Release packages never contain them.
+option(KOBALT_VERBOSE_DIAGNOSTICS "Enable verbose diagnostics without a profile marker" ON)
+if(KOBALT_VERBOSE_DIAGNOSTICS)
+    set_property(SOURCE "${source}/support/diagnostics.cpp" APPEND PROPERTY
+        COMPILE_DEFINITIONS KOBALT_VERBOSE_DIAGNOSTICS=1)
+    set(package_suffix "-diagnostic")
+endif()
 option(KOBALT_EVAL_PACKAGE "Build the evaluation package" OFF)
 if(KOBALT_EVAL_PACKAGE)
-    target_sources(kobalt PRIVATE "${source}/scenario/player.cpp")
+    target_sources(kobalt-code PRIVATE "${source}/scenario/player.cpp")
+    target_compile_definitions(kobalt-code PRIVATE KOBALT_SCENARIO_PLAYER)
     target_compile_definitions(kobalt PRIVATE KOBALT_SCENARIO_PLAYER)
     set(package_suffix "-eval")
 endif()
@@ -144,7 +162,8 @@ set(resources "${KOBALT_ROOT}/assets")
 file(GLOB notices CONFIGURE_DEPENDS "${resources}/notices/*")
 set(qrc "<RCC><qresource prefix=\"/kobalt\">")
 foreach(path "${resources}/acknowledgments.json" ${notices}
-        "${resources}/samples/words-and-letters.html" "${resources}/samples/layout.html")
+        "${resources}/samples/words-and-letters.html" "${resources}/samples/layout.html"
+        "${resources}/samples/hanging-punctuation.html")
     file(RELATIVE_PATH alias "${resources}" "${path}")
     string(APPEND qrc "<file alias=\"${alias}\">${path}</file>")
 endforeach()
@@ -169,3 +188,71 @@ add_custom_target(package DEPENDS "${package_file}")
 add_custom_target(check-package
     COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/check-package.sh" "${package_file}" "qt${KOBALT_QT_MAJOR}"
     DEPENDS package VERBATIM)
+
+# The Kobo adapter tests build with this SDK and run under qemu-arm against its
+# Qt libraries. `bash platforms/kobo/build.sh qt5 --check` builds and runs them.
+option(KOBALT_BUILD_TESTS "Build the Kobo adapter tests" OFF)
+if(KOBALT_BUILD_TESTS)
+    enable_testing()
+    find_program(KOBALT_QEMU qemu-arm REQUIRED)
+    # The tests load the firmware's Qt libraries with the image's cross C
+    # library. The image's qemu-arm crashes in firmware 4's glibc 2.19 loader.
+    get_target_property(qt_core Qt${KOBALT_QT_MAJOR}::Core LOCATION)
+    get_filename_component(qt_libraries_directory "${qt_core}" DIRECTORY)
+    set(CMAKE_CROSSCOMPILING_EMULATOR "${KOBALT_QEMU};-L;/usr/arm-linux-gnueabihf;-E;LD_LIBRARY_PATH=${qt_libraries_directory}:/usr/lib/arm-linux-gnueabihf")
+    get_target_property(sqlite_plugin Qt${KOBALT_QT_MAJOR}::QSQLiteDriverPlugin LOCATION)
+    get_filename_component(plugin_directory "${sqlite_plugin}" DIRECTORY)
+    get_filename_component(plugin_directory "${plugin_directory}" DIRECTORY)
+    set(test_environment "QT_PLUGIN_PATH=${plugin_directory}" KOBALT_STRICT_MAIN_THREAD=1
+        QT_QPA_PLATFORM=offscreen)
+
+    # The tests link the same application objects as the mod library. The
+    # archive gives each test only the objects it uses.
+    add_library(kobalt-test-code STATIC $<TARGET_OBJECTS:kobalt-code>)
+    # Pewter, the fake Nickel: the shared functions and those of this SDK's
+    # firmware. Nothing calls them directly; the adapter finds them with dlsym,
+    # as it finds Nickel's. An object library keeps every one of them linked.
+    set(pewter "${KOBALT_ROOT}/tests/pewter")
+    add_library(pewter OBJECT "${pewter}/pewter.cpp" "${pewter}/nickel.cpp"
+        "${pewter}/nickel_qt${KOBALT_QT_MAJOR}.cpp" "${pewter}/pewter.h" "${pewter}/nickel.h")
+    set_target_properties(pewter PROPERTIES AUTOMOC OFF)
+    target_compile_options(pewter PRIVATE -Wall -Wextra -Werror)
+    target_link_libraries(pewter PUBLIC Qt${KOBALT_QT_MAJOR}::Core Qt${KOBALT_QT_MAJOR}::Sql)
+    add_executable(kobalt-pewter-tests "${pewter}/progress.cpp")
+    set_target_properties(kobalt-pewter-tests PROPERTIES AUTOMOC OFF ENABLE_EXPORTS ON)
+    target_include_directories(kobalt-pewter-tests PRIVATE "${KOBALT_ROOT}" "${source}"
+        "${CMAKE_CURRENT_BINARY_DIR}")
+    target_compile_definitions(kobalt-pewter-tests PRIVATE KOBALT_READER_HARDWARE)
+    target_compile_options(kobalt-pewter-tests PRIVATE -Wall -Wextra -Werror)
+    target_link_libraries(kobalt-pewter-tests PRIVATE pewter kobalt-test-code ${kobalt_libraries})
+    add_test(NAME pewter.progress COMMAND kobalt-pewter-tests)
+    set(tests kobalt-pewter-tests)
+    set_tests_properties(pewter.progress PROPERTIES LABELS "pewter;qt${KOBALT_QT_MAJOR}"
+        ENVIRONMENT "${test_environment}" TIMEOUT 120)
+
+    # The Qt5 refresh check fakes the display driver call itself and does not
+    # use pewter's Nickel.
+    if(KOBALT_QT_MAJOR EQUAL 5)
+        add_executable(kobalt-qt5-refresh-tests "${pewter}/refresh_qt5.cpp"
+            nickel-qt5/refresh.cpp display/page_animation.cpp)
+        target_include_directories(kobalt-qt5-refresh-tests PRIVATE "${KOBALT_ROOT}" "${source}"
+            "${KOBALT_ROOT}/tests/support")
+        target_compile_definitions(kobalt-qt5-refresh-tests PRIVATE KOBALT_PAGE_ANIMATIONS)
+        target_compile_options(kobalt-qt5-refresh-tests PRIVATE -Wall -Wextra -Werror)
+        target_link_libraries(kobalt-qt5-refresh-tests PRIVATE Qt5::Widgets ${CMAKE_DL_LIBS} pthread)
+        add_test(NAME pewter.qt5-refresh COMMAND kobalt-qt5-refresh-tests)
+        set_tests_properties(pewter.qt5-refresh PROPERTIES LABELS "pewter;display;qt5"
+            ENVIRONMENT "${test_environment}" TIMEOUT 120)
+        list(APPEND tests kobalt-qt5-refresh-tests)
+    endif()
+    add_executable(kobalt-native-keyboard-tests "${pewter}/keyboard.cpp")
+    set_target_properties(kobalt-native-keyboard-tests PROPERTIES ENABLE_EXPORTS ON)
+    target_include_directories(kobalt-native-keyboard-tests PRIVATE "${KOBALT_ROOT}" "${source}"
+        "${CMAKE_CURRENT_BINARY_DIR}")
+    target_link_libraries(kobalt-native-keyboard-tests PRIVATE kobalt-test-code ${kobalt_libraries})
+    add_test(NAME pewter.keyboard COMMAND kobalt-native-keyboard-tests)
+    set_tests_properties(pewter.keyboard PROPERTIES LABELS "pewter;keyboard;qt${KOBALT_QT_MAJOR}"
+        ENVIRONMENT "${test_environment};QT_QPA_FONTDIR=${KOBALT_ASSETS}/fonts" TIMEOUT 120)
+    list(APPEND tests kobalt-native-keyboard-tests)
+    add_custom_target(kobo-tests DEPENDS ${tests})
+endif()

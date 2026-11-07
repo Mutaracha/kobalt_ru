@@ -1,7 +1,7 @@
 #include "reader_inputs.h"
 #include "reader_source_index_probe.h"
 #include "check.h"
-#include "engine/crengine/reader_model.h"
+#include "engine/crengine/engine_document.h"
 #include "engine/crengine/reader_fb2.h"
 #include "publication/fb2.h"
 #include "publication/publication.h"
@@ -119,7 +119,7 @@ void rejectNonFictionBook() {
 
 void renderFictionBook() {
     const auto bytes = utf8FictionBook();
-    ReaderModel model(test::readerFonts());
+    EngineDocument model(test::readerFonts());
     QString error;
     require(model.open(bytes, QSize(1072, 1300), qt::object({{"font_pixels", 32}, {"hyphenation", "on"}}),
                        &error),
@@ -177,7 +177,7 @@ void renderFictionBook() {
     comments.replace("</section></body>\n<binary",
                      "</section><section id=\"unused\"><title><p>Additional remarks</p></title><p>Unreferenced endnote.</p></section></body>\n<binary");
     comments.replace("<title><p>1</p></title>", "<title><p><strong>[1]</strong></p></title>");
-    ReaderModel endnotes(test::readerFonts());
+    EngineDocument endnotes(test::readerFonts());
     require(endnotes.open(comments, QSize(1072, 1300), qt::object({{"font_pixels", 32}}), &error),
             qPrintable(error));
     require(ReaderSourceIndexProbe::noteTitle(endnotes, "n1") == "1",
@@ -189,7 +189,7 @@ void renderFictionBook() {
             "FB2 number was not marked for superscript styling");
     require(ReaderSourceIndexProbe::inPageFootnoteCount(endnotes) == 1,
             "FB2 comments must show the referenced note only");
-    ReaderModel preview(test::readerFonts());
+    EngineDocument preview(test::readerFonts());
     require(preview.openPreview(model, QSize(800, 600), &error), qPrintable(error));
     require(preview.pages() > 0, "FB2 font preview rendered no pages");
     require(model.setHyphenation("on"), "Russian hyphenation mode was rejected");
@@ -203,7 +203,7 @@ void renderWindows1251() {
     require(publication.inspect(bytes, &error) &&
                 publication.format() == Publication::PublicationFormat::Fb2,
             "windows-1251 FB2 inspection");
-    ReaderModel model(test::readerFonts());
+    EngineDocument model(test::readerFonts());
     require(model.open(bytes, QSize(800, 600), {}, &error), qPrintable(error));
     require(model.title() == QString::fromUtf8("Тест"),
             qPrintable(QString("windows-1251 title decoded as: %1").arg(model.title())));

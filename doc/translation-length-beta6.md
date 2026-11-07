@@ -1,143 +1,187 @@
-# Проверка длины RU перед переносом beta6
+# RU beta6: внесённые строки
 
-Сравнение по числу Unicode-символов, не по байтам и не по ширине глифов. Это не проверка размещения в UI.
+Длины — Unicode-символы, не ширина глифов. Размещение в UI требует проверки на устройстве.
 
-## Согласованные уточнения
-
-| Ключ | EN | RU | RU/EN | Русский текст |
-|---|---:|---:|---:|---|
-| `reader.edge_light` | 38 | 30 | 0.79 | Регулировка подсветки свайпами |
-| `settings.edge_light_description` | 89 | 75 | 0.84 | Свайпы у самой границы экрана: слева — яркость, справа — теплота подсветки. |
-| `settings.light_gesture_feedback` | 30 | 31 | 1.03 | Индикация регулировки подсветки |
-| `settings.light_gesture_feedback_description` | 110 | 71 | 0.65 | Показывать всплывающее окно с уровнем в процентах после паузы в свайпе. |
-| `settings.wifi_power_saver` | 24 | 22 | 0.92 | Энергосбережение Wi-Fi |
-| `settings.wifi_power_saver_description` | 118 | 126 | 1.07 | Выключать Wi-Fi при открытии книги и переходе в сон, кроме случаев, когда включён Bluetooth или Wi-Fi нужен для синхронизации. |
-| `settings.normalization_chapters_description` | 47 | 49 | 1.04 | Сохранять отступ над иллюстрациями в начале глав. |
-| `settings.hanging_punctuation_summary` | 52 | 52 | 1.00 | Выносить пунктуацию и знаки переноса в боковые поля. |
-| `settings.sleep_overlay` | 25 | 27 | 1.08 | Страница с PNG-изображением |
-| `settings.sleep_overlay_description` | 130 | 152 | 1.17 | Приглушать страницу и накладывать PNG-изображение под индикатором сна. Добавьте PNG с прозрачным фоном в .adds/kobalt/screensaver или .adds/screensaver. |
-| `settings.time_remaining_format` | 21 | 23 | 1.10 | Вид оставшегося времени |
-| `settings.time_remaining_detailed` | 8 | 9 | 1.12 | В минутах |
-| `settings.time_remaining_approximate` | 11 | 13 | 1.18 | С округлением |
-| `settings.time_remaining_detailed_description` | 47 | 28 | 0.60 | Например: «Осталось 83 мин». |
-| `settings.time_remaining_approximate_description` | 52 | 31 | 0.60 | Например: «Осталось около 2 ч». |
-| `kosync.automatic_off_caption` | 31 | 34 | 1.10 | Только вручную — кнопкой на панели |
-
-## Существующий перевод: кандидаты на проверку в UI
-
-Порог: RU длиннее EN более чем на 25% и минимум на 8 символов. Это эвристика, а не ошибка перевода. Ранее согласованные тексты автоматически не меняются. Новые строки beta6, отсутствующие в текущем RU, этим разделом не проверены.
-
-| Ключ | EN | RU | RU/EN | Русский текст |
-|---|---:|---:|---:|---|
-| `settings.session_timeout_0` | 5 | 25 | 5.00 | Продолжать прежнюю сессию |
-| `annotations.style_underline` | 5 | 22 | 4.40 | Сплошное подчёркивание |
-| `annotations.style_dotted` | 6 | 24 | 4.00 | Пунктирное подчёркивание |
-| `settings.session_timeout_60` | 6 | 16 | 2.67 | После 1 часа сна |
-| `settings.session_timeout_360` | 7 | 17 | 2.43 | После 6 часов сна |
-| `settings.session_timeout_240` | 7 | 17 | 2.43 | После 4 часов сна |
-| `settings.animations_description` | 45 | 102 | 2.27 | Анимировать перелистывание на поддерживаемых устройствах. Изображения обновляются после пролистывания. |
-| `settings.session_timeout_720` | 8 | 18 | 2.25 | После 12 часов сна |
-| `reader.lock_portrait` | 13 | 28 | 2.15 | Закрепить книжную ориентацию |
-| `reader.lock_landscape` | 14 | 30 | 2.14 | Закрепить альбомную ориентацию |
-| `reader.restore_defaults` | 16 | 34 | 2.12 | Восстановить значения по умолчанию |
-| `settings.navigation_bar_pages` | 10 | 21 | 2.10 | Переходы по страницам |
-| `kosync.username` | 8 | 16 | 2.00 | Имя пользователя |
-| `kosync.sync_now` | 8 | 16 | 2.00 | Синхронизировать |
-| `kosync.cancel_sync` | 11 | 22 | 2.00 | Отменить синхронизацию |
-| `common.next_page` | 9 | 18 | 2.00 | Следующая страница |
-| `settings.beautifier_indent_description` | 41 | 80 | 1.95 | Единый отступ первой строки прозы. Ваши явные настройки абзацев имеют приоритет. |
-| `settings.section_user_interface` | 14 | 26 | 1.86 | Пользовательский интерфейс |
-| `settings.beautifier_initials_description` | 42 | 78 | 1.86 | Превращает распознанные текстовые буквицы в обычные буквы без потери символов. |
-| `reader.older_synced_position` | 21 | 39 | 1.86 | Более ранняя синхронизированная позиция |
-| `settings.sleep_tile_card_description` | 32 | 58 | 1.81 | Область с информацией о чтении в левом нижнем углу экрана. |
-| `settings.session_timeout_15` | 10 | 18 | 1.80 | После 15 минут сна |
-| `marks.sort_position` | 10 | 18 | 1.80 | По порядку в книге |
-| `kosync.last_synced` | 15 | 27 | 1.80 | Последняя синхронизация: %1 |
-| `kosync.completed` | 13 | 23 | 1.77 | Синхронизация завершена |
-| `reader.tap_elsewhere_to_exit` | 21 | 37 | 1.76 | Коснитесь в другом месте, чтобы выйти |
-| `reader.fail_next_native_save` | 21 | 37 | 1.76 | Сбой следующего системного сохранения |
-| `reader.formatting_warning` | 18 | 31 | 1.72 | Предупреждение о форматировании |
-| `settings.justification_tracking_more_description` | 32 | 55 | 1.72 | Разрешает больший дополнительный межбуквенный интервал. |
-| `reader.go_to_synced_position` | 21 | 36 | 1.71 | Перейти к синхронизированной позиции |
-| `reader.defaults_selected` | 17 | 29 | 1.71 | Выбраны значения по умолчанию |
-| `recovery.title` | 16 | 27 | 1.69 | Сохранённые данные сброшены |
-| `reader.new_synced_position` | 19 | 32 | 1.68 | Новая синхронизированная позиция |
-| `settings.beautifier_spacing_description` | 50 | 84 | 1.68 | Убирает лишний отступ под обычной прозой. Сохраняет разрывы сцен и особые фрагменты. |
-| `reader.make_default` | 12 | 20 | 1.67 | Сделать по умолчанию |
-| `settings.landscape_columns_description` | 47 | 75 | 1.60 | В книжной ориентации используется одна колонка. Применяется ко всем книгам. |
-| `settings.justification_tracking_subtle_description` | 36 | 57 | 1.58 | Разрешает небольшой дополнительный межбуквенный интервал. |
-| `settings.navigation_taps_only_description` | 38 | 60 | 1.58 | Касайтесь зон перелистывания, чтобы переворачивать страницы. |
-| `error.invalid_source_text_offset` | 26 | 41 | 1.58 | Некорректное текстовое смещение источника |
-| `settings.vertical_spacing_scope_description` | 33 | 52 | 1.58 | Когда корректировать свободное место внизу страницы. |
-| `reader.line_spacing` | 14 | 22 | 1.57 | Межстрочный интервал:  |
-| `reader.column_spacing` | 14 | 22 | 1.57 | Межколоночный интервал |
-| `library.mark_unread` | 14 | 22 | 1.57 | Отметить непрочитанной |
-| `kosync.device_unknown` | 14 | 22 | 1.57 | Неизвестное устройство |
-| `common.more_next_page` | 21 | 33 | 1.57 | Продолжение на следующей странице |
-| `reader.set_default_font` | 16 | 25 | 1.56 | Задать шрифт по умолчанию |
-| `reader.font_weight` | 16 | 25 | 1.56 | Вариативная насыщенность: |
-| `header_footer.field.battery_warning` | 15 | 23 | 1.53 | Предупреждение о заряде |
-| `annotations.tap_boundary` | 36 | 55 | 1.53 | Коснитесь текста или потяните маркер для корректировки. |
-| `settings.section_default_global_font` | 19 | 29 | 1.53 | Глобальный шрифт по умолчанию |
-| `reader.make_default_font` | 21 | 32 | 1.52 | Сделать %1 шрифтом по умолчанию? |
-| `opening.may_take_a_while` | 21 | 32 | 1.52 | Это может занять некоторое время |
-| `native_ui.missing_assets_title` | 18 | 27 | 1.50 | Kobalt не может запуститься |
-| `error.unsupported_native_text_offset` | 30 | 45 | 1.50 | Неподдерживаемое системное текстовое смещение |
-| `reader.tap_revealed_link` | 35 | 52 | 1.49 | Нажмите на подсвеченную ссылку, чтобы перейти по ней |
-| `settings.justification_tracking_off_description` | 27 | 40 | 1.48 | Сохраняет обычный межбуквенный интервал. |
-| `opening.try_native` | 19 | 28 | 1.47 | Попробовать встроенный ридер |
-| `kosync.resume_title` | 22 | 32 | 1.45 | Продолжить с полученной позиции? |
-| `settings.session_timeout_never_description` | 91 | 132 | 1.45 | После сна любой длительности время текущей сессии продолжает отсчитываться с прежнего значения. Время сна не учитывается как чтение. |
-| `settings.vertical_spacing_scope_protection_description` | 78 | 113 | 1.45 | Корректирует свободное место, только если защита от висячих строк перенесла строки, которые иначе поместились бы. |
-| `light_panel.automatic_warmth` | 27 | 39 | 1.44 | Следовать расписанию тёплого света Kobo |
-| `light_panel.automatic_warmth_description` | 79 | 114 | 1.44 | Использует время отхода ко сну, заданное в настройках Kobo. Ручная регулировка тёплого света отключает этот режим. |
-| `annotations.ready` | 55 | 79 | 1.44 | Потяните маркеры для корректировки. Коснитесь выделения, чтобы выбрать пометку. |
-| `sync.title` | 23 | 33 | 1.43 | Синхронизированная позиция чтения |
-| `reader.long_press_link` | 37 | 53 | 1.43 | Нажмите и удерживайте ссылку, чтобы увидеть её опции. |
-| `error.native_text_offset_exceeds_its_anchor` | 37 | 53 | 1.43 | Системное текстовое смещение выходит за пределы якоря |
-| `kosync.time_unavailable` | 21 | 30 | 1.43 | Время синхронизации неизвестно |
-| `error.no_supported_native_reading_position` | 36 | 51 | 1.42 | Поддерживаемая системная позиция чтения отсутствует |
-| `kosync.account_changed` | 47 | 66 | 1.40 | Войдите заново, чтобы применить новый сервер или имя пользователя. |
-| `settings.navigation_buttons_only_description` | 35 | 49 | 1.40 | Используйте кнопки устройства для перелистывания. |
-| `annotations.tap_start` | 39 | 54 | 1.38 | Коснитесь слова или нажмите и протяните для выделения. |
-| `settings.navigation_bar_pages_description` | 34 | 47 | 1.38 | Предпросмотр предыдущей или следующей страницы. |
-| `error.invalid_source_element_offset` | 29 | 40 | 1.38 | Некорректное смещение элемента источника |
-| `annotations.help_text` | 69 | 95 | 1.38 | Нажмите и удерживайте слово, чтобы начать выделение. Коснитесь выделения, чтобы пометить текст. |
-| `reader.duplicate_current_update` | 24 | 33 | 1.38 | Продублировать текущее обновление |
-| `annotations.color_failed` | 32 | 44 | 1.38 | Не удалось сохранить цвет. Попробуйте снова. |
-| `error.this_note_is_too_long_to_preview` | 33 | 45 | 1.36 | Эта сноска слишком длинная для предпросмотра. |
-| `settings.tappable_links_off_description` | 62 | 84 | 1.35 | Для защиты от случайного открытия удерживайте ссылку и выберите «Перейти по ссылке». |
-| `error.encrypted_or_unsupported_epub` | 29 | 39 | 1.34 | Зашифрованный или неподдерживаемый EPUB |
-| `reader.already_default_font` | 32 | 43 | 1.34 | %1 уже является вашим шрифтом по умолчанию. |
-| `sync.finished` | 53 | 71 | 1.34 | Синхронизированное состояние чтения отмечает эту книгу как прочитанную. |
-| `reader.restore_appearance_defaults` | 27 | 36 | 1.33 | Восстановить оформление по умолчанию |
-| `reader.enabling_bold_reading` | 24 | 32 | 1.33 | Включение бионического чтения... |
-| `header_footer.replace_custom_prompt` | 27 | 36 | 1.33 | Заменить вашу собственную раскладку? |
-| `reader.restore_appearance_defaults_prompt` | 28 | 37 | 1.32 | Восстановить оформление по умолчанию? |
-| `reader.disabling_bold_reading` | 25 | 33 | 1.32 | Выключение бионического чтения... |
-| `bookmarks.empty_hint` | 50 | 66 | 1.32 | Коснитесь правого верхнего угла страницы, чтобы добавить закладку. |
-| `error.native_saved_position_cannot_be_converted` | 41 | 54 | 1.32 | Не удалось преобразовать сохранённую системную позицию |
-| `settings.navigation_swipes_only_description` | 35 | 46 | 1.31 | Проводите влево или вправо для перелистывания. |
-| `kosync.unavailable` | 45 | 59 | 1.31 | Синхронизация недоступна для этой книги или учётной записи. |
-| `reader.could_not_change_dark_mode` | 26 | 34 | 1.31 | Не удалось переключить тёмную тему |
-| `error.native_saved_position_is_unsupported` | 36 | 47 | 1.31 | Сохранённая системная позиция не поддерживается |
-| `recovery.sync_account` | 66 | 86 | 1.30 | Учётная запись синхронизации недоступна. Войдите заново для продолжения синхронизации. |
-| `error.this_note_has_no_text_to_preview` | 33 | 43 | 1.30 | У этой сноски нет текста для предпросмотра. |
-| `search_panel.no_matches_hint` | 43 | 56 | 1.30 | Проверьте написание или попробуйте более короткую фразу. |
-| `settings.justification_tracking_summary` | 40 | 52 | 1.30 | Подгонка межбуквенных интервалов в тексте по ширине. |
-| `library.no_matches` | 27 | 35 | 1.30 | По вашему запросу книги не найдены. |
-| `settings.edge_brightness_description` | 52 | 67 | 1.29 | Проводите вверх или вниз вдоль левого края для регулировки яркости. |
-| `light_panel.brightness_swipe_hint` | 52 | 67 | 1.29 | Проводите вверх или вниз вдоль левого края для регулировки яркости. |
-| `reader.formatting_warning_description` | 111 | 143 | 1.29 | В этой книге возможны проблемы с форматированием. Можно продолжить чтение, но часть текста или вёрстки может отображаться не так, как задумано. |
-| `settings.minimal_annotation_mode_description` | 88 | 113 | 1.28 | Скрывает панель аннотаций. Коснитесь текста или пустого места, затем выберите «Завершить выделение», чтобы выйти. |
-| `annotations.tap_end` | 39 | 50 | 1.28 | Коснитесь другого слова или потяните любой маркер. |
-| `settings.beautifier_description` | 96 | 122 | 1.27 | Экспериментально. Отмеченные правила действуют во всех книгах. Снимите все галочки для отключения. Файлы книг не меняются. |
-| `library.folder_unavailable` | 63 | 80 | 1.27 | Эту папку не удаётся прочитать. Добавьте её заново, чтобы вернуть доступ Kobalt. |
-| `kosync.skipped` | 45 | 57 | 1.27 | Синхронизация пропущена. Позиция сохранена на устройстве. |
-| `error.this_note_has_no_separate_preview` | 34 | 43 | 1.26 | У этой сноски нет отдельного предпросмотра. |
-| `settings.widows_orphans_allow_description` | 38 | 48 | 1.26 | Разрешать одиночные строки на границах страницы. |
-| `search_panel.search_hint` | 57 | 72 | 1.26 | Поиск не учитывает регистр. Нажмите «Найти» на клавиатуре, чтобы начать. |
-| `settings.navigation_bar_chapters_description` | 46 | 58 | 1.26 | Предпросмотр предыдущей или следующей главы. По умолчанию. |
-| `settings.navigation_buttons_only` | 31 | 39 | 1.26 | Только аппаратные кнопки перелистывания |
-| `kosync.resumed` | 31 | 39 | 1.26 | Чтение продолжено с полученной позиции. |
-| `annotations.empty_hint` | 51 | 64 | 1.25 | Используйте «Аннотация» в меню чтения, чтобы сохранить фрагмент. |
+| Ключ | EN | RU | Длина EN/RU |
+|---|---|---|---|
+| `common.save` | Save | Сохранить | 4/9 |
+| `bookmarks.pin` | Pin bookmark | Закрепить закладку | 12/18 |
+| `bookmarks.modify` | Modify pinned bookmark | Изменить закреплённую закладку | 22/30 |
+| `bookmarks.unpin` | Unpin bookmark | Открепить закладку | 14/18 |
+| `bookmarks.actions` | Bookmark actions | Действия с закладкой | 16/20 |
+| `bookmarks.remove_this` | Remove this bookmark | Удалить эту закладку | 20/20 |
+| `bookmarks.edit_pin` | Edit pinned bookmark | Изменить закреплённую закладку | 20/30 |
+| `bookmarks.pin_name` | Bookmark name | Название закладки | 13/17 |
+| `bookmarks.pin_limit` | You can pin up to eight bookmarks in this book. Unpin or remove a pinned bookmark to add another. | В книге можно закрепить до восьми закладок. Открепите или удалите одну из них, чтобы добавить другую. | 97/101 |
+| `bookmarks.icon_map` | Map | Карта | 3/5 |
+| `bookmarks.icon_star` | Star | Звезда | 4/6 |
+| `bookmarks.icon_bookmark` | Bookmark | Закладка | 8/8 |
+| `bookmarks.icon_compass` | Compass | Компас | 7/6 |
+| `bookmarks.icon_dictionary` | Dictionary | Словарь | 10/7 |
+| `bookmarks.icon_chapters` | Chapters | Главы | 8/5 |
+| `bookmarks.icon_home` | Home | Дом | 4/3 |
+| `bookmarks.icon_link` | Link | Ссылка | 4/6 |
+| `bookmarks.icon_flag` | Flag | Флаг | 4/4 |
+| `bookmarks.icon_heart` | Heart | Сердце | 5/6 |
+| `bookmarks.icon_note` | Note | Заметка | 4/7 |
+| `bookmarks.icon_lightbulb` | Lightbulb | Лампочка | 9/8 |
+| `bookmarks.icon_globe` | Globe | Глобус | 5/6 |
+| `bookmarks.icon_mountains` | Mountains | Горы | 9/4 |
+| `bookmarks.icon_tree` | Tree | Дерево | 4/6 |
+| `bookmarks.icon_sun` | Sun | Солнце | 3/6 |
+| `bookmarks.icon_moon` | Moon | Луна | 4/4 |
+| `bookmarks.icon_clock` | Clock | Часы | 5/4 |
+| `bookmarks.icon_calendar` | Calendar | Календарь | 8/9 |
+| `bookmarks.icon_person` | Person | Человек | 6/7 |
+| `bookmarks.icon_people` | People | Люди | 6/4 |
+| `bookmarks.icon_crown` | Crown | Корона | 5/6 |
+| `bookmarks.icon_key` | Key | Ключ | 3/4 |
+| `bookmarks.icon_sword` | Sword | Меч | 5/3 |
+| `bookmarks.icon_pencil` | Pencil | Карандаш | 6/8 |
+| `bookmarks.icon_quotes` | Quotes | Кавычки | 6/7 |
+| `bookmarks.icon_question` | Question | Вопрос | 8/6 |
+| `bookmarks.icon_check` | Check | Галочка | 5/7 |
+| `bookmarks.icon_warning` | Warning | Предупреждение | 7/14 |
+| `bookmarks.icon_chat` | Chat | Сообщение | 4/9 |
+| `bookmarks.icon_scroll` | Scroll | Свиток | 6/6 |
+| `bookmarks.icon_image` | Image | Изображение | 5/11 |
+| `bookmarks.icon_search` | Search | Поиск | 6/5 |
+| `bookmarks.icon_eye` | Eye | Глаз | 3/4 |
+| `bookmarks.icon_lock` | Lock | Навесной замок | 4/14 |
+| `bookmarks.icon_books` | Books | Книги | 5/5 |
+| `bookmarks.icon_castle` | Castle | Замок | 6/5 |
+| `bookmarks.icon_anchor` | Anchor | Якорь | 6/5 |
+| `bookmarks.icon_paw` | Paw | Лапа | 3/4 |
+| `bookmarks.icon_flower` | Flower | Цветок | 6/6 |
+| `bookmarks.icon_coffee` | Coffee | Кофе | 6/4 |
+| `bookmarks.icon_music` | Music | Музыка | 5/6 |
+| `bookmarks.icon_rocket` | Rocket | Ракета | 6/6 |
+| `bookmarks.icon_planet` | Planet | Планета | 6/7 |
+| `bookmarks.icon_lightning` | Lightning | Молния | 9/6 |
+| `bookmarks.icon_flame` | Flame | Пламя | 5/5 |
+| `bookmarks.icon_skull` | Skull | Череп | 5/5 |
+| `bookmarks.icon_diamond` | Diamond | Алмаз | 7/5 |
+| `kosync.automatic_caption_wait` | %1, when Wi-Fi is on | %1, при включённом Wi-Fi | 20/24 |
+| `kosync.automatic_caption_wake` | %1, turns on Wi-Fi | %1, с включением Wi-Fi | 18/22 |
+| `kosync.automatic_off_caption` | Off, sync button in the toolbar | Только вручную — кнопкой на панели | 31/34 |
+| `kosync.automatic_caption_never` | Not while reading | Не во время чтения | 17/18 |
+| `kosync.when_heading` | When Kobalt syncs your progress | Когда синхронизировать прогресс | 31/31 |
+| `kosync.when_open` | When you open a book | При открытии книги | 20/18 |
+| `kosync.when_open_description` | Gets your latest progress. If another device is further along, Kobalt asks before moving. | Получать последнюю позицию. Если на другом устройстве вы прочли дальше, Kobalt спросит, перейти ли к ней. | 89/105 |
+| `kosync.when_reading` | While you read | Во время чтения | 14/15 |
+| `kosync.when_reading_description` | Syncs your progress periodically. | Периодически синхронизировать прогресс. | 33/39 |
+| `kosync.when_sleep_wake` | When your device sleeps or wakes | При засыпании и пробуждении | 32/27 |
+| `kosync.when_sleep_wake_description` | Syncs your progress before sleep if you're online, and gets your latest progress on wake. | Сохранять прогресс перед сном при наличии сети и получать последнюю позицию после пробуждения. | 89/94 |
+| `kosync.when_close` | When you close the book | При закрытии книги | 23/18 |
+| `kosync.when_close_description` | Syncs your progress if you're online. | Синхронизировать прогресс при наличии сети. | 37/43 |
+| `kosync.interval_description` | Choose how often Kobalt syncs your progress while a book is open. Syncing more often uses more battery. | Выберите частоту синхронизации при открытой книге. Более частая синхронизация расходует больше заряда. | 103/102 |
+| `kosync.interval_0` | Every page | На каждой странице | 10/18 |
+| `kosync.interval_1` | Every minute | Каждую минуту | 12/13 |
+| `kosync.interval_5` | Every 5 minutes | Каждые 5 минут | 15/14 |
+| `kosync.interval_15` | Every 15 minutes | Каждые 15 минут | 16/15 |
+| `kosync.interval_30` | Every 30 minutes | Каждые 30 минут | 16/15 |
+| `kosync.interval_60` | Every hour | Каждый час | 10/10 |
+| `kosync.interval_never` | Never | Никогда | 5/7 |
+| `kosync.wifi_heading` | While you read and Wi-Fi is off | Если во время чтения Wi-Fi выключен | 31/35 |
+| `kosync.wifi_wait` | Wait | Ждать | 4/5 |
+| `kosync.wifi_wait_picture` | Keep progress here until Wi-Fi is on | Хранить прогресс здесь до включения Wi-Fi | 36/41 |
+| `kosync.wifi_wait_outcome` | Longest battery life | Дольше работает от батареи | 20/26 |
+| `kosync.wifi_wake` | Turn on Wi-Fi | Включать Wi-Fi | 13/14 |
+| `kosync.wifi_wake_picture` | Turn on Wi-Fi, sync, then turn it off again | Включить Wi-Fi, выполнить синхронизацию и снова выключить | 43/57 |
+| `kosync.wifi_wake_outcome` | Other devices stay up to date | На других устройствах актуальный прогресс | 29/41 |
+| `kosync.manual_prompt` | Would you like to sync progress with KOSync? | Синхронизировать прогресс с KOSync? | 44/35 |
+| `kosync.native_sync` | This book uses Kobo’s built-in sync system. KOSync is unavailable for this copy. | Эта книга использует встроенную синхронизацию Kobo. KOSync для этой копии недоступен. | 80/85 |
+| `kosync.kobo_cloud` | This book uses Kobo Cloud to sync reading progress. KOSync is unavailable for this copy. | Эта книга синхронизирует прогресс через Kobo Cloud. KOSync недоступен для этой копии. | 88/85 |
+| `dictionary_panel.search_in_book` | Search in book | Найти в книге | 14/13 |
+| `header_footer.preset.phone` | Phone | Телефон | 5/7 |
+| `image.title` | Image Viewer | Просмотр изображений | 12/20 |
+| `image.loading` | Loading image… | Загрузка изображения… | 14/21 |
+| `image.close` | Close image | Закрыть изображение | 11/19 |
+| `image.fit` | Fit image | Уместить изображение | 9/20 |
+| `image.zoom_suggestion` | Zoom image | Увеличить изображение | 10/21 |
+| `image.dismiss_suggestion` | Dismiss image suggestion | Скрыть предложение | 24/18 |
+| `image.zoom_in` | Zoom in | Увеличить | 7/9 |
+| `image.zoom_out` | Zoom out | Уменьшить | 8/9 |
+| `settings.light_gesture_feedback` | Show frontlight gesture pop-up | Индикация регулировки подсветки | 30/31 |
+| `settings.light_gesture_feedback_description` | Show the level after a pause in swiping. Turn off to adjust the light without a pop-up or its cleanup refresh. | Показывать всплывающее окно с уровнем в процентах после паузы в свайпе. | 110/71 |
+| `reader.edge_light` | Swipe along edges to adjust frontlight | Регулировка подсветки свайпами | 38/30 |
+| `settings.animations_uncertain_description` | Page animations may not be supported on this device. Turn this off if they do not work correctly. | Анимация страниц может не поддерживаться устройством. Выключите, если она работает некорректно. | 97/95 |
+| `settings.animations_description` | Page animations are supported on this device. | Анимация страниц поддерживается на этом устройстве. | 45/51 |
+| `settings.light_dark_mode` | Show dark mode in Light | Тёмная тема во вкладке «Свет» | 23/29 |
+| `settings.light_dark_mode_description` | Add a dark-mode shortcut to the Light panel. | Добавить переключатель тёмной темы во вкладку «Свет». | 44/53 |
+| `settings.sleep_screen` | Sleep screen while reading | Экран сна при чтении | 26/20 |
+| `settings.section_power` | Power management | Энергосбережение | 16/16 |
+| `settings.wifi_power_saver` | Smart Wi-Fi power saving | Энергосбережение Wi-Fi | 24/22 |
+| `settings.wifi_power_saver_description` | Turns Wi-Fi off when a book opens and when the device sleeps. Wi-Fi stays on while Bluetooth is on or a sync needs it. | Выключать Wi-Fi при открытии книги и переходе в сон, кроме случаев, когда включён Bluetooth или Wi-Fi нужен для синхронизации. | 118/126 |
+| `settings.sleep_stock_description` | Uses Kobo’s normal sleep screen. | Использовать обычный экран сна Kobo. | 32/36 |
+| `settings.sleep_cover_description` | Shows the book cover and your selected sleep indicator. | Показывать обложку книги и выбранный индикатор сна. | 55/51 |
+| `settings.sleep_page_description` | Dims the current page and shows your selected sleep indicator. | Приглушать текущую страницу и показывать выбранный индикатор сна. | 62/65 |
+| `settings.sleep_overlay` | Kobalt with PNG over text | Страница с PNG-изображением | 25/27 |
+| `settings.sleep_overlay_description` | Dims the page and draws your PNG below the sleep indicator. Add transparent PNGs to .adds/kobalt/screensaver or .adds/screensaver. | Приглушать страницу и накладывать PNG-изображение под индикатором сна. Добавьте PNG с прозрачным фоном в .adds/kobalt/screensaver или .adds/screensaver. | 130/152 |
+| `settings.sleep_tile` | Sleep indicator | Индикатор на экране сна | 15/23 |
+| `settings.sleep_tile_none` | None | Нет | 4/3 |
+| `settings.sleep_tile_none_description` | Shows the sleep image without a status indicator. | Показывать изображение сна без индикатора состояния. | 49/52 |
+| `settings.sleep_tile_card_description` | A card in the lower-left corner. | Область с информацией о чтении в левом нижнем углу экрана. | 32/58 |
+| `settings.edge_light_description` | Swipe up or down along the left edge for brightness, and along the right edge for warmth. | Свайпы у самой границы экрана: слева — яркость, справа — теплота подсветки. | 89/75 |
+| `finish.dont_ask_again` | Don’t ask again for this book | Больше не спрашивать для этой книги | 29/35 |
+| `bookmarks.remove` | Remove bookmark | Удалить закладку | 15/16 |
+| `bookmarks.remove_prompt` | Remove bookmark? | Удалить закладку? | 16/17 |
+| `bookmarks.remove_pinned_prompt` | Remove pinned bookmark? | Удалить закреплённую закладку? | 23/30 |
+| `bookmarks.remove_description` | The bookmark will be removed from this book. | Закладка будет удалена из этой книги. | 44/37 |
+| `bookmarks.remove_pinned_description` | The bookmark and its shortcut will be removed from this book. | Закладка и её ярлык будут удалены из этой книги. | 61/48 |
+| `bookmarks.add_current` | Bookmark current page | Добавить закладку на текущую страницу | 21/37 |
+| `bookmarks.remove_current` | Remove bookmarked page | Удалить закладку с текущей страницы | 22/35 |
+| `settings.vertical_spacing_expand_short` | Expand | Растянуть | 6/9 |
+| `settings.vertical_spacing_center_short` | Center | По центру | 6/9 |
+| `settings.vertical_spacing_scope_all_short` | All pages | Все страницы | 9/12 |
+| `settings.vertical_spacing_scope_protection_short` | Widow/orphan | Висячие строки | 12/14 |
+| `kosync.sideload_copy` | To use KOSync, download a DRM-free copy of the book and add it to your device separately. | Для KOSync скачайте копию без DRM и добавьте её на устройство отдельно. | 89/71 |
+| `kosync.learn_more_title` | Kobo sync and KOSync | Синхронизация Kobo и KOSync | 20/27 |
+| `kosync.learn_more_description` | Kobo-managed books use Kobo’s built-in sync, even when the file has no DRM. Kobalt leaves their progress syncing to Kobo. /  / KOSync is a separate service for KOReader and Kobalt. To use it for this title, add a DRM-free copy to your device as a separate sideloaded book and open that copy. /  / Use the same book file on every device. Only reading progress is synced; books, bookmarks and annotations are not transferred. | Книги из магазина Kobo используют встроенную синхронизацию Kobo, даже без DRM. Kobalt оставляет синхронизацию их прогресса Kobo. /  / KOSync — отдельный сервис для KOReader и Kobalt. Для этой книги добавьте копию без DRM как отдельную загруженную вручную книгу и откройте её. /  / На всех устройствах используйте один файл книги. Передаётся только прогресс чтения, без книг, закладок и аннотаций. | 415/388 |
+| `keyboard.caps_lock` | Caps Lock on | Верхний регистр включён | 12/23 |
+| `settings.beautifier_summary` | Choose a preset or customize how publisher styling is adjusted. | Выберите набор правил или настройте оформление издателя. | 63/56 |
+| `settings.beautifier_description` | Experimental. Applies to all books. Uncheck all rules to turn off. Book files are never changed. | Экспериментально. Действует во всех книгах. Снимите все галочки для отключения. Файлы книг не меняются. | 96/103 |
+| `settings.beautifier_initials_description` | Turn text drop caps into ordinary letters. | Превращать текстовые буквицы в обычные буквы. | 42/45 |
+| `settings.beautifier_spacing_description` | Keep recognized scene breaks and special passages. | Сохранять распознанные разрывы сцен и особые фрагменты. | 50/55 |
+| `settings.beautifier_indent_description` | Your paragraph adjustments take priority. | Ваши настройки абзацев имеют приоритет. | 41/39 |
+| `settings.normalization_recommended` | Recommended | Рекомендуемый | 11/13 |
+| `settings.normalization_full` | Full | Полный | 4/6 |
+| `settings.normalization_custom` | Custom | Свой | 6/4 |
+| `settings.normalization_margins` | Use Kobalt page margins | Использовать поля Kobalt | 23/24 |
+| `settings.normalization_margins_description` | Use the margins set in Layout. | Использовать отступы из «Раскладки». | 30/36 |
+| `settings.normalization_chapters` | Reduce chapter-start spacing | Уменьшать отступы в начале глав | 28/31 |
+| `settings.normalization_chapters_description` | Keep space above chapter-opening illustrations. | Сохранять отступ над иллюстрациями в начале глав. | 47/49 |
+| `settings.time_remaining_format` | Time remaining format | Вид оставшегося времени | 21/23 |
+| `settings.time_remaining_format_description` | Applies to reading-time estimates in the header, footer and sleep screen. | Для оценки времени в колонтитулах и на экране сна. | 73/50 |
+| `settings.time_remaining_detailed` | Detailed | В минутах | 8/9 |
+| `settings.time_remaining_approximate` | Approximate | С округлением | 11/13 |
+| `settings.time_remaining_detailed_description` | Use detailed estimates, such as "83 min to go". | Например: «Осталось 83 мин». | 47/28 |
+| `settings.time_remaining_approximate_description` | Use approximate estimates, such as "~2 hours to go". | Например: «Осталось около 2 ч». | 52/31 |
+| `time_remaining.about_minutes` | about %1 minutes | около %1 мин | 16/12 |
+| `time_remaining.about_hour` | about an hour | около часа | 13/10 |
+| `time_remaining.about_hours` | about %1 hours | около %1 ч | 14/10 |
+| `settings.hanging_punctuation` | Hanging punctuation | Висячая пунктуация | 19/18 |
+| `settings.hanging_punctuation_summary` | Let punctuation and hyphens extend into the margins. | Выносить пунктуацию и знаки переноса в боковые поля. | 52/52 |
+| `settings.hanging_punctuation_off` | Off | Выкл. | 3/5 |
+| `settings.hanging_punctuation_on` | On | Вкл. | 2/4 |
+| `settings.hanging_punctuation_off_description` | Keep punctuation within the text edges. | Оставлять пунктуацию в границах текста. | 39/39 |
+| `settings.hanging_punctuation_on_description` | Let punctuation and line-ending hyphens extend beyond the text edges. | Выносить пунктуацию и знаки переноса за край текста. | 69/52 |
+| `settings.hanging_punctuation_description` | The dashed lines mark the text edges. The sample uses justified text. This preference affects all books. | Пунктиром отмечены границы текста. Пример выровнен по ширине. Настройка действует во всех книгах. | 104/97 |
+| `library.count_few` | %1 books | %1 книги | 8/8 |
+| `library.count_many` | %1 books | %1 книг | 8/7 |
+| `chapter_contents.summary_few` | Contents · %1 chapters | Содержание · главы: %1 | 22/22 |
+| `chapter_contents.summary_many` | Contents · %1 chapters | Содержание · глав: %1 | 22/21 |
+| `annotations.summary_few` | %1 annotations | Аннотации: %1 | 14/13 |
+| `annotations.summary_many` | %1 annotations | Аннотаций: %1 | 14/13 |
+| `settings.invert_swipes` | Invert page swipes | Инвертировать свайпы | 18/20 |
+| `settings.swipes_left_forward` | Swipe left: next page; swipe right: previous page. | Свайп влево — вперёд; вправо — назад. | 50/37 |
+| `settings.swipes_right_forward` | Swipe right: next page; swipe left: previous page. | Свайп вправо — вперёд; влево — назад. | 50/37 |
+| `reader.inpage_footnotes` | Show footnotes at page bottom | Сноски внизу страницы | 29/21 |
+| `settings.inpage_footnotes_description` | When off, tap a footnote link to open its text. | Если выключено, сноску можно открыть нажатием на ссылку. | 47/56 |
+| `debug.language_title` | Debug interface language | Язык интерфейса для отладки | 24/27 |
+| `debug.language_restart` | Select a language for the next reader launch. The current interface will not change. | Выберите язык для следующего запуска ридера. Текущий интерфейс не изменится. | 84/76 |
+| `debug.language_automatic` | Automatic (device language) | Автоматически (язык устройства) | 27/31 |
+| `debug.language_saved` | Saved. Exit Kobalt and open a book again to apply the language. | Сохранено. Выйдите из Kobalt и снова откройте книгу, чтобы применить язык. | 63/74 |
+| `debug.language_failed` | Could not save the language. Check the diagnostics folder and try again. | Не удалось сохранить язык. Проверьте папку diagnostics и повторите попытку. | 72/75 |
+| `about.fork` | %1 | %1 | 2/2 |
+| `about.fork_build` | %1 · %2 | %1 · %2 | 7/7 |

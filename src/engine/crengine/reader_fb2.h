@@ -7,8 +7,8 @@ namespace kobalt::fb2 {
 // Parsed FB2 cache identity. Bump for incompatible parser/preprocessing or
 // default CSS changes. Include the page-note mode; EPUB adds no marker.
 inline QByteArray cachePolicy(bool enabled, bool inPage = true) {
-    return !enabled ? QByteArray() : inPage ? QByteArray(":fb2-v3:inpage-on:")
-                                           : QByteArray(":fb2-v3:inpage-off:");
+    return !enabled ? QByteArray() : inPage ? QByteArray(":fb2-v4:inpage-on:")
+                                           : QByteArray(":fb2-v4:inpage-off:");
 }
 // Only unambiguous numeric labels are normalized; prose/roman labels are kept.
 inline QString noteNumber(QString text) {

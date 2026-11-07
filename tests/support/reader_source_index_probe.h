@@ -1,6 +1,6 @@
 #pragma once
 #include "engine/crengine/column_view.h"
-#include "engine/crengine/reader_model.h"
+#include "engine/crengine/engine_document.h"
 #include <algorithm>
 
 namespace kobalt {
@@ -8,14 +8,14 @@ namespace kobalt {
 // Test-only engine access; no application API for pagination internals.
 struct ReaderSourceIndexProbe {
     using Ranges = QVector<QPair<QString, QString>>;
-    static int inPageFootnoteCount(const ReaderModel &model) {
+    static int inPageFootnoteCount(const EngineDocument &model) {
         if (!model.engine_)
             return 0;
         const int page = model.engine_->getCurPage(true);
         const auto *pages = model.engine_->getPageList();
         return page >= 0 && page < pages->length() ? (*pages)[page]->footnotes.length() : 0;
     }
-    static ldomNode *noteHeading(const ReaderModel &model, const char *id) {
+    static ldomNode *noteHeading(const EngineDocument &model, const char *id) {
         auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
         if (node)
             for (int i = 0; i < node->getChildCount(); ++i)
@@ -23,19 +23,27 @@ struct ReaderSourceIndexProbe {
                     return node->getChildNode(i);
         return nullptr;
     }
-    static QString noteTitle(const ReaderModel &model, const char *id) {
+    static QString noteTitle(const EngineDocument &model, const char *id) {
         const auto *title = noteHeading(model, id);
         return title ? QString::fromUtf8(UnicodeToUtf8(title->getText()).c_str()).trimmed() : QString();
     }
-    static bool numericNoteTitle(const ReaderModel &model, const char *id) {
+    static bool numericNoteTitle(const EngineDocument &model, const char *id) {
         const auto *title = noteHeading(model, id);
         return title && title->getAttributeValue("data-kobalt-note-number") == U"1";
     }
     static lString32 cre(const QString &text) { return Utf8ToUnicode(text.toUtf8().constData()); }
-    static void clear(ReaderModel &model) { model.sourceIndex_.reset(); }
-    static QPair<int, qint64> usage(const ReaderModel &model) { return model.sourceIndexUsage(); }
-    static bool cached(const ReaderModel &model) { return bool(model.sourceIndex_); }
-    static bool positionLookupPreservesNames(const ReaderModel &model, bool normalized) {
+
+    static void clear(EngineDocument &model) { model.sourceIndex_.reset(); }
+
+    static QPair<int, qint64> usage(const EngineDocument &model)
+    {
+        return model.sourceIndexUsage();
+    }
+
+    static bool cached(const EngineDocument &model) { return bool(model.sourceIndex_); }
+
+    static bool positionLookupPreservesNames(const EngineDocument &model, bool normalized)
+    {
         auto *doc = model.engine_->getDocument();
         const char *name = normalized ? "unknown_position_v2" : "unknown_position_v1";
         if (doc->findElementNameIndex(name))
@@ -43,27 +51,32 @@ struct ReaderSourceIndexProbe {
         const auto path = cre('/' + QString::fromLatin1(name) + "[1]");
         const auto version = doc->getDOMVersionRequested();
         doc->setDOMVersionRequested(normalized ? DOM_VERSION_WITH_NORMALIZED_XPOINTERS
-                                              : DOM_VERSION_WITH_NORMALIZED_XPOINTERS - 1);
+                                               : DOM_VERSION_WITH_NORMALIZED_XPOINTERS - 1);
         const auto pointer = doc->createXPointer(doc->getRootNode(), path);
         doc->setDOMVersionRequested(version);
         return pointer.isNull() && !doc->findElementNameIndex(name);
     }
-    static QVector<int> visible(const ReaderModel &model, const Ranges &ranges) {
+
+    static QVector<int> visible(const EngineDocument &model, const Ranges &ranges)
+    {
         QVector<int> result;
         if (ranges.isEmpty() || ranges.size() > 2001 || !model.engine_ || model.pages() <= 0)
             return result;
         auto *doc = model.engine_->getDocument();
         const int current = model.page();
         const ldomXPointerEx first(model.engine_->getPageBookmark(current));
-        const ldomXPointerEx last = current + 1 < model.pages() ? ldomXPointerEx(model.engine_->getPageBookmark(current + 1))
-                                                              : ldomXRange(doc->getRootNode(), true).getEnd();
+        const ldomXPointerEx last = current + 1 < model.pages()
+                ? ldomXPointerEx(model.engine_->getPageBookmark(current + 1))
+                : ldomXRange(doc->getRootNode(), true).getEnd();
         if (first.isNull() || last.isNull())
             return result;
         for (int i = 0; i < ranges.size(); ++i) {
             const auto &range = ranges[i];
-            if (range.first.isEmpty() || range.second.isEmpty() || range.first.size() > 4096 || range.second.size() > 4096)
+            if (range.first.isEmpty() || range.second.isEmpty() || range.first.size() > 4096
+                || range.second.size() > 4096)
                 continue;
-            ldomXPointerEx start(doc->createXPointer(cre(range.first))), end(doc->createXPointer(cre(range.second)));
+            ldomXPointerEx start(doc->createXPointer(cre(range.first))),
+                    end(doc->createXPointer(cre(range.second)));
             if (start.isNull() || end.isNull())
                 continue;
             if (start.compare(end) > 0)
@@ -73,7 +86,10 @@ struct ReaderSourceIndexProbe {
         }
         return result;
     }
-    static QVector<int> overlaps(const ReaderModel &model, const QString &start, const QString &end, const Ranges &ranges) {
+
+    static QVector<int> overlaps(const EngineDocument &model, const QString &start,
+                                 const QString &end, const Ranges &ranges)
+    {
         QVector<int> result;
         if (!model.engine_)
             return result;
@@ -81,8 +97,9 @@ struct ReaderSourceIndexProbe {
             if (anchor.isEmpty() || anchor.size() > 4096)
                 return ldomXPointerEx();
             ldomXPointerEx pointer(model.engine_->getDocument()->createXPointer(cre(anchor)));
-            if (pointer.isNull() || !pointer.isText() || pointer.getOffset() < 0 ||
-                pointer.getOffset() > pointer.getNode()->getText().length() || !pointer.isVisible())
+            if (pointer.isNull() || !pointer.isText() || pointer.getOffset() < 0
+                || pointer.getOffset() > pointer.getNode()->getText().length()
+                || !pointer.isVisible())
                 return ldomXPointerEx();
             return pointer;
         };
@@ -91,21 +108,27 @@ struct ReaderSourceIndexProbe {
             return result;
         for (int i = 0; i < ranges.size(); ++i) {
             const auto a = resolve(ranges[i].first), b = resolve(ranges[i].second);
-            if (!a.isNull() && !b.isNull() && a.compare(b) < 0 && a.compare(last) < 0 && first.compare(b) < 0)
+            if (!a.isNull() && !b.isNull() && a.compare(b) < 0 && a.compare(last) < 0
+                && first.compare(b) < 0)
                 result.append(i);
         }
         return result;
     }
-    static QString shifted(const ReaderModel &model, const QString &anchor, int amount) {
+
+    static QString shifted(const EngineDocument &model, const QString &anchor, int amount)
+    {
         auto point = model.engine_->getDocument()->createXPointer(cre(anchor));
         if (point.isNull())
             return {};
         point.setOffset(point.getOffset() + amount);
         return QString::fromUtf8(UnicodeToUtf8(point.toString()).c_str());
     }
-    static QString textPoint(const ReaderModel &model, const QString &needle, int offset) {
+
+    static QString textPoint(const EngineDocument &model, const QString &needle, int offset)
+    {
         std::function<ldomNode *(ldomNode *)> find = [&](ldomNode *node) -> ldomNode * {
-            if (node->isText() && QString::fromUtf8(UnicodeToUtf8(node->getText()).c_str()).contains(needle))
+            if (node->isText()
+                && QString::fromUtf8(UnicodeToUtf8(node->getText()).c_str()).contains(needle))
                 return node;
             for (int i = 0; i < node->getChildCount(); ++i)
                 if (auto *found = find(node->getChildNode(i)))
@@ -113,9 +136,14 @@ struct ReaderSourceIndexProbe {
             return nullptr;
         };
         auto *node = find(model.engine_->getDocument()->getRootNode());
-        return node ? QString::fromUtf8(UnicodeToUtf8(ldomXPointer(node, offset).toString()).c_str()) : QString();
+        return node
+                ? QString::fromUtf8(UnicodeToUtf8(ldomXPointer(node, offset).toString()).c_str())
+                : QString();
     }
-    static QVector<int> pages(const ReaderModel &model, const QStringList &anchors, bool endpoints, QVector<int> *order = nullptr) {
+
+    static QVector<int> pages(const EngineDocument &model, const QStringList &anchors,
+                              bool endpoints, QVector<int> *order = nullptr)
+    {
         QVector<int> result;
         QVector<ldomXPointerEx> pointers;
         if (order) {
@@ -127,7 +155,10 @@ struct ReaderSourceIndexProbe {
             return result;
         }
         for (int i = 0; i < anchors.size(); ++i) {
-            ldomXPointerEx pointer(anchors[i].isEmpty() ? ldomXPointer() : model.engine_->getDocument()->createXPointer(cre(anchors[i])));
+            ldomXPointerEx pointer(
+                    anchors[i].isEmpty()
+                            ? ldomXPointer()
+                            : model.engine_->getDocument()->createXPointer(cre(anchors[i])));
             if (order)
                 pointers[i] = pointer;
             if (endpoints && i % 2 == 1 && !pointer.isNull())
@@ -139,13 +170,16 @@ struct ReaderSourceIndexProbe {
             for (int i = 0; i < pointers.size(); ++i)
                 if (!pointers[i].isNull())
                     indices.append(i);
-            std::stable_sort(indices.begin(), indices.end(), [&](int a, int b) { return pointers[a].compare(pointers[b]) < 0; });
+            std::stable_sort(indices.begin(), indices.end(),
+                             [&](int a, int b) { return pointers[a].compare(pointers[b]) < 0; });
             for (int i = 0; i < indices.size(); ++i)
                 (*order)[indices[i]] = i;
         }
         return result;
     }
-    static QString childOffset(const ReaderModel &model, const QString &anchor) {
+
+    static QString childOffset(const EngineDocument &model, const QString &anchor)
+    {
         auto point = model.engine_->getDocument()->createXPointer(cre(anchor));
         if (point.isNull())
             return {};
@@ -156,4 +190,4 @@ struct ReaderSourceIndexProbe {
         return QString::fromUtf8(UnicodeToUtf8(child.toString()).c_str());
     }
 };
-}
+} // namespace kobalt

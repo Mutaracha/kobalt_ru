@@ -11,42 +11,64 @@
 #include <QElapsedTimer>
 #include <QDateTime>
 #include <QPainter>
+#include <algorithm>
 #include <cmath>
+#include <random>
 
 namespace kobalt::storage {
 namespace {
 constexpr qint64 maxPixels = 4 * 1024 * 1024;
 constexpr qint64 maxBytes = 20 * 1024 * 1024;
-bool validSize(QSize size) {
-    return size.width() > 0 && size.height() > 0 && qint64(size.width()) * size.height() <= maxPixels;
+
+bool validSize(QSize size)
+{
+    return size.width() > 0 && size.height() > 0
+            && qint64(size.width()) * size.height() <= maxPixels;
 }
-bool validOrientation(int value) {
-    return value == Qt::PortraitOrientation || value == Qt::LandscapeOrientation ||
-           value == Qt::InvertedPortraitOrientation || value == Qt::InvertedLandscapeOrientation;
+
+bool validOrientation(int value)
+{
+    return value == Qt::PortraitOrientation || value == Qt::LandscapeOrientation
+            || value == Qt::InvertedPortraitOrientation
+            || value == Qt::InvertedLandscapeOrientation;
 }
-QString referencePath(const QString &path) {
+
+QString referencePath(const QString &path)
+{
     return (path.endsWith(".png") ? path.left(path.size() - 4) : path) + ".json";
 }
-QJsonObject metadataFor(const sleep::Snapshot &snapshot, const QString &token) {
-    return qt::object({{"version", 1}, {"token", token}, {"mode", sleep::value(snapshot.mode)},
-                      {"orientation", int(snapshot.orientation)}, {"progress", snapshot.progress},
-                      {"remaining", snapshot.remaining}, {"dark", snapshot.dark}, {"dim", snapshot.dimPage},
-                      {"percent", snapshot.percent}});
+
+QJsonObject metadataFor(const sleep::Snapshot &snapshot, const QString &token)
+{
+    return qt::object({ { "version", 1 },
+                        { "token", token },
+                        { "mode", sleep::value(snapshot.mode) },
+                        { "orientation", int(snapshot.orientation) },
+                        { "progress", snapshot.progress },
+                        { "remaining", snapshot.remaining },
+                        { "dark", snapshot.dark },
+                        { "dim", snapshot.dimPage },
+                        { "percent", snapshot.percent } });
 }
-bool integerField(const QJsonValue &value, double minimum, double maximum, qint64 &result) {
+
+bool integerField(const QJsonValue &value, double minimum, double maximum, qint64 &result)
+{
     const double number = value.toDouble(-1);
-    if (!value.isDouble() || !std::isfinite(number) || number < minimum || number > maximum || std::floor(number) != number)
+    if (!value.isDouble() || !std::isfinite(number) || number < minimum || number > maximum
+        || std::floor(number) != number)
         return false;
     result = qint64(number);
     return true;
 }
+
 bool writeSnapshot(const QString &path, const sleep::Snapshot &snapshot, const QString &token,
-                   QJsonObject *measurement) {
+                   QJsonObject *measurement)
+{
     QElapsedTimer total;
     if (measurement)
         total.start();
-    if (path.isEmpty() || token.isEmpty() || snapshot.mode == sleep::Mode::Stock ||
-        !validSize(snapshot.image.size()) || !validOrientation(snapshot.orientation))
+    if (path.isEmpty() || token.isEmpty() || snapshot.mode == sleep::Mode::Stock
+        || !validSize(snapshot.image.size()) || !validOrientation(snapshot.orientation))
         return false;
     const auto metadata = metadataFor(snapshot, token);
     const auto bytes = QJsonDocument(metadata).toJson(QJsonDocument::Compact);
@@ -59,8 +81,9 @@ bool writeSnapshot(const QString &path, const sleep::Snapshot &snapshot, const Q
     writer.setText("kobalt", QString::fromUtf8(bytes));
     QJsonObject codec;
     if (!configureSleepSnapshotCodec(writer,
-            writer.supportsOption(QImageIOHandler::CompressionRatio),
-            writer.supportsOption(QImageIOHandler::Quality), measurement ? *measurement : codec))
+                                     writer.supportsOption(QImageIOHandler::CompressionRatio),
+                                     writer.supportsOption(QImageIOHandler::Quality),
+                                     measurement ? *measurement : codec))
         return false;
     QElapsedTimer stage;
     if (measurement)
@@ -78,15 +101,17 @@ bool writeSnapshot(const QString &path, const sleep::Snapshot &snapshot, const Q
     }
     return committed;
 }
+
 bool persistSnapshot(const QString &path, const sleep::Snapshot &snapshot, const QString &token,
-                     QJsonObject *measurement) {
+                     QJsonObject *measurement)
+{
     QElapsedTimer total;
     total.start();
     if (measurement)
-        *measurement = qt::object({{"width", snapshot.image.width()},
-                                   {"height", snapshot.image.height()}});
-    if (path.isEmpty() || token.isEmpty() || !validSize(snapshot.image.size()) ||
-        !validOrientation(snapshot.orientation))
+        *measurement = qt::object(
+                { { "width", snapshot.image.width() }, { "height", snapshot.image.height() } });
+    if (path.isEmpty() || token.isEmpty() || !validSize(snapshot.image.size())
+        || !validOrientation(snapshot.orientation))
         return false;
     if (currentSleepCover(snapshot)) {
         QImageReader source(snapshot.coverPath);
@@ -128,23 +153,63 @@ bool persistSnapshot(const QString &path, const sleep::Snapshot &snapshot, const
         (*measurement)["saved"] = saved;
     return saved;
 }
-}
-bool writeSleepSnapshot(const QString &path, const sleep::Snapshot &snapshot, const QString &token) {
+} // namespace
+
+bool writeSleepSnapshot(const QString &path, const sleep::Snapshot &snapshot, const QString &token)
+{
     mainthread::BlockingOperation blockingOperation("sleep-snapshot-write");
     return persistSnapshot(path, snapshot, token, nullptr);
 }
-void removeSleepSnapshot(const QString &path) {
+
+QImage loadSleepOverlay(const QStringList &directories)
+{
+    QStringList candidates;
+    for (const auto &directory : directories) {
+        if (directory.isEmpty())
+            continue;
+        for (const auto &file :
+             QDir(directory).entryInfoList({ QStringLiteral("*.png") },
+                                           QDir::Files | QDir::Readable | QDir::NoSymLinks)) {
+            if (file.size() > 0 && file.size() <= maxBytes)
+                candidates.append(file.absoluteFilePath());
+        }
+    }
+    if (candidates.isEmpty())
+        return {};
+    std::mt19937 random(std::random_device{}());
+    std::shuffle(candidates.begin(), candidates.end(), random);
+    for (const auto &path : candidates) {
+        QFile file(path);
+        if (!file.open(QIODevice::ReadOnly) || file.size() > maxBytes)
+            continue;
+        QImageReader reader(&file, "png");
+        if (!validSize(reader.size()))
+            continue;
+        auto image = reader.read();
+        if (validSize(image.size()) && image.hasAlphaChannel())
+            return image;
+    }
+    return {};
+}
+
+void removeSleepSnapshot(const QString &path)
+{
     QFile::remove(path);
     QFile::remove(referencePath(path));
 }
-bool currentSleepCover(const sleep::Snapshot &snapshot) {
+
+bool currentSleepCover(const sleep::Snapshot &snapshot)
+{
     const QFileInfo source(snapshot.coverPath);
-    return snapshot.mode == sleep::Mode::Cover && !snapshot.dimPage && !snapshot.coverPath.isEmpty() &&
-        source.isAbsolute() && source.isFile() && snapshot.coverBytes > 0 && snapshot.coverBytes <= maxBytes &&
-        source.size() == snapshot.coverBytes && source.lastModified().toMSecsSinceEpoch() == snapshot.coverModified;
+    return snapshot.mode == sleep::Mode::Cover && !snapshot.dimPage && !snapshot.coverPath.isEmpty()
+            && source.isAbsolute() && source.isFile() && snapshot.coverBytes > 0
+            && snapshot.coverBytes <= maxBytes && source.size() == snapshot.coverBytes
+            && source.lastModified().toMSecsSinceEpoch() == snapshot.coverModified;
 }
+
 bool configureSleepSnapshotCodec(QImageWriter &writer, bool supportsCompression,
-                                 bool supportsQuality, QJsonObject &measurement) {
+                                 bool supportsQuality, QJsonObject &measurement)
+{
     measurement.remove("error");
     measurement["supports_compression"] = supportsCompression;
     measurement["supports_quality"] = supportsQuality;
@@ -172,12 +237,14 @@ bool configureSleepSnapshotCodec(QImageWriter &writer, bool supportsCompression,
     return true;
 }
 #ifdef KOBALT_SCENARIO_PLAYER
-bool measureSleepPersistence(const QString &path, const sleep::Snapshot &snapshot, const QString &token,
-                             QJsonObject &measurement) {
+bool measureSleepPersistence(const QString &path, const sleep::Snapshot &snapshot,
+                             const QString &token, QJsonObject &measurement)
+{
     return persistSnapshot(path, snapshot, token, &measurement);
 }
 #endif
-sleep::Snapshot readSleepSnapshot(const QString &path, const QString &token, sleep::Mode mode) {
+sleep::Snapshot readSleepSnapshot(const QString &path, const QString &token, sleep::Mode mode)
+{
     if (token.isEmpty() || mode == sleep::Mode::Stock)
         return {};
     const bool reference = QFile::exists(referencePath(path));
@@ -193,16 +260,21 @@ sleep::Snapshot readSleepSnapshot(const QString &path, const QString &token, sle
         return {};
     const auto metadata = QJsonDocument::fromJson(text).object();
     const int orientation = metadata.value("orientation").toInt();
-    if (metadata.value("version") != 1 || metadata.value("token") != token ||
-        metadata.value("mode") != sleep::value(mode) || !validOrientation(orientation) ||
-        !metadata.value("progress").isString() || !metadata.value("remaining").isString() ||
-        !metadata.value("dark").isBool() || !metadata.value("dim").isBool())
+    if (metadata.value("version") != 1 || metadata.value("token") != token
+        || metadata.value("mode") != sleep::value(mode) || !validOrientation(orientation)
+        || !metadata.value("progress").isString() || !metadata.value("remaining").isString()
+        || !metadata.value("dark").isBool() || !metadata.value("dim").isBool())
         return {};
     // Older images have no percentage. Tiles that draw it leave it out.
     const int percent = metadata.value("percent").toInt(-1);
-    sleep::Snapshot snapshot{{}, Qt::ScreenOrientation(orientation), metadata.value("progress").toString(),
-            metadata.value("remaining").toString(), metadata.value("dark").toBool(), mode, metadata.value("dim").toBool(),
-            percent >= 0 && percent <= 100 ? percent : -1};
+    sleep::Snapshot snapshot{ {},
+                              Qt::ScreenOrientation(orientation),
+                              metadata.value("progress").toString(),
+                              metadata.value("remaining").toString(),
+                              metadata.value("dark").toBool(),
+                              mode,
+                              metadata.value("dim").toBool(),
+                              percent >= 0 && percent <= 100 ? percent : -1 };
     if (!reference) {
         snapshot.image = reader.read();
         return validSize(snapshot.image.size()) ? snapshot : sleep::Snapshot{};
@@ -210,8 +282,9 @@ sleep::Snapshot readSleepSnapshot(const QString &path, const QString &token, sle
     if (metadata.value("kind") != QStringLiteral("native-cover"))
         return {};
     snapshot.coverPath = metadata.value("cover_path").toString();
-    if (!integerField(metadata.value("cover_bytes"), 1, maxBytes, snapshot.coverBytes) ||
-        !integerField(metadata.value("cover_modified"), 0, 9007199254740991.0, snapshot.coverModified))
+    if (!integerField(metadata.value("cover_bytes"), 1, maxBytes, snapshot.coverBytes)
+        || !integerField(metadata.value("cover_modified"), 0, 9007199254740991.0,
+                         snapshot.coverModified))
         return {};
     const QSize size(metadata.value("width").toInt(), metadata.value("height").toInt());
     if (!validSize(size) || !currentSleepCover(snapshot))
@@ -236,4 +309,4 @@ sleep::Snapshot readSleepSnapshot(const QString &path, const QString &token, sle
     snapshot.image = sleep::coverBackground(cover, size);
     return snapshot;
 }
-}
+} // namespace kobalt::storage

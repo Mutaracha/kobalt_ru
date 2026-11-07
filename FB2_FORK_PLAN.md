@@ -710,3 +710,13 @@ bool plainEpub() const {
 - Пользователь разрешил больше кода ради меньших затрат на поддержку при активных upstream изменениях. Приоритет — связные fork-модули, явные границы ответственности и немного устойчивых точек интеграции, а не минимальное количество строк патча.
 - Сохранены ограничения: не копировать общий EPUB formatting/settings/progress для FB2; следовать новой структуре upstream; не создавать универсальный framework и не дробить код ради абстракций. About rendering и общие UI styles сохраняются.
 - Требования закреплены в AGENTS.md и doc/beta6-integration.md. В этом изменении только документация; source refactoring/merge/build не выполнялись.
+
+### 2026-11-07 — перенос beta6: кандидат интеграции
+
+- Выполнено разрешение merge-конфликтов с 7ff437e: новая структура src/app + src/ui, nickel-qt5/qt6 и EngineDocument. Старые дубли экранов удалены, fork_debug/return_title_text перенесены. Оригинальный progress/save beta6 сохранён, FB2 format/resource/native-position адаптеры перенесены.
+- Общие normalization/hanging-punctuation/appearance поля beta6 совмещены с default-on FB2 footnotes. FB2 cache policy v4 отражает изменение оформления; EPUB salt остаётся пустым. Новая реализация EPUB используется совместно с FB2.
+- Fork Settings presentation и добавление About build row выделены в fork_settings.{h,cpp}; check() применяет общий контракт при создании, поздний ручной registry удалён. About label/debug поведение и стандартные строки не перерисовываются иначе.
+- Сохранены RU baseline нижних вкладок, quick theme/search, инверсия свайпов. Небольшой sleep ribbon helper отделён от beta6 sleep implementation; None и PNG modes из upstream.
+- Внесены согласованные новые/изменённые строки RU; устаревшие keys удалены, исходные утверждённые переводы сохранены. Отчёт doc/translation-length-beta6.md обновлён по фактическому словарю. В EN сохранены параметризованные _one формы для fork plural helper.
+- Проверки до сборки: CMake EN/RU keys/arguments и все literal source string references PASS; bash syntax и diff-check PASS. Production offline suite снова воспроизвёл timestamp flake на strings-test.cmake:69; production scripts не менялись.
+- **Статус: кандидат, не готовая проверенная сборка.** Qt5 cross compilation, package checks и дальнейший audit ещё выполняются. Native/UI/device tests не запускались. Не выдавать этот этап за завершённую интеграцию без результата CI.
