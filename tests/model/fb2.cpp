@@ -195,7 +195,9 @@ void renderFictionBook() {
     require(endnotes.open(comments, QSize(1072, 1300), qt::object({{"font_pixels", 32}}), &error),
             qPrintable(error));
     require(ReaderSourceIndexProbe::noteTitle(endnotes, "n1") == "1",
-            "FB2 note-number cleanup lost markup/IDs or kept brackets");
+            qPrintable(QString("FB2 note-number cleanup: title='%1', marker=%2")
+                       .arg(ReaderSourceIndexProbe::noteTitle(endnotes, "n1"))
+                       .arg(ReaderSourceIndexProbe::numericNoteTitle(endnotes, "n1"))));
     require(ReaderSourceIndexProbe::noteTitle(endnotes, "unused") == "Additional remarks" &&
                 !ReaderSourceIndexProbe::numericNoteTitle(endnotes, "unused"),
             "FB2 prose heading was converted to a numeric label");

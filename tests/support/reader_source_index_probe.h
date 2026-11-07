@@ -17,10 +17,18 @@ struct ReaderSourceIndexProbe {
     }
     static ldomNode *noteHeading(const EngineDocument &model, const char *id) {
         auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
+        QVector<ldomNode *> pending;
         if (node)
-            for (int i = 0; i < node->getChildCount(); ++i)
-                if (node->getChildNode(i)->isNodeName("title"))
-                    return node->getChildNode(i);
+            pending.append(node);
+        // CREngine may wrap inline/title blocks while rendering. Inspect the
+        // owned subtree, not just the pre-render direct-child shape.
+        while (!pending.isEmpty()) {
+            auto *child = pending.takeLast();
+            if (child->isNodeName("title"))
+                return child;
+            for (int i = child->getChildCount() - 1; i >= 0; --i)
+                pending.append(child->getChildNode(i));
+        }
         return nullptr;
     }
     static QString noteTitle(const EngineDocument &model, const char *id) {
