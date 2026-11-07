@@ -191,3 +191,14 @@ Settings that become damaged, too large or of a newer version while a book is op
 ## Retired fork options
 
 The fork quiet-light option is replaced by upstream beta6 feedback controls, without a legacy-key migration. Cache cleanup is deferred until after beta; no cleanup action is provided. Existing device caches and durable data are not deleted by this removal.
+
+
+## Fork in-page notes
+
+The existing boolean `fb2_inpage_footnotes` now controls FB2 and EPUB bottom
+notes. Its name is retained for checkpoint/default compatibility; no migration
+or schema bump is needed. Default remains true. EPUB parsed-cache identity adds
+`:epub-notes-v1:inpage-on:` or `:epub-notes-v1:inpage-off:` at both initial load
+and live appearance changes. This prevents reuse of pre-marker EPUB caches and
+caches rendered in the other mode. FB2 cache policy is unchanged. Old cache
+files are not deleted; XPointer positions and progress storage are unchanged.

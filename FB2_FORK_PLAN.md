@@ -11,7 +11,7 @@
 
 ## 0. Статусы этапов (вести в каждом изменении)
 
-> Легенда: **done** — код и тесты в ветке; **in progress** — частично; **planned** — только план. Сборка в песочнице невозможна (нет Qt SDK), поэтому статус «done» по коду подтверждается ревью и офлайн-проверками (валидатор строк, CMake configure_file, хеши манифеста, YAML), полная Kobo Qt5-компиляция пакета выполняется CI `.github/workflows/kobo-qt5-device.yml` (push в `arena/9e626d86-kobalt-ru`). Этот workflow НЕ запускает native Qt component/model/lifecycle tests: для них требуется отдельный Qt-host и mac-tests/linux-tests.
+> Легенда: **done** — код и тесты в ветке; **in progress** — частично; **planned** — только план. Сборка в песочнице невозможна (нет Qt SDK), поэтому статус «done» по коду подтверждается ревью и офлайн-проверками (валидатор строк, CMake configure_file, хеши манифеста, YAML), полная Kobo Qt5-компиляция пакета выполняется CI `.github/workflows/kobo-qt5-device.yml` (push в `arena/9e626d86-kobalt-ru`). Workflow теперь также запускает focused native проверки EPUB/FB2 notes на закреплённом Linux SDK; полные native UI/lifecycle suites остаются отдельной проверкой.
 
 | Этап | Содержание | Статус |
 |---|---|---|
@@ -752,3 +752,12 @@ bool plainEpub() const {
 - Приняты короткие строки пользователя: icon_lock=«Замок», interval_0=«Постоянно», wifi_wake_outcome=«Прогресс на устройствах актуален.», image title/close/fit=«Просмотреть»/«Закрыть»/«Вписать». Интервал 0 означает изменённую позицию не чаще 30 s при чтении, а не непрерывный сетевой поток.
 - Проверено по исходникам: наша bottom-footnote настройка относится только к FB2. Поведение dark menu-open/full-flash и menu-close совпадает с оригинальной beta6; refresh policy не изменялась. Это source comparison, не отдельное воспроизведение на устройстве.
 - Проверки: EN/RU key/placeholder parity и длины изменённых строк PASS; doc/translation-length-beta6.md актуализирован. Runtime/native tests не запускались; это изменение RU/документации, без изменения алгоритмов.
+
+
+### 2026-11-07 — нижние сноски EPUB, проверочный билд
+
+- По запросу пользователя общий переключатель нижних сносок расширен на EPUB.
+- reader_notes.h: общая с popup семантика, fresh-DOM markers, EPUB-only CSS и cache salt. Используется готовый CREngine footnote-inpage; IDs/text/прогресс/зависимости не меняются, FB2 CSS/cache policy сохранены.
+- Существующий ключ fb2_inpage_footnotes/default true сохранён для совместимости; новый UI и новые строки не нужны. Off оставляет popup; live toggle EPUB теперь запускает reflow и обновляет checksum.
+- Добавлены regression cases в engine.links: cross-XHTML multi-paragraph note, namespace/roles/classes/CSS hint, off/on, source anchor, font/columns. В device workflow добавлен отдельный focused Linux job (links, fb2, document-cache, appearance-settings).
+- Статус: код готов к CI, проверочный Qt5 package и native job ожидают запуска. Полная native/UI/lifecycle suite и визуальная проверка Kobo не выполнялись.

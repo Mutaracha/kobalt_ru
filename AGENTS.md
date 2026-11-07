@@ -209,3 +209,19 @@ feed the shared settings. Preserve FB2 semantic blocks and secondary notes/comme
 bodies in the same classifier; allow FB2 inline/image vocabulary. Only Kobo link
 decoration is EPUB-only. Keep the focused sharedNormalization model regression,
 and do not claim it ran when only the device package was cross-compiled.
+
+
+### EPUB bottom-footnote integration
+
+reader_notes.h owns shared semantic note recognition (used by reader_links.cpp)
+and EPUB DOM markers/CSS/cache policy. Mark only fresh EPUB DOMs after initial
+styles in reader_source.cpp; never rewrite source IDs/text or infer arbitrary
+numeric links as page notes. Use CREngine's footnote-inpage mechanism, not an
+application footer/page splitter. applyAppearance must reflow both formats when
+the existing switch changes. Keep the legacy fb2_inpage_footnotes storage key for
+compatibility; it now controls both formats. Preserve unconditional popup
+recognition when switched off, FB2 CSS/cache identity and upstream save/progress.
+Initial-load and changed-setting cache checksums must use the same EPUB mode
+salt. The device workflow runs focused Linux engine checks (links, FB2,
+document-cache, appearance-settings) separately from the Qt5 package; neither
+replaces the full native/UI/lifecycle suite or Kobo visual tests.

@@ -23,6 +23,36 @@ env:
   KOBALT_FORK_NAME: kobalt_ru
 
 jobs:
+  footnote-regressions:
+    name: EPUB and FB2 engine regressions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Build and run focused native checks in the pinned Linux SDK
+        run: |
+          set -euo pipefail
+          image=$(sh platforms/sdk-image.sh linux)
+          docker pull "$image"
+          cache=$(cmake -P dependencies/cache.cmake)
+          mkdir -p "$cache"
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            --volume "$PWD:/work" --volume "$cache:/dependency-cache" \
+            --workdir /work/platforms/desktop "$image" bash -euc '
+              cmake --preset linux -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
+              cmake --build ../../build/desktop-linux --parallel 4 --target kobalt-desktop-tests kobalt-links-tests kobalt-fb2-tests kobalt-document-cache-tests kobalt-appearance-settings-tests
+              ctest --preset linux --output-on-failure -R "^(engine\.(links|fb2|document-cache)|model\.appearance-settings)$"
+            '
+      - name: Preserve native test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: footnote-native-results
+          path: build/desktop-linux/Testing/Temporary/LastTest.log
+          if-no-files-found: ignore
+
   build-qt5:
     name: Build Kobalt-qt5 for device testing
     runs-on: ubuntu-24.04

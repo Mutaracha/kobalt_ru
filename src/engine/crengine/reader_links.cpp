@@ -2,6 +2,7 @@
 #include "support/qt_compat.h"
 #include "support/strings.h"
 #include "engine_document.h"
+#include "reader_notes.h"
 #include "engine_activity.h"
 #include <lvdocview.h>
 #include <QRegularExpression>
@@ -67,26 +68,8 @@ lString32 domText(const QString &value)
     return Utf8ToUnicode(value.toUtf8().constData());
 }
 
-bool token(ldomNode *node, const char *name, const char *value, bool anyNamespace = false)
-{
-    const auto attribute = anyNamespace
-            ? node->getAttributeValue(LXML_NS_ANY,
-                                      node->getDocument()->getAttrNameIndex(
-                                              domText(QString::fromLatin1(name)).c_str()))
-            : node->getAttributeValue(name);
-    return text(attribute)
-            .split(QRegularExpression("\\s+"), kobalt::qt::skipEmptyParts)
-            .contains(value, Qt::CaseInsensitive);
-}
-
-bool noteElement(ldomNode *node)
-{
-    return token(node, "type", "footnote", true) || token(node, "type", "endnote", true)
-            || token(node, "type", "note", true) || token(node, "type", "rearnote", true)
-            || token(node, "role", "doc-footnote") || token(node, "role", "doc-endnote")
-            || token(node, "role", "doc-note") || token(node, "role", "doc-rearnote")
-            || token(node, "class", "footnote") || token(node, "class", "endnote");
-}
+using notes::token;
+using notes::noteElement;
 
 enum class NoteMatch { Unmarked, Explicit, Passage };
 

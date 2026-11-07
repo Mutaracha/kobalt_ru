@@ -1,4 +1,6 @@
 #include "reader_inputs.h"
+#include "reader_source_index_probe.h"
+#include "engine/crengine/reader_notes.h"
 #include "support/qt_compat.h"
 #include "engine/crengine/engine_document.h"
 #include <QBuffer>
@@ -160,6 +162,70 @@ kobalt::LinkDetails inspectNote(const NoteCase &test, bool dark)
                 qPrintable(QString(test.name) + ": preview crossed its boundary"));
     }
     return details;
+}
+
+// Real CREngine pagination, including notes in a different spine document.
+void inPageNotes()
+{
+    using namespace kobalt;
+    const QVector<QByteArray> attributes{
+        "epub:type='footnote'", "role='doc-endnote'", "ops:type='sidebar ENDNOTE'",
+        "class='footnote'", "style='-cr-hint:footnote'"
+    };
+    for (const auto &attribute : attributes) {
+        const QMap<QString, QByteArray> files{
+            {"mimetype", "application/epub+zip"},
+            {"META-INF/container.xml",
+             "<container xmlns='urn:oasis:names:tc:opendocument:xmlns:container' version='1.0'><rootfiles><rootfile full-path='book.opf' media-type='application/oebps-package+xml'/></rootfiles></container>"},
+            {"book.opf",
+             "<package xmlns='http://www.idpf.org/2007/opf' version='3.0'><metadata><title>Page notes</title></metadata><manifest><item id='c' href='c.xhtml' media-type='application/xhtml+xml'/><item id='n' href='notes.xhtml' media-type='application/xhtml+xml'/></manifest><spine><itemref idref='c'/><itemref idref='n' linear='no'/></spine></package>"},
+            {"c.xhtml",
+             "<html xmlns='http://www.w3.org/1999/xhtml' xmlns:epub='http://www.idpf.org/2007/ops'><body><p>Opening text <a epub:type='noteref' href='notes.xhtml#note'>1</a> and following text.</p><p>Another ordinary paragraph.</p></body></html>"},
+            {"notes.xhtml",
+             "<html xmlns='http://www.w3.org/1999/xhtml' xmlns:epub='http://www.idpf.org/2007/ops' xmlns:ops='http://www.idpf.org/2007/ops'><body><aside "
+                     + attribute + "><p id='note'>First note paragraph.</p><p>Continuation of the same note.</p></aside><aside epub:type='footnote' id='unused'><p>Unreferenced note.</p></aside></body></html>"}
+        };
+        QMap<QString, qint64> sizes;
+        for (auto it = files.cbegin(); it != files.cend(); ++it)
+            sizes[it.key()] = it.value().size();
+        auto resources = std::make_shared<ResourceCache>(
+                files.keys(),
+                [files](const QString &name, const ResourceCache::Sink &sink, QString *) {
+                    const auto bytes = files.value(name);
+                    return sink(bytes.constData(), bytes.size());
+                }, std::make_shared<std::atomic_bool>(false));
+        EngineDocument model(test::readerFonts());
+        QString error;
+        require(model.openResources(resources, sizes, QSize(1072, 1300),
+                                    qt::object({{"font_pixels", 32}}), &error), qPrintable(error));
+        require(ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
+                qPrintable("EPUB semantic note is popup-only: " + attribute));
+        require(!model.image(0).isNull(), "EPUB page notes did not paint");
+        const auto origin = model.position();
+        QString source;
+        for (const auto &link : model.pageLinks())
+            if (model.linkDetails(link.source).label == "1")
+                source = link.source;
+        require(!source.isEmpty(), "EPUB page note lost the source link");
+        const auto popup = model.linkDetails(source);
+        require(popup.kind == LinkKind::Footnote && popup.html.contains("Continuation") &&
+                    !popup.html.contains("Unreferenced"), "EPUB note popup lost its boundary");
+        require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})) &&
+                    ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0,
+                "Disabling EPUB page notes did not remove bottom fragments");
+        require(model.linkDetails(source).html.contains("Continuation"),
+                "Disabling EPUB page notes also disabled popup");
+        require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", true}})) &&
+                    ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
+                "Re-enabling EPUB page notes did not reflow");
+        require(model.position() == origin, "EPUB page-note toggle lost the source anchor");
+        require(model.applyAppearance(qt::object({{"font_pixels", 40}, {"columns", 2}})) &&
+                    ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
+                "EPUB page notes disappeared after font/column reflow");
+    }
+    require(notes::epubCachePolicy(false, true) != notes::epubCachePolicy(false, false),
+            "EPUB page-note modes share parsed cache identity");
+    require(notes::epubCachePolicy(true, true).isEmpty(), "EPUB policy changed FB2 cache identity");
 }
 
 void noteMatching()
@@ -352,6 +418,7 @@ int main(int argc, char **argv)
             qPrintable(error));
     linkDecoration();
     noteMatching();
+    inPageNotes();
     const auto origin = model.position();
     for (const bool dark : { false, true }) {
         model.setDarkMode(dark);

@@ -22,7 +22,7 @@
 ## Интеграция и сопровождение
 
 Оставляем FB2-only CSS в `fb2::overridesCss` (`reader_fb2.h`), подключённом
-существующей FB2-веткой `ReaderModel::applyStyleSheet`. Блоки `section` внутри
+существующей FB2-веткой `EngineDocument::applyStyleSheet`. Блоки `section` внутри
 стандартных `body[name="notes"]` / `body[name="comments"]` уже распознавались
 для popup; добавляем им `footnote-inpage`, не заменяя `footnote`. Примечания
 уменьшены до 80% основного шрифта. В отличие от defaults KOReader, сразу
@@ -33,7 +33,7 @@
 
 Общий generated stylesheet больше не содержит наш FB2 override. Своего
 нижнего виджета, поиска маркеров на странице, изменения page splitter или
-патча зависимости нет. EPUB CSS/props не меняются. Штатное нелинейное тело
+патча зависимости нет. Изначально EPUB CSS/props не менялись; расширение EPUB описано ниже. Штатное нелинейное тело
 сносок не удаляется из документа: переходы и popup продолжают работать.
 
 Policy `:fb2-v4:inpage-on:` / `:fb2-v4:inpage-off:` инвалидирует только старый разобранный FB2-кэш, поскольку
@@ -80,3 +80,30 @@ schema и форматы хранилища прежние. Пересчёт н�
 Дополнены model `fb2`, `appearance_settings` и routed lifecycle
 `appearanceSettingsRetainsDraft`. Native/визуальные проверки новых номеров
 не выполнялись в sandbox; обязательны на native Qt host / Kobo.
+
+
+## 2026-11-07 — тот же механизм для EPUB
+
+`reader_notes.h` выделяет существующие semantic token/noteElement правила из
+popup-кода без изменения их значения. Свежий EPUB DOM получает атрибут
+`data-kobalt-inpage-note="1"` для распознанных блоков: EPUB type, DPUB role,
+класс footnote/endnote или computed hint FOOTNOTE. FOOTNOTE_IGNORE исключается;
+ссылки a и вложенные дубли блоков не маркируются. Это не эвристика по цифрам
+и не извлечение/копирование текста. IDs, text nodes и ссылки сохраняются.
+
+Условный CSS включает `footnote footnote-inpage` и размер 0.8urem. Page splitter,
+разделитель и перенос длинной сноски остаются в закреплённом CREngine.
+Нелинейные spine-фрагменты остаются на месте, popup не выключается вместе
+с нижним выводом. Общая настройка и её default-on/key сохранены без нового UI.
+
+EPUB cache salt учитывает версию маркеров и режим; initial load и live toggle
+используют одинаковую policy. FB2 cache policy/CSS не изменены. Source hooks:
+reader_source.cpp (свежий DOM и checksum), engine_document.cpp (CSS, reflow,
+checksum после изменения), reader_links.cpp (общая семантика). Новых hooks
+в UI, lifecycle и зависимости CREngine нет.
+
+`tests/model/links.cpp::inPageNotes` проверяет реальные page fragments для
+сносок из другого XHTML, alternate namespace, roles/classes/CSS hint,
+многоабзацный popup, off/on, точный source anchor, размер текста и столбцы.
+Существующие FB2 и document-cache regressions включены в focused Linux CI.
+Финальный результат CI и ограничения проверки фиксируются в FB2_FORK_PLAN.md.

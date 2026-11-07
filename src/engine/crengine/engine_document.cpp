@@ -5,6 +5,7 @@
 #include "support/strings.h"
 #include "engine_document.h"
 #include "reader_fb2.h"
+#include "reader_notes.h"
 #include "reader_source.h"
 #include "publication/image_policy.h"
 #include "publication/resource_cache.h"
@@ -973,7 +974,7 @@ bool EngineDocument::applyAppearance(const QJsonObject &settings, QSize size,
     const bool bionicChanged = bionic != bionic_;
     // Outline thickness changes pixels only. Keep the formatted page and its anchors.
     const bool thicknessChanged = weight != weight_;
-    const bool styled = (fb2Document_ && footnotesChanged) || beautifierInitials != beautifierInitials_
+    const bool styled = footnotesChanged || beautifierInitials != beautifierInitials_
             || beautifierSpacing != beautifierSpacing_ || beautifierIndent != beautifierIndent_
             || fallbackFaces != fallbackFaces_ || normalizePageMargins != normalizePageMargins_
             || reduceChapterSpacing != reduceChapterSpacing_ || wordSpacing != wordSpacing_
@@ -1072,11 +1073,12 @@ bool EngineDocument::applyAppearance(const QJsonObject &settings, QSize size,
         engine_->setDefaultInterlineSpace(100);
         applyStyleSheet();
     }
-    if (bionicChanged || (fb2Document_ && footnotesChanged)) {
+    if (bionicChanged || footnotesChanged) {
         if (!cacheFingerprint_.isEmpty())
             engine_->getDocProps()->setHex(
                 DOC_PROP_FILE_CRC32,
                 documentCacheChecksum(documentCachePolicy() + fb2::cachePolicy(fb2Document_, inPageFootnotes_) +
+                                          notes::epubCachePolicy(fb2Document_, inPageFootnotes_) +
                                           ":bionic-v3:" + bionic_.toUtf8(),
                                       domVersion_));
         engine_->getDocument()->getProps()->setInt("kobalt.bionic.mode", bionic_ == "bold" ? 1 : 0);
@@ -1240,7 +1242,8 @@ void EngineDocument::applyStyleSheet()
                         .arg(alignment_);
     const auto base = fb2Document_ ? lString8(readerFb2Css) + lString8("\n") + lString8(fb2::overridesCss) +
                                 lString8(inPageFootnotes_ ? fb2::inPageCss : "")
-                          : lString8(readerHtmlCss) + lString8(readerOverridesCss);
+                          : lString8(readerHtmlCss) + lString8(readerOverridesCss) +
+                                lString8(inPageFootnotes_ ? notes::epubInPageCss : "");
     engine_->setStyleSheet(base + lString8(overrides.toUtf8().constData()) + lString8("\n") +
                            lString8(userStyleSheet_.constData()));
 }

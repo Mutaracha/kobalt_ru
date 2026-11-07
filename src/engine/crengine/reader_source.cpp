@@ -2,6 +2,7 @@
 #include "support/strings.h"
 #include "engine_document.h"
 #include "reader_fb2.h"
+#include "reader_notes.h"
 #include "reader_source.h"
 #include "kobo_styles.h"
 #include "reader_render_callback.h"
@@ -521,6 +522,7 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
         properties->setHex(
             DOC_PROP_FILE_CRC32,
             documentCacheChecksum(documentCachePolicy() + fb2::cachePolicy(loadingFb2, inPageFootnotes_) +
+                                      notes::epubCachePolicy(loadingFb2, inPageFootnotes_) +
                                       ":bionic-v3:" + bionic_.toUtf8(),
                                   domVersion_));
         properties->setString(DOC_PROP_FILE_SIZE, lString32::itoa(int(cacheBytes_ < 0         ? 0
@@ -603,6 +605,8 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
             root->initNodeStyleRecursive(nullptr);
             stylesheet->pop();
         }
+        if (!fb2Document_)
+            notes::markEpubNotes(document);
         markBodyAlignment(document);
         // Prose normalization and chapter layout are shared across formats.
         // Only Kobo link decorations depend on the EPUB spine vocabulary.
