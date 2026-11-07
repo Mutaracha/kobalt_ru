@@ -837,3 +837,10 @@ bool plainEpub() const {
 - Подтверждены стандартные EPUB type/role и alternate namespace, разделение hints, source ignore, 80% против publisher !important, reference-engine сравнение inline inpage hint, nested blocks, длинное continuation, off/on/popup/font/columns/cache; FB2 nested hint/font inheritance и прежние regression cases прошли.
 - Код сохранён/отправлен только в текущую ветку; новые настройки/строки, dependency patches, собственный splitter и сохранение прогресса не добавлялись. Последующие изменения документации не требуют новой бинарной сборки.
 - Не выполнены запуск KOReader как приложения, полная native/UI/lifecycle suite и визуальный/физический Kobo A/B. Профили и общий engine сближены, но полного pixel/UI parity это не доказывает; согласованные superscript labels/default-on comments сохранены намеренно.
+
+### 2026-11-08 — EPUB из пользовательского коммита 02953e6
+
+- Коммит/книга получены с GitHub, пользовательский EPUB сохранён без изменений. Source audit выявил EPUB 2 / InDesign `div._idFootnotes > div._idFootnote`, source `_idFootnoteLink` и backlink `_idFootnoteAnchor`, без стандартных type/role. Для такой разметки и KOReader требует дополнительный CSS tweak; прежний вывод о достаточности per-spec профиля был слишком широким.
+- В стандартный CSS добавлен узкий InDesign publisher-profile, без book-specific путей/номеров, DOM pass или классификации всех цифровых ссылок. Группа целиком, source/backlinks и standalone-класс вне группы не помечаются. EPUB policy v3 пересоздаёт disposable cache; FB2 v6/CSS/save/progress не менялись.
+- Добавлен portable synthetic regression (похожая структура, но оригинальные тестовые тексты) и opt-in --publisher-notes PATH на самом пользовательском EPUB для source notes 4/5, fragment/paint и off/popup. В device workflow вызов вынесен отдельно с timeout/temporary-root/headless контрактом, не добавляет коммерческую книгу как обязательную зависимость общей native suite.
+- Source/diff checks PASS. Native, real-book и Qt5 CI для этой правки ещё не запускались; визуальная проверка Kobo не заявлена.

@@ -74,3 +74,32 @@ PASS. Focused native links/FB2/document-cache/appearance-settings PASS (5m33s),
 Kobo Qt5 build/package/contents PASS (6m6s).
 [Пакет для устройства](https://github.com/Mutaracha/kobalt_ru/actions/runs/42413555935/artifacts/13590533161).
 Ограничения проверки перечислены выше: это не запуск KOReader UI и не Kobo A/B.
+
+## Проверка присланной книги (коммит 02953e6)
+
+`doc/Кокаиновые+короли.epub` — EPUB 2, стандартных type/role у сносок нет.
+В `OEBPS/Text/978500116722-2.xhtml` source links имеют класс `_idFootnoteLink`,
+обратные ссылки — `_idFootnoteAnchor`, а отдельные блоки примечаний —
+`div._idFootnotes > div._idFootnote`, с текстом `p.Snoska`. Это подтверждает
+причину отсутствия нижнего вывода при работавшем popup на screenshot 003–005.
+
+В проверенном KOReader snapshot эта InDesign-структура не входит ни в
+per-spec defaults, ни в встроенный classic-classname список. Там требуется
+дополнительный пользовательский style tweak. Поэтому стандартный профиль
+сам по себе **не гарантирует** нижний вывод для этой книги — предыдущая сверка
+ограничивалась именно этим профилем, а не всеми издательскими структурами.
+
+Добавлен узкий CSS publisher-profile `._idFootnotes > ._idFootnote`, рядом со
+стандартными selectors, без обхода DOM и без эвристики по цифровым ссылкам.
+Саму группу `_idFootnotes` нельзя помечать: иначе несколько примечаний сольются
+в одну сноску. Source/backlinks и одиночный класс вне группы не помечаются.
+EPUB mode salt теперь v3; FB2 policy/CSS и настройки не меняются.
+
+`inDesignNotes()` проверяет синтетическую структуру с соседними,
+несвязанными и многоабзацными примечаниями, popup и off/on. Тексты и шрифты
+из коммерческой книги в неё не копируются. Дополнительный режим links
+`--publisher-notes PATH` проверяет пользовательский оригинал отдельно:
+source notes 4/5, реальные bottom fragments на их страницах, paint и off/popup.
+Fork workflow передаёт путь к книге из пользовательского коммита; обычный
+portable native suite не зависит от наличия этого коммерческого издания.
+Результат нового CI фиксируется в FB2_FORK_PLAN.md.

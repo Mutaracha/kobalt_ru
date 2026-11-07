@@ -7,7 +7,8 @@
 ## Владение механизмом
 
 - `reader_notes.h`: общие semantic popup helpers и EPUB CSS type/role. Нет
-  собственного EPUB marker/DOM walk. Позднее правило задаёт EPUB 80% как в
+  собственного EPUB marker/DOM walk. Добавлен узкий publisher-profile
+  `._idFootnotes > ._idFootnote` для EPUB 2 экспорта InDesign. Позднее правило задаёт EPUB 80% как в
   KOReader `inpage_footnote_font-size_smaller`.
 - `reader_fb2.h`: отдельные FB2 popup hints, условный нижний вывод для всех
   section внутри notes/comments; размер только на верхних section, 75%/85%.
@@ -29,7 +30,7 @@ popup hints/classnames не являются стандартным in-page пр
 KOReader. Optional Wikipedia/classic/extension/flatten tweaks не включены
 автоматически. Несвязанные обычные цифровые ссылки не угадываются.
 
-EPUB policy `:epub-notes-v2:inpage-on/off:`, FB2 `:fb2-v6:inpage-on/off:`
+EPUB policy `:epub-notes-v3:inpage-on/off:`, FB2 `:fb2-v6:inpage-on/off:`
 перестраивают только разобранный rendering cache. Initial load и live toggle
 используют одинаковые salts. Storage schema/позиции XPointer/аннотации прежние.
 Пересчёт страниц ожидаем и не означает потерю позиции.

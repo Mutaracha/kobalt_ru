@@ -335,6 +335,110 @@ void inPageNotes()
     require(notes::epubCachePolicy(true, true).isEmpty(), "EPUB policy changed FB2 cache identity");
 }
 
+// InDesign EPUB 2 notes lack EPUB3 type/role. Keep this structural fixture
+// synthetic: no commercial book text or embedded fonts are copied into tests.
+void inDesignNotes()
+{
+    using namespace kobalt;
+    const QMap<QString, QByteArray> files{
+        {"mimetype", "application/epub+zip"},
+        {"META-INF/container.xml", "<container xmlns='urn:oasis:names:tc:opendocument:xmlns:container' version='1.0'><rootfiles><rootfile full-path='book.opf' media-type='application/oebps-package+xml'/></rootfiles></container>"},
+        {"book.opf", "<package xmlns='http://www.idpf.org/2007/opf' version='2.0'><metadata><title>Publisher notes</title></metadata><manifest><item id='c' href='Text/chapter.xhtml' media-type='application/xhtml+xml'/></manifest><spine><itemref idref='c'/></spine></package>"},
+        {"Text/chapter.xhtml", R"html(<html xmlns='http://www.w3.org/1999/xhtml'><head><style>
+p { margin:4px; font-size:1em; line-height:1.3; text-indent:1.5em; }
+p.Snoska { font-size:0.8em; line-height:1.1; margin:1em 0; }
+span.Superscript { font-size:0.8em; vertical-align:super; }
+</style></head><body><div class='Basic-Text-Frame'>
+<p>First ordinary passage <span class='Superscript'><span id='footnote-014-backlink'><a class='_idFootnoteLink _idGenColorInherit' href='../Text/chapter.xhtml#footnote-014'>4</a></span></span> with more words.</p>
+<p>Second ordinary passage <span class='Superscript'><span id='footnote-013-backlink'><a class='_idFootnoteLink _idGenColorInherit' href='../Text/chapter.xhtml#footnote-013'>5</a></span></span> and an unrelated <a href='#standalone'>6</a>.</p>
+<div class='_idFootnotes'>
+<div id='footnote-014' class='_idFootnote'><p class='Snoska'><span class='Superscript'><a class='_idFootnoteAnchor _idGenColorInherit' href='../Text/chapter.xhtml#footnote-014-backlink'>4</a></span> First synthetic note.</p><p class='Snoska'>Continuation of the first note.</p></div>
+<div id='footnote-013' class='_idFootnote'><p class='Snoska'><a class='_idFootnoteAnchor' href='#footnote-013-backlink'>5</a> Second synthetic note.</p></div>
+<div id='unreferenced' class='_idFootnote'><p class='Snoska'>Unreferenced synthetic note.</p></div>
+</div><div class='_idFootnote' id='standalone'><p>A standalone class is not enough.</p></div>
+</div></body></html>)html"}
+    };
+    QMap<QString, qint64> sizes;
+    for (auto it = files.cbegin(); it != files.cend(); ++it)
+        sizes[it.key()] = it.value().size();
+    auto resources = std::make_shared<ResourceCache>(files.keys(),
+            [files](const QString &name, const ResourceCache::Sink &sink, QString *) {
+                const auto bytes = files.value(name);
+                return sink(bytes.constData(), bytes.size());
+            }, std::make_shared<std::atomic_bool>(false));
+    EngineDocument model(test::readerFonts());
+    QString error;
+    require(model.openResources(resources, sizes, QSize(1072, 1300),
+                                qt::object({{"font_pixels", 32}}), &error), qPrintable(error));
+    require(ReaderSourceIndexProbe::inPageFootnoteCount(model) == 2,
+            "InDesign must include only the two referenced individual notes, not the group or unrelated classes");
+    QString source;
+    for (const auto &link : model.pageLinks()) {
+        const auto details = model.linkDetails(link.source);
+        if (details.label == "4" && details.html.contains("First synthetic note")) {
+            source = link.source;
+            break;
+        }
+    }
+    require(!source.isEmpty(), "InDesign note 4 lost its source link/popup");
+    const auto details = model.linkDetails(source);
+    require(details.html.contains("Continuation") && !details.html.contains("Second synthetic note"),
+            "InDesign popup lost continuation or swallowed the neighbouring note");
+    require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})) &&
+                ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0 &&
+                model.linkDetails(source).html.contains("First synthetic note"),
+            "InDesign off must remove bottom fragments and keep popup");
+    require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", true}})) &&
+                ReaderSourceIndexProbe::inPageFootnoteCount(model) == 2,
+            "InDesign on must restore individual page notes");
+}
+
+// Explicitly invoked by the device workflow against the user's unchanged EPUB.
+// It is not a mandatory commercial-book dependency of the portable native suite.
+void publisherBookNotes(const QString &path)
+{
+    using namespace kobalt;
+    QFile file(path);
+    require(file.open(QIODevice::ReadOnly), "Cannot open supplied publisher EPUB");
+    EngineDocument model(test::readerFonts());
+    QString error;
+    require(model.open(file.readAll(), QSize(1072, 1300),
+                       qt::object({{"font_pixels", 32}, {"fb2_inpage_footnotes", false}}), &error),
+            qPrintable(error));
+    for (const auto &label : {QStringLiteral("4"), QStringLiteral("5")}) {
+        const auto query = QString::fromUtf8(label == "4" ? "Водолея" : "Касабланку");
+        const auto noteText = QString::fromUtf8(label == "4" ? "астрологический" : "Марокко");
+        QString source;
+        for (int page = 0; page < model.pages() && source.isEmpty(); ++page) {
+            if (model.searchPage(query, page).hits.isEmpty())
+                continue;
+            require(model.go(page), "Cannot visit the supplied EPUB reference page");
+            for (const auto &link : model.pageLinks()) {
+                const auto details = model.linkDetails(link.source);
+                if (details.label == label && details.html.contains(noteText)) {
+                    source = link.source;
+                    break;
+                }
+            }
+        }
+        require(!source.isEmpty(), "Supplied EPUB did not reproduce screenshot note");
+        const auto target = model.linkDetails(source).target;
+        require(ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0,
+                "Publisher EPUB off mode unexpectedly contains page notes");
+        require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", true}})) && model.goTo(source),
+                "Cannot reflow publisher EPUB with page notes enabled");
+        require(ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
+                "Supplied EPUB still has no bottom fragments on the source page of the note");
+        require(model.linkDetails(source).target == target && !model.image(model.page()).isNull(),
+                "Publisher EPUB note reflow changed its target or failed to paint");
+        require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})) && model.goTo(source) &&
+                    ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0 &&
+                    model.linkDetails(source).html.contains(noteText),
+                "Publisher EPUB off lost popup or retained bottom fragments");
+    }
+    puts("PASS: supplied publisher EPUB screenshot notes 4/5, bottom fragments, painting, target and off/popup");
+}
+
 void noteMatching()
 {
     using kobalt::LinkKind;
@@ -515,6 +619,10 @@ void noteMatching()
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
+    if (argc == 3 && QByteArray(argv[1]) == "--publisher-notes") {
+        publisherBookNotes(QString::fromLocal8Bit(argv[2]));
+        return 0;
+    }
     require(argc == 2, "Pass the synthetic links EPUB");
     QFile file(QString::fromLocal8Bit(argv[1]));
     require(file.open(QIODevice::ReadOnly), "Cannot open link fixture");
@@ -530,6 +638,7 @@ int main(int argc, char **argv)
     linkDecoration();
     noteMatching();
     inPageNotes();
+    inDesignNotes();
     const auto origin = model.position();
     for (const bool dark : { false, true }) {
         model.setDarkMode(dark);

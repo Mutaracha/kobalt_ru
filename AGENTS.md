@@ -228,8 +228,17 @@ profiles globally. See doc/koreader-footnotes-review.md for snapshot and scope.
 Keep fb2_inpage_footnotes and global/default compatibility. Apply PROP_FOOTNOTES
 at configure and live reflow, so off disables publisher in-page hints too,
 without disabling popup. Keep initial-load/live-toggle mode salts identical;
-EPUB v2 and FB2 v6 invalidate earlier rendering styles, not reading data.
+EPUB v3 and FB2 v6 invalidate earlier rendering styles, not reading data.
 Select fb2Document_ before configure() installs the parse-time stylesheet.
 Use getUnboxedParent() for FB2 run-in title normalization. No page splitter,
 dependency or save/progress fork is needed. Native engine checks and Qt5
 package CI do not replace complete UI/lifecycle tests or Kobo visual comparison.
+
+InDesign EPUB 2 support uses the narrow CSS structure
+`._idFootnotes > ._idFootnote`. Never mark the entire group or the
+`_idFootnoteLink` / `_idFootnoteAnchor` links, and never hard-code book paths,
+IDs or note numbers into production. This is a publisher-profile extension,
+not KOReader's per-spec default. Keep the synthetic InDesign matrix portable;
+`--publisher-notes PATH` is a separate opt-in real-book validation owned by the
+fork device workflow. Do not copy commercial book text/fonts into new fixtures
+or runtime assets. EPUB cache v3 invalidates earlier per-spec-only layouts.

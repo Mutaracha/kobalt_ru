@@ -32,8 +32,8 @@ inline bool noteElement(ldomNode *node)
 
 inline QByteArray epubCachePolicy(bool fb2, bool inPage)
 {
-    return fb2 ? QByteArray() : inPage ? QByteArray(":epub-notes-v2:inpage-on:")
-                                      : QByteArray(":epub-notes-v2:inpage-off:");
+    return fb2 ? QByteArray() : inPage ? QByteArray(":epub-notes-v3:inpage-on:")
+                                      : QByteArray(":epub-notes-v3:inpage-off:");
 }
 
 // Standard EPUB semantics, resolved by CREngine's own CSS/footnote pipeline.
@@ -41,7 +41,10 @@ inline QByteArray epubCachePolicy(bool fb2, bool inPage)
 // inpage_footnote_font-size_smaller. Popup hints/classification stay separate.
 inline constexpr auto epubInPageCss = R"rrcss(
 *[type~="note"], *[type~="endnote"], *[type~="footnote"], *[type~="rearnote"],
-*[role~="doc-note"], *[role~="doc-endnote"], *[role~="doc-footnote"], *[role~="doc-rearnote"] {
+*[role~="doc-note"], *[role~="doc-endnote"], *[role~="doc-footnote"], *[role~="doc-rearnote"],
+/* InDesign EPUB 2 export: individual notes, NOT the whole notes group,
+   source links (_idFootnoteLink), or backlinks (_idFootnoteAnchor). */
+._idFootnotes > ._idFootnote {
     -cr-only-if: -fb2-document;
     -cr-hint: footnote-inpage;
     margin: 0 !important;
