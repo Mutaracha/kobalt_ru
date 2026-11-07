@@ -74,9 +74,9 @@ QByteArray windows1251FictionBook() {
     book += "<?xml version=\"1.0\" encoding=\"windows-1251\"?>\r\n";
     book += "<FictionBook xmlns=\"" + QByteArray(fb2Namespace) + "\">";
     book += "<description><title-info><book-title>";
-    book += QByteArray::fromHex("d0e5f1f2"); // Тест
+    book += QByteArray::fromHex("d2e5f1f2"); // Тест
     book += "</book-title><author><last-name>";
-    book += QByteArray::fromHex("d0e5f1f2"); // Тест
+    book += QByteArray::fromHex("d2e5f1f2"); // Тест
     book += "</last-name></author><lang>ru</lang></title-info></description>";
     book += "<body><section><p>";
     book += QByteArray::fromHex("cff0e8e2e5f22c20ece8f021"); // Привет, мир!
