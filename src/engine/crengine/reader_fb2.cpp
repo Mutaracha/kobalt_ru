@@ -35,8 +35,10 @@ void fb2::normalizeNoteTitles(ldomNode *root) {
             if (!notes)
                 continue;
         }
-        if (notes && node->isNodeName("title") && node->getParentNode() &&
-            node->getParentNode()->isNodeName("section")) {
+        // FB2 run-in titles can already be inside an engine autoBoxing
+        // after parsing. Ignore only engine boxes, never publisher containers.
+        auto *parent = node->getUnboxedParent();
+        if (notes && node->isNodeName("title") && parent && parent->isNodeName("section")) {
             const auto before = qstring(node->getText());
             if (before.size() <= 32) {
                 const auto number = fb2::noteNumber(before);

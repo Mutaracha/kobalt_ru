@@ -200,5 +200,7 @@ notes. Its name is retained for checkpoint/default compatibility; no migration
 or schema bump is needed. Default remains true. EPUB parsed-cache identity adds
 `:epub-notes-v1:inpage-on:` or `:epub-notes-v1:inpage-off:` at both initial load
 and live appearance changes. This prevents reuse of pre-marker EPUB caches and
-caches rendered in the other mode. FB2 cache policy is unchanged. Old cache
-files are not deleted; XPointer positions and progress storage are unchanged.
+caches rendered in the other mode. FB2 policy now uses `:fb2-v5:inpage-on:` /
+`:fb2-v5:inpage-off:` to rebuild markers previously classified against HTML
+parse-time margins; format selection now precedes engine configuration. Old
+cache files are not deleted; XPointer positions and progress storage are unchanged.

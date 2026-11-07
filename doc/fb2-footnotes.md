@@ -97,7 +97,9 @@ popup-кода без изменения их значения. Свежий EPU
 с нижним выводом. Общая настройка и её default-on/key сохранены без нового UI.
 
 EPUB cache salt учитывает версию маркеров и режим; initial load и live toggle
-используют одинаковую policy. FB2 cache policy/CSS не изменены. Source hooks:
+используют одинаковую policy. FB2 CSS не изменён; cache policy v5 также
+исправляет классификацию общих normalization markers: формат выбирается до
+configure, поэтому FB2 парсится со своим stylesheet, а не с HTML margins. Source hooks:
 reader_source.cpp (свежий DOM и checksum), engine_document.cpp (CSS, reflow,
 checksum после изменения), reader_links.cpp (общая семантика). Новых hooks
 в UI, lifecycle и зависимости CREngine нет.
