@@ -1,6 +1,7 @@
 #include "reader_inputs.h"
 #include "reader_source_index_probe.h"
 #include "engine/crengine/reader_notes.h"
+#include "reader_styles.h"
 #include "support/qt_compat.h"
 #include "engine/crengine/engine_document.h"
 #include <QBuffer>
@@ -266,9 +267,40 @@ void inPageNotes()
         // EPUB import prefixes IDs with the spine fragment; inspect the
         // resolved XPointer, not the publisher's unqualified "note" id.
         const auto notePixels = ReaderSourceIndexProbe::fontPixelsAt(model, popup.target);
-        require(notePixels >= 24 && notePixels <= 27,
-                qPrintable(QString("KOReader 80% inpage font lost to publisher CSS: %1 (%2)")
-                           .arg(notePixels).arg(QString::fromUtf8(attribute))));
+        if (attribute == "style='-cr-hint:footnote-inpage'") {
+            // An inline hint is applied AFTER the stylesheet (lvrend.cpp,
+            // setNodeStyle): even KOReader's late conditional cannot see it.
+            // Compare with a separate engine using only the reference profile,
+            // rather than inventing a stronger font guarantee than KOReader.
+            EngineDocument reference(test::readerFonts());
+            require(reference.openResources(resources, sizes, QSize(1072, 1300),
+                                            qt::object({{"font_pixels", 32}}), &error), qPrintable(error));
+            const QByteArray profile = R"css(
+*[type~="note"], *[type~="endnote"], *[type~="footnote"], *[type~="rearnote"],
+*[role~="doc-note"], *[role~="doc-endnote"], *[role~="doc-footnote"], *[role~="doc-rearnote"] {
+    -cr-only-if: -fb2-document;
+    -cr-hint: footnote-inpage;
+    margin: 0 !important;
+}
+*, autoBoxing {
+    -cr-hint: late;
+    -cr-only-if: -fb2-document inpage-footnote;
+    font-size: 0.8urem !important;
+}
+)css";
+            ReaderSourceIndexProbe::useReferenceStyleSheet(reference,
+                    QByteArray(readerHtmlCss) + readerOverridesCss + profile);
+            const auto referenceLinks = reference.pageLinks();
+            require(!referenceLinks.isEmpty() && ReaderSourceIndexProbe::inPageFootnoteCount(reference) > 0,
+                    "Reference KOReader profile lost the publisher inpage note");
+            const auto referenceTarget = reference.linkDetails(referenceLinks.first().source).target;
+            require(notePixels == ReaderSourceIndexProbe::fontPixelsAt(reference, referenceTarget),
+                    "Publisher inline-hint font differs from the reference KOReader profile");
+        } else {
+            require(notePixels >= 24 && notePixels <= 27,
+                    qPrintable(QString("KOReader 80% inpage font lost to publisher CSS: %1 (%2)")
+                               .arg(notePixels).arg(QString::fromUtf8(attribute))));
+        }
         require(popup.kind == LinkKind::Footnote && popup.html.contains("Continuation") &&
                     !popup.html.contains("Unreferenced"), "EPUB note popup lost its boundary");
         require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})) &&

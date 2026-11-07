@@ -816,3 +816,5 @@ bool plainEpub() const {
 - Добавлены focused regressions: отдельные hints/source ignore, publisher !important size, явный inpage hint/off-on/cache, недоверенный старый marker, длинное EPUB continuation и nested blocks/FB2 sections. Native и Qt5 CI для этой версии ещё не выполнялись; визуальная идентичность KOReader не заявлена.
 
 - Первый KOReader-profile CI: Qt5 package PASS; native FB2/appearance/document-cache PASS. Новый EPUB font probe искал сырой id=note, хотя EPUB importer префиксует IDs именем spine fragment, и возвращал 0. Probe переведён на реальный resolved target XPointer; ожидания 80% не ослаблены, runtime не менялся. Повторный native результат ожидается.
+
+- Следующий native run выявил реальную границу legacy-size tweak самого KOReader: inline style=footnote-inpage устанавливается после stylesheet/late conditional, поэтому без type/role может сохранять исходный размер. Подтверждено порядком setNodeStyle в lvrend.cpp. Для этого случая добавлен отдельный reference-engine с CSS-профилем KOReader и сравнением шрифта; для стандартных type/role строгая проверка 80%, в том числе против publisher 300% !important, сохранена. Runtime не менялся.

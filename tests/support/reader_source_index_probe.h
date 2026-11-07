@@ -26,6 +26,11 @@ struct ReaderSourceIndexProbe {
         auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
         return node ? node->getFont()->getSize() : 0;
     }
+    static void useReferenceStyleSheet(EngineDocument &model, const QByteArray &css) {
+        model.engine_->setStyleSheet(lString8(css.constData()));
+        model.engine_->requestRender();
+        model.engine_->Render();
+    }
     static int fontPixelsAt(const EngineDocument &model, const QString &position) {
         const auto pointer = model.engine_->getDocument()->createXPointer(cre(position));
         auto *node = pointer.isNull() ? nullptr : pointer.getNode();
