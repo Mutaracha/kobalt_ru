@@ -159,3 +159,20 @@ Use lowercase release-stage words in commit messages, including `alpha` and `bet
 ## beta6 integration scope
 
 Use upstream frontlight gesture feedback, without the fork quiet-light UI, key or migration. Cache cleanup is deferred until after beta; do not restore its action, helper, worker retirement, lifecycle barriers or special tests. Never delete device caches as part of removing the feature. Use upstream progress/save, retaining necessary FB2 integration. Keep FB2 formatting/settings aligned with the shared EPUB implementation as upstream evolves; do not freeze a separate formatting implementation.
+
+## Maintainability during active upstream development
+
+For the beta6 integration and subsequent updates, optimize for maintenance effort,
+not the smallest diff or fewest lines. Additional focused code is acceptable when
+it isolates a fork responsibility and reduces repeated conflict resolution.
+Keep fork-specific policy in cohesive modules with explicit ownership, and use a
+small number of deliberate integration points in upstream code. Follow upstream's
+new directory boundaries rather than retaining parallel obsolete directories.
+Do not build a generic plugin framework, scatter conditional hooks, or copy whole
+upstream classes/settings pages to avoid a merge conflict. In particular, FB2
+must use evolving shared EPUB formatting/settings and upstream progress/save;
+isolate only format-specific detection, preprocessing, resource and position
+adaptation, footnote policy and cache salt. Keep localization/debug policy out of
+unrelated UI and lifecycle code. Preserve the approved About rendering and shared
+UI styling contracts. Document each integration point's responsibility and focused
+regression coverage; distinguish code moves/refactoring from behavior changes.
