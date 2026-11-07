@@ -67,11 +67,11 @@ int main()
     appearance::copy(copied, notesOff);
     require(copied.contains("fb2_inpage_footnotes") && !copied.value("fb2_inpage_footnotes").toBool(true),
             "Appearance copy lost a disabled page-note mode");
-    const auto changed = appearance::afterContentChange({{"position", "old"}, {"font_pixels", 42},
+    const auto contentChanged = appearance::afterContentChange({{"position", "old"}, {"font_pixels", 42},
         {"dark_mode", true}, {"word_spacing", 100}, {"fb2_inpage_footnotes", false}, {"unknown", 1}});
-    require(!changed.contains("position") && !changed.contains("font_pixels") && !changed.contains("unknown") &&
-                changed.value("dark_mode").toBool() && changed.value("word_spacing").toInt() == 100 &&
-                changed.contains("fb2_inpage_footnotes") && !changed.value("fb2_inpage_footnotes").toBool(true),
+    require(!contentChanged.contains("position") && !contentChanged.contains("font_pixels") && !contentChanged.contains("unknown") &&
+                contentChanged.value("dark_mode").toBool() && contentChanged.value("word_spacing").toInt() == 100 &&
+                contentChanged.contains("fb2_inpage_footnotes") && !contentChanged.value("fb2_inpage_footnotes").toBool(true),
             "Content-change policy lost independent choices or retained source-bound state");
 
     for (const auto minutes : sessionTimeout::choices) {

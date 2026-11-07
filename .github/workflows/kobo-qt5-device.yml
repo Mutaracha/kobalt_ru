@@ -46,7 +46,7 @@ jobs:
               --volume "$PWD:/work" --volume "$cache:/dependency-cache" \
               --workdir /work/platforms/desktop "$image" bash -euc '
                 cmake --preset linux -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
-                cmake --build ../../build/desktop-linux --parallel 4 --target kobalt-desktop-tests kobalt-links-tests kobalt-fb2-tests kobalt-document-cache-tests kobalt-appearance-settings-tests
+                cmake --build ../../build/desktop-linux --parallel 4 --target kobalt-desktop-tests kobalt-links-tests kobalt-fb2-tests kobalt-document-cache-tests kobalt-appearance-settings-tests -- -k 0
                 ctest --preset linux --output-on-failure -R "^(engine\.(links|fb2|document-cache)|model\.appearance-settings)$"
               '
           ) >"$log" 2>&1
