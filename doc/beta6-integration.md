@@ -27,5 +27,5 @@
 - `git diff --check`: PASS.
 - Production offline suite воспроизводит прежний timestamp flake strings-test.cmake:69. Production scripts не изменялись.
 - Полный offline suite с изолированной копией strings-test (ожидание 5 секунд + touch входного fixture): PASS.
-- Первый Qt5 CI подготовки обнаружил забытые cacheRow layout calls; исправлены отдельным изменением. Повторный CI проверяется отдельно.
+- Первый Qt5 CI подготовки обнаружил забытые cacheRow layout calls; исправлены отдельным изменением. Повторный CI [42396464431](https://github.com/Mutaracha/kobalt_ru/actions/runs/42396464431) для `720d58a` — PASS, 4m52s; artifact `Kobalt-qt5-device`. Это подготовительная сборка, не beta6.
 - Native Qt/UI/device tests не запускались: SDK отсутствует. Интеграция beta6 пока **не завершена**.

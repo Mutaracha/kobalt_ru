@@ -702,3 +702,5 @@ bool plainEpub() const {
 - Штатный CMake parity EN/RU PASS. Первоначальный вспомогательный Python check ошибочно требовал одинаковый порядок параметров; штатный parser правильно допускает перестановку с сохранением кратности. Production переводы из-за этого не менялись.
 - Production offline suite воспроизвёл известную timestamp-flake strings-test.cmake:69. Полный suite с scratch-only ожиданием 5 секунд + touch входного fixture PASS; production test не ослаблен.
 - Qt5 CI 42396111503 для b602d57 выявил три оставшихся cacheRow layout calls после удаления действия. Они удалены; повторная сборка требуется. Native Qt/UI/device tests не запускались.
+
+- **Повторная Qt5-проверка:** CI 42396464431 для 720d58a — PASS, 4m52s; offline checks, package verification и artifact Kobalt-qt5-device успешны. Это подготовительная версия без двух отменённых функций, **не интегрированная beta6**. Native/device tests остаются невыполненными.
