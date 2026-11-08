@@ -38,6 +38,7 @@
 #include <QElapsedTimer>
 #include <QEventLoop>
 #include <QFile>
+#include <QFileInfo>
 #include "storage/reader_storage.h"
 #include "ui/style/metrics.h"
 #include "ui/style/styles.h"
@@ -3818,6 +3819,9 @@ int main(int argc, char **argv)
         auto *ru = popup->findChild<QCheckBox *>("rrDebugLanguageRussian");
         auto *lastRow = dynamic_cast<kobalt::ui::DescribedOption *>(automatic);
         auto *firstRow = dynamic_cast<kobalt::ui::DescribedOption *>(english);
+        require(automatic && automatic->isChecked() && !english->isChecked() && ru
+                        && !ru->isChecked(),
+                "Missing override must select Automatic in the debug language modal");
         require(lastRow && firstRow && ru && !lastRow->presentation().dividers.testFlag(Qt::BottomEdge) &&
                     !firstRow->presentation().dividers.testFlag(Qt::TopEdge) &&
                     firstRow->presentation().dividers.testFlag(Qt::BottomEdge),
@@ -3840,6 +3844,45 @@ int main(int argc, char **argv)
         popup->findChild<QPushButton *>("rrDebugLanguageClose")->click();
         require(!popup->isVisible() && label.grab().toImage() == before,
                 "Closing debug dialog changed the fork row");
+        delete popup;
+        // A Russian interface does not imply a Russian override. Exercise each
+        // persisted mode and ensure opening/cancelling never writes a choice.
+        const auto previousLocale = kobalt::strings::locale();
+        kobalt::strings::setLocale(kobalt::strings::Locale::Russian);
+        for (const auto mode : { kobalt::DebugLanguage::English, kobalt::DebugLanguage::Russian,
+                                 kobalt::DebugLanguage::Automatic }) {
+            for (const auto *name : { ".lang_en", ".lang_ru" }) {
+                const auto path = diagnostics.filePath(QString::fromLatin1(name));
+                require(!QFileInfo::exists(path) || QFile::remove(path),
+                        "Reset language marker fixture");
+            }
+            if (mode != kobalt::DebugLanguage::Automatic) {
+                QFile marker(diagnostics.filePath(
+                        mode == kobalt::DebugLanguage::English ? ".lang_en" : ".lang_ru"));
+                require(marker.open(QIODevice::WriteOnly), "Create language marker fixture");
+            }
+            for (int i = 0; i < 5; ++i)
+                tap();
+            auto *reopened = host.findChild<QWidget *>("rrDebugLanguage");
+            require(reopened && reopened->isVisible(), "Reopen language modal for persisted mode");
+            auto *enChoice = reopened->findChild<QCheckBox *>("rrDebugLanguageEnglish");
+            auto *ruChoice = reopened->findChild<QCheckBox *>("rrDebugLanguageRussian");
+            auto *autoChoice = reopened->findChild<QCheckBox *>("rrDebugLanguageAutomatic");
+            require(enChoice && ruChoice && autoChoice
+                            && enChoice->isChecked() == (mode == kobalt::DebugLanguage::English)
+                            && ruChoice->isChecked() == (mode == kobalt::DebugLanguage::Russian)
+                            && autoChoice->isChecked()
+                                    == (mode == kobalt::DebugLanguage::Automatic),
+                    "Debug language selection must reflect the persisted override, not live Russian");
+            require(kobalt::debugLanguage(diagnostics.path()) == mode,
+                    "Opening language modal unexpectedly persisted a selection");
+            reopened->findChild<QPushButton *>("rrDebugLanguageClose")->click();
+            require(kobalt::debugLanguage(diagnostics.path()) == mode
+                            && kobalt::strings::locale() == kobalt::strings::Locale::Russian,
+                    "Cancelling language modal changed persistence or the live interface locale");
+            delete reopened;
+        }
+        kobalt::strings::setLocale(previousLocale);
     }
     // Approved long RU descriptions use the shared row metrics, including beta7 standby.
     {

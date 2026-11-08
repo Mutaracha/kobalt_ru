@@ -307,3 +307,13 @@ profile in the author inventory are proposals only. Detailed cache cleanup
 notes are historical; never revive that removed lifecycle state machine
 without a new explicit implementation request. New Russian wording still
 requires approval before editing assets.
+
+### Approved beta7 review fixes
+
+R1/R2 are approved: paragraph help must call the visible option «Из книги»;
+the debug-language radio selection must represent persisted DebugLanguage,
+not the currently resolved UI locale. Opening/cancelling must not write markers
+or change the live locale. Keep async persistence and next-opening application.
+R3 font-chooser wording is not approved: show an example before changing any
+label/description or restricting the catalog. Serif is a fallback/family role,
+not a promise that every listed font is classified as serif.

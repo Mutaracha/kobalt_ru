@@ -637,7 +637,7 @@
 "settings.paragraph_spacing" = "Настройка абзацев";
 "settings.paragraph_spacing_summary" = "Интервалы и отступы первой строки.";
 "settings.paragraph_spacing_description" = "Значения — в процентах от размера текста: при 12 пт отступ 100% равен 12 пт. Для всех книг. Заголовки и особые блоки сохраняют оформление.";
-"settings.paragraph_choices_description" = "«Издатель» сохраняет соответствующее оформление книги. Штриховка обозначает дополнительный интервал между абзацами.";
+"settings.paragraph_choices_description" = "«Из книги» сохраняет соответствующее оформление книги. Штриховка обозначает дополнительный интервал между абзацами.";
 "settings.paragraph_gap" = "Интервал";
 "settings.paragraph_indent" = "Отступ первой строки";
 "settings.paragraph_adjustments_value" = "Интервал %1 · Отступ %2";

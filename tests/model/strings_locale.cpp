@@ -33,6 +33,11 @@ void translatedLookup() {
     require(strings::locale() == Locale::Russian, "Russian locale was not stored");
     require(strings::get("common.cancel") == QString::fromUtf8("Отмена"), "Russian lookup returned the wrong copy");
     require(strings::get("library.title") == QString::fromUtf8("Библиотека"), "Russian library title mismatch");
+    require(strings::get("settings.paragraph_choices_description")
+                    == QString::fromUtf8(
+                            "«Из книги» сохраняет соответствующее оформление книги. "
+                            "Штриховка обозначает дополнительный интервал между абзацами."),
+            "Paragraph help must name the visible From book choice consistently");
     strings::setLocale(Locale::English);
     require(strings::get("common.cancel") == QStringLiteral("Cancel"), "English lookup returned the wrong copy");
     require(strings::get("missing.unknown.key") == QStringLiteral("missing.unknown.key"),

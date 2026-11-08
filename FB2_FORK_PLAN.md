@@ -2623,3 +2623,20 @@ disabled состояние; не менять input behavior ради испр�
 - Новые RU/UX предложения ожидают отдельного решения. Публикация — docs-only,
   исполняемый код и PNG не менялись. Проверены полная per-frame карта,
   SHA256 из Git originals и git diff --check; runtime tests не запускались.
+
+## Согласованные UI правки после screenshot audit beta7
+
+- Пользователь согласовал R1/R2; R3 (font chooser clarity) требует примера до
+  изменения текста. Шрифтовые заголовки/описания/фильтрация не менялись.
+- R1: paragraph_choices_description — только «Издатель» → «Из книги», без иных
+  wording/placeholder изменений; добавлено точное RU lookup ожидание.
+- R2: fork_debug initial RadioList selection читает persisted DebugLanguage.
+  Automatic при реально русском UI остаётся Automatic; открытие не пишет
+  маркеры, применение по-прежнему только после нового открытия ридера.
+- UI regression: initial Automatic, повторное открытие English/Russian/Automatic
+  при русском UI, все три checked-state, отсутствие записи при open/cancel,
+  сохранение live locale. Существующие async save/geometry assertions сохранены.
+- Пример R3 приведён в doc/beta7-ui-review.md только для обсуждения. Нужно
+  объяснять serif fallback/family mapping, не только отсутствие font file.
+- Diff-only clang-format и точечная проверка RU/placeholder PASS. Локального
+  Qt/SDK нет; native/Qt5 CI и новый artifact ожидаются. Qt6 повторно не запускается.

@@ -91,6 +91,12 @@ private:
         choices->add("rrDebugLanguageEnglish", QStringLiteral("English"));
         choices->add("rrDebugLanguageRussian", QString::fromUtf8("Русский"));
         choices->add("rrDebugLanguageAutomatic", strings::get("debug.language_automatic"));
+        // Show the persisted override, not the effective interface locale:
+        // Automatic may also resolve to Russian on a localized device.
+        const auto language = debugLanguage(directory);
+        choices->setCurrent(language == DebugLanguage::English           ? 0
+                                    : language == DebugLanguage::Russian ? 1
+                                                                         : 2);
         card->rows()->addWidget(choices);
         auto *cancel = ui::makeModalButton(
                 card, { strings::get("common.cancel"), "rrDebugLanguageClose" }, false);
