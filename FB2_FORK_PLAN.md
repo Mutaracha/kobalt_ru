@@ -2,9 +2,16 @@
 
 ## beta7 — интеграция и автоматические проверки завершены; устройство ожидается
 
-**Текущий этап: beta7 объединена; проверенная сборка `dddace7`, device gate открыт.**
+**Текущий этап: R1/R2 исправлены, Qt5/native CI PASS; новый бинарник `2c9a474`.**
 
-- Проверенный код: `dddace7644e80745e8b5160b1c74da5b0f4730d9`, настоящий merge
+- [CI 42514895433](https://github.com/Mutaracha/kobalt_ru/actions/runs/42514895433)
+  PASS: offline, Qt5 build/package/contents и focused native с publisher EPUB.
+- [Kobalt-qt5-device 13630683063](https://github.com/Mutaracha/kobalt_ru/actions/runs/42514895433/artifacts/13630683063),
+  код `2c9a47423b20e9d7eb4ff829faf670fe51712562`, 36 426 684 bytes.
+  Native results 13631117676. Qt6 skipped. Новые снимки этого бинарника ещё
+  не получены; R3 остаётся только примером, без изменения font chooser.
+
+- Предыдущая проверенная beta7 база: `dddace7644e80745e8b5160b1c74da5b0f4730d9`, настоящий merge
   upstream: `60c43d5961e0c5cdb3d7049ef0adde2ffc4b338f` → `e86533c`.
 - [CI 42500439074](https://github.com/Mutaracha/kobalt_ru/actions/runs/42500439074)
   **PASS**: production offline checks, Kobo Qt5 build/package/contents (6m31s),
@@ -2640,3 +2647,13 @@ disabled состояние; не менять input behavior ради испр�
   объяснять serif fallback/family mapping, не только отсутствие font file.
 - Diff-only clang-format и точечная проверка RU/placeholder PASS. Локального
   Qt/SDK нет; native/Qt5 CI и новый artifact ожидаются. Qt6 повторно не запускается.
+
+
+### R1/R2 — подтверждение автоматических проверок
+
+Код 2c9a47423b20e9d7eb4ff829faf670fe51712562, CI 42514895433 — success.
+Qt5 job 128835650244 (5m45s), native job 128835650072 (7m7s).
+Новые locale/checkbox regression assertions и отдельный publisher EPUB PASS.
+Artifact 13630683063, native log 13631117676. Это не проверка нового бинарника
+на устройстве; старые кадры dddace7 не выдаются за исправленные screenshots.
+R3 ждёт решения по текстовому примеру; названия/описания/каталог не изменены.

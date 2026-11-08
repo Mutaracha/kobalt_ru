@@ -27,7 +27,11 @@ RU descriptions или выхода модальных карточек за э�
 Пользователь согласовал R1 и R2. Точечная замена R1 применена; R2 при открытии
 отмечает сохранённый override, не effective locale. Добавлены regression checks
 для English/Russian/Automatic при русском UI, открытия/отмены без записи и
-согласованного RU пояснения. CI нового бинарника пока ожидается.
+согласованного RU пояснения. [CI 42514895433](https://github.com/Mutaracha/kobalt_ru/actions/runs/42514895433)
+прошёл: offline, Qt5 package, focused native и publisher EPUB.
+Новый код — `2c9a47423b20e9d7eb4ff829faf670fe51712562`,
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/42514895433/artifacts/13630683063).
+Новых device captures этого бинарника пока нет.
 R3 не согласован: до изменения текста нужен пример. Названия/каталог шрифтов
 не менялись. Внешние language packs, comics mode и cache cleanup не реализуются
 в рамках этих небольших UI правок.
