@@ -331,6 +331,7 @@ int main(int argc, char **argv)
         kobalt::strings::setLocale(previousLocale);
     }
     {
+        using namespace kobalt::ui;
         const auto &assets = kobalt::test::readerAssets();
         const QStringList files{ assets.file("fonts/IBMPlexSans-Regular.ttf") };
         renderPrivateText(QStringLiteral("Font Preview"), chromeFont(32));

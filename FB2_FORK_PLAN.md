@@ -37,7 +37,13 @@
   сохранены. Повторная сборка обязательна, artifact первого запуска не готов.
 - Scratch offline run с задержкой 1s только перед изменением strings fixture
   завершился exit 0; tracked test/скрипты не менялись. Original flake остаётся.
-- Pending: extended native CI, real-book invocation и Kobo Qt5 package.
+- CI 42495885246 на 8490ddd: Kobo Qt5 build/package/contents PASS (artifact
+  13623128798), native compile FAIL в component UI. Auto-merge вставил старые
+  fork regression blocks внутрь начала upstream font-preview block и оставил
+  его без локального using namespace kobalt::ui. Восстановлен using именно
+  в upstream block; все font-preview/fork assertions сохранены. Это подтверждает,
+  почему auto-merge нельзя считать проверенным без расширенной native выборки.
+- Pending: повторный extended native CI, real-book invocation и итоговый Qt5 package.
 - Not run: full native/all-variant gallery, физический beta7/новые screenshots.
   По CI не объявлять визуальную проверку, не путать старый ab6d9a0 artifact с beta7.
 
