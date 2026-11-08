@@ -200,9 +200,9 @@ regression coverage; distinguish code moves/refactoring from behavior changes.
 - EngineDocument is the upstream engine owner. Keep reader_fb2 preprocessing/CSS
   and FB2 cache policy there, using the same normalization/appearance pipeline as
   EPUB. Do not restore ReaderModel or the retired interfaces/ source directory.
-- fork_settings owns the Settings row presentation and fork About attachment;
+- fork_settings owns Settings row presentation; app/about/fork_about owns the shared About attachment;
   invoke row styling in check() so future upstream options inherit it. Never
-  reintroduce a late manually enumerated registry. appendForkBuildRow must retain
+  reintroduce a late manually enumerated registry. app/about/fork_about::appendForkBuildRow must retain
   the approved InterfaceLabel rendering and attach debug input without repainting.
 - sleep_ribbon_text owns only translated caption splitting; sleep screen modes,
   remaining-time calculation and lifecycle belong to upstream beta6.
@@ -246,10 +246,12 @@ not KOReader's per-spec default. Keep the synthetic InDesign matrix portable;
 fork device workflow. Do not copy commercial book text/fonts into new fixtures
 or runtime assets. EPUB cache v3 invalidates earlier per-spec-only layouts.
 
-### beta7 integration — pending RU approval
+### beta7 integration — approved RU, validation in progress
 
 Use doc/beta7-integration.md and the complete translation-proposal-beta7.md
-before merging e86533c. Do not apply new/changed RU assets until user approval.
+for the e86533c integration. The user approved the complete proposal, including
+the screenshot-driven refinements; these are applied. Further wording changes
+require new approval.
 The user confirmed InDesign footnotes work on-device in ab6d9a0; preserve that
 baseline, EPUB v3/FB2 v6 policies, the standalone publisher-book regression,
 and shared formatting/progress. Adapt fork About/debug to upstream's common
@@ -276,3 +278,12 @@ editing images or repacking books, update all workflow arguments, and bind each
 capture set to its actual binary SHA. A screenshot commit is not a binary build.
 Record a per-screen context audit in the canonical plan, propose wording changes
 for approval, and never infer beta7 layout validation from beta6 captures.
+
+About fork metadata/debug now belongs under src/app/about/, used by both Library
+and reader Settings. Do not restore build/debug fields in SettingsPanelInputs.
+The only addition to upstream AboutPage is its fork-row helper call. Keep hidden
+debug input out of the stock version/commit labels and preserve their painting.
+Run the extended fork CI selection (shared About/settings/buttons/lifecycle plus
+locale, EPUB/FB2 and cache); its focused coverage is not the full native suite.
+Keep anchor_preview.h regressions on semantic/long/InDesign EPUB and FB2 notes:
+preview must restore source position, pagination, bottom fragments and reading image.

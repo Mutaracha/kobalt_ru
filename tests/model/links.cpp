@@ -1,4 +1,5 @@
 #include "reader_inputs.h"
+#include "anchor_preview.h"
 #include "reader_source_index_probe.h"
 #include "engine/crengine/reader_notes.h"
 #include "reader_styles.h"
@@ -254,6 +255,7 @@ void inPageNotes()
             continue;
         }
         require(!model.image(0).isNull(), "EPUB page notes did not paint");
+        test::requireAnchoredPreviewRestores(model);
         if (testCase.longNote)
             require(ReaderSourceIndexProbe::footnotePageCount(model) > 1,
                     "Long EPUB note did not continue on later pages");
@@ -372,6 +374,7 @@ span.Superscript { font-size:0.8em; vertical-align:super; }
                                 qt::object({{"font_pixels", 32}}), &error), qPrintable(error));
     require(ReaderSourceIndexProbe::inPageFootnoteCount(model) == 2,
             "InDesign must include only the two referenced individual notes, not the group or unrelated classes");
+    test::requireAnchoredPreviewRestores(model);
     QString source;
     for (const auto &link : model.pageLinks()) {
         const auto details = model.linkDetails(link.source);
@@ -431,6 +434,7 @@ void publisherBookNotes(const QString &path)
                 "Supplied EPUB still has no bottom fragments on the source page of the note");
         require(model.linkDetails(source).target == target && !model.image(model.page()).isNull(),
                 "Publisher EPUB note reflow changed its target or failed to paint");
+        test::requireAnchoredPreviewRestores(model);
         require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})) && model.goTo(source) &&
                     ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0 &&
                     model.linkDetails(source).html.contains(noteText),

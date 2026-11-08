@@ -131,10 +131,10 @@
 "kosync.retry_later" = "Ридер занят. Повторим синхронизацию позже.";
 "kosync.busy" = "Синхронизация уже выполняется.";
 "kosync.storage_error" = "Не удалось прочитать или сохранить учётную запись. Прежние данные сохранены.";
-"kosync.auth_error" = "Не удалось войти. Проверьте имя пользователя и пароль.";
-"kosync.network_error" = "Сервер недоступен. Проверьте Wi-Fi, подключение к интернету и адрес сервера.";
+"kosync.auth_error" = "Сервер отклонил данные входа. Проверьте имя, пароль и наличие учётной записи на этом сервере. Сервер должен поддерживать авторизацию KOSync x-auth.";
+"kosync.network_error" = "Не удалось выполнить запрос синхронизации. Проверьте адрес сервера и подключение к сети, затем повторите попытку.";
 "kosync.connecting" = "Подключение к Wi-Fi…";
-"kosync.invalid_response" = "Сервер вернул неверные данные прогресса. Ваша позиция сохранена.";
+"kosync.invalid_response" = "Ответ сервера несовместим с KOSync. Проверьте адрес сервера и префикс пути. Позиция чтения сохранена.";
 "kosync.invalid_account" = "Введите HTTPS-адрес сервера, имя и пароль. Адрес не должен содержать данные входа, параметры запроса или фрагмент.";
 "kosync.native_sync" = "Эта книга использует встроенную синхронизацию Kobo. KOSync для этой копии недоступен.";
 "kosync.kobo_cloud" = "Эта книга синхронизирует прогресс через Kobo Cloud. KOSync недоступен для этой копии.";
@@ -266,11 +266,11 @@
 "common.previous_page" = "Предыдущая страница";
 "common.size_large" = "Большой";
 "common.size_extra_large_short" = "XL";
-"common.size_large_short" = "Б";
+"common.size_large_short" = "L";
 "common.size_medium" = "Средний";
-"common.size_medium_short" = "С";
+"common.size_medium_short" = "M";
 "common.size_small" = "Маленький";
-"common.size_small_short" = "М";
+"common.size_small_short" = "S";
 
 /* components */
 "components.battery_level_unavailable" = "Уровень заряда недоступен";
@@ -632,7 +632,7 @@
 "reader.landscape" = "Альбомная";
 "reader.landscape_upside_down" = "Альбомная, вверх ногами";
 "reader.line_spacing" = "Межстрочный интервал: ";
-"reader.publisher_spacing" = "Издатель";
+"reader.publisher_spacing" = "Из книги";
 "settings.section_paragraphs" = "Абзацы";
 "settings.paragraph_spacing" = "Настройка абзацев";
 "settings.paragraph_spacing_summary" = "Интервалы и отступы первой строки.";
@@ -755,7 +755,7 @@
 "settings.tap_one_handed" = "Для одной руки";
 "settings.tap_zones_hint" = "Выберите, куда касаться для перелистывания. Выделенная центральная зона всегда открывает меню.";
 "settings.tap_one_handed_hint" = "Для одной руки: касание — вперёд, свайп — назад или вперёд.";
-"settings.navigation_needs_swipes" = "Выберите другой пресет зон касаний, чтобы отключить свайпы.";
+"settings.navigation_needs_swipes" = "Выберите другую схему зон касаний, чтобы отключить свайпы.";
 "settings.section_appearance" = "Оформление";
 "settings.section_screen" = "Обновление экрана";
 "settings.section_navigation" = "Навигация";
@@ -767,11 +767,11 @@
 "settings.styling_preview_same" = "При всех вариантах эти образцы выглядят одинаково.";
 "settings.justification_tracking" = "Межбуквенная подгонка";
 "settings.justification_tracking_off" = "Обычная";
-"settings.justification_tracking_subtle" = "Лёгкий";
-"settings.justification_tracking_more" = "Сильный";
+"settings.justification_tracking_subtle" = "Лёгкая";
+"settings.justification_tracking_more" = "Сильная";
 "settings.widows_orphans" = "Висячие строки";
 "settings.widows_orphans_description" = "Убирает одиночные строки абзаца с краёв страницы. Их избегание может оставлять больше пустого места на предыдущей странице. Применяется ко всем книгам.";
-"settings.widows_orphans_publisher" = "Издательский";
+"settings.widows_orphans_publisher" = "Из книги";
 "settings.widows_orphans_avoid" = "Избегать";
 "settings.widows_orphans_allow" = "Разрешать";
 "settings.section_reading_menu" = "Меню чтения";
@@ -786,7 +786,7 @@
 "settings.navigation_taps_only_description" = "Касайтесь зон перелистывания, чтобы переворачивать страницы.";
 "settings.navigation_swipes_only" = "Только свайпы";
 "settings.navigation_swipes_only_description" = "Проводите влево или вправо для перелистывания.";
-"settings.navigation_buttons_only" = "Только аппаратные кнопки перелистывания";
+"settings.navigation_buttons_only" = "Только физические кнопки";
 "settings.navigation_buttons_only_description" = "Используйте кнопки устройства для перелистывания.";
 "settings.navigation_menu_hint" = "Коснитесь центра страницы, чтобы открыть меню в любом режиме.";
 "settings.sleep_stock" = "Встроенный экран сна Kobo";
@@ -993,8 +993,6 @@
 /* Arguments: %1 */
 "dictionary_panel.for_language" = "Для языка: %1";
 
-"reader.show_link_indicator" = "Показывать индикатор ссылок при чтении";
-"reader.link_indicator_description" = "Показывает индикатор на страницах со ссылками. Нажмите на него, чтобы показать ссылки.";
 /* Arguments: %1 = number of links */
 "reader.highlight_links" = "Подсветить ссылки · %1";
 "reader.long_press_link" = "Нажмите и удерживайте ссылку, чтобы увидеть её опции.";
@@ -1201,8 +1199,8 @@
 "settings.tappable_links_footnotes_description" = "Касайтесь сносок для открытия. Другие ссылки удерживайте, затем выберите «Перейти по ссылке».";
 "settings.tappable_links_all_description" = "Касайтесь сносок и ссылок для открытия.";
 "settings.vertical_spacing" = "Вертикальные интервалы";
-"settings.vertical_spacing_mode" = "Интервалы страницы";
-"settings.vertical_spacing_description" = "Заполнение почти полных страниц.";
+"settings.vertical_spacing_mode" = "Вертикальные интервалы";
+"settings.vertical_spacing_description" = "Распределение свободной высоты страницы.";
 "settings.vertical_spacing_off" = "Обычные";
 "settings.vertical_spacing_off_description" = "Обычный межстрочный интервал, выравнивание по верху.";
 "settings.vertical_spacing_expand" = "Растянуть строки";
@@ -1264,10 +1262,10 @@
 "settings.beautifier_description" = "Экспериментально. Действует во всех книгах. Снимите все галочки для отключения. Файлы книг не меняются.";
 "settings.beautifier_initials" = "Нормализовать буквицы";
 "settings.beautifier_initials_description" = "Превращать текстовые буквицы в обычные буквы.";
-"settings.beautifier_spacing" = "Убрать интервалы абзацев";
-"settings.beautifier_spacing_description" = "Убирает пустое место между абзацами. Разрывы сцен сохраняются.";
-"settings.beautifier_indent" = "Единые отступы абзацев";
-"settings.beautifier_indent_description" = "Единая красная строка; ваши отступы важнее.";
+"settings.beautifier_spacing" = "Убрать интервалы между абзацами";
+"settings.beautifier_spacing_description" = "Убирать пустое место между обычными абзацами. Разрывы сцен и особые блоки сохраняются.";
+"settings.beautifier_indent" = "Единый отступ первой строки";
+"settings.beautifier_indent_description" = "Обычные абзацы: красная строка 120%. Явный отступ в окне «Настройка абзацев» имеет приоритет.";
 
 "common.done" = "Готово";
 
@@ -1318,3 +1316,117 @@
 "debug.language_failed" = "Не удалось сохранить язык. Проверьте папку diagnostics и повторите попытку.";
 "about.fork" = "%1";
 "about.fork_build" = "%1 · %2";
+
+"kosync.no_connection" = "Нет сети для синхронизации. Подключитесь к Wi-Fi и повторите попытку. Позиция сохранена на устройстве.";
+
+"kosync.connection_timeout" = "Сеть не появилась за время ожидания синхронизации. Подключитесь к Wi-Fi и повторите попытку. Позиция сохранена на устройстве.";
+
+"kosync.dns_error" = "Не удалось определить адрес сервера синхронизации. Проверьте адрес сервера и работу DNS в вашей сети.";
+
+"kosync.connection_refused" = "Сервер синхронизации отклонил подключение. Проверьте адрес, порт и работу сервера.";
+
+"kosync.connection_closed" = "Соединение закрылось до завершения синхронизации. Проверьте сервер и сеть, затем повторите попытку.";
+
+"kosync.tls_error" = "Не удалось установить доверенное защищённое соединение. Проверьте сертификат, имя сервера и дату на устройстве. Не отключайте проверку сертификата.";
+
+"kosync.timeout_error" = "Время ожидания синхронизации истекло. Проверьте сервер и сеть, затем повторите попытку. Позиция чтения сохранена.";
+
+"kosync.interrupted" = "Соединение синхронизации прервано. Повторите попытку. Позиция чтения сохранена.";
+
+"kosync.forbidden" = "Сервер запретил синхронизацию. Проверьте права учётной записи и поддержку авторизации KOSync x-auth по этому адресу.";
+
+"kosync.redirect_error" = "Сервер перенаправил запрос синхронизации. Данные входа не передавались. Проверьте адрес KOSync и префикс пути.";
+
+"kosync.route_error" = "По этому пути нет сервиса KOSync. Проверьте адрес, префикс пути и поддержку авторизации KOSync x-auth.";
+
+"kosync.rate_limited" = "Сервер ограничивает частоту запросов. Повторите синхронизацию позже.";
+
+"kosync.server_error" = "Сервер синхронизации сообщил об ошибке. Повторите попытку позже или попросите администратора проверить журнал сервера.";
+
+"kosync.http_error" = "Сервер синхронизации вернул неожиданный HTTP-статус. Проверьте адрес и совместимость сервера с KOSync.";
+
+"kosync.response_too_large" = "Ответ сервера превышает допустимый размер. Проверьте адрес и совместимость сервера с KOSync.";
+
+"kosync.reader_timeout" = "Синхронизация не завершилась, пока читалка была занята. Повторите попытку после завершения текущей операции. Позиция чтения сохранена.";
+
+"library.about" = "О Kobalt";
+
+"chapter_contents.collapse_group" = "Свернуть %1";
+
+"chapter_contents.expand_group" = "Развернуть %1";
+
+"chapter_contents.expanded" = "Развёрнуто";
+
+"chapter_contents.collapsed" = "Свёрнуто";
+
+"reader.appearance_preview" = "Предпросмотр";
+
+"settings.section_links" = "Ссылки";
+
+"settings.section_chapter_list" = "Список глав";
+
+"settings.chapter_groups" = "Сворачиваемые главы";
+
+"settings.chapter_groups_hint" = "Выберите, можно ли сворачивать группы глав и как они раскрываются.";
+
+"settings.chapter_groups_current" = "Текущий раздел";
+
+"settings.chapter_groups_current_description" = "Раскрывать группы, содержащие текущую главу. По умолчанию.";
+
+"settings.chapter_groups_all" = "Все главы";
+
+"settings.chapter_groups_all_description" = "Раскрывать все группы и показывать весь список глав.";
+
+"settings.chapter_groups_off" = "Выключено";
+
+"settings.chapter_groups_off_description" = "Показывать все главы без кнопок сворачивания и раскрытия.";
+
+"settings.section_advanced" = "Дополнительно";
+
+"settings.disable_reader_standby" = "Отключить ожидание";
+
+"settings.disable_reader_standby_description" = "Не переходить в режим ожидания при чтении. Расходует больше заряда.";
+
+"settings.disable_reader_standby_title" = "Отключить режим ожидания при чтении?";
+
+"settings.disable_reader_standby_warning" = "Отключение режима ожидания может значительно сократить время работы. На некоторых устройствах это может помочь при периодических зависаниях или пропусках перелистывания. Устройство по-прежнему можно вручную перевести в сон. Вы уверены, что хотите отключить режим ожидания?";
+
+"settings.dictionary_font_small_short" = "S";
+
+"settings.dictionary_font_standard_short" = "M";
+
+"settings.dictionary_font_large_short" = "L";
+
+"settings.dictionary_font_extra_large_short" = "XL";
+
+"buttons.title" = "Управление кнопками";
+
+"buttons.upper" = "Верхняя кнопка";
+
+"buttons.lower" = "Нижняя кнопка";
+
+"buttons.volume_up" = "Громкость (+)";
+
+"buttons.volume_down" = "Громкость (−)";
+
+"buttons.description" = "Выберите действие каждой кнопки перелистывания при чтении.";
+
+"buttons.volume_description" = "Выберите действия кнопок громкости при чтении.";
+
+"buttons.navigation_hint" = "В меню, списках и предпросмотре страниц кнопки сохраняют обычные направления.";
+
+"buttons.previous" = "Предыдущая страница";
+
+"buttons.next" = "Следующая страница";
+
+"buttons.none" = "Ничего не делать";
+
+"buttons.none_description" = "Игнорировать эту кнопку при чтении.";
+
+"buttons.volume_title" = "Кнопки громкости";
+
+"buttons.volume_note" = "На Android эти действия назначаются физическим кнопкам громкости.";
+
+"buttons.while_reading" = "Выберите действие этой физической кнопки при чтении.";
+
+"buttons.hardware_title" = "Физические кнопки";

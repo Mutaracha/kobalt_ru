@@ -1,6 +1,7 @@
 # Перенос beta7 — план и предварительный аудит
 
-**Статус: подготовка и согласование RU; слияние не выполнено.**
+**Статус: весь RU согласован; слияние и адаптация выполнены в рабочем дереве, CI ожидается.**
+Предыдущие разделы подготовки ниже сохраняют контекст этапа; текущий результат — в конце.
 Проверенная база форка: код `ab6d9a0`, документация `2409912`.
 Пользователь подтвердил работу сносок после проверочного билда InDesign;
 это новая device-confirmed база, не обещание полного визуального A/B с KOReader.
@@ -97,3 +98,30 @@ upstream-дельты в RU proposal и не применены. Предупр�
 Новая компоновка beta7, его изменённые меню и строки требуют новых captures.
 Путь opt-in publisher EPUB в workflow обновлён вместе с переносом; повторного
 CI на новом пути ещё не было. Исходный EPUB и PNG сохранены без изменения байтов.
+
+## Слияние после согласования пользователя
+
+Пользователь согласовал весь перевод, включая дополнительные уточнения по
+скриншотам, и разрешил продолжить beta7. Применены новые/изменённые строки и
+15 уточнений; retired link-indicator строки удалены, остальные прежние RU сохранены.
+
+- Разрешены все семь конфликтов. Сохранены invert swipes, default-on нижние
+  сноски и constructor-time styling через общую factory; upstream chapter
+  groups, buttons, standby и shared About взяты без старых экранов.
+- `src/app/about/fork_about` добавляет только fork label после stock commit;
+  `fork_debug` перенесён туда же из Settings. SettingsPanelInputs больше не
+  содержит metadata/debug fields. Library и Settings используют один AboutPage.
+- Anchor preview upstream сохранён. Добавлен общий test probe для semantic/long
+  EPUB, InDesign synthetic/real-book и FB2: проверяются position/state/pages,
+  сохранность нижних fragments и чтения image/cache после обоих preview modes.
+- Расширен native CI: component UI/locale, Settings/Library About/chapter groups/
+  button mapping и appearance/standby lifecycle, дополнительно к engine/cache и
+  отдельному неизменённому EPUB. Native build явно использует fork identifier.
+- Dependencies/CREngine, EPUB v3/FB2 v6 и durable storage schemas не изменены.
+  Удалённый link indicator не возвращён; quiet-light/cache cleanup не добавлены.
+- Canonical EN/RU generation/parity/source scan PASS, diff whitespace PASS.
+  Original offline command снова упирается в известный локальный timestamp
+  flake strings-test:69; tracked test не изменён. Native и Qt5 — ждут CI.
+
+Снимки ab6d9a0 остаются только baseline. Новые RU descriptions, layout previews,
+chapter groups, standby и shared About требуют новой серии beta7 на Kobo.

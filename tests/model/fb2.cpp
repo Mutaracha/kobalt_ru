@@ -1,4 +1,5 @@
 #include "reader_inputs.h"
+#include "anchor_preview.h"
 #include "reader_source_index_probe.h"
 #include "check.h"
 #include "engine/crengine/engine_document.h"
@@ -166,6 +167,7 @@ void renderFictionBook() {
     require(ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
             "FB2 note is popup-only: no bottom-of-page footnote fragment");
     require(!model.image(model.page()).isNull(), "FB2 page with an in-page footnote did not paint");
+    test::requireAnchoredPreviewRestores(model);
     const auto anchor = model.position();
     require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})), "Page notes toggle off");
     require(!model.state().value("fb2_inpage_footnotes").toBool(true) &&

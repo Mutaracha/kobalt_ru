@@ -1,4 +1,5 @@
 #include "library_view.h"
+#include "about_screen.h"
 #include "ui/controls/buttons.h"
 #include "ui/controls/icons.h"
 #include "ui/controls/loading.h"
@@ -1159,6 +1160,10 @@ void LibraryView::pageButton(int direction)
     if (!isVisible() || !isEnabled() || overlay || (sortSheet && sortSheet->isVisible())
         || (moreSheet && moreSheet->isVisible()))
         return;
+    if (about && about->isVisible()) {
+        about->pageButton(direction);
+        return;
+    }
     ui::turnVisiblePageControl(
             folderPage && folderPage->isVisible() ? static_cast<QWidget *>(folderPage) : this,
             direction);
@@ -1168,6 +1173,10 @@ bool LibraryView::dismiss()
 {
     if (overlay || (sortSheet && sortSheet->isVisible()) || (moreSheet && moreSheet->isVisible())) {
         closeOverlay();
+        return true;
+    }
+    if (about && about->isVisible()) {
+        about->dismiss();
         return true;
     }
     if (folderPage && folderPage->isVisible()) {
@@ -1233,7 +1242,7 @@ void LibraryView::rebuild(bool keepPage)
     const auto &settings = index.settings;
     const bool noLibrary = index.folders.isEmpty() && index.visibleCount() == 0 && !scanning;
     empty->setVisible(noLibrary);
-    if (noLibrary)
+    if (noLibrary && !(about && about->isVisible()))
         empty->raise();
     const auto text = searching ? query->text() : QString();
     const bool home = settings.view == View::Home;
@@ -1335,6 +1344,8 @@ void LibraryView::arrange()
     empty->setGeometry(0, chrome::actionHeight, width(), qMax(1, height() - chrome::actionHeight));
     if (folderPage)
         folderPage->setGeometry(rect());
+    if (about)
+        about->setGeometry(rect());
     if (overlay)
         overlay->setGeometry(rect());
 }
@@ -1513,6 +1524,9 @@ void LibraryView::showMoreSheet()
                         ui::actionItem(
                                 strings::get("library.folders"), "libraryMoreFolders",
                                 ui::ControlIcon::Folders, [this] { showFolders(); }, true),
+                        ui::actionItem(
+                                strings::get("library.about"), "libraryMoreAbout",
+                                ui::ControlIcon::About, [this] { showAbout(); }, true),
                 });
         moreSheet->setObjectName("libraryMoreSheet");
         moreSheet->dismissed = [this] { closeOverlay(); };
@@ -1524,6 +1538,15 @@ void LibraryView::showMoreSheet()
     moreSheet->show();
     moreSheet->raise();
     moreSheet->setFocus();
+}
+
+void LibraryView::showAbout()
+{
+    if (!about)
+        about = new AboutScreen(this);
+    about->setGeometry(rect());
+    setDark(dark);
+    about->open();
 }
 
 void LibraryView::showFolders()

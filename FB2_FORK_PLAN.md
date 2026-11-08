@@ -1,5 +1,43 @@
 # Техническое задание для ИИ-агента: Форк Kobalt с нативной поддержкой FB2 на Kobo (Сценарий 1)
 
+## beta7 — согласование получено, интеграция и проверки
+
+**Текущий этап: код объединён с e86533c, native/Qt5 CI ожидается.**
+Пользователь согласовал полный RU proposal и 15 уточнений, разрешил слияние.
+Применены все согласованные строки; новые самовольные формулировки не вводились.
+
+- Done: actual merge beta7 в текущую ветку; все семь конфликтов разрешены.
+- Done: fork About/debug перенесены в `src/app/about/`, один AboutPage для
+  Library/Settings, без metadata/debug fields в SettingsPanelInputs. Stock
+  labels не переделаны, helper сохраняет InterfaceLabel/шрифт/выравнивание.
+- Done: сохранены constructor-time shared row factory, invert swipes и
+  default-on footnotes; удалён только retired upstream indicator. Общие
+  formatting/progress/lifecycle, chapter groups/buttons/standby — upstream.
+- Done: повторно проверены пересечения fork delta с beta7: platforms build/
+  asset staging и locale startup guards; Library/chapter/bookmark plurals;
+  toolbar theme; appearance default/copy/apply; EngineDocument и ReaderSession
+  FB2/cache hooks; общие DescribedOption metrics. Новые source glob включают
+  About fork modules без ручных списков. Dependencies/CREngine delta отсутствует.
+- Done: расширены tests — anchored previews с EPUB semantic/long/InDesign и
+  FB2 notes, state/page/fragment/image-cache invariants; общий About/stock commit
+  и fork metadata; RU normalization row height и standby factory. Старый
+  Settings row-count assertion обновлён из-за удаления upstream indicator,
+  проверка presentation каждого checkbox сохранена.
+- Done: native workflow включает locale/component UI, About, Settings, buttons/
+  chapter groups и appearance/standby lifecycle. Отдельный publisher EPUB path
+  из tests/manual и timeout/launcher сохранены; книгу не перепаковывали.
+- PASS локально: canonical EN/RU generation/parity/полный source scan и
+  placeholders; `git diff --check`. Original offline command: FAIL на известном
+  локальном timestamp flake strings-test:69, tracked test не меняли.
+- Pending: extended native CI, real-book invocation и Kobo Qt5 package.
+- Not run: full native/all-variant gallery, физический beta7/новые screenshots.
+  По CI не объявлять визуальную проверку, не путать старый ab6d9a0 artifact с beta7.
+
+Подробности активного переноса — `doc/beta7-integration.md`; полные согласованные
+формулировки пока сохранены в `doc/translation-proposal-beta7.md`. По завершении
+переноса их исторические сведения консолидировать в этот план по регламенту.
+
+
 Сопровождение: [постоянный регламент](doc/fork-update-workflow.md),
 [организация материалов и покадровый аудит ab6d9a0](#maintenance-ab6d9a0-review),
 [тестовые оригиналы/provenance](tests/manual/README.md).
