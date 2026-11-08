@@ -2232,3 +2232,5 @@ cache v3 перестроится автоматически без удален
 - `798468e`: Kobo Qt5/package PASS; native — единственный FAIL `model.strings-locale` (`en_GB config must select English`). Lifecycle draft и строгий RU bottom-tab pixel test PASS; остальные ctest-проверки PASS, publisher invocation ещё не достигнута.
 - Причина locale fixture: последовательные same-size `ru_RU`/`en_GB` перезаписи одного файла могут сохранять timestamp/size для process-wide QSettings cache. Независимые parsing cases теперь используют отдельные INI paths, без sleeps и ослабления ожиданий.
 - В production reader locale сохранён контракт ExtraLocales-first, C/POSIX fallback. Чтение ExtraLocales учитывает оба представления QSettings: некавыченный comma-list (`QStringList`) и строку в кавычках (`QString`). Добавлены строгие cases для обоих и POSIX. Изменений перевода/настроек нет. Полный повторный CI требуется; не считать native/publisher PASS заранее.
+
+- После locale-fix: diff-only clang-format применён, canonical strings/source scan и whitespace check PASS. Пользовательская инструкция очищена от устаревшего ожидания согласования RU; CI остаётся отдельным gate.
