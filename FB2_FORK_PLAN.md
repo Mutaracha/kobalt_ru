@@ -31,8 +31,10 @@
   локальном timestamp flake strings-test:69, tracked test не меняли.
 - Первый CI 42495439434 на merge 60c43d5: Qt5 compile FAIL — новый About helper
   использовал readerStyle без прямого include ui/style/theme.h. Добавлен явный
-  include, без изменения рендеринга/поведения. Native результат первого запуска
-  ещё ожидается; повторная сборка обязательна, artifact этого запуска не готов.
+  include, без изменения рендеринга/поведения. Native первого запуска тоже FAIL: расширенная выборка впервые скомпилировала
+  strings_locale.cpp и выявила старое некорректное `const struct Case` без объекта.
+  Убран только const у объявления типа, массив cases остался const, assertions
+  сохранены. Повторная сборка обязательна, artifact первого запуска не готов.
 - Scratch offline run с задержкой 1s только перед изменением strings fixture
   завершился exit 0; tracked test/скрипты не менялись. Original flake остаётся.
 - Pending: extended native CI, real-book invocation и Kobo Qt5 package.

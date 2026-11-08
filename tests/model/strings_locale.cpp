@@ -76,7 +76,7 @@ void keyDisplayMode() {
 void russianPlurals() {
     using strings::Locale;
     strings::setLocale(Locale::Russian);
-    const struct Case {
+    struct Case {
         int count;
         const char *expected;
     };
