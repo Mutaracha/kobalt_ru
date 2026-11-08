@@ -213,4 +213,9 @@ R1/R2 согласованы и внесены в код; успешный но�
 Длинное пояснение из предыдущего примера не добавляется. Каталог не
 фильтруется, EN и набор keys/placeholder slots не меняются. Старый пример выше
 сохранён как история обсуждения, не как действующее UI требование.
-Новые подписи добавлены в locale regression. Native/Qt5 CI пока ожидается.
+Новые подписи добавлены в locale regression.
+[CI 42516367475 — PASS](https://github.com/Mutaracha/kobalt_ru/actions/runs/42516367475):
+offline, Qt5 package и focused native с отдельным publisher EPUB.
+Код `d7b7d55cad27bbd7efe2802df34df45a81e2949d`,
+[Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/42516367475/artifacts/13632031445).
+Новых screenshots названий пока нет; серия dddace7 не заменяется этой сборкой.

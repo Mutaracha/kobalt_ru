@@ -2,7 +2,14 @@
 
 ## beta7 — интеграция и автоматические проверки завершены; устройство ожидается
 
-**Текущий этап: R1/R2 исправлены, Qt5/native CI PASS; новый бинарник `2c9a474`.**
+**Текущий этап: R1/R2/R3 внесены; Qt5/native CI PASS, бинарник `d7b7d55`.**
+
+- [CI 42516367475](https://github.com/Mutaracha/kobalt_ru/actions/runs/42516367475)
+  success: offline, Qt5 package/contents, focused native и publisher EPUB.
+- [Kobalt-qt5-device 13632031445](https://github.com/Mutaracha/kobalt_ru/actions/runs/42516367475/artifacts/13632031445):
+  `d7b7d55cad27bbd7efe2802df34df45a81e2949d`, 36 421 050 bytes.
+  Новые screenshots длинных reserve-font labels ещё не получены. Qt6 skipped.
+- Ни новых translation keys, ни длинного help message; labels общие для row/modal.
 
 - [CI 42514895433](https://github.com/Mutaracha/kobalt_ru/actions/runs/42514895433)
   PASS: offline, Qt5 build/package/contents и focused native с publisher EPUB.
@@ -2674,3 +2681,12 @@ R3 ждёт решения по текстовому примеру; назва�
 - Locale regression дополнен точными ожиданиями четырёх согласованных строк.
   Статическая проверка exact key set/only four changes/placeholder sequence PASS.
   Native/Qt5 CI нового бинарника ожидается; Qt6 по-прежнему не запускается.
+
+
+### R3 — CI и пакет подтверждены
+
+Код d7b7d55cad27bbd7efe2802df34df45a81e2949d, run 42516367475 — PASS.
+Native job 128840153528 (6m40s), Qt5 128840153728 (7m38s).
+Offline/точные RU locale ожидания/focused native/publisher EPUB/package PASS.
+Artifact Kobalt-qt5-device 13632031445, native log 13631452339.
+Проверка на реальном устройстве новых названий ещё не выполнена. Qt6 skipped.
