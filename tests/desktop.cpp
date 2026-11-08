@@ -8320,8 +8320,9 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         }
         QTRY_VERIFY(fixture.visible("rrSettingsClose"));
         QVERIFY(fixture.visible("rrSettingsTitle"));
+        // Fork contract: Settings headings use the interface Sans, not the Kobalt wordmark face.
         QCOMPARE(fixture.widget("rrSettingsTitle")->font().family(),
-                 ui::brandFont(ui::metrics::chrome::titleText).family());
+                 ui::interfaceFont(ui::metrics::chrome::titleText).family());
         QCOMPARE(fixture.widget("rrSettingsTitle")->font().pixelSize(),
                  int(ui::metrics::chrome::titleText));
         for (const auto *name :

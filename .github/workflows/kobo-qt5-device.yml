@@ -70,13 +70,15 @@ jobs:
             # QtTest uses FAIL!, not FAIL<space>. Emit each failure with its
             # comparison/source context; do not lose later failures behind the
             # first launcher's generic exit code or a pipefail/SIGPIPE from head.
+            # One multiline annotation also avoids GitHub's ten-errors-per-step cap.
             awk '
               /error:|Error|FAILED|FAIL|FATAL|not found|No rule|ninja:/ { context = 5 }
               context > 0 && count < 100 {
                 gsub(/%/, "%25"); gsub(/\r/, "%0D")
-                print "::error::" $0
+                report = report $0 "%0A"
                 context--; count++
               }
+              END { if (count) print "::error::" report }
             ' "$log"
           fi
           exit "$status"

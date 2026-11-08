@@ -54,7 +54,14 @@
   необходимости пользовательских credentials. Filter исправлен: FAIL! и
   comparison/source context, без head/SIGPIPE. Assertions не меняются до
   получения точной причины. Native artifact предыдущего запуска 13624023842.
-- Pending: диагностический runtime CI, real-book invocation и итоговый полный PASS.
+- Диагностический 42498310735 подтвердил advancedText failure: upstream test
+  ожидал Instrument Serif у rrSettingsTitle, хотя согласованный fork UI требует
+  IBM Plex Sans. Проверка family сохранена, expected изменён на interfaceFont;
+  размер/прочие assertions не ослаблены. Это адаптация теста к принятому контракту,
+  не изменение рендеринга ради прохождения. Остальные runtime причины ещё не
+  доступны: GitHub ограничивает step десятью error annotations. Failure context
+  теперь собирается в одну multiline annotation вместо отдельной на каждую строку.
+- Pending: остальные runtime причины, real-book invocation и итоговый полный PASS.
 - Not run: full native/all-variant gallery, физический beta7/новые screenshots.
   По CI не объявлять визуальную проверку, не путать старый ab6d9a0 artifact с beta7.
 
