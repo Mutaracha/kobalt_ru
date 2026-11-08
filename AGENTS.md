@@ -314,6 +314,8 @@ R1/R2 are approved: paragraph help must call the visible option «Из книг�
 the debug-language radio selection must represent persisted DebugLanguage,
 not the currently resolved UI locale. Opening/cancelling must not write markers
 or change the live locale. Keep async persistence and next-opening application.
-R3 font-chooser wording is not approved: show an example before changing any
-label/description or restricting the catalog. Serif is a fallback/family role,
+R3 is approved using the existing-key fallback: group «Резервные шрифты»;
+existing serif/sans/mono keys name reserve fonts in both rows and chooser titles.
+Do not add translation keys, a long help message, RU-only title branching,
+prefix-stripping hacks or catalog filtering. Serif is a fallback/family role,
 not a promise that every listed font is classified as serif.

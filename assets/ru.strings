@@ -721,12 +721,12 @@
 "settings.controls" = "Управление";
 "settings.defaults" = "По умолчанию";
 "settings.styling" = "Стили";
-"settings.font_families" = "Запасные шрифты";
+"settings.font_families" = "Резервные шрифты";
 /* Arguments: %1 */
 "settings.font_default_value" = "По умолчанию · %1";
-"settings.serif_font" = "Шрифт с засечками";
-"settings.sans_font" = "Шрифт без засечек";
-"settings.mono_font" = "Моноширинный шрифт";
+"settings.serif_font" = "Резервный шрифт с засечками";
+"settings.sans_font" = "Резервный шрифт без засечек";
+"settings.mono_font" = "Резервный моноширинный шрифт";
 "settings.system" = "Система";
 "settings.automatic_book_opening" = "Автоматически открывать книги в Kobalt";
 "settings.automatic_book_opening_description" = "Использовать Kobalt при открытии поддерживаемых книг из библиотеки. Этот параметр также доступен в настройках чтения Kobo.";

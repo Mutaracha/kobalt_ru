@@ -38,6 +38,14 @@ void translatedLookup() {
                             "«Из книги» сохраняет соответствующее оформление книги. "
                             "Штриховка обозначает дополнительный интервал между абзацами."),
             "Paragraph help must name the visible From book choice consistently");
+    require(strings::get("settings.font_families") == QString::fromUtf8("Резервные шрифты"),
+            "Approved reserve-font label mismatch: settings.font_families");
+    require(strings::get("settings.serif_font") == QString::fromUtf8("Резервный шрифт с засечками"),
+            "Approved reserve-font label mismatch: settings.serif_font");
+    require(strings::get("settings.sans_font") == QString::fromUtf8("Резервный шрифт без засечек"),
+            "Approved reserve-font label mismatch: settings.sans_font");
+    require(strings::get("settings.mono_font") == QString::fromUtf8("Резервный моноширинный шрифт"),
+            "Approved reserve-font label mismatch: settings.mono_font");
     strings::setLocale(Locale::English);
     require(strings::get("common.cancel") == QStringLiteral("Cancel"), "English lookup returned the wrong copy");
     require(strings::get("missing.unknown.key") == QStringLiteral("missing.unknown.key"),
