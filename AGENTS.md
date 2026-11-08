@@ -246,10 +246,12 @@ not KOReader's per-spec default. Keep the synthetic InDesign matrix portable;
 fork device workflow. Do not copy commercial book text/fonts into new fixtures
 or runtime assets. EPUB cache v3 invalidates earlier per-spec-only layouts.
 
-### beta7 integration — approved RU, validation in progress
+### beta7 integration — approved RU, CI passed, device gate pending
 
-Use doc/beta7-integration.md and the complete translation-proposal-beta7.md
-for the e86533c integration. The user approved the complete proposal, including
+Use FB2_FORK_PLAN.md, including its complete Beta7 approved integration archive,
+for the e86533c integration. The checked binary is dddace7 / CI 42500439074;
+focused native + publisher and Kobo Qt5 passed. This is not device or full desktop
+validation. Documentation/format-only commits do not identify a new checked binary. The user approved the complete proposal, including
 the screenshot-driven refinements; these are applied. Further wording changes
 require new approval.
 The user confirmed InDesign footnotes work on-device in ab6d9a0; preserve that

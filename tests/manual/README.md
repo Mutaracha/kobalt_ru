@@ -32,7 +32,8 @@ sha256sum -c tests/manual/materials.sha256
 В `.github/workflows/kobo-qt5-device.yml` путь теперь
 `/work/tests/manual/books/publisher/Кокаиновые+короли.epub` внутри SDK container;
 сохраняются parent-owned temporary root, headless environment и timeout.
-Перенос пути сам по себе не является повторным прохождением этого CI.
+Отдельный запуск по этому пути прошёл в CI 42500439074 (dddace7, beta7).
+Это native regression, не подтверждение отображения новой версии на Kobo.
 
 Не делать коммерческую книгу обязательной зависимостью общего native suite,
 не копировать её текст/шрифты в новые synthetic fixtures/runtime assets и не

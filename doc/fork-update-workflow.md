@@ -2,8 +2,8 @@
 
 Это регламент каждого обновления upstream, не отчёт о завершённой работе.
 Канонические состояние, решения, согласования и результаты — в
-[`FB2_FORK_PLAN.md`](../FB2_FORK_PLAN.md). Текущая подготовка beta7 —
-[активный план](beta7-integration.md), [RU-предложения](translation-proposal-beta7.md).
+[`FB2_FORK_PLAN.md`](../FB2_FORK_PLAN.md). Завершённые подготовка и согласование beta7 —
+[в архиве плана](../FB2_FORK_PLAN.md#beta7-approved-integration-archive).
 
 ## 1. Зафиксировать исходную точку
 

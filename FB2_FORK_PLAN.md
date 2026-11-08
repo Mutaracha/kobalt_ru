@@ -1,8 +1,26 @@
 # Техническое задание для ИИ-агента: Форк Kobalt с нативной поддержкой FB2 на Kobo (Сценарий 1)
 
-## beta7 — согласование получено, интеграция и проверки
+## beta7 — интеграция и автоматические проверки завершены; устройство ожидается
 
-**Текущий этап: код объединён с e86533c, native/Qt5 CI ожидается.**
+**Текущий этап: beta7 объединена; проверенная сборка `dddace7`, device gate открыт.**
+
+- Проверенный код: `dddace7644e80745e8b5160b1c74da5b0f4730d9`, настоящий merge
+  upstream: `60c43d5961e0c5cdb3d7049ef0adde2ffc4b338f` → `e86533c`.
+- [CI 42500439074](https://github.com/Mutaracha/kobalt_ru/actions/runs/42500439074)
+  **PASS**: production offline checks, Kobo Qt5 build/package/contents (6m31s),
+  расширенная focused native выборка и отдельный исходный publisher EPUB (6m55s).
+  Это не вся desktop suite, не Qt6/Android и не проверка реального экрана.
+- Пакет `Kobalt-qt5-device`: [artifact 13625795747](https://github.com/Mutaracha/kobalt_ru/actions/runs/42500439074/artifacts/13625795747),
+  36 423 176 bytes. Native results: artifact 13624974429. Устанавливать именно
+  этот проверенный бинарник, а не выбирать пакет по последнему docs-only SHA.
+- `88241e1` после него — только форматирование теста и документация; повторный CI
+  запущен отдельно. Старые промежуточные FAIL ниже — история, не текущий результат.
+- Открыто: backup `.adds/kobalt/`, установка Qt5, новые captures и подтверждение
+  EPUB/FB2 нижних сносок, preview cancel/apply/progress, длинных RU пояснений,
+  вкладок, About/debug-language, standby и аппаратных кнопок на Kobo.
+- Завершённые preparation/proposal перенесены [в архив ниже](#beta7-approved-integration-archive).
+  Пользовательский checklist — `doc/fork-kobalt_ru.md`; регламент —
+  `doc/fork-update-workflow.md`. Подтверждённая устройством база пока ab6d9a0.
 Пользователь согласовал полный RU proposal и 15 уточнений, разрешил слияние.
 Применены все согласованные строки; новые самовольные формулировки не вводились.
 
@@ -2234,3 +2252,303 @@ cache v3 перестроится автоматически без удален
 - В production reader locale сохранён контракт ExtraLocales-first, C/POSIX fallback. Чтение ExtraLocales учитывает оба представления QSettings: некавыченный comma-list (`QStringList`) и строку в кавычках (`QString`). Добавлены строгие cases для обоих и POSIX. Изменений перевода/настроек нет. Полный повторный CI требуется; не считать native/publisher PASS заранее.
 
 - После locale-fix: diff-only clang-format применён, canonical strings/source scan и whitespace check PASS. Пользовательская инструкция очищена от устаревшего ожидания согласования RU; CI остаётся отдельным gate.
+
+
+## Beta7 approved integration archive
+
+Завершённые журналы подготовки и согласования сохранены полностью ниже; их
+промежуточные статусы описывают этапы до успешного CI 42500439074, а не текущий
+результат. Новое устройство ещё не проверено. Активные инструкции остаются в doc/.
+
+### Архив `doc/beta7-integration.md`
+
+### Перенос beta7 — план и предварительный аудит
+
+**Статус: весь RU согласован; слияние и адаптация выполнены в рабочем дереве, CI ожидается.**
+Предыдущие разделы подготовки ниже сохраняют контекст этапа; текущий результат — в конце.
+Проверенная база форка: код `ab6d9a0`, документация `2409912`.
+Пользователь подтвердил работу сносок после проверочного билда InDesign;
+это новая device-confirmed база, не обещание полного визуального A/B с KOReader.
+
+Цель — [upstream v1.0-beta.7](https://github.com/nicoverbruggen/kobalt/releases/tag/v1.0-beta.7),
+commit `e86533c80e8aa41bfc7d79c9e445cbd4a6405039`, предыдущий upstream beta6
+`7ff437e8d20196c1082a763cc80584d5ca5db893` уже является предком форка.
+Исходники получены напрямую с GitHub, работа остаётся только в
+`arena/9e626d86-kobalt-ru`. Локальные tags/другие branches не создавались.
+
+Постоянный регламент для всех обновлений: [fork-update-workflow.md](doc/fork-update-workflow.md).
+Завершённые отчёты beta6 консолидированы в `FB2_FORK_PLAN.md`.
+
+#### Порядок — как при beta6
+
+1. **Подготовка / инвентаризация:** прочитать release notes и полный source diff;
+   записать дельту строк, конфликтные и автоматически объединяемые fork hooks.
+   Сохранить рабочую исходную точку; не менять поведение до согласования RU.
+2. **Согласование строк:** полный EN/RU proposal и длины в
+   [translation-proposal-beta7.md](#beta7-approved-integration-archive). Не применять
+   перевод в assets до ответа пользователя. Старые согласованные формулировки
+   вне upstream delta не переписывать; Android строки включить в паритет.
+3. **Перенос:** merge upstream в ту же ветку с адаптацией fork helpers к новой
+   структуре. Не восстанавливать старые копии settings/About/preview screens.
+   Общие progress/save, настройки, новые previews и hardware controls — upstream;
+   FB2 использует ту же развивающуюся formatting pipeline, что EPUB.
+4. **Сопровождение:** source audit всей fork delta, не только конфликтов;
+   обновить AGENTS, storage contract, пользовательскую инструкцию и этот план.
+5. **Проверки:** EN/RU key/placeholder/source refs и lengths; production offline;
+   focused native engine/locale/settings/About/preview/button regressions;
+   отдельный оригинальный InDesign EPUB; Kobo Qt5 cross-build/package/contents.
+   Полную native/UI/lifecycle suite отделить от focused coverage. Qt6/Android
+   не являются блокером Qt5, но общий код и host contracts не ломать.
+6. **Handoff:** дать конкретный проверенный SHA и artifact, перечислить
+   device-only проверки. Не объявлять визуальную проверку выполненной по CI.
+
+#### Что изменилось в upstream и где риск
+
+| Область | Проверенные изменения | Правило переноса |
+|---|---|---|
+| Text/Layout | Live preview в reading size, отдельные preview widgets, anchor-based image; margins drag/step; отмена stale previews | Использовать общий upstream pipeline для EPUB/FB2. Проверить возврат позиции и неизменность основного page cache после preview; отдельно страницы с нижними сносками |
+| Оглавление | Новая chapter_groups/current/all/off, сворачивание вложенных групп | Учитывать настоящее вложенное оглавление FB2, не делать отдельную урезанную реализацию |
+| Кнопки | Новые pageButtons/actions, hardware mapping и Android volume buttons | Чтение previous/next/none; меню/списки/preview сохраняют направления upstream. Не менять существующие gestures |
+| Standby | Optional disable_reader_standby, default false, подтверждение, host support guard | Взять upstream без самодельной power policy. Различать standby и ручной sleep. Не подключать ранее отложенный Wi-Fi saver |
+| About | Новый общий app/about/AboutPage используется библиотекой и Settings | Перенести только fork-label/debug attachment в общую точку. Stock version/commit rendering неизменен; не хранить две fork-копии About |
+| KOSync | Подробные safe error categories, structured not-found bootstrap, server diagnostics | Сохранить upstream save/conflict/auth/security semantics; перевести все сообщения, не логировать credentials/server body |
+| Ссылки | Удалён отдельный reading-page indicator, есть секция Links; tap/long press сохраняются | Не возвращать удалённый индикатор. Не потерять нижние сноски, popup и их настройку |
+| UI | Новая геометрия dialogs/descriptions/options, header-footer miniature, compact dictionary labels | Обновить fork row factory с учётом новых общих правил, не замораживать старые margins. IBM Plex/approved fonts, baseline вкладок, theme icon/order сохранить |
+| Подсветка | Финальный процент удерживается минимум 1500 ms, PreciseTimer | Сохранить upstream debounce/master switch. RU «после изменения», а не «после паузы», остаётся верным |
+| Covers/Tolino | Native Library cover reuse, Tolino sleep/cover support | Общие opening/lifecycle пути upstream; сохранить FB2 publication guards |
+| Assets/dependencies | EN strings и version manifest изменились; dependencies delta отсутствует | Сохранить RU/hyphenation/fork metadata. CREngine pin не менять ради переноса; EPUB v3/FB2 v6 не повышать без реального изменения CSS/DOM policy |
+| Хранилище | Optional chapter_groups, button_actions, disable_reader_standby; новая data/database schema не вводится | Сохранить unknown keys/control IDs и текущие версии схем. Не подключать cache cleanup и не удалять данные |
+
+#### Предварительное пробное объединение
+
+Выполнен `git merge-tree --write-tree HEAD <beta7-sha>` — **без изменения index,
+рабочих файлов и без начатого merge**. Обнаружены content conflicts:
+
+- `assets/en.strings` (upstream добавления рядом с fork strings);
+- `platforms/desktop/CMakeLists.txt` (новые sources/тесты и fork регистрации);
+- `src/app/reader/settings/settings_panel.cpp`;
+- `src/app/reader/settings/settings_panel.h`;
+- `src/app/reader/window/reader_build.cpp`;
+- `src/app/reader/window/reader_p.h`;
+- `src/app/reader/window/reader_settings.cpp`.
+
+Auto-merge не равен проверке: вручную сверить engine_document/source helpers,
+manifest, appearance_settings, chapter_contents, reader_refresh, Library/About,
+platform CMake и tests. Например, About переносится в новый общий класс, но
+старый helper зависит от SettingsPanelInputs: нужен связный перенос ответственности,
+а не удержание старых inputs только ради fork label.
+
+В upstream engine delta добавлен imageFromAnchor, ReaderSession — anchoredPage;
+parser/footnote splitter в этом diff не менялись. Тем не менее preview временно
+меняет страницу для рисования и восстанавливает cache/damage — нужны regressions
+для нижних сносок и source anchor, а не только успешная компиляция.
+
+#### Результат подготовки
+
+- Release/source inventory и merge-tree review выполнены.
+- Новые/изменённые строки полностью сопоставлены; placeholder/length review в proposal.
+- Actual merge, применение переводов, beta7 compilation/native/device validation
+  **не выполнялись**. Рабочий бинарный билд остаётся beta6 + проверенные сноски.
+- Следующий шаг: согласовать RU proposal, затем выполнять перенос и проверки.
+
+#### Дополнение по устройству ab6d9a0
+
+Просмотрена вся серия из пользовательского commit 093dd4d, теперь в
+`tests/manual/screenshots/kobo-qt5/ab6d9a0/`. Контекстная карта и факты — в плане.
+Подтверждённое текстовое переполнение: вариант аппаратных кнопок в 017.
+Дополнительные предложения по формулировкам/согласованности отделены от
+upstream-дельты в RU proposal и не применены. Предупреждение standby заменено
+дословно по указанию пользователя. Не считать остальной список утверждённым.
+Новая компоновка beta7, его изменённые меню и строки требуют новых captures.
+Путь opt-in publisher EPUB в workflow обновлён вместе с переносом; повторного
+CI на новом пути ещё не было. Исходный EPUB и PNG сохранены без изменения байтов.
+
+#### Слияние после согласования пользователя
+
+Пользователь согласовал весь перевод, включая дополнительные уточнения по
+скриншотам, и разрешил продолжить beta7. Применены новые/изменённые строки и
+15 уточнений; retired link-indicator строки удалены, остальные прежние RU сохранены.
+
+- Разрешены все семь конфликтов. Сохранены invert swipes, default-on нижние
+  сноски и constructor-time styling через общую factory; upstream chapter
+  groups, buttons, standby и shared About взяты без старых экранов.
+- `src/app/about/fork_about` добавляет только fork label после stock commit;
+  `fork_debug` перенесён туда же из Settings. SettingsPanelInputs больше не
+  содержит metadata/debug fields. Library и Settings используют один AboutPage.
+- Anchor preview upstream сохранён. Добавлен общий test probe для semantic/long
+  EPUB, InDesign synthetic/real-book и FB2: проверяются position/state/pages,
+  сохранность нижних fragments и чтения image/cache после обоих preview modes.
+- Расширен native CI: component UI/locale, Settings/Library About/chapter groups/
+  button mapping и appearance/standby lifecycle, дополнительно к engine/cache и
+  отдельному неизменённому EPUB. Native build явно использует fork identifier.
+- Dependencies/CREngine, EPUB v3/FB2 v6 и durable storage schemas не изменены.
+  Удалённый link indicator не возвращён; quiet-light/cache cleanup не добавлены.
+- Canonical EN/RU generation/parity/source scan PASS, diff whitespace PASS.
+  Original offline command снова упирается в известный локальный timestamp
+  flake strings-test:69; tracked test не изменён. Native и Qt5 — ждут CI.
+
+Снимки ab6d9a0 остаются только baseline. Новые RU descriptions, layout previews,
+chapter groups, standby и shared About требуют новой серии beta7 на Kobo.
+
+### Архив `doc/translation-proposal-beta7.md`
+
+### Beta7 — полный список RU-предложений на согласование
+
+**Статус: пользователь согласовал весь список; применён в assets при слиянии beta7.**
+Это запись согласования, не свидетельство новой проверки на устройстве. База upstream beta6 `7ff437e`,
+цель beta7 `e86533c80e8aa41bfc7d79c9e445cbd4a6405039`.
+Инвентаризация сравнением распарсенных словарей: **57 новых, 3 изменённых,
+2 удалённых ключа**. Включены и Android-only строки; это не только release notes.
+Все placeholders в предложениях сверены с beta7. Длина — число символов, не
+измеренная ширина на Kobo. Дополнительно применены согласованные уточнения существующих строк в конце документа.
+
+#### Термины и важные решения
+
+- «Синхронизация» везде сохранена. x-auth/HTTP/DNS/KOSync — имена протоколов,
+  не переводятся; в сообщениях об ошибках сохранены различия между сетью,
+  авторизацией, сервером и локально сохранённой позицией.
+- Standby — **режим ожидания**, а не ручной сон и не режим заставки.
+  По умолчанию новая опция выключена; предупреждение о расходе батареи сохранено.
+- «Сворачиваемые главы»: раскрытие групп оглавления, не скрытие текста книги.
+- Компактные размеры словаря: предлагается оставить **S / M / L / XL**, как в
+  upstream, только там, где полные подписи не помещаются. Полные RU подписи
+  «Маленький / Обычный / Большой / Максимальный» сохраняются без изменений.
+  Замена на длинные проценты может снова нарушить narrow-layout fallback.
+- Окно About теперь общее для библиотеки/читалки. «О Kobalt» — новый пункт
+  библиотеки, не переименование существующих нижних вкладок.
+
+#### Новые строки
+
+| Ключ | EN beta7 | Предлагаемый RU | EN/RU |
+|---|---|---|---|
+| `kosync.no_connection` | No network connection is available for sync. Connect to Wi-Fi and try again. Your position is saved locally. | Нет сети для синхронизации. Подключитесь к Wi-Fi и повторите попытку. Позиция сохранена на устройстве. | 108/102 |
+| `kosync.connection_timeout` | No network connection became available before sync timed out. Connect to Wi-Fi and try again. Your position is saved locally. | Сеть не появилась за время ожидания синхронизации. Подключитесь к Wi-Fi и повторите попытку. Позиция сохранена на устройстве. | 125/125 |
+| `kosync.dns_error` | Could not resolve the sync server name. Check the server URL and your network DNS connection. | Не удалось определить адрес сервера синхронизации. Проверьте адрес сервера и работу DNS в вашей сети. | 93/101 |
+| `kosync.connection_refused` | The sync server refused the connection. Check the server URL, port and whether the service is running. | Сервер синхронизации отклонил подключение. Проверьте адрес, порт и работу сервера. | 102/82 |
+| `kosync.connection_closed` | The connection closed before sync finished. Check the server and network, then try again. | Соединение закрылось до завершения синхронизации. Проверьте сервер и сеть, затем повторите попытку. | 89/99 |
+| `kosync.tls_error` | Could not establish a trusted secure connection. Check the server certificate, hostname and device date. Keep certificate verification enabled. | Не удалось установить доверенное защищённое соединение. Проверьте сертификат, имя сервера и дату на устройстве. Не отключайте проверку сертификата. | 143/147 |
+| `kosync.timeout_error` | Sync timed out. Check the server and network connection, then try again. Your reading position was kept. | Время ожидания синхронизации истекло. Проверьте сервер и сеть, затем повторите попытку. Позиция чтения сохранена. | 104/113 |
+| `kosync.interrupted` | The sync connection was interrupted. Try again. Your reading position was kept. | Соединение синхронизации прервано. Повторите попытку. Позиция чтения сохранена. | 79/79 |
+| `kosync.forbidden` | The server denied access to sync. Check account permissions and whether this endpoint supports KOSync x-auth authentication. | Сервер запретил синхронизацию. Проверьте права учётной записи и поддержку авторизации KOSync x-auth по этому адресу. | 124/116 |
+| `kosync.redirect_error` | The sync server redirected the request. Credentials were not forwarded. Check the configured KOSync URL and path prefix. | Сервер перенаправил запрос синхронизации. Данные входа не передавались. Проверьте адрес KOSync и префикс пути. | 120/110 |
+| `kosync.route_error` | The server does not provide this KOSync route. Check the URL and path prefix, and whether the endpoint supports KOSync x-auth authentication. | По этому пути нет сервиса KOSync. Проверьте адрес, префикс пути и поддержку авторизации KOSync x-auth. | 141/102 |
+| `kosync.rate_limited` | The sync server is limiting requests. Wait before trying again. | Сервер ограничивает частоту запросов. Повторите синхронизацию позже. | 63/68 |
+| `kosync.server_error` | The sync server reported an error. Try again later or ask the server administrator to check its logs. | Сервер синхронизации сообщил об ошибке. Повторите попытку позже или попросите администратора проверить журнал сервера. | 101/118 |
+| `kosync.http_error` | The sync server returned an unexpected HTTP status. Check the URL and whether the endpoint is a compatible KOSync service. | Сервер синхронизации вернул неожиданный HTTP-статус. Проверьте адрес и совместимость сервера с KOSync. | 122/102 |
+| `kosync.response_too_large` | The server response exceeds the sync size limit. Check the URL and whether the endpoint is a compatible KOSync service. | Ответ сервера превышает допустимый размер. Проверьте адрес и совместимость сервера с KOSync. | 119/92 |
+| `kosync.reader_timeout` | Sync could not finish while the reader was busy. Try again after the current operation finishes. Your reading position was kept. | Синхронизация не завершилась, пока читалка была занята. Повторите попытку после завершения текущей операции. Позиция чтения сохранена. | 128/134 |
+| `library.about` | About Kobalt | О Kobalt | 12/8 |
+| `chapter_contents.collapse_group` | Collapse %1 | Свернуть %1 | 11/11 |
+| `chapter_contents.expand_group` | Expand %1 | Развернуть %1 | 9/13 |
+| `chapter_contents.expanded` | Expanded | Развёрнуто | 8/10 |
+| `chapter_contents.collapsed` | Collapsed | Свёрнуто | 9/8 |
+| `reader.appearance_preview` | Preview | Предпросмотр | 7/12 |
+| `settings.section_links` | Links | Ссылки | 5/6 |
+| `settings.section_chapter_list` | Chapter List | Список глав | 12/11 |
+| `settings.chapter_groups` | Collapsible chapters | Сворачиваемые главы | 20/19 |
+| `settings.chapter_groups_hint` | Choose whether chapter groups can collapse and how they open. | Выберите, можно ли сворачивать группы глав и как они раскрываются. | 61/66 |
+| `settings.chapter_groups_current` | Current section | Текущий раздел | 15/14 |
+| `settings.chapter_groups_current_description` | Expand the current chapter's parent groups. Default. | Раскрывать группы, содержащие текущую главу. По умолчанию. | 52/58 |
+| `settings.chapter_groups_all` | All chapters | Все главы | 12/9 |
+| `settings.chapter_groups_all_description` | Expand every group to show the full chapter list. | Раскрывать все группы и показывать весь список глав. | 49/52 |
+| `settings.chapter_groups_off` | Off | Выключено | 3/9 |
+| `settings.chapter_groups_off_description` | Show every chapter without expand or collapse buttons. | Показывать все главы без кнопок сворачивания и раскрытия. | 54/57 |
+| `settings.section_advanced` | Advanced | Дополнительно | 8/13 |
+| `settings.disable_reader_standby` | Disable standby | Отключить ожидание | 15/18 |
+| `settings.disable_reader_standby_description` | Keeps the device awake while reading. Uses more battery power. | Не переходить в режим ожидания при чтении. Расходует больше заряда. | 62/67 |
+| `settings.disable_reader_standby_title` | Disable standby while reading? | Отключить режим ожидания при чтении? | 30/36 |
+| `settings.disable_reader_standby_warning` | Disabling standby can significantly reduce battery life. It may help with intermittent freezes or missed page turns on some devices, but is generally not recommended. You can still put the device to sleep. Are you sure you want to disable standby? | Отключение режима ожидания может значительно сократить время работы. На некоторых устройствах это может помочь при периодических зависаниях или пропусках перелистывания. Устройство по-прежнему можно вручную перевести в сон. Вы уверены, что хотите отключить режим ожидания? | 247/272 |
+| `settings.dictionary_font_small_short` | S | S | 1/1 |
+| `settings.dictionary_font_standard_short` | M | M | 1/1 |
+| `settings.dictionary_font_large_short` | L | L | 1/1 |
+| `settings.dictionary_font_extra_large_short` | XL | XL | 2/2 |
+| `buttons.title` | Button controls | Управление кнопками | 15/19 |
+| `buttons.upper` | Upper button | Верхняя кнопка | 12/14 |
+| `buttons.lower` | Lower button | Нижняя кнопка | 12/13 |
+| `buttons.volume_up` | Volume up (+) | Громкость (+) | 13/13 |
+| `buttons.volume_down` | Volume down (−) | Громкость (−) | 15/13 |
+| `buttons.description` | Choose what each page button does while reading. | Выберите действие каждой кнопки перелистывания при чтении. | 48/58 |
+| `buttons.volume_description` | Choose what the volume buttons do while reading. | Выберите действия кнопок громкости при чтении. | 48/46 |
+| `buttons.navigation_hint` | Menus, lists and page previews keep their usual button directions. | В меню, списках и предпросмотре страниц кнопки сохраняют обычные направления. | 66/77 |
+| `buttons.previous` | Previous page | Предыдущая страница | 13/19 |
+| `buttons.next` | Next page | Следующая страница | 9/18 |
+| `buttons.none` | Do nothing | Ничего не делать | 10/16 |
+| `buttons.none_description` | Ignore this button while reading. | Игнорировать эту кнопку при чтении. | 33/35 |
+| `buttons.volume_title` | Volume button controls | Кнопки громкости | 22/16 |
+| `buttons.volume_note` | On Android, these mappings use the physical volume buttons. | На Android эти действия назначаются физическим кнопкам громкости. | 59/65 |
+| `buttons.while_reading` | Decide what this hardware button should do when you're reading. | Выберите действие этой физической кнопки при чтении. | 63/52 |
+| `buttons.hardware_title` | Hardware buttons | Физические кнопки | 16/17 |
+
+#### Изменённые строки
+
+| Ключ | EN beta7 | Предлагаемый RU | EN/RU |
+|---|---|---|---|
+| `kosync.auth_error` | The server rejected the sync credentials. Check your username, password and that the account exists on this server. It must support KOSync x-auth authentication. | Сервер отклонил данные входа. Проверьте имя, пароль и наличие учётной записи на этом сервере. Сервер должен поддерживать авторизацию KOSync x-auth. | 161/147 |
+| `kosync.network_error` | Could not complete the sync request. Check the server URL and network connection, then try again. | Не удалось выполнить запрос синхронизации. Проверьте адрес сервера и подключение к сети, затем повторите попытку. | 97/113 |
+| `kosync.invalid_response` | The server response is not compatible with KOSync. Check the server URL and path prefix. Your reading position was kept. | Ответ сервера несовместим с KOSync. Проверьте адрес сервера и префикс пути. Позиция чтения сохранена. | 120/101 |
+
+#### Прежние формулировки изменённых сообщений
+
+| Ключ | Текущий RU |
+|---|---|
+| `kosync.auth_error` | Не удалось войти. Проверьте имя пользователя и пароль. |
+| `kosync.network_error` | Сервер недоступен. Проверьте Wi-Fi, подключение к интернету и адрес сервера. |
+| `kosync.invalid_response` | Сервер вернул неверные данные прогресса. Ваша позиция сохранена. |
+
+#### Удалённые upstream строки
+
+| Ключ | Прежний RU | Причина |
+|---|---|---|
+| `reader.show_link_indicator` | Показывать индикатор ссылок при чтении | Удалён отдельный индикатор ссылок; tap/long press и подсветка остаются. |
+| `reader.link_indicator_description` | Показывает индикатор на страницах со ссылками. Нажмите на него, чтобы показать ссылки. | Удалён отдельный индикатор ссылок; tap/long press и подсветка остаются. |
+
+#### Приоритетная проверка длины
+
+- `buttons.next`: 9/18 — «Следующая страница».
+
+Даже строки ниже этих порогов требуют UI-проверки, особенно заголовки и кнопки.
+
+#### Уточнение пользователя: предупреждение standby
+
+В строку `settings.disable_reader_standby_warning` выше внесена **дословная
+пользовательская формулировка**, включая финальный вопрос. Затем пользователь согласовал весь beta7 список и дополнительные уточнения;
+строка применена в assets при слиянии. Длина — 272 символов; placeholder отсутствует.
+
+#### Дополнительные уточнения после просмотра ab6d9a0 — согласованы и применены
+
+Просмотрена вся серия `screen_001` … `screen_044` из пользовательского коммита
+093dd4d; карта контекстов и ограничения — в `FB2_FORK_PLAN.md`, материалы —
+[`tests/manual`](tests/manual/README.md). Это отдельные предложения к уже
+существующим строкам, **не часть upstream-дельты 57/3/2**. Пользователь
+согласовал весь перевод и разрешил продолжить слияние; уточнения применены.
+
+| Ключ | EN сейчас | RU сейчас → предложение | EN/RU нового | Контекст / причина |
+|---|---|---|---|---|
+| `settings.navigation_buttons_only` | Hardware page turn buttons only | Только аппаратные кнопки перелистывания → **Только физические кнопки** | 31/24 | 017: подпись обрезана; «физические» согласуется с новым beta7 Hardware buttons. |
+| `settings.navigation_needs_swipes` | Choose another tap-zone preset to turn off swipes. | Выберите другой пресет зон касаний, чтобы отключить свайпы. → **Выберите другую схему зон касаний, чтобы отключить свайпы.** | 50/58 | 017–018: объяснить «пресет» через видимую схему зон; смысл ограничения прежний. |
+| `settings.justification_tracking_subtle` | Subtle | Лёгкий → **Лёгкая** | 6/6 | 027: согласовать род с «подгонка» и вариантом «Обычная». |
+| `settings.justification_tracking_more` | More | Сильный → **Сильная** | 4/7 | 027: то же; не менять степень подгонки. |
+| `reader.publisher_spacing` | Publisher | Издатель → **Из книги** | 9/8 | 025/029: это сохранение оформления, а не имя издателя; компактно для slider markers и summary. |
+| `settings.widows_orphans_publisher` | Publisher | Издательский → **Из книги** | 9/8 | 030: тот же источник правил вместо неясного «Издательский». |
+| `settings.vertical_spacing_mode` | Page spacing | Интервалы страницы → **Вертикальные интервалы** | 12/22 | 025/031: одинаковое название строки и открываемого окна; ключ settings.vertical_spacing уже имеет этот RU. |
+| `settings.vertical_spacing_description` | Adjust blank space on nearly full pages. | Заполнение почти полных страниц. → **Распределение свободной высоты страницы.** | 40/40 | 025/031: уточнить, что настройка касается вертикального свободного пространства, не полей. |
+| `settings.beautifier_spacing` | Remove paragraph gaps | Убрать интервалы абзацев → **Убрать интервалы между абзацами** | 21/31 | 032: явно назвать межабзацное расстояние, не путать с межстрочным. |
+| `settings.beautifier_spacing_description` | Keep recognized scene breaks and special passages. | Убирает пустое место между абзацами. Разрывы сцен сохраняются. → **Убирать пустое место между обычными абзацами. Разрывы сцен и особые блоки сохраняются.** | 50/86 | 032: указать защищённые исключения; соответствует marked prose policy и EN. |
+| `settings.beautifier_indent` | Standardize first-line indents | Единые отступы абзацев → **Единый отступ первой строки** | 30/27 | 032: «отступы абзацев» неоднозначны; речь о красной строке. |
+| `settings.beautifier_indent_description` | Your paragraph adjustments take priority. | Единая красная строка; ваши отступы важнее. → **Обычные абзацы: красная строка 120%. Явный отступ в окне «Настройка абзацев» имеет приоритет.** | 41/93 | 032: проверено engine_document.cpp — 1.2em, затем явный paragraphIndent override; не обещать одинаковый отступ у заголовков/особых блоков. |
+| `common.size_small_short` | S | М → **S** | 1/1 | 011: единая S/M/L/XL шкала вместо М/С/Б/XL; только короткие общие markers. |
+| `common.size_medium_short` | M | С → **M** | 1/1 | 011: то же; полные RU размеры и отдельные dictionary compact keys не переименовываются. |
+| `common.size_large_short` | L | Б → **L** | 1/1 | 011: то же; XL уже совпадает. |
+
+Длина не равна ширине. Особое внимание после согласования: длинные пояснения
+beautifier должны переноситься в общей row factory beta7 с правильной высотой
+и пагинацией; заголовок «Вертикальные интервалы» проверить в узком layout.
+Текущий экран 032 показывает старый текст — он не доказывает, что новый поместился.
+Короткую подпись физических кнопок проверить в том же radio dialog, включая
+disabled состояние; не менять input behavior ради исправления текста.
+
+Нижние вкладки, «Стиль меню», «Замок», «Постоянно», результат синхронизации,
+«Просмотреть / Закрыть / Вписать», согласованные sleep/сноски и About rendering
+не меняются. Варианты текущего «Поворот» и пресеты колонтитулов автоматически
+не переименовываются. Английские литературные образцы 026–031 в старом билде —
+не пропуски локализации пунктов меню; beta7 style_sample проверяется отдельно.
