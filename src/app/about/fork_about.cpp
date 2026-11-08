@@ -6,6 +6,7 @@
 #include "ui/controls/text.h"
 #include "ui/style/metrics.h"
 #include "ui/style/styles.h"
+#include "ui/style/theme.h"
 #include <QBoxLayout>
 
 namespace kobalt::reader {
