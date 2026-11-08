@@ -1867,11 +1867,17 @@ private slots:
         QVERIFY(noteRow && neighbour);
         QVERIFY(noteRow->presentation() == neighbour->presentation());
         QCOMPARE(noteRow->presentation().indicator, ui::DescribedOption::Indicator::Square);
-        for (int page = 0; page < 8 && !pageNotes->isVisible(); ++page) {
+        // A paged Settings row can be visible but clipped by the viewport.
+        // Reach its actual click target before sending input through the canvas.
+        const auto notesExposed = [pageNotes] {
+            return pageNotes->isVisible()
+                    && pageNotes->visibleRegion().contains(pageNotes->rect().center());
+        };
+        for (int page = 0; page < 8 && !notesExposed(); ++page) {
             host.window()->pageButton(1);
-            QTest::qWait(1);
+            QCoreApplication::processEvents();
         }
-        QTRY_VERIFY(pageNotes->isVisible());
+        QTRY_VERIFY(notesExposed());
         QVERIFY(pageNotes->isChecked());
         QVERIFY(click(canvas, pageNotes));
         QVERIFY(!pageNotes->isChecked());

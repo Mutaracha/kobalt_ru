@@ -89,9 +89,9 @@ void russianPlurals() {
     }
     require(strings::plural(1, "annotations.summary") == QString::fromUtf8("1 аннотация"),
             "Russian annotation singular mismatch");
-    require(strings::plural(3, "annotations.summary") == QString::fromUtf8("3 аннотации"),
+    require(strings::plural(3, "annotations.summary") == QString::fromUtf8("Аннотации: 3"),
             "Russian annotation few-form mismatch");
-    require(strings::plural(5, "annotations.summary") == QString::fromUtf8("5 аннотаций"),
+    require(strings::plural(5, "annotations.summary") == QString::fromUtf8("Аннотаций: 5"),
             "Russian annotation many-form mismatch");
     strings::setLocale(Locale::English);
     require(strings::plural(1, "library.count") == QStringLiteral("1 book"), "English singular mismatch");

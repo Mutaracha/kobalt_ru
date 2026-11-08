@@ -295,8 +295,10 @@ int main(int argc, char **argv)
             colors.setColor(QPalette::Text, Qt::black);
             host.setPalette(colors);
             kobalt::reader::BottomNavigation bar(&host);
+            bar.setReturnLabel({}, {});
             bar.resize(px(1200), kobalt::reader::BottomNavigation::barHeight());
             host.resize(bar.size());
+            bar.show();
             host.show();
             app.processEvents();
             const auto font = interfaceFont(metrics::chrome::tabText);
@@ -320,7 +322,15 @@ int main(int argc, char **argv)
                     }
                 }
                 require(first >= 0 && last - first + 1 == ink.height(),
-                        "Russian bottom-tab label is vertically clipped");
+                        qPrintable(
+                                QString("Russian bottom-tab %1 at %2 PPI: painted rows %3..%4, ink %5, tab %6x%7")
+                                        .arg(name)
+                                        .arg(ppi)
+                                        .arg(first)
+                                        .arg(last)
+                                        .arg(ink.height())
+                                        .arg(tab->width())
+                                        .arg(tab->height())));
                 const int baseline = first - ink.top();
                 if (commonBaseline < 0) commonBaseline = baseline;
                 require(qAbs(baseline - commonBaseline) <= 1,

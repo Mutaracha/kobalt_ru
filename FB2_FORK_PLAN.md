@@ -61,7 +61,16 @@
   не изменение рендеринга ради прохождения. Остальные runtime причины ещё не
   доступны: GitHub ограничивает step десятью error annotations. Failure context
   теперь собирается в одну multiline annotation вместо отдельной на каждую строку.
-- Pending: остальные runtime причины, real-book invocation и итоговый полный PASS.
+- CI 42498933014 на 02dbe84: advancedText и globalLayout больше не падают.
+  Оставшиеся точные failures: appearanceSettingsRetainsDraft кликал видимую, но
+  обрезанную viewport строку сносок; strings-locale ожидал иной порядок слов
+  («3 аннотации») вместо утверждённого «Аннотации: 3»; component.ui снимал
+  BottomNavigation, которую constructor намеренно hide(), не показав её и не
+  скрыв link-return row. Исправлены test setup/видимость реальной click target и
+  ожидания действующих переводов. Строгие assertions fragments/state/pixels,
+  draft/apply и сохранение позиции не удалялись; production/assets не менялись.
+  Pixel failure теперь также сообщает label/PPI/painted rows/ink size.
+- Pending: повторный native runtime, real-book invocation и итоговый полный PASS.
 - Not run: full native/all-variant gallery, физический beta7/новые screenshots.
   По CI не объявлять визуальную проверку, не путать старый ab6d9a0 artifact с beta7.
 
