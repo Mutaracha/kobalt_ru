@@ -46,7 +46,15 @@
 - CI 42497029164 на d9652d2: Qt5 PASS, native compile FAIL в добавленном
   About assertion — strings namespace требовал полного kobalt::strings.
   Уточнена квалификация обеих lookup calls, ожидания/production не менялись.
-- Pending: повторный extended native CI, real-book invocation и итоговый Qt5 package.
+- CI 42497553256 на c85f890: Qt5 build/package/content PASS (7m29s,
+  artifact 13624581370); native теперь скомпилировался, но runtime selection
+  FAIL (6m49s). Прежний annotation filter не ловил QtTest FAIL! и обрезал
+  контекст до двух общих launcher exit codes. Raw logs/artifact downloads
+  недоступны из sandbox из-за redirect на запрещённые network hosts, не из-за
+  необходимости пользовательских credentials. Filter исправлен: FAIL! и
+  comparison/source context, без head/SIGPIPE. Assertions не меняются до
+  получения точной причины. Native artifact предыдущего запуска 13624023842.
+- Pending: диагностический runtime CI, real-book invocation и итоговый полный PASS.
 - Not run: full native/all-variant gallery, физический beta7/новые screenshots.
   По CI не объявлять визуальную проверку, не путать старый ab6d9a0 artifact с beta7.
 

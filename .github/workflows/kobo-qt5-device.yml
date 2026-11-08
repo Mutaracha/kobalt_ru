@@ -67,9 +67,17 @@ jobs:
           fi
           tail -40 "$log"
           if [ "$status" -ne 0 ]; then
-            grep -A5 -E 'error:|Error|FAILED|FAIL |FAIL:|not found|No rule|ninja:' "$log" | head -30 | while IFS= read -r line; do
-              echo "::error::${line}"
-            done
+            # QtTest uses FAIL!, not FAIL<space>. Emit each failure with its
+            # comparison/source context; do not lose later failures behind the
+            # first launcher's generic exit code or a pipefail/SIGPIPE from head.
+            awk '
+              /error:|Error|FAILED|FAIL|FATAL|not found|No rule|ninja:/ { context = 5 }
+              context > 0 && count < 100 {
+                gsub(/%/, "%25"); gsub(/\r/, "%0D")
+                print "::error::" $0
+                context--; count++
+              }
+            ' "$log"
           fi
           exit "$status"
       - name: Preserve native test results
