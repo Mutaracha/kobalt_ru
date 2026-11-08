@@ -2589,3 +2589,37 @@ disabled состояние; не менять input behavior ради испр�
 - Application source не менялся, Qt6 device behavior не проверен.
   Обычный Qt5/native CI 42507658383 также success. Будущая работа — Qt5;
   без явного ручного флага/разового маркера Qt6 не запускается.
+
+## Beta7: предложения автору и аудит новой device-серии
+
+- По запросу пользователя расширен EN inventory: внешние language packs
+  (embedded EN + .adds/kobalt/assets/lang), отдельный graphics/manga profile,
+  подробная историческая архитектура cache cleanup. Предложения не выданы
+  за существующую функциональность; cache cleanup не восстановлен.
+- Кодовый аудит графики: header/footer/progress strips и safe area отделены
+  от engine page margins; configure применяет left/top/bottom margins даже
+  при скрытых колонтитулах. CSS nested wrappers, aspect ratio/source image
+  и normal image zoom policy могут добавлять пространство. Уже существующие
+  full-page SVG handling/image viewer учтены; конкретного comic fixture нет,
+  поэтому точная причина пользовательского случая не объявлена доказанной.
+- Просмотрена вся серия doc/dddace7/screen_001–053.png из 2cdb862, отдельные
+  плотные окна рассмотрены в исходном разрешении. Покадровая карта/ограничения
+  и открытые предложения: doc/beta7-ui-review.md. Provenance + SHA256SUMS
+  добавлены рядом с неизменёнными оригиналами; scratch sheets не публикуются.
+- R1: 035 — значение «Из книги» vs «Издатель» в paragraph_choices_description.
+  Предложена точечная замена имени значения, assets не менялись.
+- R2: 052 — ни один debug-language radio не отмечен; showChoices не читает
+  текущий сохранённый DebugLanguage для selection. Предложение отмечать
+  override, не путать его с effective Russian при Automatic. Код не менялся.
+- Явное clipping нижних вкладок/длинных RU модалок в этой серии не найдено.
+  English typography samples, font names, SAMPLE TEXT и modal hatching не
+  объявлены пропусками перевода/ghosting. Формат читаемой книги, full device
+  behavior, reboot/reopen persistence, actual dictionary/sleep/standby warning,
+  comic source и другие масштабы/ориентации этими PNG не подтверждены.
+- Исторический cache audit проверен по 99f1af3/2f127ba и удалению b602d57:
+  confirmation → обычный durable close-save → terminal worker FIFO retirement
+  DOM/cache mappings → удаление только .cache и cache/reopen-layout.json →
+  exit/error, с sleep/USB coordination. Старый механизм не переносится назад.
+- Новые RU/UX предложения ожидают отдельного решения. Публикация — docs-only,
+  исполняемый код и PNG не менялись. Проверены полная per-frame карта,
+  SHA256 из Git originals и git diff --check; runtime tests не запускались.

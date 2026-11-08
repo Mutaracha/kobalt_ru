@@ -296,3 +296,14 @@ Qt5 remains the fork's primary ongoing target. The explicit manual
 `build_qt6_once=true` input of the device workflow permits an occasional Qt6
 adapter/package check; do not add Qt6 to automatic pushes on that basis.
 See doc/qt6-one-off.md. Record binary SHA/artifact separately from device proof.
+
+### Beta7 device review and author proposals
+
+Use doc/beta7-ui-review.md for the pending screenshot findings R1/R2 and
+per-frame evidence. Do not treat the saved-language confirmation as proof of
+an actual language change after reopening. Preserve original captures and
+provenance in doc/dddace7/. External language packs and a graphics-reading
+profile in the author inventory are proposals only. Detailed cache cleanup
+notes are historical; never revive that removed lifecycle state machine
+without a new explicit implementation request. New Russian wording still
+requires approval before editing assets.

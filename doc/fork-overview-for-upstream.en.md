@@ -194,6 +194,12 @@ Qt6 or every real-device visual scenario has been validated. Screenshots of
 this binary were subsequently supplied in
 [commit 2cdb862](https://github.com/Mutaracha/kobalt_ru/commit/2cdb86297e9af6465e0eef5961071808a32c2d50).
 
+A subsequent **one-off Qt6 adapter/package build** also passed at fork commit
+`44b6f882e8235316580184cfc72b028a82ab0c97`
+([CI 42507680309](https://github.com/Mutaracha/kobalt_ru/actions/runs/42507680309)).
+No application-source change was needed for that build. Physical Qt6-device
+behavior remains unverified; ongoing development remains Qt5-first.
+
 ## Withdrawn experiments — not current differences from beta7
 
 An experimental manual book-cache cleanup action was removed from the fork
@@ -202,3 +208,186 @@ experiment and its temporary diagnostics were also removed; the fork uses the
 upstream light-gesture/feedback controls instead. These are not proposed as
 current features, and their removal should not be read as removal of an
 upstream beta7 capability.
+
+## Proposals for upstream — not implemented in this fork
+
+### A. Keep English embedded; load additional languages from external assets
+
+Would you consider keeping only the English reference/fallback strings in the
+binary and loading optional translations from `.adds/kobalt/assets/lang/` on
+Kobo? This is the same directory shown as `.adds\kobalt\assets\lang` over USB
+on Windows.
+
+The current fork compiles both English and Russian tables into the executable;
+external language packs are a **proposal**, not a description of the current
+implementation. The goal is to let translators distribute and update a language
+without rebuilding the application, while the reader remains usable when a pack
+is missing, outdated or damaged.
+
+Suggested contract:
+
+- One data-only UTF-8 pack per locale, for example `ru.json`, with a locale ID,
+  native display name and a format/compatibility version. The exact file format
+  is open for discussion; packs should not contain executable code.
+- Resolve the requested locale at startup, load the selected pack once before
+  constructing the UI and use embedded English as a per-key fallback. Avoid
+  file reads or parsing in paint, page-turn and individual string-lookup paths.
+- Validate types, size limits and substitution placeholders. Reject unsafe
+  paths/malformed packs; unknown or missing keys must not produce blank UI or
+  crash the reader. Report invalid packs without exposing credentials or book
+  content in diagnostics.
+- Preserve a stable English key/reference table for diagnostics and translation
+  tooling. Keep CI validation for distributed translations even though they are
+  no longer compiled into the application.
+- Support locale-appropriate plural rules, not just an English/Russian switch.
+  Decide how users select among installed packs and how firmware locale aliases
+  map to them.
+- Define an update policy for bundled versus user-installed packs, so an app
+  update neither silently destroys local translations nor assumes old packs
+  contain every newly introduced key.
+
+This would make localization independently maintainable. It does not imply
+that language switching must happen live in already-created widgets.
+
+### B. A dedicated borderless reading mode for comics and manga
+
+On the same device, the user reports that Nickel displays a comic page
+full-screen, while Kobalt leaves edge space even with headers and footers off.
+A separate graphics-reading mode would be useful so text-book layout
+preferences do not have to be changed globally just to read a comic.
+
+**What the code establishes:**
+
+- In `ReadingPage::topHeight()` / `bottomHeight()`, hiding the header/footer
+  removes those strips, but the progress strip has its own visibility condition.
+- `Reader::bodySize()` also accounts for the platform safe area. It does not
+  remove the engine's page margins.
+- `EngineDocument::configure()` loads `margin_pixels`, `top_margin_pixels` and
+  `bottom_margin_pixels`, and passes them to `engine_->setPageMargins(...)`.
+  These are independent of header/footer visibility.
+- Publisher CSS is another layer. The `normalize_page_margins` option resets
+  margins/padding on `html`, `body` and `DocFragment`, but does not imply that
+  every nested image wrapper has zero padding.
+- There is already special handling for recognized full-page SVG/wrappers in
+  `reader_page_layout.cpp`, and a separate image viewer with fit/zoom/pan.
+  Those are not the same as a dedicated page-by-page comic-reading profile.
+- Normal document layout disables CREngine's legacy image zoom-in modes to
+  avoid double scaling. This is a further reason not to assume that reducing
+  text margins alone will make every small image fill the display.
+
+Thus the user's hypothesis is plausible: text-pagination settings can leave
+space after chrome is hidden. **The exact cause in the reported comic has not
+been reproduced:** the supplied beta7 screenshot series shows a prose book,
+not the affected comic, and its source file/layout settings are not available
+for this comparison. Embedded white borders, aspect ratio, CSS, safe areas and
+scaling must be distinguished before attributing all edge space to one bug.
+
+Suggested behavior:
+
+- A per-book **Comics / manga** profile, separate from text-book preferences,
+  with zero application-added page margins and an explicit choice to hide
+  header, footer and progress strip.
+- Preserve image aspect ratio. Offer fit-page and fit-width; any fill/crop mode
+  should be explicit, never silently crop artwork or stretch it.
+- Clearly distinguish **no added margins** from **edge-to-edge fill**: fitting
+  a page with a different aspect ratio necessarily leaves unused space unless
+  it is cropped. White borders already inside the image are a separate issue.
+- Preserve normal reading navigation and position, including RTL ordering for
+  manga, rather than requiring a separate tap into the image viewer for every
+  page.
+- Keep text settings intact when switching books, with regression coverage for
+  image-only EPUB pages, raster/SVG wrappers, differing aspect ratios,
+  orientation changes and reopening the book.
+
+This is not a request to claim CBZ/CBR support: the proposal concerns graphics
+reading in currently supported publications first.
+
+## Historical implementation: manual rendering-cache cleanup
+
+**Status:** this was implemented experimentally, then removed before the beta6
+merge and deferred until a stable release. It is **not available in the current
+beta7 fork**. The following describes the final historical implementation, not
+an API or lifecycle contract that should be restored unchanged.
+
+References:
+[worker/lifecycle rework 99f1af3](https://github.com/Mutaracha/kobalt_ru/commit/99f1af33e1f7d2a85f03d1633ea8c66658c7d268),
+[final error/wake handling 2f127ba](https://github.com/Mutaracha/kobalt_ru/commit/2f127ba),
+[removal b602d57](https://github.com/Mutaracha/kobalt_ru/commit/b602d57037aeb2c56f1cf08b0b8046635079b42a).
+
+### User-facing flow
+
+A “Clear book cache” list action lived in Defaults and opened a confirmation
+modal. It explained that disposable caches would be removed, saved reading data
+would remain and Kobalt would close afterwards. Confirmation initiated the
+ordinary asynchronous close-save path; it did **not** delete files directly
+from the button callback.
+
+### Save-before-delete boundary
+
+The reader tracked `None`, `Requested`, `Running`, `Complete` and `Failed` states.
+In `Requested`, the normal close pipeline first completed progress, annotations,
+native reconciliation and sync handling. Only after that save acknowledgement
+could `finishExitSaved()` commit to cleanup. A save failure kept caches intact
+and reused the existing save retry/cancel interaction. Cancelling the exit also
+cancelled the uncommitted cleanup request.
+
+### Retire the engine before touching its cache
+
+At the terminal boundary, the reader disabled interaction and released the
+appearance preview. `ReaderSession::clearRenderingCaches()` invalidated pending
+GUI continuations and retired the session, then queued a FIFO job on the shared
+engine worker. That job called `ReaderModel::discardDocument()` before deletion:
+release page images and source indexes, close/reset the engine and source, and
+clear the document's cache identity. This closes mapped DOM/cache resources
+before deleting their files. Retired work could not start rendering or save the
+document cache again on exit and thereby recreate what had just been deleted.
+
+The worker retained the engine and paths independently of the window;
+`QPointer`-guarded UI completion avoided callbacks into a destroyed reader.
+Filesystem deletion was a blocking operation on the worker, not an interactive
+main-thread operation.
+
+### Precisely limited deletion scope
+
+`storage::clearRenderingCaches()` removed only:
+
+- the profile's CREngine document-cache directory, `.cache/`;
+- the disposable layout-inspection file `cache/reopen-layout.json`, and its
+  parent directory only when empty.
+
+It did not delete source books, preferences, the reading database, annotations,
+book positions or reading statistics. Missing cache targets counted as success.
+An empty profile path or a symlinked cache-directory target was rejected rather
+than traversed into unrelated data. Success required the targeted cache entries
+to be absent afterwards. The operation was **not transactional**: partial
+filesystem deletion could fail and was not represented as a successful cleanup.
+
+### Sleep, USB, shutdown and errors
+
+- Sleep/USB/shutdown before the terminal boundary cancelled the deletion request
+  and took the ordinary transition/save path.
+- Once cleanup was committed, transitions waited for the worker barrier rather
+  than mapping or saving a retired DOM again.
+- Sleep after commitment postponed completion/error UI until wake. It did not
+  resume reading from the discarded document.
+- Successful cleanup closed Kobalt. On deletion failure, the already-saved
+  reading data remained intact; an error was shown before closing. Retrying
+  cleanup required reopening a book, not continuing the retired session.
+- A forced process exit could leave disposable caches partially removed. The
+  design ordered durable saving before deletion; this was not a blanket
+  guarantee against unrelated storage failure or power-loss corruption.
+
+### Coverage and why this is historical
+
+Regression tests were added for cache-only deletion, preservation of durable
+files, missing targets, filesystem failures, symlink rejection, save failure /
+cancellation, save-before-delete ordering and reader lifecycle interactions.
+That describes the test code added at the time, not a new execution of those
+removed tests against beta7.
+
+The important lesson is that a cache button is not just a recursive directory
+removal: it must coordinate the durable-save boundary, engine mappings, queued
+work and close/sleep/USB behavior. The experiment was withdrawn to keep beta
+integration focused on upstream progress/lifecycle and to avoid carrying a
+parallel fork-specific close state machine. Any future implementation should
+be redesigned against the then-current upstream ownership and storage contracts.
