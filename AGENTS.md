@@ -84,7 +84,9 @@ Stop and reap run-owned helper processes and remove scratch profiles, staging di
 
 ## Fork workflow (kobalt_ru)
 
-This fork follows `FB2_FORK_PLAN.md` in the repository root. Keep that plan current: mark every stage and checklist item with its progress status (planned / in progress / done) in the same change as the work it describes, so the plan alone is enough to resume after the sandbox or local checkout is wiped.
+This fork follows the permanent update procedure in [Fork update workflow](doc/fork-update-workflow.md) and `FB2_FORK_PLAN.md` in the repository root. Keep that plan current: mark every stage and checklist item with its progress status (planned / in progress / done) in the same change as the work it describes, so the plan alone is enough to resume after the sandbox or local checkout is wiped.
+
+The fork workflow takes precedence over generic upstream feature/worktree instructions below: in Arena, stay in the assigned session branch and checkout. Never create another branch or worktree.
 
 Always commit completed work and push it to the current working branch (`git push origin <current-branch>`). The local repository and sandbox can be cleared at any time, so unpushed work is not considered safe. Never switch, create or push to another branch.
 
@@ -110,7 +112,8 @@ them when adding features or rebasing onto upstream; see section 8 of
 - Keep FB2 CSS/cache-policy changes together in `reader_fb2.h`. Popup hints are
   unconditional; in-page CSS is conditional on the default-on appearance key.
   Update policy in its single helper only when the parsed result/default CSS
-  changes, not for releases or code moves. Preserve the empty EPUB salt.
+  changes, not for releases or code moves. Keep the separate EPUB footnote policy
+  salt in its own helper; do not restore the obsolete empty EPUB salt.
 - Register new layout-affecting choices in appearance state, clean/default/apply,
   copy/equality and retained-layout checks. `afterContentChange()` is a narrow
   whitelist: never substitute all appearance keys or retain stale source-bound
@@ -159,7 +162,7 @@ Read [Storage compatibility](doc/storage.md) before changing settings, book stat
 
 Bump the format version in `documentCacheChecksum` when parser or preprocessing changes make parsed-book caches incompatible. Bump the inspection-cache format separately when verdict rules change incompatibly. Cache invalidation must rebuild disposable data only; it must never clear settings, bookmarks or annotations.
 
-Keep Markdown in `doc/`, except the root `README.md` and `AGENTS.md`. The user owns root README edits. Keep these instructions and build commands current in the same change as tooling updates.
+Keep Markdown instructions in `doc/`, except root `README.md`, `AGENTS.md`, the canonical `FB2_FORK_PLAN.md`, and provenance/index READMEs beside test materials. The user owns root README edits. Keep these instructions and build commands current in the same change as tooling updates.
 
 In this fork, pushing completed work to the current working branch is pre-authorized and required (see [Fork workflow](#fork-workflow-kobalt_ru)); other publications (tags, releases, other branches) still need explicit authorization. Signed operations require an advance warning for 1Password prompts. Never add an agent coauthor: the sandbox may install a `commit-msg` hook that appends a `Co-authored-by: arena-agent` trailer, so create fork commits with `git commit --no-verify` and verify with `git log --grep=arena-agent` that the history stays trailer-free. Preserve unrelated changes and the original checkout.
 
@@ -223,7 +226,7 @@ sections receive hints, with sizes only on the top-level sections (75% notes,
 85% comments), never repeated shrinkage at each nesting level. Preserve the
 agreed superscript numeric labels and default-on FB2 comments as explicit fork
 choices. Do not enable optional KOReader classic/Wikipedia/extension/flattening
-profiles globally. See doc/koreader-footnotes-review.md for snapshot and scope.
+profiles globally. See doc/fb2-footnotes.md for the maintained contract, pinned sources and scope; completed review history is in FB2_FORK_PLAN.md#archive-koreader.
 
 Keep fb2_inpage_footnotes and global/default compatibility. Apply PROP_FOOTNOTES
 at configure and live reflow, so off disables publisher in-page hints too,
@@ -257,3 +260,19 @@ row/description geometry through the common factory, not old copied metrics.
 Keep standby default-off with upstream confirmation; no revival of cache cleanup
 or unrelated Wi-Fi work. Initial merge-tree review is not a completed merge,
 compile, native run or visual check. Record those stages separately.
+
+### Documentation and manual material ownership
+
+Keep permanent instructions and active proposals/plans in doc/. Consolidate completed
+work reports into FB2_FORK_PLAN.md before deleting them, preserving approvals,
+sources, risks, CI/artifact identities and unrun checks. Fix references in the same
+change. Do not turn a deleted work log into a differently named duplicate in doc/.
+Keep stable technical contracts in their area guide as well as historical evidence.
+
+User device captures and opt-in publisher books live under tests/manual/; read its
+README for provenance and materials.sha256 for byte-preservation checks. Portable
+synthetic/public-domain fixtures remain in tests/fixtures/. Move originals without
+editing images or repacking books, update all workflow arguments, and bind each
+capture set to its actual binary SHA. A screenshot commit is not a binary build.
+Record a per-screen context audit in the canonical plan, propose wording changes
+for approval, and never infer beta7 layout validation from beta6 captures.

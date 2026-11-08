@@ -62,7 +62,7 @@
 | `settings.disable_reader_standby` | Disable standby | Отключить ожидание | 15/18 |
 | `settings.disable_reader_standby_description` | Keeps the device awake while reading. Uses more battery power. | Не переходить в режим ожидания при чтении. Расходует больше заряда. | 62/67 |
 | `settings.disable_reader_standby_title` | Disable standby while reading? | Отключить режим ожидания при чтении? | 30/36 |
-| `settings.disable_reader_standby_warning` | Disabling standby can significantly reduce battery life. It may help with intermittent freezes or missed page turns on some devices, but is generally not recommended. You can still put the device to sleep. Are you sure you want to disable standby? | Отключение режима ожидания может значительно сократить время работы от батареи. На некоторых устройствах это может помочь при периодических зависаниях или пропусках перелистывания, но обычно не рекомендуется. Устройство по-прежнему можно вручную перевести в сон. Отключить режим ожидания? | 247/288 |
+| `settings.disable_reader_standby_warning` | Disabling standby can significantly reduce battery life. It may help with intermittent freezes or missed page turns on some devices, but is generally not recommended. You can still put the device to sleep. Are you sure you want to disable standby? | Отключение режима ожидания может значительно сократить время работы. На некоторых устройствах это может помочь при периодических зависаниях или пропусках перелистывания. Устройство по-прежнему можно вручную перевести в сон. Вы уверены, что хотите отключить режим ожидания? | 247/272 |
 | `settings.dictionary_font_small_short` | S | S | 1/1 |
 | `settings.dictionary_font_standard_short` | M | M | 1/1 |
 | `settings.dictionary_font_large_short` | L | L | 1/1 |
@@ -112,3 +112,49 @@
 - `buttons.next`: 9/18 — «Следующая страница».
 
 Даже строки ниже этих порогов требуют UI-проверки, особенно заголовки и кнопки.
+
+## Уточнение пользователя: предупреждение standby
+
+В строку `settings.disable_reader_standby_warning` выше внесена **дословная
+пользовательская формулировка**, включая финальный вопрос. Это согласованная
+правка данного предложения, не утверждение всего beta7 списка. В assets строки
+ещё нет, поскольку beta7 не слита. Длина — 272 символов; placeholder отсутствует.
+
+## Дополнительные предложения после просмотра ab6d9a0 — требуют согласования
+
+Просмотрена вся серия `screen_001` … `screen_044` из пользовательского коммита
+093dd4d; карта контекстов и ограничения — в `FB2_FORK_PLAN.md`, материалы —
+[`tests/manual`](../tests/manual/README.md). Это отдельные предложения к уже
+существующим строкам, **не часть upstream-дельты 57/3/2 и не изменения assets**.
+Подтверждение одной строки не означает согласование остальных.
+
+| Ключ | EN сейчас | RU сейчас → предложение | EN/RU нового | Контекст / причина |
+|---|---|---|---|---|
+| `settings.navigation_buttons_only` | Hardware page turn buttons only | Только аппаратные кнопки перелистывания → **Только физические кнопки** | 31/24 | 017: подпись обрезана; «физические» согласуется с новым beta7 Hardware buttons. |
+| `settings.navigation_needs_swipes` | Choose another tap-zone preset to turn off swipes. | Выберите другой пресет зон касаний, чтобы отключить свайпы. → **Выберите другую схему зон касаний, чтобы отключить свайпы.** | 50/58 | 017–018: объяснить «пресет» через видимую схему зон; смысл ограничения прежний. |
+| `settings.justification_tracking_subtle` | Subtle | Лёгкий → **Лёгкая** | 6/6 | 027: согласовать род с «подгонка» и вариантом «Обычная». |
+| `settings.justification_tracking_more` | More | Сильный → **Сильная** | 4/7 | 027: то же; не менять степень подгонки. |
+| `reader.publisher_spacing` | Publisher | Издатель → **Из книги** | 9/8 | 025/029: это сохранение оформления, а не имя издателя; компактно для slider markers и summary. |
+| `settings.widows_orphans_publisher` | Publisher | Издательский → **Из книги** | 9/8 | 030: тот же источник правил вместо неясного «Издательский». |
+| `settings.vertical_spacing_mode` | Page spacing | Интервалы страницы → **Вертикальные интервалы** | 12/22 | 025/031: одинаковое название строки и открываемого окна; ключ settings.vertical_spacing уже имеет этот RU. |
+| `settings.vertical_spacing_description` | Adjust blank space on nearly full pages. | Заполнение почти полных страниц. → **Распределение свободной высоты страницы.** | 40/40 | 025/031: уточнить, что настройка касается вертикального свободного пространства, не полей. |
+| `settings.beautifier_spacing` | Remove paragraph gaps | Убрать интервалы абзацев → **Убрать интервалы между абзацами** | 21/31 | 032: явно назвать межабзацное расстояние, не путать с межстрочным. |
+| `settings.beautifier_spacing_description` | Keep recognized scene breaks and special passages. | Убирает пустое место между абзацами. Разрывы сцен сохраняются. → **Убирать пустое место между обычными абзацами. Разрывы сцен и особые блоки сохраняются.** | 50/86 | 032: указать защищённые исключения; соответствует marked prose policy и EN. |
+| `settings.beautifier_indent` | Standardize first-line indents | Единые отступы абзацев → **Единый отступ первой строки** | 30/27 | 032: «отступы абзацев» неоднозначны; речь о красной строке. |
+| `settings.beautifier_indent_description` | Your paragraph adjustments take priority. | Единая красная строка; ваши отступы важнее. → **Обычные абзацы: красная строка 120%. Явный отступ в окне «Настройка абзацев» имеет приоритет.** | 41/93 | 032: проверено engine_document.cpp — 1.2em, затем явный paragraphIndent override; не обещать одинаковый отступ у заголовков/особых блоков. |
+| `common.size_small_short` | S | М → **S** | 1/1 | 011: единая S/M/L/XL шкала вместо М/С/Б/XL; только короткие общие markers. |
+| `common.size_medium_short` | M | С → **M** | 1/1 | 011: то же; полные RU размеры и отдельные dictionary compact keys не переименовываются. |
+| `common.size_large_short` | L | Б → **L** | 1/1 | 011: то же; XL уже совпадает. |
+
+Длина не равна ширине. Особое внимание после согласования: длинные пояснения
+beautifier должны переноситься в общей row factory beta7 с правильной высотой
+и пагинацией; заголовок «Вертикальные интервалы» проверить в узком layout.
+Текущий экран 032 показывает старый текст — он не доказывает, что новый поместился.
+Короткую подпись физических кнопок проверить в том же radio dialog, включая
+disabled состояние; не менять input behavior ради исправления текста.
+
+Нижние вкладки, «Стиль меню», «Замок», «Постоянно», результат синхронизации,
+«Просмотреть / Закрыть / Вписать», согласованные sleep/сноски и About rendering
+не меняются. Варианты текущего «Поворот» и пресеты колонтитулов автоматически
+не переименовываются. Английские литературные образцы 026–031 в старом билде —
+не пропуски локализации пунктов меню; beta7 style_sample проверяется отдельно.

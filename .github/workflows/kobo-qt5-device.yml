@@ -50,7 +50,7 @@ jobs:
                 ctest --preset linux --output-on-failure -R "^(engine\.(links|fb2|document-cache)|model\.appearance-settings)$"
                 QT_QPA_PLATFORM=offscreen cmake \
                   -DTEST_EXECUTABLE=/work/build/desktop-linux/kobalt-links-tests \
-                  "-DTEST_ARGUMENTS=--publisher-notes;/work/doc/Кокаиновые+короли.epub" \
+                  "-DTEST_ARGUMENTS=--publisher-notes;/work/tests/manual/books/publisher/Кокаиновые+короли.epub" \
                   -DTEST_TIMEOUT=180 -DTEST_TMP_ROOT=/work/build/desktop-linux/test-tmp \
                   -P /work/platforms/desktop/run-test.cmake
               '
