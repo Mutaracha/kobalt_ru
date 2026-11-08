@@ -102,68 +102,46 @@ void koboConfig() {
     using strings::Locale;
     QTemporaryDir directory;
     require(directory.isValid(), "temporary directory");
-    const auto confPath = directory.path() + "/Kobo eReader.conf";
-    {
-        QFile file(confPath);
-        require(file.open(QIODevice::WriteOnly | QIODevice::Text), "create Kobo config fixture");
-        QTextStream stream(&file);
-        stream << "[ApplicationPreferences]\nCurrentLocale=ru_RU\n";
+    struct ConfigCase {
+        const char *content;
+        Locale expected;
+        const char *failure;
+    };
+    const ConfigCase cases[] = {
+        {"[ApplicationPreferences]\nCurrentLocale=ru_RU\n", Locale::Russian,
+         "ru_RU config must select Russian"},
+        {"[ApplicationPreferences]\nCurrentLocale=en_GB\n", Locale::English,
+         "en_GB config must select English"},
+        {"[Reading]\nSideloadedMode=true\n", Locale::English,
+         "Missing CurrentLocale must fall back to English"},
+        {"[ApplicationPreferences]\nCurrentLocale=C\nExtraLocales=ru\n", Locale::Russian,
+         "ExtraLocales=ru must select Russian even when CurrentLocale is C"},
+        {"[ApplicationPreferences]\nExtraLocales=ru_RU\n", Locale::Russian,
+         "ExtraLocales=ru_RU without CurrentLocale must select Russian"},
+        {"[ApplicationPreferences]\nCurrentLocale=C\nExtraLocales=en_GB, ru-RU\n", Locale::Russian,
+         "A Russian token inside a comma-separated ExtraLocales must select Russian"},
+        {"[ApplicationPreferences]\nCurrentLocale=C\nExtraLocales=\"en_GB, ru-RU\"\n", Locale::Russian,
+         "A quoted ExtraLocales string must also select Russian"},
+        {"[ApplicationPreferences]\nCurrentLocale=en_GB\nExtraLocales=fr_FR\n", Locale::English,
+         "ExtraLocales without a Russian token must follow CurrentLocale and stay English"},
+        {"[ApplicationPreferences]\nCurrentLocale=C\n", Locale::English,
+         "CurrentLocale=C without ExtraLocales must fall back to English"},
+        {"[ApplicationPreferences]\nCurrentLocale=POSIX\n", Locale::English,
+         "CurrentLocale=POSIX without ExtraLocales must fall back to English"},
+    };
+    int index = 0;
+    for (const auto &test : cases) {
+        // Distinct paths isolate parsing cases from QSettings' process-wide
+        // cache: same-size rewrites within one timestamp tick can look unchanged.
+        const auto confPath = directory.filePath(QString("Kobo-%1.conf").arg(index++));
+        {
+            QFile file(confPath);
+            require(file.open(QIODevice::WriteOnly | QIODevice::Text), "create Kobo config fixture");
+            QTextStream stream(&file);
+            stream << test.content;
+        }
+        require(kobalt::localeFromKoboConfig(confPath) == test.expected, test.failure);
     }
-    require(kobalt::localeFromKoboConfig(confPath) == Locale::Russian, "ru_RU config must select Russian");
-    {
-        QFile file(confPath);
-        require(file.open(QIODevice::WriteOnly | QIODevice::Text), "rewrite Kobo config fixture");
-        QTextStream stream(&file);
-        stream << "[ApplicationPreferences]\nCurrentLocale=en_GB\n";
-    }
-    require(kobalt::localeFromKoboConfig(confPath) == Locale::English, "en_GB config must select English");
-    {
-        QFile file(confPath);
-        require(file.open(QIODevice::WriteOnly | QIODevice::Text), "rewrite Kobo config without locale");
-        QTextStream stream(&file);
-        stream << "[Reading]\nSideloadedMode=true\n";
-    }
-    require(kobalt::localeFromKoboConfig(confPath) == Locale::English, "Missing CurrentLocale must fall back to English");
-    {
-        QFile file(confPath);
-        require(file.open(QIODevice::WriteOnly | QIODevice::Text), "rewrite Kobo config with an old-patch placeholder");
-        QTextStream stream(&file);
-        stream << "[ApplicationPreferences]\nCurrentLocale=C\nExtraLocales=ru\n";
-    }
-    require(kobalt::localeFromKoboConfig(confPath) == Locale::Russian,
-            "ExtraLocales=ru must select Russian even when CurrentLocale is C");
-    {
-        QFile file(confPath);
-        require(file.open(QIODevice::WriteOnly | QIODevice::Text), "rewrite Kobo config with ExtraLocales only");
-        QTextStream stream(&file);
-        stream << "[ApplicationPreferences]\nExtraLocales=ru_RU\n";
-    }
-    require(kobalt::localeFromKoboConfig(confPath) == Locale::Russian,
-            "ExtraLocales=ru_RU without CurrentLocale must select Russian");
-    {
-        QFile file(confPath);
-        require(file.open(QIODevice::WriteOnly | QIODevice::Text), "rewrite Kobo config with a locale list");
-        QTextStream stream(&file);
-        stream << "[ApplicationPreferences]\nCurrentLocale=C\nExtraLocales=en_GB, ru-RU\n";
-    }
-    require(kobalt::localeFromKoboConfig(confPath) == Locale::Russian,
-            "A Russian token inside a comma-separated ExtraLocales must select Russian");
-    {
-        QFile file(confPath);
-        require(file.open(QIODevice::WriteOnly | QIODevice::Text), "rewrite Kobo config with non-Russian locales");
-        QTextStream stream(&file);
-        stream << "[ApplicationPreferences]\nCurrentLocale=en_GB\nExtraLocales=fr_FR\n";
-    }
-    require(kobalt::localeFromKoboConfig(confPath) == Locale::English,
-            "ExtraLocales without a Russian token must follow CurrentLocale and stay English");
-    {
-        QFile file(confPath);
-        require(file.open(QIODevice::WriteOnly | QIODevice::Text), "rewrite Kobo config with the C placeholder only");
-        QTextStream stream(&file);
-        stream << "[ApplicationPreferences]\nCurrentLocale=C\n";
-    }
-    require(kobalt::localeFromKoboConfig(confPath) == Locale::English,
-            "CurrentLocale=C without ExtraLocales must fall back to English");
     require(kobalt::localeFromKoboConfig(directory.path() + "/missing.conf") == Locale::English,
             "Missing config file must fall back to English");
 }

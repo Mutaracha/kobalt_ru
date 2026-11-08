@@ -6,6 +6,7 @@
 #include <QLocale>
 #include <QSettings>
 #include <QString>
+#include <QStringList>
 
 namespace kobalt {
 namespace {
@@ -21,10 +22,14 @@ strings::Locale localeFromKoboConfig(const QString &confPath) {
     // while older patches leave CurrentLocale at the placeholder "C". The
     // value is a comma-separated list (e.g. "ru" or "en_GB, ru_RU"), so a
     // Russian token there is the most reliable sign of a Russian device.
-    const auto extraLocales = settings.value("ApplicationPreferences/ExtraLocales").toString();
-    for (const auto &token : extraLocales.split(QLatin1Char(','), kobalt::qt::skipEmptyParts)) {
-        if (strings::normalizeLocaleCode(token.trimmed()) == strings::Locale::Russian)
-            return strings::Locale::Russian;
+    // QSettings parses unquoted comma-separated INI values as QStringList;
+    // a quoted list stays a single QString. Accept both representations.
+    const auto extraLocales = settings.value("ApplicationPreferences/ExtraLocales").toStringList();
+    for (const auto &locales : extraLocales) {
+        for (const auto &token : locales.split(QLatin1Char(','), kobalt::qt::skipEmptyParts)) {
+            if (strings::normalizeLocaleCode(token.trimmed()) == strings::Locale::Russian)
+                return strings::Locale::Russian;
+        }
     }
     const auto code = settings.value("ApplicationPreferences/CurrentLocale").toString();
     // "C" and "POSIX" mean no real locale selection, as shipped by old patches.

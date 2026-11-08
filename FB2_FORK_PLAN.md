@@ -2226,3 +2226,9 @@ portable native suite не зависит от наличия этого ком�
 Исходная книга byte-for-byte сохранена. На физическом Kobo новая версия здесь
 не проверялась; после установки достаточно заново открыть книгу, rendering
 cache v3 перестроится автоматически без удаления прогресса.
+
+#### Beta7 — прогон 42499687934 и изоляция locale fixtures
+
+- `798468e`: Kobo Qt5/package PASS; native — единственный FAIL `model.strings-locale` (`en_GB config must select English`). Lifecycle draft и строгий RU bottom-tab pixel test PASS; остальные ctest-проверки PASS, publisher invocation ещё не достигнута.
+- Причина locale fixture: последовательные same-size `ru_RU`/`en_GB` перезаписи одного файла могут сохранять timestamp/size для process-wide QSettings cache. Независимые parsing cases теперь используют отдельные INI paths, без sleeps и ослабления ожиданий.
+- В production reader locale сохранён контракт ExtraLocales-first, C/POSIX fallback. Чтение ExtraLocales учитывает оба представления QSettings: некавыченный comma-list (`QStringList`) и строку в кавычках (`QString`). Добавлены строгие cases для обоих и POSIX. Изменений перевода/настроек нет. Полный повторный CI требуется; не считать native/publisher PASS заранее.
