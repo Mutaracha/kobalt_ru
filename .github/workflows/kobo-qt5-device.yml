@@ -31,7 +31,7 @@ env:
 
 jobs:
   footnote-regressions:
-    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.build_qt6_once) }}
+    if: ${{ !((github.event_name == 'workflow_dispatch' && inputs.build_qt6_once) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[qt6-once]'))) }}
     name: EPUB and FB2 engine regressions
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -99,7 +99,7 @@ jobs:
           if-no-files-found: ignore
 
   build-qt5:
-    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.build_qt6_once) }}
+    if: ${{ !((github.event_name == 'workflow_dispatch' && inputs.build_qt6_once) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[qt6-once]'))) }}
     name: Build Kobalt-qt5 for device testing
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -202,7 +202,7 @@ jobs:
           retention-days: 30
 
   build-qt6-once:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_qt6_once }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.build_qt6_once) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[qt6-once]')) }}
     name: One-off Kobo Qt6 package
     runs-on: ubuntu-24.04
     timeout-minutes: 45

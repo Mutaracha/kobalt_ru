@@ -2574,3 +2574,7 @@ disabled состояние; не менять input behavior ради испр�
 - Пакет проверяется на Qt6 installer path, metadata commit/target и SHA-256;
   артефакт Kobalt-qt6-once. Инструкция: doc/qt6-one-off.md.
 - Результат пока ожидается; работоспособность на устройстве не подтверждена.
+
+- Dispatch API вернул 403 (Actions permission). Разовый явно помеченный push
+  запускает тот же Qt6-only job через commit marker; default Qt5 не изменён.
+  Повторно dispatch не запрашивался; ошибки сборки ещё не получены.
