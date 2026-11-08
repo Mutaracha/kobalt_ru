@@ -20,3 +20,15 @@ SDK и SHA-256 ZIP. Установщик внутри — `.kobo/Kobo.tgz`, не
 push без этого маркера остаются Qt5-only. Не использовать маркер для docs-only
 обновлений результата. Первый dispatch получил 403; это ограничение разрешений
 Actions, а не результат сборки.
+
+## Полученный пакет
+
+- Код: `44b6f882e8235316580184cfc72b028a82ab0c97`.
+- [CI 42507680309 — PASS](https://github.com/Mutaracha/kobalt_ru/actions/runs/42507680309).
+- [Скачать Kobalt-qt6-once](https://github.com/Mutaracha/kobalt_ru/actions/runs/42507680309/artifacts/13628387057).
+- Внутри: Kobalt-qt6.zip и build-qt6.json; SHA-256 ZIP проверен CI и записан
+  в JSON. Размер внешнего artifact: 36 517 352 bytes.
+- Offline/Qt6 adapter checks/build/package/metadata/checksum PASS. Изменения
+  application source для этой сборки не потребовались. Физическое устройство
+  Qt6 не проверено; дальнейшая работа и обычные push остаются Qt5.
+- Предшествующий обычный Qt5/native прогон 42507658383 также PASS.

@@ -2578,3 +2578,14 @@ disabled состояние; не менять input behavior ради испр�
 - Dispatch API вернул 403 (Actions permission). Разовый явно помеченный push
   запускает тот же Qt6-only job через commit marker; default Qt5 не изменён.
   Повторно dispatch не запрашивался; ошибки сборки ещё не получены.
+
+### Результат разовой Qt6 сборки — PASS
+
+- Код 44b6f882e8235316580184cfc72b028a82ab0c97, CI 42507680309.
+- Qt6 job 128815500954: offline/adapter checks/build/package PASS, 7m58s.
+  Проверены Qt6 installer path, metadata target/commit и SHA-256 ZIP.
+- Artifact Kobalt-qt6-once: 13628387057, 36 517 352 bytes, содержит
+  Kobalt-qt6.zip + build-qt6.json. Ссылка/инструкция в doc/qt6-one-off.md.
+- Application source не менялся, Qt6 device behavior не проверен.
+  Обычный Qt5/native CI 42507658383 также success. Будущая работа — Qt5;
+  без явного ручного флага/разового маркера Qt6 не запускается.
