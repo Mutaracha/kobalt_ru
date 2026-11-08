@@ -3750,8 +3750,9 @@ int main(int argc, char **argv)
             const auto name = QString::fromLatin1(kobaltForkName);
             require(fork->text()
                                     == (stamp.isEmpty()
-                                                ? strings::get("about.fork").arg(name)
-                                                : strings::get("about.fork_build").arg(name, stamp))
+                                                ? kobalt::strings::get("about.fork").arg(name)
+                                                : kobalt::strings::get("about.fork_build")
+                                                          .arg(name, stamp))
                             && fork->alignment() == Qt::AlignCenter,
                     "Shared About changed the approved fork label");
         }

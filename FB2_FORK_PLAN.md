@@ -43,6 +43,9 @@
   его без локального using namespace kobalt::ui. Восстановлен using именно
   в upstream block; все font-preview/fork assertions сохранены. Это подтверждает,
   почему auto-merge нельзя считать проверенным без расширенной native выборки.
+- CI 42497029164 на d9652d2: Qt5 PASS, native compile FAIL в добавленном
+  About assertion — strings namespace требовал полного kobalt::strings.
+  Уточнена квалификация обеих lookup calls, ожидания/production не менялись.
 - Pending: повторный extended native CI, real-book invocation и итоговый Qt5 package.
 - Not run: full native/all-variant gallery, физический beta7/новые screenshots.
   По CI не объявлять визуальную проверку, не путать старый ab6d9a0 artifact с beta7.
