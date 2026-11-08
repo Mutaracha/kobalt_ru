@@ -1,13 +1,20 @@
 name: Kobo qt5 device build
 
 # Device-verification pipeline for the FB2/Russian fork.
-# Builds ONLY the Qt5 Kobo package (firmware 4.38+), the artifact that can be
+# Automatically builds only the Qt5 Kobo package (firmware 4.38+), which can be
 # sideloaded onto a physical Kobo for on-device testing. The Qt6 and Android
-# targets are intentionally excluded; see .github/workflows/ci.yml for those.
+# targets are excluded from pushes. An explicit manual input permits one-off
+# Qt6 verification; normal development remains Qt5-first.
 on:
   push:
     branches: [arena/9e626d86-kobalt-ru]
   workflow_dispatch:
+    inputs:
+      build_qt6_once:
+        description: 'One-off Qt6 package instead of the normal Qt5/native run'
+        type: boolean
+        default: false
+        required: false
 
 permissions:
   contents: read
@@ -24,6 +31,7 @@ env:
 
 jobs:
   footnote-regressions:
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.build_qt6_once) }}
     name: EPUB and FB2 engine regressions
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -91,6 +99,7 @@ jobs:
           if-no-files-found: ignore
 
   build-qt5:
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.build_qt6_once) }}
     name: Build Kobalt-qt5 for device testing
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -187,6 +196,79 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: Kobalt-qt5-device
+          path: build/release/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+  build-qt6-once:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_qt6_once }}
+    name: One-off Kobo Qt6 package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Offline checks, Qt6 adapters and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/qt6-once.log"
+          set +e
+          (
+            set -euo pipefail
+            bash platforms/ci/test.sh
+            bash platforms/ci/build.sh qt6
+          ) >"$log" 2>&1
+          status=$?
+          set -e
+          tail -60 "$log"
+          if [ "$status" -ne 0 ]; then
+            { echo '### One-off Qt6 failure'; echo '```'; tail -150 "$log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            awk '
+              /error:|Error|FAILED|FAIL|FATAL|not found|No rule|ninja:/ { context = 5 }
+              context > 0 && count < 100 {
+                gsub(/%/, "%25"); gsub(/\r/, "%0D")
+                report = report $0 "%0A"; context--; count++
+              }
+              END { if (count) print "::error::" report }
+            ' "$log"
+          fi
+          exit "$status"
+      - name: Validate Qt6 archive and record checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          zip=build/release/Kobalt-qt6.zip
+          metadata=build/release/build-qt6.json
+          test -f "$zip"
+          test ! -e build/release/Kobalt-qt5.zip
+          test "$(jq -r .target "$metadata")" = qt6
+          test "$(jq -r .commit "$metadata")" = "$GITHUB_SHA"
+          expected=$(jq -r .sha256 "$metadata")
+          echo "$expected  $zip" | sha256sum -c -
+          python3 - "$zip" <<'PY'
+          import sys, zipfile
+          with zipfile.ZipFile(sys.argv[1]) as archive:
+              names = set(archive.namelist())
+              required = {".kobo/Kobo.tgz", ".adds/kobalt/assets/manifest.json"}
+              if not required <= names or ".kobo/KoboRoot.tgz" in names:
+                  sys.exit("Missing Qt6 members or unexpected Qt5 installer")
+              if any(n.startswith("/") or ".." in n.split("/") for n in names):
+                  sys.exit("Unsafe package member path")
+          PY
+          {
+            echo '## One-off Kobalt Qt6 build'
+            echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- ZIP SHA-256: \`$expected\`"
+            echo '- For Qt6-based Kobo firmware, not Qt5 firmware 4.x.'
+            echo '- Adapter/package checks do not replace physical device testing.'
+            echo '- Normal automatic development and checks remain Qt5.'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Kobalt-qt6-once
           path: build/release/*
           if-no-files-found: error
           compression-level: 0

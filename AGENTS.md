@@ -289,3 +289,10 @@ Run the extended fork CI selection (shared About/settings/buttons/lifecycle plus
 locale, EPUB/FB2 and cache); its focused coverage is not the full native suite.
 Keep anchor_preview.h regressions on semantic/long/InDesign EPUB and FB2 notes:
 preview must restore source position, pagination, bottom fragments and reading image.
+
+### One-off Qt6 package policy
+
+Qt5 remains the fork's primary ongoing target. The explicit manual
+`build_qt6_once=true` input of the device workflow permits an occasional Qt6
+adapter/package check; do not add Qt6 to automatic pushes on that basis.
+See doc/qt6-one-off.md. Record binary SHA/artifact separately from device proof.
