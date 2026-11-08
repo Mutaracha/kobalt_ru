@@ -5,7 +5,18 @@
 
 ---
 
-## Текущий этап: интеграция beta6 (2026-11-07)
+## Текущий этап: подготовка переноса beta7
+
+Пользователь подтвердил работу сносок после ab6d9a0/CI 42418333826 на устройстве.
+Эта версия (с docs tip 2409912) — исходная проверенная база для beta7. Цель:
+upstream e86533c80e8aa41bfc7d79c9e445cbd4a6405039 / v1.0-beta.7.
+Порядок прежний: source audit → согласование полного RU proposal → merge/adapt →
+offline/native/Qt5 package → device check. План и конфликтные зоны:
+[doc/beta7-integration.md](doc/beta7-integration.md); строки на согласование:
+[doc/translation-proposal-beta7.md](doc/translation-proposal-beta7.md).
+Слияние и переводы пока не применены, новый beta7 билд не собран.
+
+## Завершённый этап: интеграция beta6 (2026-11-07)
 
 **Код beta6 перенесён, Kobo Qt5 package проверен.** Upstream 7ff437e интегрирован merge-коммитом 7b523d8; проверенный code tip — 8fef806. Финальный CI 42398893518 PASS (6m14s), artifact Kobalt-qt5-device. Нативные model/UI/lifecycle suites и проверка на устройстве **не выполнены**. Cache cleanup полностью удалена и отложена; собственная quiet-light implementation заменена upstream beta6 без миграции. Подробности: doc/beta6-integration.md. Нижняя таблица и журнал сохраняют историю прежних этапов.
 
@@ -862,3 +873,11 @@ bool plainEpub() const {
 - Qt5 production offline/build/package/contents PASS, job 7m42s. Artifact Kobalt-qt5-device id 13592458337, native results id 13592467913. Новая бинарная сборка после docs-only фиксации результатов не требуется.
 - git diff 02953e6 по пользовательскому EPUB пуст: файл не перепаковывался и не исправлялся. Новые тестовые тексты синтетические; коммерческие текст/шрифты не копировались в fixtures или runtime assets.
 - Осталось: физический Kobo screenshot smoke для той же книги/настроек. Native engine validation не является полной UI/lifecycle suite или подтверждением визуального A/B с KOReader.
+
+### 2026-11-08 — beta7: подготовка по прежнему плану
+
+- Получено подтверждение пользователя: сноски работают на устройстве. Зафиксирована проверенная исходная точка ab6d9a0/2409912; пользовательская книга 02953e6 и InDesign profile сохраняются.
+- Через GitHub получен beta7 e86533c, выполнен source diff относительно beta6 7ff437e и безопасный merge-tree review без изменения index/worktree. Конфликтные файлы и auto-merge audit зоны перечислены в doc/beta7-integration.md.
+- Полный словарный diff: 57 новых, 3 изменённых, 2 удалённых ключа; все предложения RU и длины — doc/translation-proposal-beta7.md. Placeholders PASS; assets не менялись. Для compact dictionary предлагается оставить международные S/M/L/XL, полные RU подписи сохранить.
+- Новые preview, shared About, hardware controls, chapter groups и standby требуют адаптации общих hooks, а не копирования прежних экранов. Dependencies/CREngine delta отсутствует; не менять footnote policy/cache без причины, не включать отложенные cleanup/Wi-Fi fork features.
+- Перенос остановлен перед изменением переводов для согласования пользователем. Actual merge/native/build/device beta7 не выполнены. Документация подготовки не требует нового beta6 пакета.

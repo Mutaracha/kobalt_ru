@@ -242,3 +242,18 @@ not KOReader's per-spec default. Keep the synthetic InDesign matrix portable;
 `--publisher-notes PATH` is a separate opt-in real-book validation owned by the
 fork device workflow. Do not copy commercial book text/fonts into new fixtures
 or runtime assets. EPUB cache v3 invalidates earlier per-spec-only layouts.
+
+### beta7 integration — pending RU approval
+
+Use doc/beta7-integration.md and the complete translation-proposal-beta7.md
+before merging e86533c. Do not apply new/changed RU assets until user approval.
+The user confirmed InDesign footnotes work on-device in ab6d9a0; preserve that
+baseline, EPUB v3/FB2 v6 policies, the standalone publisher-book regression,
+and shared formatting/progress. Adapt fork About/debug to upstream's common
+app/about/AboutPage for Library and Settings; do not retain an old About screen
+or obsolete SettingsPanelInputs solely for the fork label. Check temporary
+anchor-based preview drawing/caches on pages with notes. Match the new shared
+row/description geometry through the common factory, not old copied metrics.
+Keep standby default-off with upstream confirmation; no revival of cache cleanup
+or unrelated Wi-Fi work. Initial merge-tree review is not a completed merge,
+compile, native run or visual check. Record those stages separately.
