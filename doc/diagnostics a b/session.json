@@ -1,0 +1,37 @@
+{
+    "book": "file:///mnt/onboard/Library/1. Виртуальный свет.fb2",
+    "native_readers": 0,
+    "native_views": 0,
+    "opening_timings": {
+        "load_and_layout_ms": 4990,
+        "prepare_ms": 1074,
+        "resource_cache": {
+            "allocated_bytes": 1114112,
+            "budget_bytes": 33554432,
+            "evictions": 0,
+            "failed_images": 0,
+            "image_error": "",
+            "load_ms": 59.734665999999997,
+            "loaded_resources": 1,
+            "loads": 1,
+            "model_cache_hit": false,
+            "model_paginate_ms": 3717,
+            "model_parse_ms": 419,
+            "model_prepare_ms": 130,
+            "peak_bytes": 1114112,
+            "pending_images": 0,
+            "ready_images": 0,
+            "request_failures": 0,
+            "request_ms": 59.726999999999997,
+            "requests": 1,
+            "resource_count": 1,
+            "resource_sink_ms": 57.552667,
+            "resource_xml_ms": 0,
+            "transferred_bytes": 1104399
+        },
+        "total_ms": 9207
+    },
+    "reason": "",
+    "retained_book": false,
+    "status": "closed"
+}
