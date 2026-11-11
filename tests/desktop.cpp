@@ -3296,6 +3296,7 @@ private slots:
         ::chapterGroups(fixture);
     }
 
+    // Checks that top progress and chapter ticks mirror bottom progress above the header.
     void progressStripMirrors()
     {
         ReadingPage page(nullptr, [] { });

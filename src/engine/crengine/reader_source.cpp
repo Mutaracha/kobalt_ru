@@ -619,8 +619,10 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
         // Loading computed styles before the body markers existed, including in previews.
         engine_->getDocument()->forceReinitStyles();
     }
+    if (comicsMode_) markComicImages(engine_.get());
     applyStyleSheet();
     engine_->Render();
+    engine_->rebuildComicSpreads();
     openingTimes_["model_paginate_ms"] = double(phase.restart());
     if (!resourceError().isEmpty()) {
         const auto detail = resourceError();

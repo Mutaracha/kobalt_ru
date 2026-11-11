@@ -103,3 +103,14 @@ Qt5 artifact [13888743153](https://github.com/Mutaracha/kobalt_ru/actions/runs/4
 36,429,810 bytes; native results 13890060155. Device refresh quality is not
 proved by CI. No opening-time speedup, footnote gap fix or lazy UI construction
 is claimed. These last two remain open; test plan explicitly separates them.
+
+
+## Follow-up device acceptance
+
+The user confirms no ghosting; preserve the existing waveform behavior.
+With comics enabled on ordinary FB2/EPUB, prose must remain readable, without
+zero-leading overlap (including settings preview, reopen and mode off/on).
+Landscape: two portrait source pages side by side; a wide source spread alone
+at full viewport width; no rotation/stretch/crop. Check pair → wide → odd page,
+backward turns, portrait/landscape round trips and saved position after reopen.
+This supersedes the former one-source-page-in-both-orientations requirement.

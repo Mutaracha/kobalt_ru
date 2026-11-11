@@ -1,5 +1,6 @@
 #include "reader_page_layout.h"
 #include <lvdocview.h>
+#include <lvimg.h>
 #include <QString>
 #include <vector>
 
@@ -120,6 +121,29 @@ void mark(ldomNode *root, lUInt16 attribute)
     }
 }
 } // namespace
+
+// Classify the original bitmap, never its viewport-dependent rendered rectangle.
+// No rotation is performed. Unknown images conservatively remain full-width.
+void markComicImages(LVDocView *view)
+{
+    if (!view || !view->getDocument()) return;
+    auto *document = view->getDocument();
+    const auto attribute = document->getAttrNameIndex("data-kobalt-comic-portrait");
+    std::vector<ldomNode *> pending{ document->getRootNode() };
+    while (!pending.empty()) {
+        auto *node = pending.back();
+        pending.pop_back();
+        if (!node || !node->isElement()) continue;
+        if (node->isNodeName("img") || node->isNodeName("image")) {
+            const auto image = node->getObjectImageSource();
+            const bool portrait = !image.isNull() && image->GetWidth() > 0
+                    && image->GetHeight() > image->GetWidth();
+            node->setAttributeValue(0, attribute, portrait ? U"1" : U"0");
+        }
+        for (int i = node->getChildCount() - 1; i >= 0; --i)
+            pending.push_back(node->getChildNode(i));
+    }
+}
 
 void markChapterLeadingImages(LVDocView *view)
 {

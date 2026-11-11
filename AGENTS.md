@@ -396,3 +396,24 @@ orientations rule is superseded; simply forcing two columns would shrink wide
 spreads into half a screen and does not satisfy the requirement. No comics layout
 change in this partial patch. Footnote gap and lazy panels also remain unfinished.
 This patch is not yet native/Qt5-validated and is not a verified device package.
+
+
+## Comics safety and landscape follow-up
+
+Device report: NO ghosting artifacts. Preserve the successful Qt5 graphics
+refresh policy; do not add unconditional full-screen flashing.
+The FB2 screenshot's overprinted text comes from the comics stylesheet's global
+line-height:0. Removed that override for all formats, retaining readable prose.
+Comics cache policy v2 invalidates parsed checkpoints containing the old layout.
+
+Landscape comic screens now group adjacent known portrait-image-only engine
+pages. Wide/unknown/multiple-image/prose pages stay separate. Portrait images
+fit half the landscape viewport, wide art fits the whole viewport, no rotation.
+Numbering, source bookmarks and hit coordinates use the same screen mapping;
+rebuild it after pagination, never on page turns. Base typography/layout choices
+remain saved and are restored when comics is disabled. Added mixed-art rotation
+and FB2/HTML prose geometry regressions. CI verification pending.
+
+Also corrected the missing area label/comment for the previous progress-mirror
+regression, which prevented native CI configuration (Qt5 packaging itself passed).
+Footnote gap and lazy-panel work remain unfinished; no opening speedup claim.

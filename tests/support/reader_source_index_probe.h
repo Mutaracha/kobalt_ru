@@ -27,6 +27,13 @@ struct ReaderSourceIndexProbe {
             result += (*pages)[i]->footnotes.length() > 0;
         return result;
     }
+    static QRect nodeBounds(const EngineDocument &model, const char *id) {
+        auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
+        if (!node) return {};
+        lvRect rect;
+        node->getAbsRect(rect);
+        return QRect(rect.left, rect.top, rect.width(), rect.height());
+    }
     static int nodeFontPixels(const EngineDocument &model, const char *id) {
         auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
         return node ? node->getFont()->getSize() : 0;

@@ -14,6 +14,7 @@
 #include "reader_styles.h"
 #include "reader_hyphenation.h"
 #include "reader_alignment.h"
+#include "reader_page_layout.h"
 #include "document_cache.h"
 #include "font_weight.h"
 #include "render/page_refresh_regions.h"
@@ -480,9 +481,9 @@ QByteArray EngineDocument::documentCachePolicy() const
 {
     // Detect CSS edits for cache reuse only. User CSS is never an installation asset.
     if (userStyleSheet_.isEmpty()) {
-        return cachePolicy_ + (comicsMode_ ? ":comics-v1:on" : "");
+        return cachePolicy_ + (comicsMode_ ? ":comics-v2:on" : "");
     }
-    return cachePolicy_ + (comicsMode_ ? ":comics-v1:on" : "") + ":user-css-v1:"
+    return cachePolicy_ + (comicsMode_ ? ":comics-v2:on" : "") + ":user-css-v1:"
             + QCryptographicHash::hash(userStyleSheet_, QCryptographicHash::Sha256).toHex();
 }
 
@@ -652,6 +653,7 @@ void EngineDocument::configure(QSize size, const QJsonObject &settings)
     hangingPunctuation_ = saved.value("hanging_punctuation").toBool(false);
     engine_ = std::make_unique<ColumnView>();
     engine_->setHangingPunctuation(hangingPunctuation_);
+    engine_->setComicSpreads(comicsMode_);
     engine_->setColumns(columns_);
     engine_->setColumnSpacing(columnSpacing_);
     // CREngine defaults to a 72-pixel cap. Use the same physical limits as the controls.
@@ -1002,6 +1004,8 @@ bool EngineDocument::applyAppearance(const QJsonObject &settings, QSize size,
     const bool resized = size != size_ || columns != columns_ || columnSpacing != columnSpacing_;
     baseColumns_ = baseColumns;
     comicsMode_ = comics;
+    engine_->setComicSpreads(comicsMode_);
+    if (comicsChanged && comicsMode_) markComicImages(engine_.get());
     twoColumnsLandscape_ = landscapeColumns;
     columnSpacingPercent_ = gapPercent;
     if (!verticalChanged && !styled && !resized && !footnotesChanged && weight == weight_ && dark == darkMode_
@@ -1132,7 +1136,9 @@ bool EngineDocument::applyAppearance(const QJsonObject &settings, QSize size,
             alternateViewport_ = {};
         }
     }
+    if (comicsMode_ && resized) applyStyleSheet();
     engine_->Render();
+    engine_->rebuildComicSpreads();
     return goTo(anchor);
 }
 
@@ -1267,13 +1273,16 @@ void EngineDocument::applyStyleSheet()
     // must not add an inline image baseline or leading-image protection padding.
     const auto comicsCss = comicsMode_ ? lString8(
             "\nhtml,body,DocFragment,div,p,section { margin:0 !important; padding:0 !important; "
-            "text-indent:0 !important; line-height:0 !important; }\n"
+            "text-indent:0 !important; }\n"
             "body[data-kobalt-leading-image=\"1\"] { padding-top:0 !important; }\n"
             "img { display:block !important; width:auto !important; height:auto !important; "
             "max-width:100% !important; max-height:100vh !important; margin:0 auto !important; "
-            "padding:0 !important; page-break-inside:avoid !important; }\n") : lString8();
+            "padding:0 !important; page-break-inside:avoid !important; page-break-after:always !important; }\n") : lString8();
+    const auto spreadCss = comicsMode_ && size_.width() > size_.height() ? lString8(
+            "img[data-kobalt-comic-portrait=\"1\"], image[data-kobalt-comic-portrait=\"1\"] "
+            "{ max-width:50vw !important; }\n") : lString8();
     engine_->setStyleSheet(base + lString8(overrides.toUtf8().constData()) + lString8("\n") +
-                           lString8(userStyleSheet_.constData()) + comicsCss);
+                           lString8(userStyleSheet_.constData()) + comicsCss + spreadCss);
 }
 
 void EngineDocument::resize(QSize size)
@@ -1497,7 +1506,27 @@ QImage EngineDocument::image(int pageNumber)
         return {};
     PageDrawBuffer buffer(result, darkMode_, true, &imageInversion_);
     if (columns_ == 1) {
-        engine_->drawColumn(buffer, pageNumber, 0);
+        if (engine_->comicPageCount(pageNumber) == 2) {
+            result.fill(Qt::white);
+            QImage layer(size_, QImage::Format_RGB32);
+            if (layer.isNull()) return {};
+            QPainter painter(&result);
+            for (int i = 0; i < 2; ++i) {
+                PageDrawBuffer part(layer, darkMode_, true, &imageInversion_);
+                engine_->drawColumn(part, pageNumber, i);
+                const int physical = engine_->comicRightToLeft() ? 1 - i : i;
+                const int left = physical * size_.width() / 2;
+                const int right = (physical + 1) * size_.width() / 2;
+                const int offset = (left + right - size_.width()) / 2;
+                const QRect clip(left, 0, right - left, size_.height());
+                painter.setClipRect(clip);
+                painter.drawImage(offset, 0, layer);
+                buffer.hasImages |= part.hasImages;
+                buffer.hasText |= part.hasText;
+                for (const auto &region : part.imageRegions)
+                    buffer.imageRegions.append(region.translated(offset, 0).intersected(clip));
+            }
+        } else engine_->drawColumn(buffer, pageNumber, 0);
     } else {
         result.fill(Qt::white);
         QImage column(engine_->columnWidth(), size_.height(), QImage::Format_RGB32);

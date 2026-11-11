@@ -69,10 +69,11 @@ int main(int argc, char **argv)
         require(ReaderSourceIndexProbe::comicsGeometry(model) && model.margin() == editedMargin,
                 "Active edit must save base without changing effective margins");
         require(model.applyAppearance({}, QSize(1680, 1264)), "Rotate comic");
-        require(ReaderSourceIndexProbe::comicsGeometry(model), "Landscape enabled a spread");
+        require(ReaderSourceIndexProbe::comicsGeometry(model), "Landscape changed physical engine geometry");
         bounds = inkBounds(model.image(0));
-        require(bounds.height() == 1264 && qAbs(bounds.width() - qRound(1264.0 * 1160 / 1680)) <= 1,
-                "Landscape cropped or stretched the graphic");
+        require(qAbs(bounds.width() - 840) <= 1
+                    && qAbs(bounds.height() - qRound(840.0 * 1680 / 1160)) <= 2,
+                "Landscape portrait did not fit a half-screen without distortion");
         require(model.saveDocumentCache(), "Save comics parsed cache");
         const auto checkpoint = model.state();
         EngineDocument reopened(test::readerFonts());
@@ -87,5 +88,62 @@ int main(int argc, char **argv)
                 "Disable did not restore latest base layout");
         require(reopened.embeddedFontCount() == 0, "Synthetic EPUB acquired document fonts");
     }
+    // Ordinary prose must retain positive line height even with comics enabled.
+    // This covers accidental activation on both EPUB-like markup and FB2.
+    for (const bool fictionBook : {false, true}) {
+        QByteArray paragraphs;
+        for (int i = 0; i < 40; ++i)
+            paragraphs += "<p id='p" + QByteArray::number(i) + "'>" +
+                    QByteArray("Words on separate readable lines. ").repeated(20) + "</p>";
+        const auto bytes = fictionBook
+                ? "<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'><description><title-info><book-title>Prose</book-title><lang>en</lang></title-info></description><body><section>" + paragraphs + "</section></body></FictionBook>"
+                : "<html><head><title>Prose</title></head><body>" + paragraphs + "</body></html>";
+        EngineDocument prose(test::readerFonts());
+        QString error;
+        require(prose.open(bytes, QSize(800, 1000), {{appearance::comicsModeKey, true}, {"font_pixels", 32}}, &error), qPrintable(error));
+        const auto first = ReaderSourceIndexProbe::nodeBounds(prose, "p0");
+        const auto second = ReaderSourceIndexProbe::nodeBounds(prose, "p1");
+        require(first.height() > 32 && second.top() >= first.bottom(),
+                "Comics mode collapsed prose lines or overlaid paragraphs");
+        require(prose.pages() > 1, "Comics prose collapsed into a single page");
+    }
+
+    // Mixed source sequence: portrait + portrait, a wide spread, and an odd portrait.
+    // Page numbering and saved anchors must describe displayed screens, not halves.
+    auto mixed = data;
+    QImage wide(1680, 1000, QImage::Format_RGB32);
+    wide.fill(Qt::red);
+    QByteArray widePng;
+    QBuffer wideBuffer(&widePng);
+    require(wideBuffer.open(QIODevice::WriteOnly) && wide.save(&wideBuffer, "PNG"), "Encode wide art");
+    mixed["wide.png"] = widePng;
+    mixed["book.opf"] = "<package xmlns='http://www.idpf.org/2007/opf' version='2.0'><metadata/><manifest><item id='c' href='c.xhtml' media-type='application/xhtml+xml'/><item id='i' href='art.png' media-type='image/png'/><item id='w' href='wide.png' media-type='image/png'/></manifest><spine><itemref idref='c'/></spine></package>";
+    mixed["c.xhtml"] = "<html xmlns='http://www.w3.org/1999/xhtml'><head><title>Mixed</title></head><body><div><img src='art.png'/></div><div><img src='art.png'/></div><div><img src='wide.png'/></div><div><img src='art.png'/></div></body></html>";
+    QMap<QString, qint64> mixedLengths;
+    for (auto it = mixed.cbegin(); it != mixed.cend(); ++it) mixedLengths[it.key()] = it.value().size();
+    auto mixedResources = std::make_shared<ResourceCache>(mixed.keys(),
+        [mixed](const QString &name, const ResourceCache::Sink &sink, QString *) {
+            const auto bytes = mixed.value(name);
+            return sink(bytes.constData(), bytes.size());
+        }, std::make_shared<std::atomic_bool>(false));
+    readingPpi.store(96);
+    EngineDocument spread(test::readerFonts());
+    QString error;
+    require(spread.openResources(mixedResources, mixedLengths, QSize(1680, 1264),
+                {{appearance::comicsModeKey, true}}, &error), qPrintable(error));
+    require(spread.pages() == 3, "Mixed art did not become pair / wide / odd screens");
+    auto pair = spread.image(0);
+    require(qRed(pair.pixel(100, 100)) > 200 && qGreen(pair.pixel(100, 100)) < 40
+                && qGreen(pair.pixel(1000, 100)) < 40, "Portrait pair missing one side");
+    const auto wideBounds = inkBounds(spread.image(1));
+    require(wideBounds.width() == 1680 && qAbs(wideBounds.height() - 1000) <= 1,
+                "Wide source spread rotated, cropped or fitted to half the screen");
+    require(spread.go(1), "Select wide screen");
+    const auto widePosition = spread.position();
+    require(spread.applyAppearance({}, QSize(1264, 1680)), "Rotate mixed art to portrait");
+    require(spread.pages() == 4, "Portrait must have one source image per screen");
+    require(spread.goTo(widePosition), "Wide anchor lost after rotation");
+    require(spread.applyAppearance({}, QSize(1680, 1264)), "Rotate mixed art back");
+    require(spread.page() == 1 && spread.pages() == 3, "Spread anchor/page mapping changed after rotation");
     std::puts("PASS: comics fit, zero effective margins, orientation and editable base persistence");
 }
