@@ -80,8 +80,8 @@ int main(int argc, char **argv)
         require(ReaderSourceIndexProbe::comicsGeometry(reopened) && reopened.margin() == 60,
                 "Reopen lost mode or updated base settings");
         require(reopened.applyAppearance({{appearance::comicsModeKey, false}}), "Disable comic mode");
-        require(reopened.margin() == 60 && reopened.topMargin() == 51
-                    && reopened.bottomMargin() == 27 && reopened.state().value("columns").toInt() == 2,
+        require(reopened.margin() == 60 && reopened.state().value("top_margin_pixels").toInt() == 51
+                    && reopened.state().value("bottom_margin_pixels").toInt() == 27 && reopened.state().value("columns").toInt() == 2,
                 "Disable did not restore latest base layout");
         require(reopened.embeddedFontCount() == 0, "Synthetic EPUB acquired document fonts");
     }

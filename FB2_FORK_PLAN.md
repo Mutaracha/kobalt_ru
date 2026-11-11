@@ -2811,3 +2811,6 @@ and an explicit parsed-cache reopen assertion in engine.comics. CI pending.
 Qt5 CI caught unsupported QSignalBlocker on the pinned Kobo Qt. Removed it:
 the option connects clicked, so programmatic setChecked never starts an edit.
 Reverification pending; do not distribute the failed intermediate build.
+
+Native compile correction: inspect vertical base margins through the public state
+record (EngineDocument exposes only horizontal margin as a convenience accessor).
