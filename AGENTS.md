@@ -332,3 +332,21 @@ single EN/RU proposal and per-book scope before adding strings. Reuse upstream
 TOC/page progress and invalidate footer ticks on reflow; never parse DOM in paint.
 The public Vlasovsoft source is from 2015 and not verified as the 2022/2023
 binary source. Measure existing opening phases before claiming optimization.
+
+
+## Согласованный контракт режима комиксов
+
+Пользователь утвердил поведение перед реализацией:
+- Режим сохраняется отдельно для каждой книги; default off.
+- Изображение вписывается целиком с сохранением пропорций, без crop/stretch.
+- Поля и колонтитулы НЕ блокируются: пользователь может менять их обычным
+  способом, значения сохраняются, но при активном режиме не применяются.
+  После выключения применяются последние сохранённые значения, а не snapshot
+  на момент включения. Apply/cancel сохраняет обычную семантику настроек.
+- Одна исходная страница на экран в обеих ориентациях; без auto-spread.
+- Отметки глав без отдельной настройки, только на существующей progress bar.
+- Название EN/RU принято; новых descriptions не требуется.
+
+Это утверждённое поведение, не отчёт о готовой реализации. Проверить edit→apply
+при активном режиме, close/reopen и выключение с восстановлением обновлённых
+значений; отдельно edit→cancel не должен менять сохранённую базу.
