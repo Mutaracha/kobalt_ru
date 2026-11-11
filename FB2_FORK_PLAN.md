@@ -2799,3 +2799,7 @@ and landscape fitting at 96/300 PPI, effective geometry, edits while enabled,
 checkpoint/reopen and restoration. Manual checks on build d7b7d55 remain the
 baseline, not proof of this implementation. Test Apply/Cancel, sleep/reopen,
 chapter tick reflow and the supplied graphic on Kobo Qt5 after CI passes.
+
+Follow-up: retain ordinary-book cache policy when comics is off; explicitly override
+the higher-specificity leading-image padding rule in comics and skip the FB2
+count call itself (the accessor also guards all other callers). CI pending.

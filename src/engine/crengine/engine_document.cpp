@@ -480,9 +480,9 @@ QByteArray EngineDocument::documentCachePolicy() const
 {
     // Detect CSS edits for cache reuse only. User CSS is never an installation asset.
     if (userStyleSheet_.isEmpty()) {
-        return cachePolicy_ + (comicsMode_ ? ":comics-v1:on" : ":comics-v1:off");
+        return cachePolicy_ + (comicsMode_ ? ":comics-v1:on" : "");
     }
-    return cachePolicy_ + (comicsMode_ ? ":comics-v1:on" : ":comics-v1:off") + ":user-css-v1:"
+    return cachePolicy_ + (comicsMode_ ? ":comics-v1:on" : "") + ":user-css-v1:"
             + QCryptographicHash::hash(userStyleSheet_, QCryptographicHash::Sha256).toHex();
 }
 
@@ -904,7 +904,8 @@ bool EngineDocument::applyAppearance(const QJsonObject &settings, QSize size,
             settings.value("beautifier_initials").toBool(beautifierInitials_);
     const bool beautifierSpacing = settings.value("beautifier_spacing").toBool(beautifierSpacing_);
     const bool beautifierIndent = settings.value("beautifier_indent").toBool(beautifierIndent_);
-    const bool comics = settings.value(appearance::comicsModeKey).toBool(comicsMode_);
+    const bool comics = settings.contains(appearance::comicsModeKey)
+            ? settings.value(appearance::comicsModeKey).toBool(false) : comicsMode_;
     const bool comicsChanged = comics != comicsMode_;
     const int margin = settings.value("margin_pixels").toInt(margin_);
     const int topMargin = settings.value("top_margin_pixels").toInt(topMargin_);
@@ -1261,6 +1262,7 @@ void EngineDocument::applyStyleSheet()
     const auto comicsCss = comicsMode_ ? lString8(
             "\nhtml,body,DocFragment,div,p,section { margin:0 !important; padding:0 !important; "
             "text-indent:0 !important; line-height:0 !important; }\n"
+            "body[data-kobalt-leading-image=\"1\"] { padding-top:0 !important; }\n"
             "img { display:block !important; width:100% !important; height:auto !important; "
             "max-width:100% !important; max-height:100vh !important; margin:0 auto !important; "
             "padding:0 !important; page-break-inside:avoid !important; }\n") : lString8();

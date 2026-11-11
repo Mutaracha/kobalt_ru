@@ -222,4 +222,4 @@ false. Checkpoints retain base margin/column values alongside the mode; global
 header/footer settings are never replaced by its effective hidden chrome.
 Edits while active save the ordinary base settings for use after disabling.
 It participates in retained-layout identity and the parsed-cache policy
-(`comics-v1:on/off`), without changing reading-data schemas or clearing data.
+(`comics-v1:on` only while enabled; ordinary caches keep their policy), without changing reading-data schemas or clearing data.

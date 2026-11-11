@@ -583,7 +583,8 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
         fb2::normalizeNoteTitles(engine_->getDocument()->getRootNode());
     if (coverReady)
         coverReady();
-    source_->embeddedFonts = source_->parent ? source_->parent->embeddedFonts : embeddedFontCount();
+    source_->embeddedFonts = fb2Document_ ? 0
+            : source_->parent ? source_->parent->embeddedFonts : embeddedFontCount();
     applyPublisherFontFallbacks();
     engine_->getDocument()->getProps()->setInt("kobalt.bionic.mode", bionic_ == "bold" ? 1 : 0);
     openingTimes_["model_parse_ms"] = double(phase.restart());
