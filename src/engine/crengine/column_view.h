@@ -56,7 +56,8 @@ public:
         }
         for (int page = 0; page < comicInternalPages;) {
             comicStarts.append(page);
-            page += pairable[page] && page + 1 < comicInternalPages && pairable[page + 1] ? 2 : 1;
+            page += pairable[page] && page + 1 < comicInternalPages && pairable[page + 1]
+                    && LVDocView::getPageFlow(page) == LVDocView::getPageFlow(page + 1) ? 2 : 1;
         }
     }
 

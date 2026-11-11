@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include "engine/crengine/column_view.h"
 #include "engine/crengine/engine_document.h"
 #include <algorithm>
@@ -28,11 +29,21 @@ struct ReaderSourceIndexProbe {
         return result;
     }
     static QRect nodeBounds(const EngineDocument &model, const char *id) {
-        auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
-        if (!node) return {};
-        lvRect rect;
-        node->getAbsRect(rect);
-        return QRect(rect.left, rect.top, rect.width(), rect.height());
+        auto *root = model.engine_->getDocument()->getRootNode();
+        std::vector<ldomNode *> pending{root};
+        const auto wanted = QString::fromLatin1(id);
+        while (!pending.empty()) {
+            auto *node = pending.back(); pending.pop_back();
+            if (!node || !node->isElement()) continue;
+            const auto value = QString::fromUtf8(UnicodeToUtf8(node->getAttributeValue("id")).c_str());
+            if (value == wanted || value.endsWith("_" + wanted)) {
+                lvRect rect;
+                node->getAbsRect(rect);
+                return QRect(rect.left, rect.top, rect.width(), rect.height());
+            }
+            for (int i = 0; i < node->getChildCount(); ++i) pending.push_back(node->getChildNode(i));
+        }
+        return {};
     }
     static int nodeFontPixels(const EngineDocument &model, const char *id) {
         auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());

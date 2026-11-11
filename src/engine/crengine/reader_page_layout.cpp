@@ -143,6 +143,7 @@ void markComicImages(LVDocView *view)
         for (int i = node->getChildCount() - 1; i >= 0; --i)
             pending.push_back(node->getChildNode(i));
     }
+    document->forceReinitStyles();
 }
 
 void markChapterLeadingImages(LVDocView *view)

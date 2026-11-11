@@ -100,7 +100,21 @@ int main(int argc, char **argv)
                 : "<html><head><title>Prose</title></head><body>" + paragraphs + "</body></html>";
         EngineDocument prose(test::readerFonts());
         QString error;
-        require(prose.open(bytes, QSize(800, 1000), {{appearance::comicsModeKey, true}, {"font_pixels", 32}}, &error), qPrintable(error));
+        const QJsonObject proseSettings{{appearance::comicsModeKey, true}, {"font_pixels", 32}};
+        if (fictionBook) {
+            require(prose.open(bytes, QSize(800, 1000), proseSettings, &error), qPrintable(error));
+        } else {
+            auto proseData = data;
+            proseData["c.xhtml"] = bytes;
+            QMap<QString, qint64> proseLengths;
+            for (auto it = proseData.cbegin(); it != proseData.cend(); ++it) proseLengths[it.key()] = it.value().size();
+            auto proseResources = std::make_shared<ResourceCache>(proseData.keys(),
+                [proseData](const QString &name, const ResourceCache::Sink &sink, QString *) {
+                    const auto resource = proseData.value(name);
+                    return sink(resource.constData(), resource.size());
+                }, std::make_shared<std::atomic_bool>(false));
+            require(prose.openResources(proseResources, proseLengths, QSize(800, 1000), proseSettings, &error), qPrintable(error));
+        }
         const auto first = ReaderSourceIndexProbe::nodeBounds(prose, "p0");
         const auto second = ReaderSourceIndexProbe::nodeBounds(prose, "p1");
         require(first.height() > 32 && second.top() >= first.bottom(),
