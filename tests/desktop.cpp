@@ -3322,6 +3322,7 @@ private slots:
             for (int x = 0; x < page.width(); ++x)
                 QCOMPARE(top.pixel(x, y), bottom.pixel(x, page.height() - 1 - y));
         page.chrome.headerEnabled = true;
+        page.chrome.slotFields[0] = headerfooter::Field::Time;
         QVERIFY(page.headerTextRect().top() >= strip);
         QCOMPARE(page.topHeight(), strip + ui::metrics::reading::stripHeight(page.chrome.headerSize));
     }
