@@ -358,3 +358,8 @@ Never claim device verification from a synthetic regression or report unmeasured
 ## Build106 device feedback
 
 Build106 follow-up: use doc/build106-device-review.md. Do not confuse KOReader CRe image-coverage refresh with its KOpt/Kaleido path. Tie comics quality refresh to committed frames, not repaint loops; preserve base refresh preferences. Footnote root-font margin is not body line spacing or page remainder. New caption/top-bottom wording awaits approval.
+
+
+### Diagnostics 5bbff30 and approved wording
+
+The comics description EN/RU in doc/build106-diagnostics-analysis.md is approved; no further wording approval needed. Off/Bottom/Top is also approved. Preserve editable base settings. For diagnostics, distinguish parsed-cache vs layout-cache hits and open-end vs reader-shown. Do not assign unnamed openings to user benchmark books, sum nested counters or infer every save=false is an I/O error.

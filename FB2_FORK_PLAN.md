@@ -2855,3 +2855,8 @@ sleep/reopen, возврат последних полей/chrome и ticks по�
 ## Build106 device feedback
 
 Build 106 hardware review: per-book mode, aspect and zero margins confirmed. Preserve raw timing/evidence; no general speedup demonstrated. Next: KOReader-informed committed-page full refresh policy for comics, compact row + approved description, top/bottom progress placement, measured body-to-note gap. See doc/build106-device-review.md; new wording pending approval, no runtime change in this evidence commit.
+
+
+### Diagnostics 5bbff30 and approved wording
+
+Diagnostics 5bbff30 parsed: 16,447 valid records, four openings. Parsed-document cache misses in all four; layout cache hits in three. UI build1.26–1.50s, with Settings~0.53s and Appearance~0.31s. Investigate miss reasons, lazy unopened GUI panels and image-resource churn; no speedup/cache-bug claim. Details: doc/build106-diagnostics-analysis.md. User approved comics description EN/RU and three-way progress selector. Retain partial damage and investigate graphics waveforms before forcing every-turn full flashes.
