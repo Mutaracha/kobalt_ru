@@ -2876,3 +2876,6 @@ Incomplete explicitly: exact body-to-footnote gap (requires renderer/hit-test
 coordination) and lazy construction of settings/appearance panels. These are not
 claimed fixed or sped up by this patch. New approved EN/RU pairs: comics mode
 description, progress Bottom/Внизу and Top/Вверху; no other UI text changes.
+
+Follow-up: smaller shared checkbox metric for comics; routed header/footer test
+exercises Top then Off (with disabled header) before its existing save/reopen checks.

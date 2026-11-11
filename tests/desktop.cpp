@@ -2292,7 +2292,11 @@ void checkHeaderFooterSizes(int preset, bool dark)
     QVERIFY(fixture.press("rrHeaderFooterPreset_alternative_a"));
     QTRY_COMPARE(header->value(), offSize);
     QTRY_COMPARE(footer->value(), offSize);
+    QVERIFY(fixture.press("rrHeaderFooterProgressBar_top"));
+    QTRY_VERIFY(page->chrome.progressTop && page->chrome.progressBar);
+    QVERIFY(page->topHeight() > 0);
     QVERIFY(fixture.press("rrHeaderFooterProgressBar_off"));
+    QTRY_VERIFY(!page->chrome.progressBar);
     QTRY_COMPARE(fixture.state().value("header_footer_preset").toString(), QString("custom"));
     const auto savedCustom = storage::readJson(fixture.paths.preferences()).value(customKey);
     QCoreApplication::processEvents();

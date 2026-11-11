@@ -349,7 +349,7 @@ AppearancePanel::AppearancePanel(const AppearanceLayout &layout,
     styleSettingsOption(comicsOption);
     auto compact = comicsOption->presentation();
     compact.minimumRowHeight = 0; // Content-measured shared row, not the list-action minimum.
-    compact.indicatorSize = { metrics::control::iconSize, metrics::control::iconSize };
+    compact.indicatorSize = { metrics::settings::checkboxSize, metrics::settings::checkboxSize };
     comicsOption->setPresentation(compact);
     pageRows->addWidget(comicsOption);
     marginSlider = kobalt::ui::sliderRow(pageLayout, pageRows, "rrMargins", "rrMarginsValue",
