@@ -2814,3 +2814,11 @@ Reverification pending; do not distribute the failed intermediate build.
 
 Native compile correction: inspect vertical base margins through the public state
 record (EngineDocument exposes only horizontal margin as a convenience accessor).
+
+Native tests caught a real proportion regression: width:100% with height:auto
+lets CREngine cap height independently. Use both auto dimensions plus viewport
+caps, selecting the intrinsic-ratio constraint path instead. The solid-art
+regression must pass before claiming fit. Updated the explicit appearance-key
+count and desktop exposed-paper click helper: standard-height extra Layout row
+can leave paper above the former fixed 1/4 screen sample; find real exposed
+paper without clicking through the panel. Reverification pending.

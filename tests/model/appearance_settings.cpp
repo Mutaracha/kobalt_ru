@@ -176,7 +176,7 @@ int main()
             "Dictionary UI preferences invalidated the book layout");
     // Appearance settings decide the layout. The list must stay complete, because a
     // missing key would let a retained layout survive a changed setting.
-    require(appearance::keys.size() == 37, "The appearance keys changed without this check");
+    require(appearance::keys.size() == 38, "The appearance keys changed without this check");
     require(appearance::bookDefaults({}).value("paragraph_indent").toInt() == -1,
             "Paragraph indentation no longer defaults to Publisher");
     for (int percent : { -1, 0, 100, 300 }) {

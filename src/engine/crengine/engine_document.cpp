@@ -1263,7 +1263,7 @@ void EngineDocument::applyStyleSheet()
             "\nhtml,body,DocFragment,div,p,section { margin:0 !important; padding:0 !important; "
             "text-indent:0 !important; line-height:0 !important; }\n"
             "body[data-kobalt-leading-image=\"1\"] { padding-top:0 !important; }\n"
-            "img { display:block !important; width:100% !important; height:auto !important; "
+            "img { display:block !important; width:auto !important; height:auto !important; "
             "max-width:100% !important; max-height:100vh !important; margin:0 auto !important; "
             "padding:0 !important; page-break-inside:avoid !important; }\n") : lString8();
     engine_->setStyleSheet(base + lString8(overrides.toUtf8().constData()) + lString8("\n") +

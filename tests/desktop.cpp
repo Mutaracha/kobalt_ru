@@ -612,8 +612,21 @@ struct Fixture
                         break;
                     }
                 }
-                if (reader->childAt(target->mapTo(reader, position)) != target)
-                    return false;
+                if (reader->childAt(target->mapTo(reader, position)) != target) {
+                    // Layout can page after an additional standard-height row.
+                    // Find actual exposed paper rather than assume it reaches
+                    // a fixed fraction of the screen. Never click through UI.
+                    bool exposed = false;
+                    for (int y = 0; y < target->height(); ++y) {
+                        const QPoint candidate(position.x(), y);
+                        if (reader->childAt(target->mapTo(reader, candidate)) == target) {
+                            position = candidate;
+                            exposed = true;
+                            break;
+                        }
+                    }
+                    if (!exposed) return false;
+                }
             }
         }
         if (!reveal(target))
