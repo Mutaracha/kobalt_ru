@@ -413,31 +413,32 @@ Offline, сборка/проверка Qt5 пакета, focused native и publi
 - Отметки глав без отдельной настройки, только на существующей progress bar.
 - Название EN/RU принято; новых descriptions не требуется.
 
-Это утверждённое поведение, не отчёт о готовой реализации. Проверить edit→apply
+Контракт проверяется через edit→apply
 при активном режиме, close/reopen и выключение с восстановлением обновлённых
 значений; отдельно edit→cancel не должен менять сохранённую базу.
 
 
-## Comics implementation (pending CI/device verification)
+## Реализованное поведение
 
-Added the approved per-book `comics_reading_mode` toggle in Layout. Stored
-margins and global chrome remain editable and retain their values; the engine
-applies a zero-margin, single-column graphics profile only while enabled.
-Disabling uses the latest base values. Image CSS uses block layout and
-aspect-preserving viewport caps, removing the inline baseline/leading-padding
-reserve without cropping source pixels. The profile participates in appearance
-and parsed-cache identity; no saved-data version bump or cleanup is needed.
+Опция «Режим чтения комиксов» находится в «Раскладке», по умолчанию выключена
+и запоминается отдельно для каждой книги. Эффективная раскладка скрывает
+колонтитулы и progress, обнуляет поля и отключает текстовые колонки.
+Обычные настройки остаются доступными: их изменения сохраняются, но не
+применяются до отключения режима. После выключения используются последние
+сохранённые значения. Изображение ограничивается viewport с сохранением
+пропорций, без crop/stretch; исходные белые рамки не обрезаются.
 
-Chapter boundaries now share the footer fill scale, filter invalid pages and
-deduplicate page/pixel positions. The footer snapshot includes their positions,
-so reflow invalidates ticks; paint does not parse the book. No new tick setting.
-FB2 returns zero document fonts before any document-font enumeration; shared
-font initialization and generic-family fallbacks remain intact. No measured
-opening-time improvement is claimed.
+Отметки глав добавлены к существующей нижней полосе прогресса, без отдельной
+настройки. Позиции обновляются при reflow, повторы объединяются; DOM в paint
+не разбирается. FB2 больше не вызывает EPUB-подсчёт встроенных шрифтов, но общая
+инициализация внешних шрифтов и резервные семейства сохранены.
 
-New UI pair (approved): `reader.comics_reading_mode` — “Comics reading mode” /
-«Режим чтения комиксов». No description. New engine regression covers portrait
-and landscape fitting at 96/300 PPI, effective geometry, edits while enabled,
-checkpoint/reopen and restoration. Manual checks on build d7b7d55 remain the
-baseline, not proof of this implementation. Test Apply/Cancel, sleep/reopen,
-chapter tick reflow and the supplied graphic on Kobo Qt5 after CI passes.
+Для повторения исходного случая подготовлен
+`tests/manual/books/comics/spice-single-page.epub`: XHTML/CSS/PNG сохранены
+побайтно, служебные ссылки на удалённые страницы исправлены. Нативные проверки
+геометрии 96/300 PPI, редактирования базы, cache/reopen и восстановления прошли
+в run 43064523543 на d5c64a5; проверка на физическом Kobo ещё нужна.
+Общее ускорение открытия без замеров на устройстве не объявляется готовым.
+
+Qt5/native/package CI для d5c64a5: SUCCESS, run 43064523543; пакет 13875852133.
+Проверка на физическом устройстве и замеры открытия ещё не выполнены.

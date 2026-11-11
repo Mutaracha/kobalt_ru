@@ -321,7 +321,7 @@ prefix-stripping hacks or catalog filtering. Serif is a fallback/family role,
 not a promise that every listed font is classified as serif.
 
 
-### Pending comics/progress/performance work
+### Comics/progress constraints and opening performance
 
 Follow doc/comics-progress-proposal.md and doc/coolreader-opening-analysis.md.
 New captures establish zero configured margins/chrome with residual bottom space;
@@ -347,7 +347,7 @@ binary source. Measure existing opening phases before claiming optimization.
 - Отметки глав без отдельной настройки, только на существующей progress bar.
 - Название EN/RU принято; новых descriptions не требуется.
 
-Это утверждённое поведение, не отчёт о готовой реализации. Проверить edit→apply
+Сохранять этот контракт; проверять edit→apply
 при активном режиме, close/reopen и выключение с восстановлением обновлённых
 значений; отдельно edit→cancel не должен менять сохранённую базу.
 

@@ -1,9 +1,9 @@
 # Отметки глав, режим комиксов и новый пример остаточного поля
 
-Статус: запрос пользователя принят, проведён первичный code/evidence review.
-Исполняемый код и перевод пока не менялись. Для новой UI строки ниже приведён
-EN/RU название уже принято пользователем; окончательная причина остаточного поля
-проверяется на полученном reduced-book материале после подготовки fixture.
+Статус: поведение и единственная EN/RU пара согласованы; код, тесты и
+минимальный EPUB добавлены. Итог проверки CI записывается ниже отдельно.
+Проверка исходного изображения на устройстве ещё нужна; не объявлять
+доказанной причиной исходной полосы одно только значение engine margin.
 Qt5 остаётся основной целью, повторная сборка Qt6 не требуется.
 
 ## 1. Что подтверждают новые снимки
@@ -88,9 +88,8 @@ reflow и переход книг, разные viewport/PPI, dark mode, час�
 
 ## 4. Режим чтения комиксов — контракт до реализации
 
-Новая опция в **Раскладке**, default off. Предлагается сохранять её **для
-текущей книги**, чтобы включение на манге не меняло следующую текстовую книгу.
-Это уточнение проекта, а не утверждение о существующем поведении.
+Опция в **Раскладке**, default off, сохраняется **для текущей книги**.
+Включение на манге не меняет следующую текстовую книгу.
 
 ### Effective overlay вместо перезаписи настроек
 
@@ -140,12 +139,13 @@ mismatch; cache hit/miss; position invariants; actual affected book и Kobo Qt5.
 
 ## 5. Следующий шаг
 
-1. Согласовать единственную новую пару EN/RU и per-book scope.
-2. Получить affected publication/minimal fixture и установленный SHA — для
-   доказательства причины strip и регрессионного воспроизведения.
-3. Реализовать ticks и effective comics overlay отдельными сопровождаемыми
-   helpers, не копируя экран/EPUB pipeline. Добавить unit/routed/engine checks.
-4. Qt5/native/package CI, конкретный artifact и новые device screenshots.
+1. CI: engine.comics, FB2, cache, appearance, chapter fractions и существующие
+   UI/lifecycle checks; исправления проверять повторно, не скрывать failures.
+2. После успешного Qt5/native/package CI — конкретный artifact и новые device
+   screenshots, включая редактирование базовых настроек при включённом mode.
+3. Сравнить исходный d7b7d55 с новой сборкой на сохранённом reduced EPUB.
+   Источник: tests/manual/books/comics/, исходные XHTML/CSS/PNG не изменены.
+4. Измерение времени открытия остаётся отдельной задачей, без обещаний ускорения.
 
 Измерения и первичный source audit уже выполнены; реализация/ускорение/новый
 device результат не объявляются готовыми заранее.
@@ -192,31 +192,50 @@ Chapter ticks: согласовано без дополнительного swit
 - Отметки глав без отдельной настройки, только на существующей progress bar.
 - Название EN/RU принято; новых descriptions не требуется.
 
-Это утверждённое поведение, не отчёт о готовой реализации. Проверить edit→apply
+Контракт проверяется через edit→apply
 при активном режиме, close/reopen и выключение с восстановлением обновлённых
 значений; отдельно edit→cancel не должен менять сохранённую базу.
 
 
-## Comics implementation (pending CI/device verification)
+## Реализованное поведение
 
-Added the approved per-book `comics_reading_mode` toggle in Layout. Stored
-margins and global chrome remain editable and retain their values; the engine
-applies a zero-margin, single-column graphics profile only while enabled.
-Disabling uses the latest base values. Image CSS uses block layout and
-aspect-preserving viewport caps, removing the inline baseline/leading-padding
-reserve without cropping source pixels. The profile participates in appearance
-and parsed-cache identity; no saved-data version bump or cleanup is needed.
+Опция «Режим чтения комиксов» находится в «Раскладке», по умолчанию выключена
+и запоминается отдельно для каждой книги. Эффективная раскладка скрывает
+колонтитулы и progress, обнуляет поля и отключает текстовые колонки.
+Обычные настройки остаются доступными: их изменения сохраняются, но не
+применяются до отключения режима. После выключения используются последние
+сохранённые значения. Изображение ограничивается viewport с сохранением
+пропорций, без crop/stretch; исходные белые рамки не обрезаются.
 
-Chapter boundaries now share the footer fill scale, filter invalid pages and
-deduplicate page/pixel positions. The footer snapshot includes their positions,
-so reflow invalidates ticks; paint does not parse the book. No new tick setting.
-FB2 returns zero document fonts before any document-font enumeration; shared
-font initialization and generic-family fallbacks remain intact. No measured
-opening-time improvement is claimed.
+Отметки глав добавлены к существующей нижней полосе прогресса, без отдельной
+настройки. Позиции обновляются при reflow, повторы объединяются; DOM в paint
+не разбирается. FB2 больше не вызывает EPUB-подсчёт встроенных шрифтов, но общая
+инициализация внешних шрифтов и резервные семейства сохранены.
 
-New UI pair (approved): `reader.comics_reading_mode` — “Comics reading mode” /
-«Режим чтения комиксов». No description. New engine regression covers portrait
-and landscape fitting at 96/300 PPI, effective geometry, edits while enabled,
-checkpoint/reopen and restoration. Manual checks on build d7b7d55 remain the
-baseline, not proof of this implementation. Test Apply/Cancel, sleep/reopen,
-chapter tick reflow and the supplied graphic on Kobo Qt5 after CI passes.
+Для повторения исходного случая подготовлен
+`tests/manual/books/comics/spice-single-page.epub`: XHTML/CSS/PNG сохранены
+побайтно, служебные ссылки на удалённые страницы исправлены. Нативные проверки
+геометрии 96/300 PPI, редактирования базы, cache/reopen и восстановления прошли
+в run 43064523543 на d5c64a5; проверка на физическом Kobo ещё нужна.
+Общее ускорение открытия без замеров на устройстве не объявляется готовым.
+
+
+## Проверка реализации: d5c64a5
+
+GitHub Actions [43064523543](https://github.com/Mutaracha/kobalt_ru/actions/runs/43064523543)
+завершён SUCCESS: Qt5 package/offline checks и native regressions PASS;
+Qt6 намеренно пропущен. Qt5 artifact:
+[13875852133](https://github.com/Mutaracha/kobalt_ru/actions/runs/43064523543/artifacts/13875852133),
+36,427,853 bytes. Native results artifact 13875481573.
+
+Проверены engine.comics (96/300 PPI, portrait/landscape, отсутствие baseline
+strip на synthetic art, zero effective margins, редактируемая база, parsed cache
+hit/reopen и восстановление), chapter fractions, appearance identity/defaults,
+FB2/EPUB/cache и включённые UI/lifecycle regressions. Исходный XHTML/CSS/PNG
+в reduced manual EPUB побайтно проверен, manifest references разрешаются;
+новая одобренная EN/RU пара присутствует по одному разу. git diff --check PASS.
+
+Это не device proof: на Kobo ещё проверить исходную картинку, toggle/edit/apply,
+sleep/reopen, возврат последних полей/chrome и ticks после reflow. Общий speedup
+открытия не измерен; задача профилирования остаётся открытой. Обычные кэши,
+настройки, progress, bookmarks и annotations не очищаются.

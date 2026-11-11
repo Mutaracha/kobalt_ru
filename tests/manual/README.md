@@ -50,26 +50,13 @@ sha256sum -c tests/manual/materials.sha256
 серия не подменяет captures dddace7 и не доказывает новую реализацию режима.
 
 
-## Comics implementation (pending CI/device verification)
+## Comics profile and chapter marks (Kobo Qt5)
 
-Added the approved per-book `comics_reading_mode` toggle in Layout. Stored
-margins and global chrome remain editable and retain their values; the engine
-applies a zero-margin, single-column graphics profile only while enabled.
-Disabling uses the latest base values. Image CSS uses block layout and
-aspect-preserving viewport caps, removing the inline baseline/leading-padding
-reserve without cropping source pixels. The profile participates in appearance
-and parsed-cache identity; no saved-data version bump or cleanup is needed.
-
-Chapter boundaries now share the footer fill scale, filter invalid pages and
-deduplicate page/pixel positions. The footer snapshot includes their positions,
-so reflow invalidates ticks; paint does not parse the book. No new tick setting.
-FB2 returns zero document fonts before any document-font enumeration; shared
-font initialization and generic-family fallbacks remain intact. No measured
-opening-time improvement is claimed.
-
-New UI pair (approved): `reader.comics_reading_mode` — “Comics reading mode” /
-«Режим чтения комиксов». No description. New engine regression covers portrait
-and landscape fitting at 96/300 PPI, effective geometry, edits while enabled,
-checkpoint/reopen and restoration. Manual checks on build d7b7d55 remain the
-baseline, not proof of this implementation. Test Apply/Cancel, sleep/reopen,
-chapter tick reflow and the supplied graphic on Kobo Qt5 after CI passes.
+See [the single-page EPUB and provenance](books/comics/README.md) and
+[the approved contract](../../doc/comics-progress-proposal.md). Check enabled /
+disabled mode, portrait / landscape, editable saved margins and chrome while
+active, reopening / sleep, then latest-value restoration. Compare with the
+original Nickel/Kobalt evidence in screenshots/kobo-qt5/comics-report/.
+For an ordinary multi-chapter book, verify lower progress ticks and their
+positions after changing font size/orientation. No separate tick setting.
+Automated native checks are not evidence of a hardware screenshot match.

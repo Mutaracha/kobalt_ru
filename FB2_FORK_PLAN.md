@@ -2829,3 +2829,24 @@ exceed the 96-PPI device limit and are correctly clamped/rejected). The small
 desktop layout can have no exposed paper at all: close via its selected Layout
 tab, the existing supported action, and keep the generic click helper unchanged.
 The last run is not green yet; cache/reopen assertions still need verification.
+
+
+## Проверка реализации: d5c64a5
+
+GitHub Actions [43064523543](https://github.com/Mutaracha/kobalt_ru/actions/runs/43064523543)
+завершён SUCCESS: Qt5 package/offline checks и native regressions PASS;
+Qt6 намеренно пропущен. Qt5 artifact:
+[13875852133](https://github.com/Mutaracha/kobalt_ru/actions/runs/43064523543/artifacts/13875852133),
+36,427,853 bytes. Native results artifact 13875481573.
+
+Проверены engine.comics (96/300 PPI, portrait/landscape, отсутствие baseline
+strip на synthetic art, zero effective margins, редактируемая база, parsed cache
+hit/reopen и восстановление), chapter fractions, appearance identity/defaults,
+FB2/EPUB/cache и включённые UI/lifecycle regressions. Исходный XHTML/CSS/PNG
+в reduced manual EPUB побайтно проверен, manifest references разрешаются;
+новая одобренная EN/RU пара присутствует по одному разу. git diff --check PASS.
+
+Это не device proof: на Kobo ещё проверить исходную картинку, toggle/edit/apply,
+sleep/reopen, возврат последних полей/chrome и ticks после reflow. Общий speedup
+открытия не измерен; задача профилирования остаётся открытой. Обычные кэши,
+настройки, progress, bookmarks и annotations не очищаются.

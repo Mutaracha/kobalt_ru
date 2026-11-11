@@ -249,60 +249,39 @@ Suggested contract:
 This would make localization independently maintainable. It does not imply
 that language switching must happen live in already-created widgets.
 
-### B. A dedicated borderless reading mode for comics and manga
+### B. Borderless comics reading and chapter ticks
 
-On the same device, the user reports that Nickel displays a comic page
-full-screen, while Kobalt leaves edge space even with headers and footers off.
-A separate graphics-reading mode would be useful so text-book layout
-preferences do not have to be changed globally just to read a comic.
+The approved per-book **Comics reading mode** is now implemented, default off.
+It applies an effective zero-margin, single-column profile and hides the header,
+footer and progress strip. Ordinary margin/chrome controls remain editable:
+their latest saved values are ignored while enabled and used again on disabling.
+The mode does not leak into global defaults or overwrite stored base geometry.
+It participates in retained-layout and parsed-cache compatibility. Ordinary
+books keep their existing parsed-cache policy.
 
-**What the code establishes:**
+Raster graphics use block layout, auto dimensions and viewport caps, preserving
+intrinsic aspect ratio without cropping; this removes the inline baseline and
+leading-image protection padding for the graphics profile. Natural borders or
+aspect-ratio mismatch are not a reason to stretch or crop artwork. No CBZ/CBR,
+new direction controls, fit-width selector or automatic spread was added.
 
-- In `ReadingPage::topHeight()` / `bottomHeight()`, hiding the header/footer
-  removes those strips, but the progress strip has its own visibility condition.
-- `Reader::bodySize()` also accounts for the platform safe area. It does not
-  remove the engine's page margins.
-- `EngineDocument::configure()` loads `margin_pixels`, `top_margin_pixels` and
-  `bottom_margin_pixels`, and passes them to `engine_->setPageMargins(...)`.
-  These are independent of header/footer visibility.
-- Publisher CSS is another layer. The `normalize_page_margins` option resets
-  margins/padding on `html`, `body` and `DocFragment`, but does not imply that
-  every nested image wrapper has zero padding.
-- There is already special handling for recognized full-page SVG/wrappers in
-  `reader_page_layout.cpp`, and a separate image viewer with fit/zoom/pan.
-  Those are not the same as a dedicated page-by-page comic-reading profile.
-- Normal document layout disables CREngine's legacy image zoom-in modes to
-  avoid double scaling. This is a further reason not to assume that reducing
-  text margins alone will make every small image fill the display.
+The supplied reproduction is now available: Kobalt build 94 / d7b7d55 and
+`doc/Spice and Wolf v01.kepub.epub/`. The reduced manual EPUB under
+`tests/manual/books/comics/` retains the original XHTML/CSS/PNG bytes and fixes
+references to removed resources. `engine.comics` uses synthetic art with the
+same dimensions/inline structure to measure both orientations and 96/300 PPI,
+effective margins, editable base geometry, cache/reopen and restoration. Device
+verification against Nickel remains separate from these automated checks.
 
-Thus the user's hypothesis is plausible: text-pagination settings can leave
-space after chrome is hidden. **The exact cause in the reported comic has not
-been reproduced:** the initial beta7 series showed a prose book. Subsequent user-supplied
-comic screenshots now show both margins at zero and header/footer/progress off,
-yet residual bottom space remains in Kobalt and not in Nickel. The affected
-publication/resource/CSS and installed binary SHA are still unavailable for a
-reproducible root-cause test. See the separate comics/progress design note. Embedded white borders, aspect ratio, CSS, safe areas and
-scaling must be distinguished before attributing all edge space to one bug.
+The lower progress strip also has TOC chapter boundaries without another
+setting. They share the fill scale, deduplicate invalid/repeated page/pixel
+positions, extend above filled progress and invalidate with footer/reflow state.
+No book parsing takes place in paint.
 
-Suggested behavior:
-
-- A per-book **Comics / manga** profile, separate from text-book preferences,
-  with zero application-added page margins and an explicit choice to hide
-  header, footer and progress strip.
-- Preserve image aspect ratio. Offer fit-page and fit-width; any fill/crop mode
-  should be explicit, never silently crop artwork or stretch it.
-- Clearly distinguish **no added margins** from **edge-to-edge fill**: fitting
-  a page with a different aspect ratio necessarily leaves unused space unless
-  it is cropped. White borders already inside the image are a separate issue.
-- Preserve normal reading navigation and position, including RTL ordering for
-  manga, rather than requiring a separate tap into the image viewer for every
-  page.
-- Keep text settings intact when switching books, with regression coverage for
-  image-only EPUB pages, raster/SVG wrappers, differing aspect ratios,
-  orientation changes and reopening the book.
-
-This is not a request to claim CBZ/CBR support: the proposal concerns graphics
-reading in currently supported publications first.
+Opening performance remains under investigation. FB2 now explicitly skips
+EPUB embedded-font enumeration, while necessary shared font initialization and
+generic-family fallbacks are preserved. No measured opening-time speedup is
+claimed; see `doc/coolreader-opening-analysis.md`.
 
 ## Historical implementation: manual rendering-cache cleanup
 
@@ -393,3 +372,7 @@ work and close/sleep/USB behavior. The experiment was withdrawn to keep beta
 integration focused on upstream progress/lifecycle and to avoid carrying a
 parallel fork-specific close state machine. Any future implementation should
 be redesigned against the then-current upstream ownership and storage contracts.
+
+Comics/progress verification: d5c64a5 passed native regressions and Kobo Qt5
+packaging in run 43064523543 (Qt5 artifact 13875852133). Device evidence and
+opening-time benchmarks remain outstanding; this is not a speedup claim.
