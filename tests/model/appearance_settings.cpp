@@ -12,6 +12,17 @@ using namespace kobalt;
 // Checks appearance settings: defaults, invalid values, migrations, global and book precedence, new-book inheritance and which changes need a new layout.
 int main()
 {
+    const QJsonObject comicBook{{appearance::comicsModeKey, true}, {"margin_pixels", 42}};
+    QJsonObject copy;
+    appearance::copy(copy, comicBook);
+    require(copy.value(appearance::comicsModeKey).toBool(), "Appearance copy lost comics mode");
+    require(!appearance::same({}, comicBook), "Comics mode omitted from retained layout identity");
+    require(!appearance::globalPreferences(comicBook).contains(appearance::comicsModeKey),
+            "Per-book comics mode leaked into global preferences");
+    require(appearance::afterContentChange(comicBook).value(appearance::comicsModeKey).toBool(),
+            "Content replacement lost independent comics choice");
+    require(!appearance::bookDefaults(comicBook).value(appearance::comicsModeKey).toBool(),
+            "Next book inherited comics mode");
     for (const auto *mode : { "current", "all", "off" }) {
         const auto cleaned = appearance::cleanPreferences(
                 { { "chapter_groups", mode }, { "future_option", 42 } });

@@ -8,6 +8,11 @@ namespace kobalt {
 // Test-only engine access; no application API for pagination internals.
 struct ReaderSourceIndexProbe {
     using Ranges = QVector<QPair<QString, QString>>;
+    static bool comicsGeometry(const EngineDocument &model) {
+        const auto margins = model.engine_->getPageMargins();
+        return margins.left == 0 && margins.top == 0 && margins.right == 0
+                && margins.bottom == 0 && model.columns_ == 1;
+    }
     static int inPageFootnoteCount(const EngineDocument &model) {
         if (!model.engine_)
             return 0;

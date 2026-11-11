@@ -327,8 +327,8 @@ Follow doc/comics-progress-proposal.md and doc/coolreader-opening-analysis.md.
 New captures establish zero configured margins/chrome with residual bottom space;
 do not claim a proven 18px engine margin or introduce magic cropping. Existing
 engine native header is already disabled. Comics must be an effective override,
-never persist its zeroed geometry into ordinary layout values. Confirm the
-single EN/RU proposal and per-book scope before adding strings. Reuse upstream
+never persist its zeroed geometry into ordinary layout values. The single EN/RU title and per-book scope are approved. Keep base layout
+controls editable while the effective comics profile ignores their values. Reuse upstream
 TOC/page progress and invalidate footer ticks on reflow; never parse DOM in paint.
 The public Vlasovsoft source is from 2015 and not verified as the 2022/2023
 binary source. Measure existing opening phases before claiming optimization.
@@ -350,3 +350,6 @@ binary source. Measure existing opening phases before claiming optimization.
 Это утверждённое поведение, не отчёт о готовой реализации. Проверить edit→apply
 при активном режиме, close/reopen и выключение с восстановлением обновлённых
 значений; отдельно edit→cancel не должен менять сохранённую базу.
+
+Comics implementation: see doc/comics-progress-proposal.md and engine.comics regression.
+Never claim device verification from a synthetic regression or report unmeasured speedups.

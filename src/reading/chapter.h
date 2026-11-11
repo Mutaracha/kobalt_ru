@@ -1,6 +1,8 @@
 #pragma once
 #include <QString>
+#include "reading_progress.h"
 #include <QVector>
+#include <algorithm>
 
 namespace kobalt {
 // The platform supplies source locations; the engine resolves them without
@@ -18,6 +20,21 @@ struct ChapterLink
     int page = -1, depth = 0;
     qint64 words = 0;
 };
+
+inline QVector<qreal> chapterProgressFractions(const QVector<ChapterLink> &chapters, int pages)
+{
+    QVector<int> boundaries;
+    if (pages <= 0) return {};
+    for (const auto &chapter : chapters)
+        if (chapter.page >= 0 && chapter.page < pages)
+            boundaries.append(chapter.page);
+    std::sort(boundaries.begin(), boundaries.end());
+    boundaries.erase(std::unique(boundaries.begin(), boundaries.end()), boundaries.end());
+    QVector<qreal> result;
+    for (const int page : boundaries)
+        result.append(pageProgressFraction(page, pages));
+    return result;
+}
 
 struct ChapterSelection
 {

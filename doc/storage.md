@@ -214,3 +214,12 @@ EPUB v3 additionally recognizes the narrow InDesign EPUB 2 note structure.
 The earlier v2 replaced private DOM markers with standard CSS; old markers are no
 longer read. The mode also controls the engine PROP_FOOTNOTES flag. Old
 cache files are not deleted; XPointer positions and progress storage are unchanged.
+
+
+`comics_reading_mode` is an optional per-book Boolean, default false. It is
+not a global preference or a new-book default. Invalid non-Boolean values use
+false. Checkpoints retain base margin/column values alongside the mode; global
+header/footer settings are never replaced by its effective hidden chrome.
+Edits while active save the ordinary base settings for use after disabling.
+It participates in retained-layout identity and the parsed-cache policy
+(`comics-v1:on/off`), without changing reading-data schemas or clearing data.

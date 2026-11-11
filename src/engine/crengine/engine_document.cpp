@@ -480,9 +480,9 @@ QByteArray EngineDocument::documentCachePolicy() const
 {
     // Detect CSS edits for cache reuse only. User CSS is never an installation asset.
     if (userStyleSheet_.isEmpty()) {
-        return cachePolicy_;
+        return cachePolicy_ + (comicsMode_ ? ":comics-v1:on" : ":comics-v1:off");
     }
-    return cachePolicy_ + ":user-css-v1:"
+    return cachePolicy_ + (comicsMode_ ? ":comics-v1:on" : ":comics-v1:off") + ":user-css-v1:"
             + QCryptographicHash::hash(userStyleSheet_, QCryptographicHash::Sha256).toHex();
 }
 
@@ -538,6 +538,7 @@ void EngineDocument::activateFontParameters() const
 void EngineDocument::configure(QSize size, const QJsonObject &settings)
 {
     auto saved = settings;
+    comicsMode_ = saved.value(appearance::comicsModeKey).toBool(false);
     appearance::migrateLineSpacing(saved);
     // Outline thickness must not affect layout-time italic overhang measurements.
     setExtraFontWeight(0);
@@ -633,6 +634,8 @@ void EngineDocument::configure(QSize size, const QJsonObject &settings)
     twoColumnsLandscape_ = saved.value("two_columns_landscape").toBool(false);
     columns_ = twoColumnsLandscape_ ? (size.width() > size.height() ? 2 : 1)
                                     : qBound(1, saved.value("columns").toInt(1), 2);
+    baseColumns_ = columns_;
+    if (comicsMode_) columns_ = 1;
     columnSpacing_ = qBound(0, saved.value("column_spacing").toInt(readingPixels(60)),
                             maximumMarginPixels());
     columnSpacingPercent_ = saved.value("column_spacing_percent").toInt(0);
@@ -708,7 +711,8 @@ void EngineDocument::configure(QSize size, const QJsonObject &settings)
     engine_->setFontSize(pixels_);
     // CSS sets the line height; the engine must not multiply it again.
     engine_->setDefaultInterlineSpace(100);
-    engine_->setPageMargins(lvRect(margin_, topMargin_, margin_, bottomMargin_));
+    engine_->setPageMargins(comicsMode_ ? lvRect(0, 0, 0, 0)
+                                      : lvRect(margin_, topMargin_, margin_, bottomMargin_));
     engine_->setPageHeaderInfo(0);
     engine_->setShowCover(false);
     engine_->setBackgroundColor(0xffffff);
@@ -900,6 +904,8 @@ bool EngineDocument::applyAppearance(const QJsonObject &settings, QSize size,
             settings.value("beautifier_initials").toBool(beautifierInitials_);
     const bool beautifierSpacing = settings.value("beautifier_spacing").toBool(beautifierSpacing_);
     const bool beautifierIndent = settings.value("beautifier_indent").toBool(beautifierIndent_);
+    const bool comics = settings.value(appearance::comicsModeKey).toBool(comicsMode_);
+    const bool comicsChanged = comics != comicsMode_;
     const int margin = settings.value("margin_pixels").toInt(margin_);
     const int topMargin = settings.value("top_margin_pixels").toInt(topMargin_);
     const int bottomMargin = settings.value("bottom_margin_pixels").toInt(bottomMargin_);
@@ -952,9 +958,10 @@ bool EngineDocument::applyAppearance(const QJsonObject &settings, QSize size,
         size = size_;
     const bool landscapeColumns =
             settings.value("two_columns_landscape").toBool(twoColumnsLandscape_);
-    const int columns = landscapeColumns
+    const int baseColumns = landscapeColumns
             ? (size.width() > size.height() ? 2 : 1)
-            : settings.value("columns").toInt(twoColumnsLandscape_ ? 1 : columns_);
+            : settings.value("columns").toInt(twoColumnsLandscape_ ? 1 : baseColumns_);
+    const int columns = comics ? 1 : baseColumns;
     const int gapPercent = settings.value("column_spacing_percent").toInt(columnSpacingPercent_);
     const int columnSpacing = gapPercent ? qRound(pixels * gapPercent / 100.0)
                                          : settings.value("column_spacing").toInt(columnSpacing_);
@@ -975,7 +982,7 @@ bool EngineDocument::applyAppearance(const QJsonObject &settings, QSize size,
     const bool bionicChanged = bionic != bionic_;
     // Outline thickness changes pixels only. Keep the formatted page and its anchors.
     const bool thicknessChanged = weight != weight_;
-    const bool styled = footnotesChanged || beautifierInitials != beautifierInitials_
+    const bool styled = comicsChanged || footnotesChanged || beautifierInitials != beautifierInitials_
             || beautifierSpacing != beautifierSpacing_ || beautifierIndent != beautifierIndent_
             || fallbackFaces != fallbackFaces_ || normalizePageMargins != normalizePageMargins_
             || reduceChapterSpacing != reduceChapterSpacing_ || wordSpacing != wordSpacing_
@@ -986,6 +993,8 @@ bool EngineDocument::applyAppearance(const QJsonObject &settings, QSize size,
             || margin != margin_ || topMargin != topMargin_ || bottomMargin != bottomMargin_
             || alignment != alignment_ || hyphenation != hyphenation_;
     const bool resized = size != size_ || columns != columns_ || columnSpacing != columnSpacing_;
+    baseColumns_ = baseColumns;
+    comicsMode_ = comics;
     twoColumnsLandscape_ = landscapeColumns;
     columnSpacingPercent_ = gapPercent;
     if (!verticalChanged && !styled && !resized && !footnotesChanged && weight == weight_ && dark == darkMode_
@@ -1070,12 +1079,13 @@ bool EngineDocument::applyAppearance(const QJsonObject &settings, QSize size,
         engine_->propsApply(properties);
         engine_->requestRender();
         applyPublisherFontFallbacks();
-        engine_->setPageMargins(lvRect(margin, topMargin, margin, bottomMargin));
+        engine_->setPageMargins(comicsMode_ ? lvRect(0, 0, 0, 0)
+                                          : lvRect(margin, topMargin, margin, bottomMargin));
         engine_->setFontSize(pixels);
         engine_->setDefaultInterlineSpace(100);
         applyStyleSheet();
     }
-    if (bionicChanged || footnotesChanged) {
+    if (bionicChanged || footnotesChanged || comicsChanged) {
         if (!cacheFingerprint_.isEmpty())
             engine_->getDocProps()->setHex(
                 DOC_PROP_FILE_CRC32,
@@ -1246,8 +1256,16 @@ void EngineDocument::applyStyleSheet()
                                 lString8(inPageFootnotes_ ? fb2::inPageCss : "")
                           : lString8(readerHtmlCss) + lString8(readerOverridesCss) +
                                 lString8(inPageFootnotes_ ? notes::epubInPageCss : "");
+    // The graphics profile comes last: publisher/user typography remains saved but
+    // must not add an inline image baseline or leading-image protection padding.
+    const auto comicsCss = comicsMode_ ? lString8(
+            "\nhtml,body,DocFragment,div,p,section { margin:0 !important; padding:0 !important; "
+            "text-indent:0 !important; line-height:0 !important; }\n"
+            "img { display:block !important; width:100% !important; height:auto !important; "
+            "max-width:100% !important; max-height:100vh !important; margin:0 auto !important; "
+            "padding:0 !important; page-break-inside:avoid !important; }\n") : lString8();
     engine_->setStyleSheet(base + lString8(overrides.toUtf8().constData()) + lString8("\n") +
-                           lString8(userStyleSheet_.constData()));
+                           lString8(userStyleSheet_.constData()) + comicsCss);
 }
 
 void EngineDocument::resize(QSize size)
@@ -1790,6 +1808,10 @@ QString EngineDocument::textFontFace() const
 
 int EngineDocument::embeddedFontCount() const
 {
+    // FictionBook 2 has no document font resources. Do not enumerate EPUB fonts,
+    // including when this engine/source was previously used for an EPUB.
+    if (fb2Document_)
+        return 0;
     if (source_ && source_->embeddedFonts >= 0) {
         return source_->embeddedFonts;
     }
@@ -1842,7 +1864,8 @@ QJsonObject EngineDocument::state() const
               { "reduce_chapter_spacing", reduceChapterSpacing_ },
               { "vertical_justification", verticalSpacing_ },
               { "vertical_spacing_scope", verticalSpacingScope_ },
-              { "columns", columns_ },
+              { appearance::comicsModeKey, comicsMode_ },
+              { "columns", baseColumns_ },
               { "two_columns_landscape", twoColumnsLandscape_ },
               { "column_spacing_percent", columnSpacingPercent_ },
               { "column_spacing", columnSpacing_ },

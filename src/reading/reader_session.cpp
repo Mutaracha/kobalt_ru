@@ -519,8 +519,10 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
                     const auto hanging = saved.value("hanging_punctuation");
                     const auto widowsOrphans = saved.value("widows_orphans");
                     const auto notes = saved.value("fb2_inpage_footnotes");
+                    const bool comics = saved.value(appearance::comicsModeKey).toBool(false);
                     if (!savedMatches)
                         saved = {};
+                    saved[appearance::comicsModeKey] = comics;
                     if (notes.isBool()) saved["fb2_inpage_footnotes"] = notes;
                     saved["bold_reading"] = bionic;
                     saved["dark_mode"] = dark;

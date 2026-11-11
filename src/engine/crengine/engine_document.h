@@ -332,6 +332,8 @@ private:
     QPair<int, qint64> sourceIndexUsage() const;
     int columns_ = 1, columnSpacing_ = readingPixels(60), columnSpacingPercent_ = 0;
     bool twoColumnsLandscape_ = false;
+    bool comicsMode_ = false;
+    int baseColumns_ = 1;
     QSize size_;
     QString anchor_;
     QString nativeLocation_;

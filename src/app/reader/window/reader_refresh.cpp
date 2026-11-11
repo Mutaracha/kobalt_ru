@@ -2,12 +2,14 @@
 #include "ui/controls/text.h"
 #include "ui/panel_timing.h"
 #include "reader_p.h"
+#include "reading/chapter.h"
 #include "app/reader/settings/settings_panel.h"
 #include "reading/appearance_settings.h"
 #include "reading/page_navigation.h"
 #include "support/strings.h"
 #include "support/diagnostics.h"
 #include <QElapsedTimer>
+#include <QSignalBlocker>
 #include <QtMath>
 #include <initializer_list>
 #include <utility>
@@ -268,6 +270,12 @@ bool Reader::syncFontPicker()
 // footer's place until it clears.
 void Reader::showChapterText()
 {
+    const bool comics = session->requestedState().value(appearance::comicsModeKey).toBool(false);
+    if (page->comicsMode != comics) {
+        page->comicsMode = comics;
+        header->setVisible(page->showHeader());
+        resizeText();
+    }
     page->cleanRefresh(false);
     page->notice = !session->error().isEmpty() ? session->error() : session->imageWarning();
     const auto values = chromeValues();
@@ -478,6 +486,10 @@ void Reader::syncAppearanceControls(bool pickingFont)
 {
     auto *settings =
             appearanceEdit.edited() && appearanceEdit.ready() ? appearanceEdit.preview() : session;
+    if (auto *option = findChild<QCheckBox *>("rrComicsReadingMode")) {
+        const QSignalBlocker blocker(option);
+        option->setChecked(settings->requestedState().value(appearance::comicsModeKey).toBool(false));
+    }
     previewLabel->setText(appearanceEdit.error());
     previewLabel->setVisible(!pickingFont && !appearanceEdit.error().isEmpty());
     if (appearanceEdit.previewState() == AppearanceEditSession::PreviewState::Opening) {
@@ -574,6 +586,7 @@ void Reader::syncReadingControls()
 {
     if (session->busy())
         pageScrubber->cancel();
+    page->chapterFractions = chapterProgressFractions(session->chapters(), session->pages());
     QVector<QPair<int, QString>> chapters;
     for (const auto &chapter : session->chapters())
         chapters.append({ chapter.page, chapter.title });

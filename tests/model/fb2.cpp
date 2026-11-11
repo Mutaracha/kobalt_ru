@@ -140,6 +140,7 @@ void renderFictionBook() {
                        &error),
             qPrintable(error));
     require(model.pages() > 0, "FB2 rendered no pages");
+    require(model.embeddedFontCount() == 0, "FB2 must never enumerate embedded fonts");
     require(model.title().contains("Russian Test Book"), "FB2 title metadata");
     require(!model.author().isEmpty(), "FB2 author metadata");
     const auto chapters = model.chapters();

@@ -788,7 +788,7 @@ void ReadingPage::refreshContent(bool reading, bool now)
     const FooterState nextFooter{ stripSlots(true), stripFields(true),  notice,
                                   showFooter(),     showProgress(),     progressFraction,
                                   width(),          footerTextPixels(), colors.cacheKey(),
-                                  weight,           font().family() };
+                                  weight,           font().family(), chapterFractions };
     kobalt::platform::pageRefresh(
             this, false,
             reading && !geometryChanged && renderedPalette == colors.cacheKey()
@@ -1441,6 +1441,17 @@ void ReadingPage::paintFooter(QPainter &painter, bool sleeping) const
                                qRound(width() * progressFraction),
                                metrics::reading::progressFillHeight),
                          ink);
+        // Same scale as the fill. Collapse boundaries landing on one pixel.
+        int lastX = -1;
+        for (const auto fraction : chapterFractions) {
+            const int x = qBound(0, qRound(width() * fraction), qMax(0, width() - 1));
+            if (x == lastX) continue;
+            lastX = x;
+            painter.fillRect(QRect(x, bottomHeight() - metrics::reading::progressBottom
+                                             - metrics::reading::progressFillHeight,
+                                   metrics::control::border,
+                                   metrics::reading::progressFillHeight + metrics::control::border), ink);
+        }
     }
 }
 

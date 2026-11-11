@@ -54,8 +54,8 @@ jobs:
               --volume "$PWD:/work" --volume "$cache:/dependency-cache" \
               --workdir /work/platforms/desktop "$image" bash -euc '
                 cmake --preset linux -DKOBALT_FORK_NAME=kobalt_ru -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
-                cmake --build ../../build/desktop-linux --parallel 4 --target kobalt-desktop-tests kobalt-links-tests kobalt-fb2-tests kobalt-document-cache-tests kobalt-appearance-settings-tests kobalt-ui-tests kobalt-strings-locale-tests kobalt-reader-lifecycle-tests -- -k 0
-                ctest --preset linux --output-on-failure -R "^(engine\.(links|fb2|document-cache)|model\.(appearance-settings|strings-locale)|component\.ui|desktop\.(settings.*|libraryAbout|chapterGroups|buttonMapping.*|headerFooterSizes|advancedText|globalLayout)|lifecycle\.(readerStandbySetting|appearance.*|uneditedPanelTransitions|overflowClosesCurrentPanel))$"
+                cmake --build ../../build/desktop-linux --parallel 4 --target kobalt-desktop-tests kobalt-links-tests kobalt-fb2-tests kobalt-comics-tests kobalt-chapter-progress-tests kobalt-document-cache-tests kobalt-appearance-settings-tests kobalt-ui-tests kobalt-strings-locale-tests kobalt-reader-lifecycle-tests -- -k 0
+                ctest --preset linux --output-on-failure -R "^(engine\.(links|fb2|comics|document-cache)|model\.(appearance-settings|chapter-progress|strings-locale)|component\.ui|desktop\.(settings.*|libraryAbout|chapterGroups|buttonMapping.*|headerFooterSizes|advancedText|globalLayout)|lifecycle\.(readerStandbySetting|appearance.*|uneditedPanelTransitions|overflowClosesCurrentPanel))$"
                 QT_QPA_PLATFORM=offscreen cmake \
                   -DTEST_EXECUTABLE=/work/build/desktop-linux/kobalt-links-tests \
                   "-DTEST_ARGUMENTS=--publisher-notes;/work/tests/manual/books/publisher/Кокаиновые+короли.epub" \

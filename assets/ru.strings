@@ -1430,3 +1430,5 @@
 "buttons.while_reading" = "Выберите действие этой физической кнопки при чтении.";
 
 "buttons.hardware_title" = "Физические кнопки";
+
+"reader.comics_reading_mode" = "Режим чтения комиксов";

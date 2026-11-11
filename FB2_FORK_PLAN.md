@@ -2774,3 +2774,28 @@ Artifact Kobalt-qt5-device 13632031445, native log 13631452339.
 Это утверждённое поведение, не отчёт о готовой реализации. Проверить edit→apply
 при активном режиме, close/reopen и выключение с восстановлением обновлённых
 значений; отдельно edit→cancel не должен менять сохранённую базу.
+
+
+## Comics implementation (pending CI/device verification)
+
+Added the approved per-book `comics_reading_mode` toggle in Layout. Stored
+margins and global chrome remain editable and retain their values; the engine
+applies a zero-margin, single-column graphics profile only while enabled.
+Disabling uses the latest base values. Image CSS uses block layout and
+aspect-preserving viewport caps, removing the inline baseline/leading-padding
+reserve without cropping source pixels. The profile participates in appearance
+and parsed-cache identity; no saved-data version bump or cleanup is needed.
+
+Chapter boundaries now share the footer fill scale, filter invalid pages and
+deduplicate page/pixel positions. The footer snapshot includes their positions,
+so reflow invalidates ticks; paint does not parse the book. No new tick setting.
+FB2 returns zero document fonts before any document-font enumeration; shared
+font initialization and generic-family fallbacks remain intact. No measured
+opening-time improvement is claimed.
+
+New UI pair (approved): `reader.comics_reading_mode` — “Comics reading mode” /
+«Режим чтения комиксов». No description. New engine regression covers portrait
+and landscape fitting at 96/300 PPI, effective geometry, edits while enabled,
+checkpoint/reopen and restoration. Manual checks on build d7b7d55 remain the
+baseline, not proof of this implementation. Test Apply/Cancel, sleep/reopen,
+chapter tick reflow and the supplied graphic on Kobo Qt5 after CI passes.

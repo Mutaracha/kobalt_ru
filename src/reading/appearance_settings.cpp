@@ -9,7 +9,7 @@
 namespace kobalt::appearance {
 QJsonObject afterContentChange(const QJsonObject &saved) {
     QJsonObject result;
-    for (const auto *key : {"bold_reading", "dark_mode", "hide_nonlinear_fragments",
+    for (const auto *key : {comicsModeKey, "bold_reading", "dark_mode", "hide_nonlinear_fragments",
                             "normalize_page_margins", "reduce_chapter_spacing", "hanging_punctuation", "two_columns_landscape", "column_spacing_percent",
                             "word_spacing", "paragraph_spacing", "paragraph_indent",
                             "justification_tracking", "widows_orphans", "fb2_inpage_footnotes"})
@@ -104,6 +104,7 @@ QJsonObject globalPreferences(QJsonObject preferences)
     preferences.remove("smooth_images");
     preferences.remove("heavier_interface_text");
     preferences.remove("native_hide_status_bar");
+    preferences.remove(comicsModeKey); // Per-book only; never inherit into the next book.
     preferences.remove("columns");
     preferences.remove("column_spacing");
     preferences.remove(pageNavigation::barVisibleKey);

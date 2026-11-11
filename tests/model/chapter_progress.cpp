@@ -1,4 +1,5 @@
 #include "reading/word_estimates.h"
+#include "reading/chapter.h"
 #include "check.h"
 #include <cmath>
 #include <utility>
@@ -32,6 +33,13 @@ int uploaded(double progress)
 // Checks the chapter fractions Kobo writes to Nickel, `CurrentChapterProgress` and the chapter row value; an unknown layout writes nothing.
 int main()
 {
+    const auto ticks = chapterProgressFractions({{"last", "z", 9}, {"a", "a", 0},
+            {"duplicate", "b", 0}, {"bad", "c", -1}, {"past", "d", 10}}, 10);
+    require(ticks.size() == 2 && same(ticks[0], pageProgressFraction(0, 10))
+                && same(ticks[1], pageProgressFraction(9, 10)),
+            "Progress ticks must sort, deduplicate, filter and share the fill scale");
+    require(chapterProgressFractions({{"a", "a", 0}}, 0).isEmpty(),
+            "Unknown page count produced chapter ticks");
     const QVector<ChapterLink> chapters{ { "One", "a", 4, 0, 0 },
                                          { "Two", "b", 12, 0, 0 },
                                          { "Three", "c", 21, 0, 0 } };

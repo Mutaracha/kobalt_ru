@@ -6,6 +6,7 @@
 #include "ui/style/private_text.h"
 #include "ui/style/theme.h"
 #include "appearance_panel.h"
+#include "fork_settings.h"
 #include "support/strings.h"
 #include "reading/appearance_settings.h"
 #include "reading/reading_density.h"
@@ -342,6 +343,10 @@ AppearancePanel::AppearancePanel(const AppearanceLayout &layout,
                                   maximumLineSpacing, 1, {}, {}, "%");
     spacingSlider->setMarkers({ 100, 110, 120, 130, 140, 150, 175, 200, 250, 300 },
                               ui::SettingSlider::MarkerMode::Stops);
+    comicsOption = new ui::DescribedOption(strings::get("reader.comics_reading_mode"), {}, pageLayout);
+    comicsOption->setObjectName("rrComicsReadingMode");
+    styleSettingsOption(comicsOption);
+    pageRows->addWidget(comicsOption);
     marginSlider = kobalt::ui::sliderRow(pageLayout, pageRows, "rrMargins", "rrMarginsValue",
                                          strings::get("reader.margins"), "rrNarrower", "rrWider", 0,
                                          120, 3, {});

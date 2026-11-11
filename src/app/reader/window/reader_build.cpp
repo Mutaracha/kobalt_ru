@@ -1055,6 +1055,14 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
     weightSlider = appearance.weightSlider;
     variableWeightSlider = appearance.variableWeightSlider;
     spacingSlider = appearance.spacingSlider;
+    auto *comicsOption = appearance.comicsOption;
+    connect(comicsOption, &QCheckBox::clicked, this, [this](bool enabled) {
+        mutateAppearance([enabled](ReaderSession &preview) {
+            auto next = preview.requestedState();
+            next[kobalt::appearance::comicsModeKey] = enabled;
+            preview.apply(next);
+        });
+    });
     marginSlider = appearance.marginSlider;
     verticalMarginSlider = appearance.verticalMarginSlider;
     appearancePreview = new kobalt::reader::AppearancePreview(this);

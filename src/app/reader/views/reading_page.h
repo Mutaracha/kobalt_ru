@@ -59,12 +59,14 @@ public:
     std::array<headerfooter::Content, headerfooter::slotCount> slotContents;
     QString notice;
     qreal progressFraction = 0;
+    QVector<qreal> chapterFractions;
+    bool comicsMode = false;
 
-    bool showHeader() const { return chrome.header(); }
+    bool showHeader() const { return !comicsMode && chrome.header(); }
 
-    bool showFooter() const { return chrome.footer(); }
+    bool showFooter() const { return !comicsMode && chrome.footer(); }
 
-    bool showProgress() const { return chrome.progressBar; }
+    bool showProgress() const { return !comicsMode && chrome.progressBar; }
 
     int headerTextPixels() const
     {
@@ -175,7 +177,7 @@ private:
     using HeaderState = std::tuple<Slots, std::array<headerfooter::Field, 3>, bool, bool, int, int,
                                    qint64, int, QString>;
     using FooterState = std::tuple<Slots, std::array<headerfooter::Field, 3>, QString, bool, bool,
-                                   qreal, int, int, qint64, int, QString>;
+                                   qreal, int, int, qint64, int, QString, QVector<qreal>>;
     Slots stripSlots(bool footer) const;
     std::array<headerfooter::Field, 3> stripFields(bool footer) const;
     void paintSlots(QPainter &painter, const QRect &bounds, bool footer,

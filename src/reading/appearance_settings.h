@@ -81,7 +81,8 @@ inline constexpr std::array<const char *, 5> normalizationKeys{
 QJsonObject normalizationSettings(const QJsonObject &settings);
 QString normalizationPreset(const QJsonObject &settings);
 QJsonObject normalizationPresetSettings(const QString &preset);
-inline constexpr std::array<const char *, 37> keys{ "line_spacing_version",
+inline constexpr auto comicsModeKey = "comics_reading_mode";
+inline constexpr std::array<const char *, 38> keys{ comicsModeKey, "line_spacing_version",
                                                     "font_pixels",
                                                     "line_spacing",
                                                     "paragraph_spacing",

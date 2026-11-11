@@ -1376,3 +1376,5 @@
 "buttons.while_reading" = "Decide what this hardware button should do when you're reading.";
 
 "buttons.hardware_title" = "Hardware buttons";
+
+"reader.comics_reading_mode" = "Comics reading mode";
