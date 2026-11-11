@@ -1,5 +1,15 @@
 # Техническое задание для ИИ-агента: Форк Kobalt с нативной поддержкой FB2 на Kobo (Сценарий 1)
 
+## Новые задачи: progress chapter marks, comics profile, opening performance
+
+Пользователь запросил ticks границ глав в нижней progress bar и отдельную
+опцию «Режим чтения комиксов» с сохранением исходных полей/колонтитулов.
+[Проект и EN/RU proposal](doc/comics-progress-proposal.md),
+[CoolReader source/config audit и performance plan](doc/coolreader-opening-analysis.md).
+Стадия — первичный анализ; новый UI/код не применялись. Новая пара EN/RU и
+предлагаемая per-book scope ожидают согласования; affected book/SHA нужны для
+точного воспроизведения остаточной полосы. Qt5 — основной target.
+
 ## beta7 — интеграция и автоматические проверки завершены; устройство ожидается
 
 **Текущий этап: R1/R2/R3 внесены; Qt5/native CI PASS, бинарник `d7b7d55`.**
@@ -2690,3 +2700,36 @@ Native job 128840153528 (6m40s), Qt5 128840153728 (7m38s).
 Offline/точные RU locale ожидания/focused native/publisher EPUB/package PASS.
 Artifact Kobalt-qt5-device 13632031445, native log 13631452339.
 Проверка на реальном устройстве новых названий ещё не выполнена. Qt6 skipped.
+
+
+## Анализ CoolReader / новых comic captures
+
+- Новые вложения cr.png/kobalt.png/nickel.png и настройки сохранены побайтно в
+  tests/manual/screenshots/kobo-qt5/comics-report с provenance/SHA256SUMS.
+  Kobalt binary SHA пока неизвестен. Settings действительно показывают поля=0,
+  chrome/progress=off; оставшееся поле нельзя списывать только на их values.
+- Замер почти белых нижних строк на canvas 1264×1680: Kobalt 18, Nickel 0
+  (порог <220, <=0,5% тёмных pixels в строке). Это не engine margin и не
+  основание вводить hardcoded 18px correction. Нет исходного comic resource/CSS.
+- Code: native engine header уже setPageHeaderInfo(0); engine margins, viewport,
+  safe area, CSS wrappers/inline baseline, fit/image proportions — разные слои.
+  Точная причина не объявлена доказанной, silent crop/stretch запрещён.
+- Chapter marks проектируются на существующих session chapters/page scale,
+  с dedup pixel positions и footer invalidation после reflow, без DOM в paint.
+- Comics overlay не должен писать effective zero margins/chrome в обычные
+  durable values; нужны apply/cancel/checkpoint/reopen/cache/position regressions.
+- Оптимизация открытия добавлена как отдельная задача. В doc/CoolReader —
+  executables/configs/resources 2022/2023, не C++ source. Найден публичный
+  sergeyvl/vlasovsoft 5f799936b020f5d87055f1837956524ca1324be1 (2015-01-14),
+  matching с пользовательскими binaries не установлен. Изучены frontend
+  load/cache/restore, font startup, qmake flags; встроенные fonts/styles в
+  supplied configs отключены. Это не доказательство причины ускорения.
+- Изучены pinned CREngine f335f7a и Kobalt opening-phases/model timing hooks.
+  План: same bytes/config cold/warm/retained до first usable frame; dominant
+  phase, cache-miss reason, duplicate work; только затем оптимизация, без
+  downgrade engine и без переноса старого progress/lifecycle из CR.
+- Новая строка предложена: reader.comics_reading_mode / Comics reading mode /
+  Режим чтения комиксов, без длинного description. RU дан пользователем;
+  EN/per-book scope ожидают подтверждения. Никакой asset translation не применён.
+- Проверены SHA256 вложений и diff whitespace. Runtime/Qt5 build не запускались:
+  этот commit — только план, анализ и supplied screenshots, не новая функция.

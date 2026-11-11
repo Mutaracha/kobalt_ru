@@ -40,3 +40,11 @@ sha256sum -c tests/manual/materials.sha256
 включать в приложение/пакет. Portable synthetic и public-domain fixtures остаются
 в `tests/fixtures/`; сгенерированные captures и build outputs — в ignored `build/`.
 Наличие файла в Git не означает разрешения на переиздание книги.
+
+
+## Сравнительный пример манги и chapter marks
+
+[comics-report](screenshots/kobo-qt5/comics-report/README.md) хранит новые
+оригинальные вложения пользователя: CoolReader, Kobalt, Nickel и настройки.
+Отдельный SHA256SUMS проверяется из корня. Binary SHA Kobalt не установлен;
+серия не подменяет captures dddace7 и не доказывает новую реализацию режима.

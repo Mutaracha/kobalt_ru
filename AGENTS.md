@@ -319,3 +319,16 @@ existing serif/sans/mono keys name reserve fonts in both rows and chooser titles
 Do not add translation keys, a long help message, RU-only title branching,
 prefix-stripping hacks or catalog filtering. Serif is a fallback/family role,
 not a promise that every listed font is classified as serif.
+
+
+### Pending comics/progress/performance work
+
+Follow doc/comics-progress-proposal.md and doc/coolreader-opening-analysis.md.
+New captures establish zero configured margins/chrome with residual bottom space;
+do not claim a proven 18px engine margin or introduce magic cropping. Existing
+engine native header is already disabled. Comics must be an effective override,
+never persist its zeroed geometry into ordinary layout values. Confirm the
+single EN/RU proposal and per-book scope before adding strings. Reuse upstream
+TOC/page progress and invalidate footer ticks on reflow; never parse DOM in paint.
+The public Vlasovsoft source is from 2015 and not verified as the 2022/2023
+binary source. Measure existing opening phases before claiming optimization.

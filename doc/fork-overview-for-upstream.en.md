@@ -277,9 +277,11 @@ preferences do not have to be changed globally just to read a comic.
 
 Thus the user's hypothesis is plausible: text-pagination settings can leave
 space after chrome is hidden. **The exact cause in the reported comic has not
-been reproduced:** the supplied beta7 screenshot series shows a prose book,
-not the affected comic, and its source file/layout settings are not available
-for this comparison. Embedded white borders, aspect ratio, CSS, safe areas and
+been reproduced:** the initial beta7 series showed a prose book. Subsequent user-supplied
+comic screenshots now show both margins at zero and header/footer/progress off,
+yet residual bottom space remains in Kobalt and not in Nickel. The affected
+publication/resource/CSS and installed binary SHA are still unavailable for a
+reproducible root-cause test. See the separate comics/progress design note. Embedded white borders, aspect ratio, CSS, safe areas and
 scaling must be distinguished before attributing all edge space to one bug.
 
 Suggested behavior:
