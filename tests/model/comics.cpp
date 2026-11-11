@@ -118,7 +118,8 @@ int main(int argc, char **argv)
         const auto first = ReaderSourceIndexProbe::nodeBounds(prose, "p0");
         const auto second = ReaderSourceIndexProbe::nodeBounds(prose, "p1");
         require(first.height() > 32 && second.top() >= first.bottom(),
-                "Comics mode collapsed prose lines or overlaid paragraphs");
+                qPrintable(QString("Comics prose bounds (FB2=%1): first y=%2 h=%3, second y=%4 h=%5")
+                    .arg(fictionBook).arg(first.y()).arg(first.height()).arg(second.y()).arg(second.height())));
         require(prose.pages() > 1, "Comics prose collapsed into a single page");
     }
 

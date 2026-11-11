@@ -36,7 +36,8 @@ struct ReaderSourceIndexProbe {
             auto *node = pending.back(); pending.pop_back();
             if (!node || !node->isElement()) continue;
             const auto value = QString::fromUtf8(UnicodeToUtf8(node->getAttributeValue("id")).c_str());
-            if (value == wanted || value.endsWith("_" + wanted)) {
+            // CREngine separates the EPUB fragment prefix with "_ ".
+            if (value == wanted || value.endsWith("_" + wanted) || value.endsWith("_ " + wanted)) {
                 lvRect rect;
                 node->getAbsRect(rect);
                 return QRect(rect.left, rect.top, rect.width(), rect.height());
