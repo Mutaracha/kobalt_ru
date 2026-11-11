@@ -153,6 +153,7 @@ int main(int argc, char **argv)
     require(wideBounds.width() == 1680 && qAbs(wideBounds.height() - 1000) <= 1,
                 "Wide source spread rotated, cropped or fitted to half the screen");
     require(spread.go(1), "Select wide screen");
+    require(inkBounds(spread.imageFromAnchor()) == wideBounds, "Anchored preview sliced a graphic screen");
     const auto widePosition = spread.position();
     require(spread.applyAppearance({}, QSize(1264, 1680)), "Rotate mixed art to portrait");
     require(spread.pages() == 4, "Portrait must have one source image per screen");

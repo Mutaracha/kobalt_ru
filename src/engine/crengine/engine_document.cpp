@@ -1425,7 +1425,9 @@ QImage EngineDocument::imageFromAnchor(bool stayInChapter)
     auto *document = engine_->getDocument();
     auto *list = engine_->getPageList();
     const auto anchor = document->createXPointer(cre(anchor_));
-    if (columns_ != 1 || anchor.isNull() || engine_->isVerticalText())
+    // Graphic screens are indivisible; anchored text slicing would crop art and
+    // confuse displayed-screen indices with internal source-page indices.
+    if (comicsMode_ || columns_ != 1 || anchor.isNull() || engine_->isVerticalText())
         return image(current);
     const int pageIndex = engine_->getBookmarkPage(anchor);
     if (pageIndex < 0 || pageIndex >= list->length()
