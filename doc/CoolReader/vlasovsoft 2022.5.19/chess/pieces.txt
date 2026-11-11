@@ -1,0 +1,9 @@
+BMP | Kingdom    | kingdom.png
+BMP | Cases      | cases.png
+BMP | Adventurer | adventurer.png
+BMP | Berlin     | berlin.png
+BMP | Alpha      | alpha.png
+BMP | Condal     | condal.png
+BMP | Leipzig    | leipzig.png
+BMP | TopView    | topview.png
+BMP | 3D Chess   | 3dchess.png

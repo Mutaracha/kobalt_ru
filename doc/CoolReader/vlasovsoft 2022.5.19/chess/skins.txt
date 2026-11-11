@@ -1,0 +1,9 @@
+eink   | Eink
+wood_1 | Wood-1
+wood_2 | Wood-2
+wood_3 | Wood-3
+granit | Granit
+paper  | Paper
+gold   | Gold
+sea    | Sea
+night  | Night

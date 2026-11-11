@@ -1,0 +1,3 @@
+None   | none
+Small  | small.bin
+Normal | normal.bin
