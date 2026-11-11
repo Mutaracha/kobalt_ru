@@ -46,7 +46,11 @@ int main(int argc, char **argv)
         }, std::make_shared<std::atomic_bool>(false));
     for (const int ppi : {96, 300}) {
         readingPpi.store(ppi);
+        QTemporaryDir cache;
+        require(cache.isValid(), "Create comic cache");
         EngineDocument model(test::readerFonts());
+        const QByteArray fingerprint(64, 'a');
+        model.setDocumentCache(cache.path(), fingerprint, "comics-test", 1024 * 1024);
         QString error;
         QJsonObject saved{{appearance::comicsModeKey, true}, {"margin_pixels", 42},
             {"top_margin_pixels", 33}, {"bottom_margin_pixels", 27},
@@ -67,9 +71,12 @@ int main(int argc, char **argv)
         bounds = inkBounds(model.image(0));
         require(bounds.height() == 1264 && qAbs(bounds.width() - qRound(1264.0 * 1160 / 1680)) <= 1,
                 "Landscape cropped or stretched the graphic");
+        require(model.saveDocumentCache(), "Save comics parsed cache");
         const auto checkpoint = model.state();
         EngineDocument reopened(test::readerFonts());
+        reopened.setDocumentCache(cache.path(), fingerprint, "comics-test", 1024 * 1024);
         require(reopened.openResources(resources, lengths, QSize(1680, 1264), checkpoint, &error), qPrintable(error));
+        require(reopened.openedFromCache(), "Compatible comics checkpoint did not use parsed cache");
         require(ReaderSourceIndexProbe::comicsGeometry(reopened) && reopened.margin() == 60,
                 "Reopen lost mode or updated base settings");
         require(reopened.applyAppearance({{appearance::comicsModeKey, false}}), "Disable comic mode");

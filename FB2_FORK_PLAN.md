@@ -2803,3 +2803,7 @@ chapter tick reflow and the supplied graphic on Kobo Qt5 after CI passes.
 Follow-up: retain ordinary-book cache policy when comics is off; explicitly override
 the higher-specificity leading-image padding rule in comics and skip the FB2
 count call itself (the accessor also guards all other callers). CI pending.
+
+Follow-up: chapter ticks extend above the filled bar (visible for read chapters)
+without increasing strip height. Added a byte-preserving reduced manual EPUB
+and an explicit parsed-cache reopen assertion in engine.comics. CI pending.

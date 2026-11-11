@@ -1441,6 +1441,7 @@ void ReadingPage::paintFooter(QPainter &painter, bool sleeping) const
                                qRound(width() * progressFraction),
                                metrics::reading::progressFillHeight),
                          ink);
+        // Extend above the fill so already-read chapter marks stay visible.
         // Same scale as the fill. Collapse boundaries landing on one pixel.
         int lastX = -1;
         for (const auto fraction : chapterFractions) {
@@ -1448,9 +1449,9 @@ void ReadingPage::paintFooter(QPainter &painter, bool sleeping) const
             if (x == lastX) continue;
             lastX = x;
             painter.fillRect(QRect(x, bottomHeight() - metrics::reading::progressBottom
-                                             - metrics::reading::progressFillHeight,
+                                             - 2 * metrics::reading::progressFillHeight,
                                    metrics::control::border,
-                                   metrics::reading::progressFillHeight + metrics::control::border), ink);
+                                   2 * metrics::reading::progressFillHeight + metrics::control::border), ink);
         }
     }
 }
