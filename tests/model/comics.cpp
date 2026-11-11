@@ -52,8 +52,10 @@ int main(int argc, char **argv)
         const QByteArray fingerprint(64, 'a');
         model.setDocumentCache(cache.path(), fingerprint, "comics-test", 1024 * 1024);
         QString error;
-        QJsonObject saved{{appearance::comicsModeKey, true}, {"margin_pixels", 42},
-            {"top_margin_pixels", 33}, {"bottom_margin_pixels", 27},
+        const int baseMargin = readingPixels(42), editedMargin = readingPixels(60);
+        const int baseTop = readingPixels(33), editedTop = readingPixels(51), baseBottom = readingPixels(27);
+        QJsonObject saved{{appearance::comicsModeKey, true}, {"margin_pixels", baseMargin},
+            {"top_margin_pixels", baseTop}, {"bottom_margin_pixels", baseBottom},
             {"two_columns_landscape", true}};
         require(model.openResources(resources, lengths, QSize(1264, 1680), saved, &error), qPrintable(error));
         require(ReaderSourceIndexProbe::comicsGeometry(model), "Comic profile did not override physical geometry");
@@ -62,9 +64,9 @@ int main(int argc, char **argv)
                 qPrintable(QString("Comic fit/baseline: %1,%2 %3x%4 at %5 PPI")
                     .arg(bounds.x()).arg(bounds.y()).arg(bounds.width()).arg(bounds.height()).arg(ppi)));
         require(model.pages() == 1, "Single graphic page acquired an extra page");
-        require(model.state().value("margin_pixels").toInt() == 42, "Overlay overwrote saved margin");
-        require(model.applyAppearance({{"margin_pixels", 60}, {"top_margin_pixels", 51}}), "Edit while active");
-        require(ReaderSourceIndexProbe::comicsGeometry(model) && model.margin() == 60,
+        require(model.state().value("margin_pixels").toInt() == baseMargin, "Overlay overwrote saved margin");
+        require(model.applyAppearance({{"margin_pixels", editedMargin}, {"top_margin_pixels", editedTop}}), "Edit while active");
+        require(ReaderSourceIndexProbe::comicsGeometry(model) && model.margin() == editedMargin,
                 "Active edit must save base without changing effective margins");
         require(model.applyAppearance({}, QSize(1680, 1264)), "Rotate comic");
         require(ReaderSourceIndexProbe::comicsGeometry(model), "Landscape enabled a spread");
@@ -77,11 +79,11 @@ int main(int argc, char **argv)
         reopened.setDocumentCache(cache.path(), fingerprint, "comics-test", 1024 * 1024);
         require(reopened.openResources(resources, lengths, QSize(1680, 1264), checkpoint, &error), qPrintable(error));
         require(reopened.openedFromCache(), "Compatible comics checkpoint did not use parsed cache");
-        require(ReaderSourceIndexProbe::comicsGeometry(reopened) && reopened.margin() == 60,
+        require(ReaderSourceIndexProbe::comicsGeometry(reopened) && reopened.margin() == editedMargin,
                 "Reopen lost mode or updated base settings");
         require(reopened.applyAppearance({{appearance::comicsModeKey, false}}), "Disable comic mode");
-        require(reopened.margin() == 60 && reopened.state().value("top_margin_pixels").toInt() == 51
-                    && reopened.state().value("bottom_margin_pixels").toInt() == 27 && reopened.state().value("columns").toInt() == 2,
+        require(reopened.margin() == editedMargin && reopened.state().value("top_margin_pixels").toInt() == editedTop
+                    && reopened.state().value("bottom_margin_pixels").toInt() == baseBottom && reopened.state().value("columns").toInt() == 2,
                 "Disable did not restore latest base layout");
         require(reopened.embeddedFontCount() == 0, "Synthetic EPUB acquired document fonts");
     }

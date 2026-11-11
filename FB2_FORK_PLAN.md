@@ -2822,3 +2822,10 @@ regression must pass before claiming fit. Updated the explicit appearance-key
 count and desktop exposed-paper click helper: standard-height extra Layout row
 can leave paper above the former fixed 1/4 screen sample; find real exposed
 paper without clicking through the panel. Reverification pending.
+
+Native verification: aspect-preserving graphics now pass the edge/ratio checks.
+Corrected test margins to readingPixels() at each tested density (literal 42/60
+exceed the 96-PPI device limit and are correctly clamped/rejected). The small
+desktop layout can have no exposed paper at all: close via its selected Layout
+tab, the existing supported action, and keep the generic click helper unchanged.
+The last run is not green yet; cache/reopen assertions still need verification.
