@@ -84,3 +84,15 @@ h_avail-footnotes_height перед первой сноской. Просто у
 изменить FOOTNOTE_MARGIN_REM недостаточно: нужен согласованный перенос draw,
 hit testing и pagination/reservation, с регрессиями EPUB/FB2. Не переносить
 сноски одним draw-only сдвигом, который ломает ссылки/выделение.
+
+
+## Verification of 0533a90
+
+[Run 43090289292](https://github.com/Mutaracha/kobalt_ru/actions/runs/43090289292)
+SUCCESS: native regressions (including Top/Off routed UI, header/footer optional
+field, comics, FB2/EPUB/cache and cache-save reason check) and Qt5 packaging /
+offline/package checks PASS. Qt6 intentionally skipped.
+Qt5 artifact [13888743153](https://github.com/Mutaracha/kobalt_ru/actions/runs/43090289292/artifacts/13888743153),
+36,429,810 bytes; native results 13890060155. Device refresh quality is not
+proved by CI. No opening-time speedup, footnote gap fix or lazy UI construction
+is claimed. These last two remain open; test plan explicitly separates them.

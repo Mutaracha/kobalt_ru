@@ -468,3 +468,6 @@ Incomplete explicitly: exact body-to-footnote gap (requires renderer/hit-test
 coordination) and lazy construction of settings/appearance panels. These are not
 claimed fixed or sped up by this patch. New approved EN/RU pairs: comics mode
 description, progress Bottom/Внизу and Top/Вверху; no other UI text changes.
+
+Проверка 0533a90: native/Qt5/package PASS, run43090289292; пакет13888743153.
+Тестировать по doc/build107-test-plan.md. Сноски и lazy UI ещё не исправлены.
