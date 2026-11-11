@@ -122,3 +122,20 @@ font discovery, profile/storage, first-frame composition и e-ink presentation.
 Точная matching source revision Vlasovsoft и файл affected book остаются
 полезными входными данными. В эту итерацию не добавляются/обновляются engine
 зависимости и не копируются vendor binaries в distribution.
+
+
+## Уточнение FB2: не выполнять EPUB embedded-font работу
+
+Пользователь верно уточнил: стандартный FictionBook 2 не поддерживает встроенные
+шрифты. В openSource сейчас есть общий `embeddedFontCount()` даже для FB2;
+после первого вызова count хранится в ReaderSource. Сам метод перечисляет
+registered document fonts/embedded list. Для FB2 логично явно возвращать ноль
+без EPUB-specific enumeration, включая cache/preview/reused-engine paths.
+Это безопасная граница для проверки/оптимизации, но не доказанный источник
+заметной задержки — список пуст, а результат memoized.
+
+Не пропускать общую initializeFonts(), регистрацию доступных внешних fonts,
+выбор serif/sans/mono fallback или hyphenation: это необходимые ресурсы
+отрисовки FB2, а не embedded fonts. Проверить, что при EPUB→FB2 переиспользовании
+engine не протекает чужой count, а EPUB с embedded fonts не регрессирует.
+Измерить разницу через штатные opening phases; обещание ускорения пока не даётся.

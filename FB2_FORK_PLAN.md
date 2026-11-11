@@ -2733,3 +2733,26 @@ Artifact Kobalt-qt5-device 13632031445, native log 13631452339.
   EN/per-book scope ожидают подтверждения. Никакой asset translation не применён.
 - Проверены SHA256 вложений и diff whitespace. Runtime/Qt5 build не запускались:
   этот commit — только план, анализ и supplied screenshots, не новая функция.
+
+
+## Уточнение пользователя: comic fixture, build 94 и FB2 fonts
+
+- Проверка пользователя: Kobalt build 94, d7b7d55. Provenance новых PNG уточнён.
+- Получен unpacked пример doc/Spice and Wolf v01.kepub.epub/ (ad349b7).
+  Единственная сохранённая страница использует inline img 1160×1680 внутри
+  centered div; PNG действительно 1160×1680, body/@page margins=0. Это делает
+  baseline/line-box конкретным кандидатом остаточного strip, не доказанным fix.
+- OPF сохранил ссылки на удалённые страницы/картинки и pre-paginated metadata.
+  Для runtime regression нужен отдельный reduced OPF/spine/nav, сохранив
+  исходные XHTML/CSS/image bytes. Пользовательский оригинал не переписывать;
+  простая ZIP упаковка текущего каталога не даёт полноценный валидный fixture.
+- Название новой опции EN/RU принято пользователем; повторное согласование
+  этой пары не нужно. Открыты product decisions: per-book persistence,
+  aspect-fit vs crop, UI controls при override и single page/landscape spread.
+- Стандартный FB2 не содержит embedded fonts. В текущем openSource общий
+  embeddedFontCount() вызывается и на FB2, затем результат cached в ReaderSource;
+  applyPublisherFontFallbacks использует count. Это не доказательство тяжёлого
+  обхода шрифтов внутри FB2. Запланировать явный FB2 early-zero/no EPUB document
+  font enumeration с regression и измерением, не убирать initializeFonts,
+  внешние шрифты или generic fallback, необходимые для чтения текста.
+- В эту итерацию только уточнены evidence/decisions; runtime код не менялся.
