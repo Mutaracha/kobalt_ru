@@ -486,30 +486,36 @@ QByteArray EngineDocument::documentCachePolicy() const
             + QCryptographicHash::hash(userStyleSheet_, QCryptographicHash::Sha256).toHex();
 }
 
-bool EngineDocument::saveDocumentCache()
+bool EngineDocument::saveDocumentCache(QString *reason)
 {
-    if (!engine_ || cacheDirectory_.isEmpty() || cacheFingerprint_.isEmpty()
-        || !resourceError().isEmpty() || !pages())
+    const auto fail = [reason](const char *value) {
+        if (reason) *reason = QString::fromLatin1(value);
         return false;
+    };
+    if (reason) *reason = QStringLiteral("saved");
+    if (!engine_) return fail("no-engine");
+    if (cacheDirectory_.isEmpty() || cacheFingerprint_.isEmpty()) return fail("unkeyed");
+    if (!resourceError().isEmpty()) return fail("resource-error");
+    if (!pages()) return fail("no-pages");
     // Only a document opened under this book's key may write that key's file.
     // FB2 openings add a .fb2 suffix to the same fingerprint-derived name.
     const auto name = engine_->getDocProps()->getStringDef(DOC_PROP_FILE_NAME, "");
     const auto expected = documentCacheName(cacheFingerprint_);
     const auto actual = QString::fromUtf8(UnicodeToUtf8(name).c_str());
     if (actual != expected && actual != expected + QStringLiteral(".fb2"))
-        return false;
+        return fail("source-name-mismatch");
     auto *document = engine_->getDocument();
     DocumentCacheScope cache(cacheDirectory_);
     if (!cache.enabled())
-        return false;
+        return fail("cache-unavailable");
     // The no-argument update serializes even a clean cache. Keep that path for
     // creation and dirty documents; an existing clean cache needs no update.
     if ((!document->hasCacheFile() || document->isCacheFileStale())
         && engine_->updateCache() != CR_DONE)
-        return false;
+        return fail("update-incomplete");
     if (document->hasCacheFile()) {
         if (!document->updateCacheFileName())
-            return false;
+            return fail("rename-failed");
         ldomDocCache::removeObsolete(name, document->getCacheFilePath());
     }
     return true;

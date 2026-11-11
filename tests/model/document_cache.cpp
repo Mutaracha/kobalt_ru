@@ -25,6 +25,12 @@ static QByteArray hash(const QImage &image)
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
+    {
+        kobalt::EngineDocument empty(kobalt::test::readerFonts());
+        QString reason;
+        require(!empty.saveDocumentCache(&reason) && !reason.isEmpty(),
+                "Missing cache-save reason on rejected save");
+    }
     require(argc == 2, "Pass the document-cache EPUB fixture");
     QFile file(QString::fromLocal8Bit(argv[1]));
     require(file.open(QIODevice::ReadOnly), "Cannot read document-cache fixture");

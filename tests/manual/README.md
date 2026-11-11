@@ -65,3 +65,19 @@ Automated native checks are not evidence of a hardware screenshot match.
 ## Build106 device feedback
 
 Build106 device feedback and opening samples: screenshots/kobo-qt5/build106-review/. Preserve this set separately from earlier evidence; see doc/build106-device-review.md for pending ghosting/progress/notes checks.
+
+
+## Progress/comics follow-up implementation
+
+Added approved description and content-measured compact row; Off/Bottom/Top
+selector with legacy bottom default; top progress reuses fill/ticks with compact
+reservation and header snapshot invalidation. Qt5 comics uses graphics repair
+waveform on submitted damage, preserving screen-refresh preferences; hardware
+quality/latency still needs verification. Added opening_id and cache-save wrapper
+reasons, not guessed parsed-cache miss reasons. No cache cleanup or memory-budget
+increase. Native/Qt5 CI pending. Test plan: doc/build107-test-plan.md.
+
+Incomplete explicitly: exact body-to-footnote gap (requires renderer/hit-test
+coordination) and lazy construction of settings/appearance panels. These are not
+claimed fixed or sped up by this patch. New approved EN/RU pairs: comics mode
+description, progress Bottom/Внизу and Top/Вверху; no other UI text changes.

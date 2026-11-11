@@ -1432,3 +1432,7 @@
 "buttons.hardware_title" = "Физические кнопки";
 
 "reader.comics_reading_mode" = "Режим чтения комиксов";
+
+"reader.comics_reading_mode_description" = "Убирает поля и колонтитулы, игнорируя текущие настройки раскладки.";
+"header_footer.progress_bottom" = "Внизу";
+"header_footer.progress_top" = "Вверху";

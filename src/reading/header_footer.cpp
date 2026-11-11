@@ -103,7 +103,7 @@ bool Layout::operator==(const Layout &other) const
     return slotFields == other.slotFields && headerSize == other.headerSize
             && footerSize == other.footerSize && headerEnabled == other.headerEnabled
             && footerEnabled == other.footerEnabled && uppercase == other.uppercase
-            && progressBar == other.progressBar;
+            && progressBar == other.progressBar && progressTop == other.progressTop;
 }
 
 Layout presetLayout(Preset preset)
@@ -232,6 +232,7 @@ QJsonObject toJson(const Layout &layout)
         uppercase.append(value);
     object["uppercase"] = uppercase;
     object["progress_bar"] = layout.progressBar;
+    object["progress_top"] = layout.progressTop;
     return object;
 }
 
@@ -254,6 +255,7 @@ Layout fromJson(const QJsonObject &object, const Layout &fallback)
             if (uppercase.toArray().at(slot).isBool())
                 layout.uppercase[slot] = uppercase.toArray().at(slot).toBool();
     layout.progressBar = object.value("progress_bar").toBool(fallback.progressBar);
+    layout.progressTop = object.value("progress_top").toBool(false);
     return layout;
 }
 

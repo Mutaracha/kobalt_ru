@@ -15,6 +15,15 @@ using namespace kobalt::headerfooter;
 // Checks header and footer layouts: defaults, legacy flags and sizes, the battery field, time-remaining text and round trips.
 int main()
 {
+    auto top = presetLayout(Preset::Default);
+    top.progressBar = true;
+    top.progressTop = true;
+    require(fromJson(toJson(top), {}).progressTop, "Top progress lost in roundtrip");
+    require(!fromJson({{"progress_bar", true}}, top).progressTop,
+            "Legacy progress must remain at bottom");
+    auto bottom = top;
+    bottom.progressTop = false;
+    require(top != bottom, "Progress placement omitted from layout identity");
     // Default keeps the chapter prominent and the footer free of a bar.
     const auto standard = presetLayout(Preset::Default);
     require(isPhoneScreen({ 720, 1600 }, 300) && isPhoneScreen({ 1600, 720 }, 300),

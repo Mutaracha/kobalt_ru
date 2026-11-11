@@ -1,4 +1,5 @@
 #include <cmath>
+#include <atomic>
 #include "support/qt_compat.h"
 #include "support/strings.h"
 #include "reader_session.h"
@@ -262,9 +263,10 @@ std::unique_ptr<ReaderSession> ReaderSession::retained()
                 // has closed, so this write delays no page.
                 QElapsedTimer timer;
                 timer.start();
-                const bool saved = engine->saveDocumentCache();
+                QString reason;
+                const bool saved = engine->saveDocumentCache(&reason);
                 diagnostic("document-cache-save",
-                           { { "saved", saved }, { "elapsed_ms", double(timer.elapsed()) } });
+                           { { "saved", saved }, { "reason", reason }, { "elapsed_ms", double(timer.elapsed()) } });
             },
             Qt::QueuedConnection);
     return retained;
@@ -425,7 +427,9 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
                     publishCover();
                 QElapsedTimer timer;
                 timer.start();
-                diagnostic("open-start");
+                static std::atomic<quint64> nextOpeningId{0};
+                const auto openingId = ++nextOpeningId;
+                diagnostic("open-start", {{"opening_id", double(openingId)}});
                 const auto cancelled = [lease] { return !lease || lease->revoked(); };
                 OpeningResult outcome;
                 const auto interrupted = [lease] {
@@ -722,7 +726,7 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
                     diagnostic("opening-formatting-warning", formattingDetails);
                 }
                 diagnostic("opening-phases",
-                           { { "directory_ms", double(directoryMs) },
+                           { { "opening_id", double(openingId) }, { "directory_ms", double(directoryMs) },
                              { "hash_ms", double(hashMs) },
                              { "layout_check_ms", double(inspectionMs) },
                              { "model_load_ms", double(modelMs) },
@@ -732,7 +736,7 @@ void ReaderSession::open(OpenRequest request, std::function<void(OpeningResult)>
                              { "document_cache_hit",
                                !retainedHit && outcome.ready() && engine->openedFromCache() } });
                 diagnostic("open-end",
-                           { { "elapsed_ms", timer.nsecsElapsed() / 1e6 },
+                           { { "opening_id", double(openingId) }, { "elapsed_ms", timer.nsecsElapsed() / 1e6 },
                              { "failed", !outcome.ready() },
                              { "error_code",
                                outcome.failure()

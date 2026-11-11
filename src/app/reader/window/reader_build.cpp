@@ -1294,9 +1294,12 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
     }
 
     for (auto *button : progressBarButtons) {
-        const bool on = button->property("switch_on").toBool();
-        connect(button, &QPushButton::clicked, this, [editCustom, on] {
-            editCustom([on](kobalt::headerfooter::Layout &custom) { custom.progressBar = on; });
+        const int position = button->property("progress_position").toInt();
+        connect(button, &QPushButton::clicked, this, [editCustom, position] {
+            editCustom([position](kobalt::headerfooter::Layout &custom) {
+                custom.progressBar = position != 0;
+                if (position != 0) custom.progressTop = position == 2;
+            });
         });
     }
     fieldChooser = new kobalt::reader::FieldChooser(this);

@@ -452,3 +452,19 @@ Qt5/native/package CI для d5c64a5: SUCCESS, run 43064523543; пакет 13875
 ### Diagnostics 5bbff30 and approved wording
 
 Получен diagnostics 5bbff30: source d5c64a5 подтверждён в startup. Анализ: doc/build106-diagnostics-analysis.md. Подпись «Убирает поля и колонтитулы, игнорируя текущие настройки раскладки.» и её EN-пара согласованы, как и Выключено/Внизу/Вверху. Это фиксация результатов диагностики и решений, не новая сборка.
+
+
+## Progress/comics follow-up implementation
+
+Added approved description and content-measured compact row; Off/Bottom/Top
+selector with legacy bottom default; top progress reuses fill/ticks with compact
+reservation and header snapshot invalidation. Qt5 comics uses graphics repair
+waveform on submitted damage, preserving screen-refresh preferences; hardware
+quality/latency still needs verification. Added opening_id and cache-save wrapper
+reasons, not guessed parsed-cache miss reasons. No cache cleanup or memory-budget
+increase. Native/Qt5 CI pending. Test plan: doc/build107-test-plan.md.
+
+Incomplete explicitly: exact body-to-footnote gap (requires renderer/hit-test
+coordination) and lazy construction of settings/appearance panels. These are not
+claimed fixed or sped up by this patch. New approved EN/RU pairs: comics mode
+description, progress Bottom/Внизу and Top/Вверху; no other UI text changes.

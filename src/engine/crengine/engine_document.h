@@ -159,7 +159,7 @@ public:
     bool openedFromCache() const { return openedFromCache_; }
 
     // Writes the parsed book and its pages to the cache, for the next opening.
-    bool saveDocumentCache();
+    bool saveDocumentCache(QString *reason = nullptr);
     // Shared count, on the owning engine thread. Populates the Stats graph
     // from source anchors. Counts visible source text once, including
     // non-linear spine fragments; excludes SVG and ruby annotation text.

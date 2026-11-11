@@ -250,7 +250,7 @@ void SlotMap::setSlots(const Layout &next, const SlotContents &contents)
         const bool footer = headerfooter::footerSlot(slot);
         const auto &size = footer ? layout.footerSize : layout.headerSize;
         cells[slot]->show(layout.slotFields[slot], contents[slot],
-                          footer ? layout.footerEnabled : layout.headerEnabled, layout.progressBar,
+                          footer ? layout.footerEnabled : layout.headerEnabled, layout.progressBar && !layout.progressTop,
                           metrics::reading::textPixels(size, footer));
     }
     if (repaint)
@@ -306,7 +306,7 @@ void SlotMap::paintEvent(QPaintEvent *)
     const int headerBottom =
             border + headerFooterMetrics::mapEdgeInset + slotBoxHeight(layout.headerSize, false);
     const int footerTop = height() - border - headerFooterMetrics::mapEdgeInset
-            - (layout.progressBar ? progressSpace() : 0) - slotBoxHeight(layout.footerSize, true);
+            - (layout.progressBar && !layout.progressTop ? progressSpace() : 0) - slotBoxHeight(layout.footerSize, true);
     const int first = (headerBottom + footerTop - headerFooterMetrics::mapLineGap
                        - headerFooterMetrics::mapLineHeight)
             / 2;
@@ -317,7 +317,8 @@ void SlotMap::paintEvent(QPaintEvent *)
     }
     if (layout.progressBar) {
         // Where the page draws it: above the bottom edge, across the width.
-        const int y = height() - border - progressSpace();
+        const int y = layout.progressTop ? headerBottom + int(metrics::control::border)
+                                          : height() - border - progressSpace();
         painter.fillRect(border, y, inner, metrics::reading::progressFillHeight, lines);
         painter.fillRect(border, y, inner / 30, metrics::reading::progressFillHeight, ink);
     }
@@ -430,7 +431,8 @@ void PresetCard::paintEvent(QPaintEvent *)
                          metrics::control::border, lines);
     if (miniature.progressBar)
         painter.fillRect(page.x() + edge,
-                         page.bottom() + 1 - edge - headerFooterMetrics::dashHeight / 2,
+                         miniature.progressTop ? top + headerFooterMetrics::dashHeight
+                                 : page.bottom() + 1 - edge - headerFooterMetrics::dashHeight / 2,
                          pageWidth / 12, headerFooterMetrics::dashHeight / 2, ink);
     const QFont label = ui::interfaceFont(metrics::text::secondary);
     painter.setFont(label);

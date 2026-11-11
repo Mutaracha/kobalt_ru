@@ -72,6 +72,7 @@ struct Layout
     // Each slot chooses its own case.
     std::array<bool, slotCount> uppercase{ { true, true, true, true, true, true } };
     bool progressBar = true;
+    bool progressTop = false; // Missing legacy value keeps the bottom strip.
     // A strip is drawn when enabled and one of its slots shows something.
     bool header() const;
     bool footer() const;

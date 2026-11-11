@@ -1378,3 +1378,7 @@
 "buttons.hardware_title" = "Hardware buttons";
 
 "reader.comics_reading_mode" = "Comics reading mode";
+
+"reader.comics_reading_mode_description" = "Hides margins, headers and footers, ignoring the current layout settings.";
+"header_footer.progress_bottom" = "Bottom";
+"header_footer.progress_top" = "Top";

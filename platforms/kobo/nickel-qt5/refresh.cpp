@@ -328,6 +328,14 @@ static void flushReaderUsing(QBackingStore *store, const QRegion &region, QWindo
             && std::all_of(policies.cbegin(), policies.cend(),
                            [&](const auto &entry) { return progressUpdate.contains(entry.first); });
     auto submitControls = [&](const QRegion &damage, const FlushFlags &chosen) {
+        if (pageTurn && pageWidget && pageWidget->property("kobalt_graphics_refresh").toBool()) {
+            const auto bounds = damage.boundingRect();
+            kobalt::diagnostic("comic-refresh-submit",
+                    {{"x", bounds.x()}, {"y", bounds.y()}, {"width", bounds.width()},
+                     {"height", bounds.height()}, {"rectangles", damage.rectCount()},
+                     {"policies", chosen.size()},
+                     {"policy_hex", chosen.isEmpty() ? QString() : QString::number(chosen[0].second, 16)}});
+        }
         if (!dark && !pageTurn && !direction && compatible
             && refreshBackend(readerWindow) == RefreshBackend::Mtk) {
             submitNavigationRefresh(chosen, damage, navigationRefreshRegion(readerWindow),
@@ -525,7 +533,10 @@ void pageRefresh(QWidget *widget, bool clean, bool)
     const bool dark = widget->window()->property("reader_dark").toBool();
     // Keep the full native policy even when the widget exposes only low flags.
     pageWidget = widget;
-    pagePolicy = clean ? repairPolicy(dark) : ordinaryPolicy(dark);
+    const bool graphics = widget->property("kobalt_graphics_refresh").toBool();
+    // Graphics waveform over the submitted damage, not an unconditional
+    // whole-screen reader_full_flash. Ordinary reading preferences are untouched.
+    pagePolicy = clean || graphics ? repairPolicy(dark) : ordinaryPolicy(dark);
     for (int attribute = 129; attribute <= 141; ++attribute)
         widget->setAttribute(
                 static_cast<Qt::WidgetAttribute>(attribute),

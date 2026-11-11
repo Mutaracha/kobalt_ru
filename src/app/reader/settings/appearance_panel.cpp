@@ -343,9 +343,14 @@ AppearancePanel::AppearancePanel(const AppearanceLayout &layout,
                                   maximumLineSpacing, 1, {}, {}, "%");
     spacingSlider->setMarkers({ 100, 110, 120, 130, 140, 150, 175, 200, 250, 300 },
                               ui::SettingSlider::MarkerMode::Stops);
-    comicsOption = new ui::DescribedOption(strings::get("reader.comics_reading_mode"), {}, pageLayout);
+    comicsOption = new ui::DescribedOption(strings::get("reader.comics_reading_mode"),
+            strings::get("reader.comics_reading_mode_description"), pageLayout);
     comicsOption->setObjectName("rrComicsReadingMode");
     styleSettingsOption(comicsOption);
+    auto compact = comicsOption->presentation();
+    compact.minimumRowHeight = 0; // Content-measured shared row, not the list-action minimum.
+    compact.indicatorSize = { metrics::control::iconSize, metrics::control::iconSize };
+    comicsOption->setPresentation(compact);
     pageRows->addWidget(comicsOption);
     marginSlider = kobalt::ui::sliderRow(pageLayout, pageRows, "rrMargins", "rrMarginsValue",
                                          strings::get("reader.margins"), "rrNarrower", "rrWider", 0,
@@ -504,10 +509,13 @@ AppearancePanel::AppearancePanel(const AppearanceLayout &layout,
                                           QVector<QPushButton *> &buttons) {
         ui::SegmentedRow row(custom, customRows, name, label,
                              strings::get("header_footer.progress_bar_detail"));
-        for (const bool enabled : { false, true }) {
-            auto *button = row.add(QString(name) + (enabled ? "_on" : "_off"),
-                                   strings::get(enabled ? "common.on" : "common.off"));
-            button->setProperty("switch_on", enabled);
+        for (int position = 0; position < 3; ++position) {
+            // Keep _on for the legacy bottom button and its routed tests.
+            const auto suffix = position == 0 ? "_off" : position == 1 ? "_on" : "_top";
+            auto *button = row.add(QString(name) + suffix,
+                    strings::get(position == 0 ? "common.off" : position == 1
+                            ? "header_footer.progress_bottom" : "header_footer.progress_top"));
+            button->setProperty("progress_position", position);
             buttons.append(button);
         }
     };

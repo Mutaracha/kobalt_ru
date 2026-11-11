@@ -223,3 +223,12 @@ header/footer settings are never replaced by its effective hidden chrome.
 Edits while active save the ordinary base settings for use after disabling.
 It participates in retained-layout identity and the parsed-cache policy
 (`comics-v1:on` only while enabled; ordinary caches keep their policy), without changing reading-data schemas or clearing data.
+
+
+Header/footer Custom optional Boolean `progress_top` chooses top when progress_bar
+is enabled; missing/invalid values use bottom. Existing progress_bar retains its
+meaning and legacy records keep their position. Off preserves the selected side
+in the Custom object. The change keeps schema1, book formats and cached DOM
+versions; standard layout geometry handles reflow. Older builds can ignore or
+lose this optional placement on editing Custom. Comics hides either location
+without overwriting it. No saved data or caches are cleared.
