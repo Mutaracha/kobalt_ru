@@ -180,7 +180,7 @@ private:
                                    qreal, int, int, qint64, int, QString, QVector<qreal>>;
     Slots stripSlots(bool footer) const;
     std::array<headerfooter::Field, 3> stripFields(bool footer) const;
-    void paintProgress(QPainter &painter, int baseline) const;
+    void paintProgress(QPainter &painter, int baseline, bool down = false) const;
     void paintSlots(QPainter &painter, const QRect &bounds, bool footer,
                     bool sleeping = false) const;
     bool panelBelowHeader = false;

@@ -3296,6 +3296,35 @@ private slots:
         ::chapterGroups(fixture);
     }
 
+    void progressStripMirrors()
+    {
+        ReadingPage page(nullptr, [] { });
+        page.resize(800, 600);
+        page.setPalette(ui::readerPalette(page.palette(), false));
+        page.chrome = headerfooter::presetLayout(headerfooter::Preset::Phone);
+        page.chrome.headerEnabled = false;
+        page.chrome.footerEnabled = false;
+        page.chrome.progressBar = true;
+        page.chrome.progressTop = false;
+        page.progressFraction = .35;
+        page.chapterFractions = { .2, .7 };
+        const int strip = ui::metrics::reading::progressHeight;
+        const auto bottom = page.snapshot(true);
+        QCOMPARE(page.topHeight(), 0);
+        QCOMPARE(page.bottomHeight(), strip);
+        page.chrome.progressTop = true;
+        const auto top = page.snapshot(true);
+        QCOMPARE(page.topHeight(), strip);
+        QCOMPARE(page.bottomHeight(), 0);
+        // Exact mirror includes the already-read and unread chapter marks.
+        for (int y = 0; y < strip; ++y)
+            for (int x = 0; x < page.width(); ++x)
+                QCOMPARE(top.pixel(x, y), bottom.pixel(x, page.height() - 1 - y));
+        page.chrome.headerEnabled = true;
+        QVERIFY(page.headerTextRect().top() >= strip);
+        QCOMPARE(page.topHeight(), strip + ui::metrics::reading::stripHeight(page.chrome.headerSize));
+    }
+
     void viewportTransition()
     {
         ReadingPage page(nullptr, [] { });

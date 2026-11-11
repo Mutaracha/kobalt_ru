@@ -2891,3 +2891,20 @@ Qt5 artifact [13888743153](https://github.com/Mutaracha/kobalt_ru/actions/runs/4
 36,429,810 bytes; native results 13890060155. Device refresh quality is not
 proved by CI. No opening-time speedup, footnote gap fix or lazy UI construction
 is claimed. These last two remain open; test plan explicitly separates them.
+
+
+## Build109 device follow-up (partial implementation)
+
+Top progress must be ABOVE the header, the vertical mirror of bottom progress;
+top ticks point down and bottom ticks up. Shared square checkmarks scale their
+path and pen to the actual indicator canvas (40px compact row included).
+A pixel-mirror reader regression covers the bar, fill and chapter marks.
+Device opening tests exit to Nickel between attempts; combined A→B logs are valid.
+User confirms comics refresh now resembles Nickel: preserve its waveform policy.
+
+Still OPEN: landscape comics must pair portrait source pages but keep wide source
+spreads whole without rotation/crop/stretch. The former one-column-in-both-
+orientations rule is superseded; simply forcing two columns would shrink wide
+spreads into half a screen and does not satisfy the requirement. No comics layout
+change in this partial patch. Footnote gap and lazy panels also remain unfinished.
+This patch is not yet native/Qt5-validated and is not a verified device package.

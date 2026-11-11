@@ -266,12 +266,13 @@ void DescribedOption::paintEvent(QPaintEvent *)
         painter.setBrush(isChecked() ? ink : paper);
         painter.drawRect(track);
         if (isChecked()) {
-            painter.setPen(QPen(paper, px(4), Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+            const qreal sx = box.width() / 48.0, sy = box.height() / 48.0;
+            painter.setPen(QPen(paper, 4 * qMin(sx, sy), Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
             QPolygonF check;
-            // The tick is drawn for a 48 pixel box and scales with it.
-            check << QPointF(box.left() + px(11), box.top() + px(24))
-                  << QPointF(box.left() + px(21), box.top() + px(34))
-                  << QPointF(box.left() + px(37), box.top() + px(14));
+            // Normalize to the actual indicator, not the old fixed 48px canvas.
+            check << QPointF(box.left() + 11 * sx, box.top() + 24 * sy)
+                  << QPointF(box.left() + 21 * sx, box.top() + 34 * sy)
+                  << QPointF(box.left() + 37 * sx, box.top() + 14 * sy);
             painter.drawPolyline(check);
         }
     } else {

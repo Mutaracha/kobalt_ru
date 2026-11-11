@@ -178,7 +178,7 @@ protected:
         const bool footer = headerfooter::footerSlot(slot);
         const int line = painter.fontMetrics().height();
         const int edge =
-                headerFooterMetrics::mapEdgeInset + (footer && progressBar ? progressSpace() : 0);
+                headerFooterMetrics::mapEdgeInset + (progressBar ? progressSpace() : 0);
         const int boxHeight = line + 2 * headerFooterMetrics::slotPadding;
         // Boxes keep half a gap from each other and a wider margin from the page's sides.
         const int column = slot % 3;
@@ -250,11 +250,13 @@ void SlotMap::setSlots(const Layout &next, const SlotContents &contents)
         const bool footer = headerfooter::footerSlot(slot);
         const auto &size = footer ? layout.footerSize : layout.headerSize;
         cells[slot]->show(layout.slotFields[slot], contents[slot],
-                          footer ? layout.footerEnabled : layout.headerEnabled, layout.progressBar && !layout.progressTop,
+                          footer ? layout.footerEnabled : layout.headerEnabled, layout.progressBar && (footer != layout.progressTop),
                           metrics::reading::textPixels(size, footer));
     }
-    if (repaint)
+    if (repaint) {
+        resizeEvent(nullptr);
         update();
+    }
 }
 
 QSize SlotMap::sizeHint() const
@@ -282,7 +284,7 @@ void SlotMap::resizeEvent(QResizeEvent *)
         const int left = border + inner * column / 3, right = border + inner * (column + 1) / 3;
         const bool footer = headerfooter::footerSlot(slot);
         const int rowHeight = headerFooterMetrics::mapEdgeInset
-                + slotBoxHeight(headerfooter::maximumSize, footer) + (footer ? progressSpace() : 0);
+                + slotBoxHeight(headerfooter::maximumSize, footer) + (layout.progressBar && (footer != layout.progressTop) ? progressSpace() : 0);
         const int top = footer ? height() - border - rowHeight : border;
         cells[slot]->setGeometry(left, top, right - left, rowHeight);
     }
@@ -304,7 +306,8 @@ void SlotMap::paintEvent(QPaintEvent *)
     const int lineLeft = border + headerFooterMetrics::mapLineInset,
               lineWidth = inner - 2 * headerFooterMetrics::mapLineInset;
     const int headerBottom =
-            border + headerFooterMetrics::mapEdgeInset + slotBoxHeight(layout.headerSize, false);
+            border + headerFooterMetrics::mapEdgeInset + slotBoxHeight(layout.headerSize, false)
+            + (layout.progressBar && layout.progressTop ? progressSpace() : 0);
     const int footerTop = height() - border - headerFooterMetrics::mapEdgeInset
             - (layout.progressBar && !layout.progressTop ? progressSpace() : 0) - slotBoxHeight(layout.footerSize, true);
     const int first = (headerBottom + footerTop - headerFooterMetrics::mapLineGap
@@ -317,7 +320,7 @@ void SlotMap::paintEvent(QPaintEvent *)
     }
     if (layout.progressBar) {
         // Where the page draws it: above the bottom edge, across the width.
-        const int y = layout.progressTop ? headerBottom + int(metrics::control::border)
+        const int y = layout.progressTop ? border + headerFooterMetrics::mapEdgeInset
                                           : height() - border - progressSpace();
         painter.fillRect(border, y, inner, metrics::reading::progressFillHeight, lines);
         painter.fillRect(border, y, inner / 30, metrics::reading::progressFillHeight, ink);
@@ -431,7 +434,7 @@ void PresetCard::paintEvent(QPaintEvent *)
                          metrics::control::border, lines);
     if (miniature.progressBar)
         painter.fillRect(page.x() + edge,
-                         miniature.progressTop ? top + headerFooterMetrics::dashHeight
+                         miniature.progressTop ? page.y() + edge
                                  : page.bottom() + 1 - edge - headerFooterMetrics::dashHeight / 2,
                          pageWidth / 12, headerFooterMetrics::dashHeight / 2, ink);
     const QFont label = ui::interfaceFont(metrics::text::secondary);

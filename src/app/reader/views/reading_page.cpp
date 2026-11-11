@@ -236,7 +236,7 @@ QRect ReadingPage::bookmarkCorner() const
 int ReadingPage::topHeight() const
 {
     return (showHeader() ? metrics::reading::stripHeight(chrome.headerSize) : 0)
-            + (showProgress() && chrome.progressTop ? 3 * int(metrics::reading::progressFillHeight) : 0);
+            + (showProgress() && chrome.progressTop ? int(metrics::reading::progressHeight) : 0);
 }
 
 int ReadingPage::bottomHeight() const
@@ -251,7 +251,8 @@ QRect ReadingPage::headerTextRect() const
 {
     if (!showHeader())
         return {};
-    return { 0, 0, width(), metrics::reading::textBandHeight(chrome.headerSize) };
+    return { 0, showProgress() && chrome.progressTop ? int(metrics::reading::progressHeight) : 0,
+             width(), metrics::reading::textBandHeight(chrome.headerSize) };
 }
 
 QRect ReadingPage::footerTextRect() const
@@ -1415,7 +1416,8 @@ void ReadingPage::paintHeader(QPainter &painter, bool sleeping) const
     if (showHeader())
         paintSlots(painter, headerTextRect(), false, sleeping);
     if (showProgress() && chrome.progressTop)
-        paintProgress(painter, topHeight() - metrics::reading::progressFillHeight);
+        paintProgress(painter, int(metrics::reading::progressBottom)
+                        - int(metrics::control::border), true);
     if (panelBelowHeader)
         painter.fillRect(0, topHeight() - metrics::control::border, width(),
                          metrics::control::border, ui::dividerColor(this));
@@ -1439,8 +1441,15 @@ void ReadingPage::paintFooter(QPainter &painter, bool sleeping) const
         paintProgress(painter, bottomHeight() - metrics::reading::progressBottom);
 }
 
-void ReadingPage::paintProgress(QPainter &painter, int baseline) const
+void ReadingPage::paintProgress(QPainter &painter, int baseline, bool down) const
 {
+    painter.save();
+    // Mirror the entire bottom-style bar, including fill and chapter ticks.
+    // The baseline retains its thickness; ticks point into the page on both sides.
+    if (down) {
+        painter.translate(0, 2 * baseline + int(metrics::control::border));
+        painter.scale(1, -1);
+    }
     {
         const auto ink = palette().color(QPalette::WindowText);
         painter.fillRect(QRect(0, baseline, width(),
@@ -1465,6 +1474,7 @@ void ReadingPage::paintProgress(QPainter &painter, int baseline) const
                                    2 * metrics::reading::progressFillHeight + metrics::control::border), ink);
         }
     }
+    painter.restore();
 }
 
 void ReadingPage::updatePointer()
