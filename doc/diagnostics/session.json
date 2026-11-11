@@ -1,0 +1,37 @@
+{
+    "book": "file:///mnt/onboard/Комиксы/BW/Sin City/Sin City vol 4.kepub.epub",
+    "native_readers": 0,
+    "native_views": 0,
+    "opening_timings": {
+        "load_and_layout_ms": 5264,
+        "prepare_ms": 386,
+        "resource_cache": {
+            "allocated_bytes": 33554432,
+            "budget_bytes": 33554432,
+            "evictions": 242,
+            "failed_images": 0,
+            "image_error": "",
+            "load_ms": 2549.993997,
+            "loaded_resources": 417,
+            "loads": 419,
+            "model_cache_hit": false,
+            "model_paginate_ms": 2960,
+            "model_parse_ms": 433,
+            "model_prepare_ms": 148,
+            "peak_bytes": 33554432,
+            "pending_images": 0,
+            "ready_images": 0,
+            "request_failures": 0,
+            "request_ms": 2616.5803270000001,
+            "requests": 436,
+            "resource_count": 435,
+            "resource_sink_ms": 1845.0553379999999,
+            "resource_xml_ms": 9.9093339999999994,
+            "transferred_bytes": 32072804
+        },
+        "total_ms": 8948
+    },
+    "reason": "",
+    "retained_book": false,
+    "status": "closed"
+}
