@@ -2807,3 +2807,7 @@ count call itself (the accessor also guards all other callers). CI pending.
 Follow-up: chapter ticks extend above the filled bar (visible for read chapters)
 without increasing strip height. Added a byte-preserving reduced manual EPUB
 and an explicit parsed-cache reopen assertion in engine.comics. CI pending.
+
+Qt5 CI caught unsupported QSignalBlocker on the pinned Kobo Qt. Removed it:
+the option connects clicked, so programmatic setChecked never starts an edit.
+Reverification pending; do not distribute the failed intermediate build.

@@ -9,7 +9,6 @@
 #include "support/strings.h"
 #include "support/diagnostics.h"
 #include <QElapsedTimer>
-#include <QSignalBlocker>
 #include <QtMath>
 #include <initializer_list>
 #include <utility>
@@ -487,7 +486,6 @@ void Reader::syncAppearanceControls(bool pickingFont)
     auto *settings =
             appearanceEdit.edited() && appearanceEdit.ready() ? appearanceEdit.preview() : session;
     if (auto *option = findChild<QCheckBox *>("rrComicsReadingMode")) {
-        const QSignalBlocker blocker(option);
         option->setChecked(settings->requestedState().value(appearance::comicsModeKey).toBool(false));
     }
     previewLabel->setText(appearanceEdit.error());
