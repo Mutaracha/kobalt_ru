@@ -60,3 +60,8 @@ original Nickel/Kobalt evidence in screenshots/kobo-qt5/comics-report/.
 For an ordinary multi-chapter book, verify lower progress ticks and their
 positions after changing font size/orientation. No separate tick setting.
 Automated native checks are not evidence of a hardware screenshot match.
+
+
+## Build106 device feedback
+
+Build106 device feedback and opening samples: screenshots/kobo-qt5/build106-review/. Preserve this set separately from earlier evidence; see doc/build106-device-review.md for pending ghosting/progress/notes checks.

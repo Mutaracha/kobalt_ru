@@ -353,3 +353,8 @@ binary source. Measure existing opening phases before claiming optimization.
 
 Comics implementation: see doc/comics-progress-proposal.md and engine.comics regression.
 Never claim device verification from a synthetic regression or report unmeasured speedups.
+
+
+## Build106 device feedback
+
+Build106 follow-up: use doc/build106-device-review.md. Do not confuse KOReader CRe image-coverage refresh with its KOpt/Kaleido path. Tie comics quality refresh to committed frames, not repaint loops; preserve base refresh preferences. Footnote root-font margin is not body line spacing or page remainder. New caption/top-bottom wording awaits approval.

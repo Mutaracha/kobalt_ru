@@ -2850,3 +2850,8 @@ FB2/EPUB/cache и включённые UI/lifecycle regressions. Исходны�
 sleep/reopen, возврат последних полей/chrome и ticks после reflow. Общий speedup
 открытия не измерен; задача профилирования остаётся открытой. Обычные кэши,
 настройки, progress, bookmarks и annotations не очищаются.
+
+
+## Build106 device feedback
+
+Build 106 hardware review: per-book mode, aspect and zero margins confirmed. Preserve raw timing/evidence; no general speedup demonstrated. Next: KOReader-informed committed-page full refresh policy for comics, compact row + approved description, top/bottom progress placement, measured body-to-note gap. See doc/build106-device-review.md; new wording pending approval, no runtime change in this evidence commit.
