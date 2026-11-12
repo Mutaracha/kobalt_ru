@@ -150,3 +150,14 @@ excludes suspend time). After ready, standby must resume normally. Repeat after
 cancel, failed opening/fallback prompt, and another successful open. Explicit
 sleep/power/USB behavior remains governed by its existing lifecycle paths.
 No cache cleanup or other opening optimization is part of this fix.
+
+
+### Verified opening standby fix
+
+Runtime **61dbfaa**: [run 43213319349](https://github.com/Mutaracha/kobalt_ru/actions/runs/43213319349)
+SUCCESS. Native focused regressions, including platform.shutdown's opening
+standby gate and terminal/fallback/save-veto cases, PASS. Kobo Qt5 build,
+adapter tests, offline and package-content checks PASS; Qt6 skipped.
+[Qt5 device artifact 13943347072](https://github.com/Mutaracha/kobalt_ru/actions/runs/43213319349/artifacts/13943347072)
+(36,437,415 bytes), native log artifact 13943227295. This validates the software
+gate, not the physical device sequence; repeat untouched opening through Nickel.

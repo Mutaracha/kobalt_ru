@@ -452,5 +452,8 @@ hold flag or kernel wake lock. Existing success/cancel/error/disposal paths
 release the gate through busy; fallback prompts do not hold the CPU awake.
 Explicit sleep, USB and power-off transitions retain their existing paths.
 Added native lifecycle regression for idle-engine opening, terminal outcomes,
-fallback and independent save veto. CI pending. General opening optimization
-remains stopped; this is a correctness fix, no startup speedup promise.
+fallback and independent save veto. Runtime 61dbfaa verified by run
+43213319349: native regressions including platform.shutdown and Qt5 package /
+offline / package-content checks PASS; Qt6 skipped. General opening optimization
+remains stopped; this is a correctness fix, no startup speedup promise. Device
+confirmation of uninterrupted opening remains outstanding.
