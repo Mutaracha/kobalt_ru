@@ -796,7 +796,7 @@ bool Reader::event(QEvent *event)
                 ? QRect(partialPanel->mapTo(this, QPoint()), partialPanel->size())
                 : QRect();
         // A margin change redraws the preview above the panel without a flash.
-        if (partialPanel == menu && appearancePreview->isVisible())
+        if (partialPanel == menu && appearancePreview && appearancePreview->isVisible())
             partialControls |= appearancePreview->geometry();
         setProperty("reader_partial_controls", partialControls);
     }
@@ -2965,7 +2965,8 @@ void Reader::save(bool snapshot, bool background, bool persist)
     state["contents_page"] = choices->chapterPage();
     state["font_samples"] = choices->fontSamples();
     state["native_font_families"] = QJsonArray::fromStringList(pickerNativeFamilies);
-    state["font_button_family"] = fontButton->resolvedFace();
+    state["appearance_controls_built"] = appearanceBuilt;
+    state["font_button_family"] = fontButton ? fontButton->resolvedFace() : QString();
     state["graph_page"] = chapterGraph->graphPage();
     state["graph_pages"] = chapterGraph->graphPages();
     state["active_panel"] =

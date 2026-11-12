@@ -243,6 +243,9 @@ private:
     kobalt::reader::AppearanceLayout buildMenu();
     void buildOverlays();
     void buildAppearance(const kobalt::reader::AppearanceLayout &layout);
+    void ensureAppearance();
+    kobalt::reader::AppearanceLayout appearanceLayout;
+    bool appearanceBuilt = false;
     void buildSettings();
     void buildKosync();
     void requestManualKosync();
@@ -383,7 +386,7 @@ private:
               *hideTabLabelsOption = nullptr;
     QCheckBox *wifiPowerSaverOption = nullptr;
     QCheckBox *disableStandbyOption = nullptr;
-    QPushButton *autoRotateOption;
+    QPushButton *autoRotateOption = nullptr;
     bool hideNativeStatus() const;
     QJsonObject preferences;
     QLabel *settingsError;
@@ -422,7 +425,7 @@ private:
     QStackedWidget *settingsPages;
     QVector<QPushButton *> rotationButtons;
     bool restoringDefaults = false, themeReady = false, darkTheme = false;
-    kobalt::ui::FontButton *fontButton;
+    kobalt::ui::FontButton *fontButton = nullptr;
     QVector<QPushButton *> alignmentButtons, hyphenButtons;
     // Header and footer. The preset is saved per book; the Custom layout is
     // shared by every book that selects it.

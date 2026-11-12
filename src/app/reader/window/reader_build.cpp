@@ -351,11 +351,11 @@ Reader::Reader(std::unique_ptr<kobalt::ReadingBook> openedBook,
     built("toolbar");
     buildBottomControls();
     built("bottom_controls");
-    const auto appearanceLayout = buildMenu();
+    appearanceLayout = buildMenu();
     built("menu");
     buildOverlays();
     built("overlays");
-    buildAppearance(appearanceLayout);
+    // Keep only the cheap sheet shell until Text/Layout is actually requested.
     built("appearance");
     buildSettings();
     built("settings");
@@ -1037,6 +1037,32 @@ void Reader::buildOverlays()
         }
         refresh();
     };
+}
+
+void Reader::ensureAppearance()
+{
+    if (appearanceBuilt) return;
+    QElapsedTimer elapsed;
+    elapsed.start();
+    const auto previousWidgets = findChildren<QWidget *>();
+    QSet<QWidget *> previous;
+    for (auto *widget : previousWidgets) previous.insert(widget);
+    buildAppearance(appearanceLayout);
+    // Late children need the same palette/refresh policy as children built at
+    // startup, including when the user changed theme or interface fonts first.
+    const auto colors = ui::readerPalette(palette(), darkTheme);
+    for (auto *widget : findChildren<QWidget *>()) {
+        if (previous.contains(widget)) continue;
+        ui::applyReaderPalette(widget, colors);
+        textRefresh(widget);
+        if (auto *button = qobject_cast<QPushButton *>(widget))
+            ui::refreshButtonIcon(button);
+    }
+    appearanceBuilt = true;
+    syncChromeControls();
+    syncAppearanceControls(false);
+    kobalt::diagnostic("deferred-panel-build",
+                       {{"panel", "appearance"}, {"elapsed_ms", elapsed.nsecsElapsed() / 1e6}}, false);
 }
 
 void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)

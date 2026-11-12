@@ -2929,3 +2929,24 @@ and FB2/HTML prose geometry regressions. CI verification pending.
 Also corrected the missing area label/comment for the previous progress-mirror
 regression, which prevented native CI configuration (Qt5 packaging itself passed).
 Footnote gap and lazy-panel work remain unfinished; no opening speedup claim.
+
+
+## Verified comics follow-up and deferred Appearance slice
+
+c2786cd: native EPUB/FB2 regressions and Kobo Qt5 package both PASS in run
+43106796126. Artifact 13895871347 (Kobalt-qt5-device, 36,433,212 bytes).
+Device confirmation of the new landscape geometry is still separate from CI.
+No ghosting reported; keep the successful refresh policy unchanged.
+
+Next slice defers Appearance controls until first Text/Layout opening; cheap
+sheet shells and Settings remain eager. Chrome loading and reader refresh must
+not instantiate controls. First use builds once, applies current palette and
+font context, then synchronizes current session/preferences. Diagnostics:
+deferred-panel-build(panel=appearance, elapsed_ms); debug state
+appearance_controls_built. Startup build_appearance_ms now measures only the
+eager slice, not total cost of eventually opening Appearance. First opening
+pays deferred construction; no speedup claimed before hardware measurement.
+Regression covers Settings before Appearance, absent startup controls, first
+construction and reuse in light/dark. Native/Qt5 verification pending for this
+slice. Settings lazy construction and the footnote gap remain unfinished;
+Settings currently owns KOSync initialization and cannot simply be skipped.

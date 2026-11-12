@@ -114,3 +114,16 @@ Landscape: two portrait source pages side by side; a wide source spread alone
 at full viewport width; no rotation/stretch/crop. Check pair → wide → odd page,
 backward turns, portrait/landscape round trips and saved position after reopen.
 This supersedes the former one-source-page-in-both-orientations requirement.
+
+
+## Deferred Appearance validation
+
+Baseline c2786cd passed native/Qt5 CI (run 43106796126); landscape device
+acceptance remains outstanding. New slice only defers Appearance, not Settings.
+Compare fresh launches through Nickel without cache cleanup. Record reader-shown
+and startup build_appearance_ms; it must not be interpreted as the total cost of
+Appearance after deferral. Open Settings first (change theme/interface font if
+needed), then Text/Layout: verify current styles, values and previews. Reopen
+both tabs and Header/Footer: controls must not duplicate or reset values.
+Record deferred-panel-build elapsed_ms and first panel-open latency separately.
+No startup speedup is claimed before this comparison. Shared A→B log is accepted.

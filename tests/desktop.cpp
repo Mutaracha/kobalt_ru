@@ -3296,6 +3296,41 @@ private slots:
         ::chapterGroups(fixture);
     }
 
+    // Checks that appearance rows are absent at startup and created exactly once on first use.
+    void lazyAppearance_data() { bookmarks_data(); }
+
+    void lazyAppearance()
+    {
+        QFETCH(bool, dark);
+        Fixture fixture(dark);
+        QVERIFY(fixture.prepared);
+        QSignalSpy opened(&fixture.window, &desktop::Window::bookOpened);
+        fixture.window.openBook(book);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        QTRY_VERIFY(!fixture.state().value("busy").toBool());
+        QVERIFY(!fixture.state().value("appearance_controls_built").toBool());
+        QVERIFY(!fixture.widget("rrComicsReadingMode"));
+        QVERIFY(!fixture.widget("rrHeaderFooterSlot0"));
+        QVERIFY(fixture.press("rrPage"));
+        QVERIFY(fixture.press("rrSettings"));
+        QVERIFY(!fixture.state().value("appearance_controls_built").toBool());
+        QVERIFY(fixture.press("rrSettingsClose"));
+        QTRY_VERIFY(!fixture.state().value("busy").toBool());
+        if (!fixture.visible("rrNavLayout")) QVERIFY(fixture.press("rrPage"));
+        QVERIFY(fixture.press("rrNavLayout"));
+        QTRY_VERIFY(fixture.state().value("appearance_controls_built").toBool());
+        auto *option = fixture.widget("rrComicsReadingMode");
+        QVERIFY(option);
+        QVERIFY(fixture.widget("rrHeaderFooterSlot0"));
+        QVERIFY(fixture.press("rrNavLayout"));
+        QTRY_VERIFY(!fixture.state().value("appearance_panel_open").toBool());
+        QTRY_VERIFY(!fixture.state().value("busy").toBool());
+        if (!fixture.visible("rrNavLayout")) QVERIFY(fixture.press("rrPage"));
+        QVERIFY(fixture.press("rrNavLayout"));
+        QCOMPARE(fixture.widget("rrComicsReadingMode"), option);
+        QCOMPARE(fixture.window.readerWindow()->findChildren<QWidget *>("rrComicsReadingMode").size(), 1);
+    }
+
     // Checks that top progress and chapter ticks mirror bottom progress above the header.
     void progressStripMirrors()
     {

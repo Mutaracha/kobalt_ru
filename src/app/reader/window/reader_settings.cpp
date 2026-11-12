@@ -138,6 +138,7 @@ bool Reader::saveChrome(kobalt::headerfooter::Preset preset,
 
 void Reader::syncChromeControls()
 {
+    if (!slotMap) return;
     using namespace kobalt::headerfooter;
     const auto values = chromeValues();
     const auto contents = [&values](const Layout &layout) {
@@ -1065,6 +1066,7 @@ void Reader::openPanel(int index)
         return;
     if (session->busy())
         return;
+    ensureAppearance();
     session->cancelPendingTurn();
     appearanceEdit.cancelDeferredApply();
     // Only the selected font is drawn here. Load the other faces when the

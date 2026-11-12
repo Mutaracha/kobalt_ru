@@ -301,6 +301,7 @@ bool Reader::appearancePreviewFits() const
 
 void Reader::syncAppearancePreview()
 {
+    if (!appearanceBuilt) return;
     using Axis = kobalt::reader::AppearancePreview::Axis;
     const bool layoutOpen = menu->isVisible()
             && panels->currentIndex() == int(kobalt::reader::AppearancePage::Layout);
@@ -483,6 +484,7 @@ void Reader::paintTurn()
 
 void Reader::syncAppearanceControls(bool pickingFont)
 {
+    if (!appearanceBuilt) return;
     auto *settings =
             appearanceEdit.edited() && appearanceEdit.ready() ? appearanceEdit.preview() : session;
     if (auto *option = findChild<QCheckBox *>("rrComicsReadingMode")) {
