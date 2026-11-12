@@ -435,6 +435,7 @@ appearance_controls_built. Startup build_appearance_ms now measures only the
 eager slice, not total cost of eventually opening Appearance. First opening
 pays deferred construction; no speedup claimed before hardware measurement.
 Regression covers Settings before Appearance, absent startup controls, first
-construction and reuse in light/dark. Native/Qt5 verification pending for this
-slice. Settings lazy construction and the footnote gap remain unfinished;
+construction and reuse in light/dark. e21c3de native and Qt5 verification PASS
+in run 43202483204 (Qt6 intentionally skipped). Settings lazy construction
+and the footnote gap remain unfinished;
 Settings currently owns KOSync initialization and cannot simply be skipped.

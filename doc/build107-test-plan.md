@@ -127,3 +127,15 @@ needed), then Text/Layout: verify current styles, values and previews. Reopen
 both tabs and Header/Footer: controls must not duplicate or reset values.
 Record deferred-panel-build elapsed_ms and first panel-open latency separately.
 No startup speedup is claimed before this comparison. Shared A→B log is accepted.
+
+
+### Verified deferred Appearance package
+
+Runtime **e21c3de**: [run 43202483204](https://github.com/Mutaracha/kobalt_ru/actions/runs/43202483204)
+SUCCESS. Focused native regressions (including lazyAppearance light/dark,
+header/footer, Settings, appearance lifecycle and EPUB/FB2/comics/cache) PASS;
+Kobo Qt5 package, offline and package-content checks PASS. Qt6 skipped.
+[Qt5 device artifact 13935374416](https://github.com/Mutaracha/kobalt_ru/actions/runs/43202483204/artifacts/13935374416)
+(36,439,377 bytes); native test log artifact 13935813257.
+No hardware startup speedup measurement yet. Settings remains eager; footnote
+gap is unchanged. Comics text safety/landscape fixes from c2786cd are included.
