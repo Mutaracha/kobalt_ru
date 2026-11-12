@@ -139,3 +139,14 @@ Kobo Qt5 package, offline and package-content checks PASS. Qt6 skipped.
 (36,439,377 bytes); native test log artifact 13935813257.
 No hardware startup speedup measurement yet. Settings remains eager; footnote
 gap is unchanged. Comics text safety/landscape fixes from c2786cd are included.
+
+
+## Opening standby defect acceptance
+
+Keep the device untouched while opening a comic through Nickel. Before a usable
+reader is shown there must be no successful ordinary CPU standby interrupting
+loading. Compare boot_ms with monotonic_ms, not reader-shown total alone (it
+excludes suspend time). After ready, standby must resume normally. Repeat after
+cancel, failed opening/fallback prompt, and another successful open. Explicit
+sleep/power/USB behavior remains governed by its existing lifecycle paths.
+No cache cleanup or other opening optimization is part of this fix.

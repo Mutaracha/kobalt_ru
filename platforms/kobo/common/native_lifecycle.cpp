@@ -444,7 +444,9 @@ bool NativeLifecycle::canSuspend()
     // requests a new reading save here; ordinary activity can stay in memory.
     return !active
             || (!active->sleepViewCheck.isActive() && !active->draining && !active->usbPending
-                && !active->poweringOff && engineActivity().quiescent()
+                && !active->poweringOff
+                && (!active->openingWorkPending || !active->openingWorkPending())
+                && engineActivity().quiescent()
                 && (!active->sleepWorkPending || !active->sleepWorkPending())
                 && (!active->beforeStandby || active->beforeStandby()));
 }

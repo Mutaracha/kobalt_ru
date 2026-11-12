@@ -55,6 +55,9 @@ public:
     std::function<void(Shutdown)> preparePowerScreen;
     std::function<void()> sleep, sleepViewReady, wake, beforeWake, cancelWake, usbPrompt;
     std::function<bool()> sleepWorkPending;
+    // Ordinary CPU standby must not interrupt preparation before an engine job
+    // exists, or the handoff from loading view to the ready reader.
+    std::function<bool()> openingWorkPending;
     static void finishSleepView();
     std::function<void(std::function<void()>)> prepareUsb;
     std::function<void(std::function<void()>)> prepareShutdown;

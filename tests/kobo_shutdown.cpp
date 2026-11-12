@@ -175,6 +175,44 @@ private slots:
         kobalt::storage::closeProfile();
     }
 
+    // Checks standby is denied throughout opening even without an engine job,
+    // and permission follows completion, cancellation and fallback without a sticky hold.
+    void openingBlocksOrdinaryStandby()
+    {
+        kobalt::NativeLifecycle lifecycle(nullptr);
+        QVERIFY(lifecycle.connected());
+        bool busy = false, fallback = false;
+        lifecycle.openingWorkPending = [&] { return busy && !fallback; };
+        int flushes = 0;
+        lifecycle.beforeStandby = [&] { ++flushes; return true; };
+        QVERIFY(kobalt::NativeLifecycle::canSuspend());
+        QCOMPARE(flushes, 1);
+        // Preparation can wait for asynchronous Nickel resources while no
+        // EngineJob exists. Presentation has the same gap after it finishes.
+        for (const auto *phase : {"preparation", "model", "presentation"}) {
+            busy = true;
+            QVERIFY2(!kobalt::NativeLifecycle::canSuspend(), phase);
+        }
+        QCOMPARE(flushes, 1);
+        for (const auto *outcome : {"success", "cancelled", "failed"}) {
+            busy = false;
+            QVERIFY2(kobalt::NativeLifecycle::canSuspend(), outcome);
+            busy = true;
+            QVERIFY(!kobalt::NativeLifecycle::canSuspend());
+        }
+        // A fallback prompt can remain visible indefinitely without keeping
+        // the device awake. Restarting work must restore protection.
+        fallback = true;
+        QVERIFY(kobalt::NativeLifecycle::canSuspend());
+        fallback = false;
+        QVERIFY(!kobalt::NativeLifecycle::canSuspend());
+        busy = false;
+        lifecycle.beforeStandby = [] { return false; };
+        QVERIFY(!kobalt::NativeLifecycle::canSuspend());
+        lifecycle.beforeStandby = [] { return true; };
+        QVERIFY(kobalt::NativeLifecycle::canSuspend());
+    }
+
     void timerCheckSeesDeadlines()
     {
         // The held-shutdown checks rely on this: a deadline started as a

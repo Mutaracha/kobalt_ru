@@ -439,3 +439,18 @@ construction and reuse in light/dark. e21c3de native and Qt5 verification PASS
 in run 43202483204 (Qt6 intentionally skipped). Settings lazy construction
 and the footnote gap remain unfinished;
 Settings currently owns KOSync initialization and cannot simply be skipped.
+
+
+## Opening interrupted by ordinary standby: targeted defect fix
+
+Device e21c3de diagnostics show ~29.895s suspended during preparation before
+open-start; monotonic reader-shown total 13.112s excludes it. Native lifecycle
+now checks openingWorkPending before permitting CPU standby. Coordinator binds
+it to existing busy state, except a fallback/error prompt awaiting user input.
+Thus preparation, engine loading and presentation are covered without a global
+hold flag or kernel wake lock. Existing success/cancel/error/disposal paths
+release the gate through busy; fallback prompts do not hold the CPU awake.
+Explicit sleep, USB and power-off transitions retain their existing paths.
+Added native lifecycle regression for idle-engine opening, terminal outcomes,
+fallback and independent save veto. CI pending. General opening optimization
+remains stopped; this is a correctness fix, no startup speedup promise.
