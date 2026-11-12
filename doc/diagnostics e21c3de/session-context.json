@@ -1,0 +1,299 @@
+{
+    "input_devices": {
+        "event0": {
+            "boot_ms": 17241,
+            "capabilities_abs": {
+                "status": {
+                    "read_enter_boot_ms": 17239,
+                    "read_enter_monotonic_ms": 17239,
+                    "read_enter_realtime_ms": -1,
+                    "read_errno": 0,
+                    "read_exit_boot_ms": 17240,
+                    "read_exit_monotonic_ms": 17240,
+                    "read_exit_realtime_ms": -1,
+                    "truncated": false
+                },
+                "value": "0"
+            },
+            "capabilities_ev": {
+                "status": {
+                    "read_enter_boot_ms": 17240,
+                    "read_enter_monotonic_ms": 17240,
+                    "read_enter_realtime_ms": -1,
+                    "read_errno": 0,
+                    "read_exit_boot_ms": 17240,
+                    "read_exit_monotonic_ms": 17240,
+                    "read_exit_realtime_ms": -1,
+                    "truncated": false
+                },
+                "value": "100013"
+            },
+            "driver": "ntx_event0",
+            "driver_found": true,
+            "event": "standby-input-device",
+            "event_device": "event0",
+            "main_thread": false,
+            "monotonic_ms": 17241,
+            "name": {
+                "status": {
+                    "read_enter_boot_ms": 17239,
+                    "read_enter_monotonic_ms": 17239,
+                    "read_enter_realtime_ms": -1,
+                    "read_errno": 0,
+                    "read_exit_boot_ms": 17239,
+                    "read_exit_monotonic_ms": 17239,
+                    "read_exit_realtime_ms": -1,
+                    "truncated": false
+                },
+                "value": "gpio-keys"
+            },
+            "pid": 213,
+            "severity": "activity",
+            "thread": "6ef02450",
+            "utc": "2026-11-12T11:44:47.921Z"
+        },
+        "event1": {
+            "boot_ms": 17243,
+            "capabilities_abs": {
+                "status": {
+                    "read_enter_boot_ms": 17242,
+                    "read_enter_monotonic_ms": 17242,
+                    "read_enter_realtime_ms": -1,
+                    "read_errno": 0,
+                    "read_exit_boot_ms": 17242,
+                    "read_exit_monotonic_ms": 17242,
+                    "read_exit_realtime_ms": -1,
+                    "truncated": false
+                },
+                "value": "ee18000 1000003"
+            },
+            "capabilities_ev": {
+                "status": {
+                    "read_enter_boot_ms": 17242,
+                    "read_enter_monotonic_ms": 17242,
+                    "read_enter_realtime_ms": -1,
+                    "read_errno": 0,
+                    "read_exit_boot_ms": 17242,
+                    "read_exit_monotonic_ms": 17242,
+                    "read_exit_realtime_ms": -1,
+                    "truncated": false
+                },
+                "value": "b"
+            },
+            "driver": "elan_ktf",
+            "driver_found": true,
+            "event": "standby-input-device",
+            "event_device": "event1",
+            "main_thread": false,
+            "monotonic_ms": 17243,
+            "name": {
+                "status": {
+                    "read_enter_boot_ms": 17241,
+                    "read_enter_monotonic_ms": 17241,
+                    "read_enter_realtime_ms": -1,
+                    "read_errno": 0,
+                    "read_exit_boot_ms": 17241,
+                    "read_exit_monotonic_ms": 17241,
+                    "read_exit_realtime_ms": -1,
+                    "truncated": false
+                },
+                "value": "Elan Touchscreen"
+            },
+            "pid": 213,
+            "severity": "activity",
+            "thread": "6ef02450",
+            "utc": "2026-11-12T11:44:47.923Z"
+        },
+        "event2": {
+            "boot_ms": 17245,
+            "capabilities_abs": {
+                "status": {
+                    "read_enter_boot_ms": 17243,
+                    "read_enter_monotonic_ms": 17243,
+                    "read_enter_realtime_ms": -1,
+                    "read_errno": 0,
+                    "read_exit_boot_ms": 17243,
+                    "read_exit_monotonic_ms": 17243,
+                    "read_exit_realtime_ms": -1,
+                    "truncated": false
+                },
+                "value": "7"
+            },
+            "capabilities_ev": {
+                "status": {
+                    "read_enter_boot_ms": 17244,
+                    "read_enter_monotonic_ms": 17244,
+                    "read_enter_realtime_ms": -1,
+                    "read_errno": 0,
+                    "read_exit_boot_ms": 17244,
+                    "read_exit_monotonic_ms": 17244,
+                    "read_exit_realtime_ms": -1,
+                    "truncated": false
+                },
+                "value": "9"
+            },
+            "driver": "kx122",
+            "driver_found": true,
+            "event": "standby-input-device",
+            "event_device": "event2",
+            "main_thread": false,
+            "monotonic_ms": 17245,
+            "name": {
+                "status": {
+                    "read_enter_boot_ms": 17243,
+                    "read_enter_monotonic_ms": 17243,
+                    "read_enter_realtime_ms": -1,
+                    "read_errno": 0,
+                    "read_exit_boot_ms": 17243,
+                    "read_exit_monotonic_ms": 17243,
+                    "read_exit_realtime_ms": -1,
+                    "truncated": false
+                },
+                "value": "kx122-accel"
+            },
+            "pid": 213,
+            "severity": "activity",
+            "thread": "6ef02450",
+            "utc": "2026-11-12T11:44:47.924Z"
+        },
+        "event3": {
+            "boot_ms": 17246,
+            "capabilities_abs": {
+                "status": {
+                    "read_enter_boot_ms": 17245,
+                    "read_enter_monotonic_ms": 17245,
+                    "read_enter_realtime_ms": -1,
+                    "read_errno": 0,
+                    "read_exit_boot_ms": 17245,
+                    "read_exit_monotonic_ms": 17245,
+                    "read_exit_realtime_ms": -1,
+                    "truncated": false
+                },
+                "value": "0"
+            },
+            "capabilities_ev": {
+                "status": {
+                    "read_enter_boot_ms": 17245,
+                    "read_enter_monotonic_ms": 17245,
+                    "read_enter_realtime_ms": -1,
+                    "read_errno": 0,
+                    "read_exit_boot_ms": 17245,
+                    "read_exit_monotonic_ms": 17245,
+                    "read_exit_realtime_ms": -1,
+                    "truncated": false
+                },
+                "value": "21"
+            },
+            "driver_found": false,
+            "event": "standby-input-device",
+            "event_device": "event3",
+            "main_thread": false,
+            "monotonic_ms": 17246,
+            "name": {
+                "status": {
+                    "read_enter_boot_ms": 17245,
+                    "read_enter_monotonic_ms": 17245,
+                    "read_enter_realtime_ms": -1,
+                    "read_errno": 0,
+                    "read_exit_boot_ms": 17245,
+                    "read_exit_monotonic_ms": 17245,
+                    "read_exit_realtime_ms": -1,
+                    "truncated": false
+                },
+                "value": "P15USB30216C"
+            },
+            "pid": 213,
+            "severity": "activity",
+            "thread": "6ef02450",
+            "utc": "2026-11-12T11:44:47.926Z"
+        }
+    },
+    "power_observer": {
+        "alarm_suspend_call": true,
+        "boot_ms": 21179,
+        "event": "power-observer",
+        "kernel_input_guard": true,
+        "main_thread": true,
+        "monotonic_ms": 21179,
+        "pid": 213,
+        "severity": "activity",
+        "standby_request": true,
+        "standby_resume": true,
+        "suspend_call": true,
+        "thread": "76fe3000",
+        "utc": "2026-11-12T11:44:51.859Z"
+    },
+    "standby_diagnostics": {
+        "boot_ms": 17194,
+        "event": "standby-diagnostic-capabilities",
+        "input_wakeup_bridge": true,
+        "input_wakeup_timeout_ms": 1000,
+        "main_thread": true,
+        "monotonic_ms": 17194,
+        "pid": 213,
+        "power_helper_hook": true,
+        "qtcore_write_hook": true,
+        "samples_asynchronous": true,
+        "severity": "activity",
+        "thread": "76fe3000",
+        "touch_read_hook": true,
+        "utc": "2026-11-12T11:44:47.874Z"
+    },
+    "standby_kernel": {
+        "boot_clock": true,
+        "boot_ms": 17231,
+        "debugfs_mounted": false,
+        "event": "standby-kernel-capabilities",
+        "kernel_release": "4.1.15-00868-g58a2758be07",
+        "main_thread": false,
+        "monotonic_clock": true,
+        "monotonic_ms": 17231,
+        "mounts_read_errno": 0,
+        "mounts_truncated": false,
+        "pid": 213,
+        "realtime_fallback": false,
+        "release_read_errno": 0,
+        "release_truncated": false,
+        "severity": "activity",
+        "thread": "6ef02450",
+        "utc": "2026-11-12T11:44:47.911Z"
+    },
+    "startup": {
+        "available_kib": 417776,
+        "boot_ms": 17187,
+        "build": "Nov 12 2026 10:47:38",
+        "cpu_khz": 996000,
+        "data_kib": 49312,
+        "event": "startup",
+        "fd_count": 25,
+        "fd_hard_limit": 4096,
+        "fd_highest": 24,
+        "fd_soft_limit": 1024,
+        "firmware": "4.38.23828",
+        "font_preview_bitmap_bytes": 0,
+        "free_kib": 356508,
+        "hardware_uuid": "00000000-0000-0000-0000-000000000388",
+        "log_history_files": 5,
+        "log_limit_bytes": 16777216,
+        "main_thread": true,
+        "memory_pressure": false,
+        "monotonic_ms": 17187,
+        "native_fallback_font_bytes": 0,
+        "peak_rss_kib": 46380,
+        "pid": 213,
+        "private_font_bytes": 0,
+        "qt": "5.2.1",
+        "resource_sample_monotonic_ms": 17202,
+        "rss_kib": 46380,
+        "sample_monotonic_ms": 17201,
+        "severity": "activity",
+        "source_commit": "e21c3de",
+        "source_modified": false,
+        "thread": "76fe3000",
+        "threads": 6,
+        "utc": "2026-11-12T11:44:47.867Z",
+        "verbose": true,
+        "version": "v1.0-beta.7",
+        "virtual_kib": 179868
+    }
+}
