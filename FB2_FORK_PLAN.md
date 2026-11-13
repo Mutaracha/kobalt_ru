@@ -3161,3 +3161,11 @@ cache checkpoint test должен передавать сохранённый `
 comics cache-test, а не восстанавливать только один флаг на default appearance.
 Тест исправлен; cache hit и число screens теперь проверяются независимо.
 Это не подтверждение hardware landscape или устранения reading freeze.
+
+Повтор `1c363032`, run43487103195: Qt5 PASS; native показывает, что даже
+полный state не гарантирует rendered-cache hit для нового multi-spine fixture:
+CREngine сообщает style-hash mismatch и делает full render. Не выдавать это за
+доказанный hit или исправление cache-performance. Center regression проверяет
+сохранение standalone geometry после save/reopen независимо от разрешённой
+репагинации; отдельный существующий single-spine regression по-прежнему требует
+реальный rendered-cache hit. Общая оптимизация кэша не возобновлялась.
