@@ -158,7 +158,7 @@ ReaderFrame capture(EngineDocument &engine, const PositionCodec &positions, bool
 {
     engineActivity().checkpoint();
     ReaderFrame result;
-    result.image = engine.image(engine.page());
+    result.image = engine.frameImage();
     result.markup = captureFrameMarkup(engine, markup, markupGeneration, result.image.cacheKey());
     result.links = engine.pageLinks();
     result.state = engine.state();

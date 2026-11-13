@@ -243,6 +243,8 @@ public:
     void setDarkMode(bool enabled);
     void resize(QSize size);
     QImage image(int page);
+    // Worker-only frame publication: a landscape pair must not expose a half-ready frame.
+    QImage frameImage();
     // One screen that starts at the reading position instead of a page break. With
     // stayInChapter, it starts earlier near a chapter's end, so that a full screen stays in
     // the chapter. Without it, the text continues past the chapter to fill the screen.

@@ -47,6 +47,7 @@ public:
     void beginImageRequests() { imageRequests_.clear(); trackingImages_ = true; }
     QStringList endImageRequests() { trackingImages_ = false; return imageRequests_; }
     bool prioritizePendingImage(const QString &name);
+    bool pendingImage(const QString &name) const { return pendingImages_.contains(name); }
     // Keep dimensions and integrity checks, but no encoded resource bytes.
     void releaseBytes();
 

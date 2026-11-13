@@ -217,7 +217,7 @@ int main(int argc, char **argv)
     // Both resources of the visible spread must be ready before the next
     // image-load frame. Neighbour resources remain pending, not preloaded.
     auto deferredData = data;
-    QImage blue(1160, 1680, QImage::Format_RGB32);
+    QImage blue(1160, 1500, QImage::Format_RGB32);
     blue.fill(Qt::blue);
     QByteArray bluePng;
     QBuffer blueBuffer(&bluePng);
@@ -235,7 +235,9 @@ int main(int argc, char **argv)
             const auto bytes = deferredData.value(name);
             return sink(bytes.constData(), bytes.size());
         }, std::make_shared<std::atomic_bool>(false), ResourceCache::Statistics(),
-        [](const QString &name) { return name.endsWith(".png") ? QSize(1160, 1680) : QSize(); });
+        [](const QString &name) {
+            return name.endsWith(".png") ? QSize(1160, name == "art.png" ? 1680 : 1500) : QSize();
+        });
     EngineDocument deferredSpread(test::readerFonts());
     require(deferredSpread.openResources(deferredResources, deferredLengths, QSize(1680, 1264),
                 {{appearance::comicsModeKey, true}}, &error), qPrintable(error));
@@ -255,5 +257,94 @@ int main(int argc, char **argv)
     const auto readySpread = deferredSpread.image(0);
     require(qRed(readySpread.pixel(420, 600)) > 200 && qBlue(readySpread.pixel(1260, 600)) > 200,
             "Completed spread frame lacks one of the visible portraits");
+    const auto leftBounds = inkBounds(readySpread);
+    QRect rightBounds;
+    for (int y = 0; y < readySpread.height(); ++y)
+        for (int x = readySpread.width() / 2; x < readySpread.width(); ++x)
+            if (qBlue(readySpread.pixel(x, y)) > 200 && qRed(readySpread.pixel(x, y)) < 40)
+                rightBounds = rightBounds.united(QRect(x, y, 1, 1));
+    require(leftBounds.top() > 0 && rightBounds.top() > leftBounds.top()
+                && qAbs(leftBounds.top() - (1264 - leftBounds.height()) / 2) <= 1
+                && qAbs(rightBounds.top() - (1264 - rightBounds.height()) / 2) <= 1,
+            "Different-height portraits are not independently vertically centered");
+    require(deferredSpread.imageAt(leftBounds.center()).size() == QSize(1160, 1680)
+                && deferredSpread.imageAt(rightBounds.center()).size() == QSize(1160, 1500),
+            "Centered pair image-viewer hit lost its source");
+    require(deferredSpread.imageAt(QPoint(420, 0)).isNull()
+                && deferredSpread.imageAt(QPoint(1260, 0)).isNull(),
+            "Pair letterbox incorrectly hits artwork");
+
+    // Regression for the case missed by load-batching alone: the first
+    // publishable frame has one ready bitmap and one deferred bitmap.
+    deferredSpread.releaseImages();
+    loads.clear();
+    deferredResources->imageReady("art.png");
+    require(deferredResources->loadNextImage(), "Prime one ready portrait");
+    deferredResources->imageReady("neighbor.png");
+    const auto mixedReadyFrame = deferredSpread.frameImage();
+    require(qRed(mixedReadyFrame.pixel(420, 600)) > 200
+                && qBlue(mixedReadyFrame.pixel(1260, 600)) > 200
+                && loads.value("blue.png") == 1 && !loads.contains("neighbor.png"),
+            "First published frame exposed a half-ready spread or loaded a neighbour");
+    // A completely cold first frame and a cached frame must follow the same
+    // publication contract; neighbours remain asynchronous in both cases.
+    deferredSpread.releaseImages();
+    loads.clear();
+    deferredResources->imageReady("neighbor.png");
+    const auto coldFrame = deferredSpread.frameImage();
+    require(qRed(coldFrame.pixel(420, 600)) > 200 && qBlue(coldFrame.pixel(1260, 600)) > 200
+                && loads.value("art.png") == 1 && loads.value("blue.png") == 1
+                && !loads.contains("neighbor.png"), "Cold published frame is not a complete visible pair");
+    deferredSpread.frameImage();
+    require(!loads.contains("neighbor.png"), "Cached publication consumed neighbour work");
+
+    // Preparing many neighbour candidates must not erase the identity of a
+    // still-cached half-ready current frame (the old map-wide clear did this).
+    auto manyData = deferredData;
+    QByteArray manyBody = "<html xmlns='http://www.w3.org/1999/xhtml'><head/><body>";
+    for (int i = 0; i < 11; ++i)
+        manyBody += "<div><img src='art.png'/></div><div><img src='blue.png'/></div>";
+    manyData["c.xhtml"] = manyBody + "</body></html>";
+    QMap<QString, qint64> manyLengths;
+    for (auto it = manyData.cbegin(); it != manyData.cend(); ++it) manyLengths[it.key()] = it.value().size();
+    auto manyResources = std::make_shared<ResourceCache>(manyData.keys(),
+        [manyData](const QString &name, const ResourceCache::Sink &sink, QString *) {
+            const auto bytes = manyData.value(name);
+            return sink(bytes.constData(), bytes.size());
+        }, std::make_shared<std::atomic_bool>(false), ResourceCache::Statistics(),
+        [](const QString &name) {
+            return name.endsWith(".png") ? QSize(1160, name == "art.png" ? 1680 : 1500) : QSize();
+        });
+    EngineDocument many(test::readerFonts());
+    require(many.openResources(manyResources, manyLengths, QSize(1680, 1264),
+                {{appearance::comicsModeKey, true}}, &error) && many.pages() == 11, qPrintable(error));
+    many.image(0);
+    for (int i = 1; i < many.pages(); ++i) many.image(i);
+    const auto retainedFrame = many.frameImage();
+    require(qRed(retainedFrame.pixel(420, 600)) > 200 && qBlue(retainedFrame.pixel(1260, 600)) > 200,
+            "Neighbour request-map pressure exposed a cached half-ready current frame");
+
+    // Center placement never requests a quarter-turn for an already-wide bitmap.
+    auto wideCenteredData = centered;
+    wideCenteredData["art.png"] = widePng;
+    QMap<QString, qint64> wideCenteredLengths;
+    for (auto it = wideCenteredData.cbegin(); it != wideCenteredData.cend(); ++it)
+        wideCenteredLengths[it.key()] = it.value().size();
+    auto wideCenteredResources = std::make_shared<ResourceCache>(wideCenteredData.keys(),
+        [wideCenteredData](const QString &name, const ResourceCache::Sink &sink, QString *) {
+            const auto bytes = wideCenteredData.value(name);
+            return sink(bytes.constData(), bytes.size());
+        }, std::make_shared<std::atomic_bool>(false));
+    EngineDocument wideCentered(test::readerFonts());
+    require(wideCentered.openResources(wideCenteredResources, wideCenteredLengths, QSize(1680, 1264),
+                {{appearance::comicsModeKey, true}}, &error) && wideCentered.go(1), qPrintable(error));
+    const auto landscapeBounds = inkBounds(wideCentered.frameImage());
+    require(landscapeBounds == QRect(0, 132, 1680, 1000),
+            "Already-landscape center bitmap was rotated or not vertically centered");
+    require(wideCentered.imageAt(landscapeBounds.center()).size() == QSize(1680, 1000),
+            "Landscape center viewer lost original dimensions");
+    require(wideCentered.applyAppearance({}, QSize(1264, 1680)), "Rotate wide center to portrait view");
+    const auto portraitBounds = inkBounds(wideCentered.image(wideCentered.page()));
+    require(portraitBounds.width() > portraitBounds.height(), "Portrait viewport rotated an already-wide source");
     std::puts("PASS: comics fit, zero effective margins, orientation and editable base persistence");
 }

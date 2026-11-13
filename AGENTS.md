@@ -504,3 +504,18 @@ viewer hit identity, letterbox exclusion, anchor preview and orientation roundtr
 Do not claim source downsampling from a smaller output buffer; PNG, SVG and JPEG
 have different decoder paths. This is a page-rendering correction, not permission
 to resume the stopped general opening-speed optimization.
+
+
+### Landscape comics: follow-up to device diagnostics 1a56b68
+
+Portrait bitmap center pages rotate clockwise only in landscape; already-wide
+bitmaps remain unrotated. Each portrait half is vertically centered independently,
+with matching image-viewer bounds and no crop/stretch. Standalone image-only pages
+are aspect-fit and centered. Publication of a visible pair now resolves its pending
+resources before capture, including cold and partially cached frames; neighbour
+preparation stays deferred. Request identity survives cached draws and neighbour
+map pressure. `comic-frame-images` records pending counts around publication.
+Regression coverage includes unequal-height halves, hit/letterbox bounds, cold and
+mixed-ready frames, neighbour pressure and wide center artwork. Waveform unchanged;
+opening-speed work remains stopped. Native and Kobo Qt5 CI pending for this patch;
+physical simultaneous display remains device acceptance, not a CI claim.

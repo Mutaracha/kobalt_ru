@@ -30,15 +30,36 @@ public:
         return internal >= 0 && internal < comicCenters.size() ? comicCenters[internal] : nullptr;
     }
 
-    QRect rotatedComicRect(int page) const
+    ldomNode *singleComicNode(int page) const
     {
-        auto *node = rotatedComicNode(page);
+        const int internal = firstPage(page);
+        return comicPageCount(page) == 1 && internal >= 0 && internal < comicImages.size()
+                ? comicImages[internal] : nullptr;
+    }
+
+    QRect singleComicRect(int page) const
+    {
+        auto *node = singleComicNode(page);
         const auto source = node ? node->getObjectImageSource() : LVImageSourceRef();
         if (source.isNull()) return {};
-        const auto fitted = QSize(source->GetHeight(), source->GetWidth())
-                .scaled(QSize(viewportWidth, viewportHeight), Qt::KeepAspectRatio);
+        // A center marker does not imply rotation: only a portrait bitmap turns.
+        const bool rotate = rotatedComicNode(page) != nullptr;
+        const auto fitted = (rotate ? QSize(source->GetHeight(), source->GetWidth())
+                                    : QSize(source->GetWidth(), source->GetHeight()))
+                .scaled(QSize(!rotate && source->GetHeight() > source->GetWidth()
+                                      ? viewportWidth / 2 : viewportWidth,
+                              viewportHeight), Qt::KeepAspectRatio);
         return QRect(QPoint((viewportWidth - fitted.width()) / 2,
                             (viewportHeight - fitted.height()) / 2), fitted);
+    }
+
+    void setComicVerticalOffset(int page, int column, int offset, const QRect &bounds)
+    {
+        const int internal = firstPage(page) + column;
+        if (internal >= 0 && internal < comicVerticalOffsets.size()) {
+            comicVerticalOffsets[internal] = offset;
+            comicImageRects[internal] = bounds;
+        }
     }
 
     // Called only after pagination, never from the paint or page-turn path.
@@ -48,10 +69,16 @@ public:
     {
         comicStarts.clear();
         comicCenters.clear();
+        comicImages.clear();
+        comicVerticalOffsets.clear();
+        comicImageRects.clear();
         if (!comicSpreads || viewportWidth <= viewportHeight || columns != 1) return;
         comicInternalPages = LVDocView::getPageCount();
         QVector<int> portraits(comicInternalPages, 0), images(comicInternalPages, 0);
         comicCenters.fill(nullptr, comicInternalPages);
+        comicImages.fill(nullptr, comicInternalPages);
+        comicVerticalOffsets.fill(0, comicInternalPages);
+        comicImageRects.fill(QRect(), comicInternalPages);
         std::vector<ldomNode *> pending{ getDocument()->getRootNode() };
         while (!pending.empty()) {
             auto *node = pending.back();
@@ -67,6 +94,7 @@ public:
                         centered |= parent->getAttributeValue("data-kobalt-comic-single") == U"1";
                         linked |= parent->isNodeName("a");
                     }
+                    if (!linked) comicImages[page] = node;
                     const auto source = centered && !linked ? node->getObjectImageSource() : LVImageSourceRef();
                     if (!source.isNull() && source->GetWidth() > 0 && source->GetHeight() > source->GetWidth())
                         comicCenters[page] = node;
@@ -82,7 +110,10 @@ public:
             const bool imageOnly = images[page] == 1
                     && QString::fromUtf8(UnicodeToUtf8(text).c_str()).trimmed().isEmpty();
             pairable[page] = imageOnly && portraits[page] == 1;
-            if (!imageOnly) comicCenters[page] = nullptr;
+            if (!imageOnly) {
+                comicCenters[page] = nullptr;
+                comicImages[page] = nullptr;
+            }
         }
         for (int page = 0; page < comicInternalPages;) {
             comicStarts.append(page);
@@ -115,6 +146,9 @@ public:
     {
         comicStarts.clear();
         comicCenters.clear();
+        comicImages.clear();
+        comicVerticalOffsets.clear();
+        comicImageRects.clear();
         viewportWidth = w;
         viewportHeight = h;
         // Side margins belong to the screen; spacing separates the text columns.
@@ -185,16 +219,21 @@ public:
 
     ldomXPointer getNodeByPoint(lvPoint point, bool strict = false, bool selection = false)
     {
-        // The standalone image is composed rotated, not in its DOM rectangle.
+        // The standalone image is centered (and may be rotated), not in its DOM rectangle.
         // It contains no text or linked content; image-viewer hit identity is unchanged.
-        if (auto *node = rotatedComicNode(getCurPage()))
-            return rotatedComicRect(getCurPage()).contains(QPoint(point.x, point.y))
+        if (auto *node = singleComicNode(getCurPage()))
+            return singleComicRect(getCurPage()).contains(QPoint(point.x, point.y))
                     ? ldomXPointer(node, 0) : ldomXPointer();
         if (!comicStarts.isEmpty() && comicPageCount(getCurPage()) == 2) {
             const int physical = point.x < viewportWidth / 2 ? 0 : 1;
             const int column = rightToLeft() ? 1 - physical : physical;
-            Position restore(*this, firstPage(getCurPage()) + column);
+            const int internal = firstPage(getCurPage()) + column;
+            const auto bounds = comicImageRects.value(internal);
+            if (!bounds.isEmpty() && !bounds.contains(QPoint(point.x, point.y)))
+                return {};
+            Position restore(*this, internal);
             point.x -= comicOffset(physical);
+            point.y -= comicVerticalOffsets.value(firstPage(getCurPage()) + column);
             return LVDocView::getNodeByPoint(point, strict, selection);
         }
         if (columns == 1)
@@ -222,6 +261,7 @@ public:
             Position restore(*this, target);
             if (!LVDocView::docToWindowPoint(point, bottom, fit)) return false;
             point.x += comicOffset(rightToLeft() ? 1 - (target - first) : target - first);
+            point.y += comicVerticalOffsets.value(target);
             return true;
         }
         if (columns == 1)
@@ -258,7 +298,9 @@ public:
 private:
     bool comicSpreads = false;
     QVector<int> comicStarts;
-    QVector<ldomNode *> comicCenters;
+    QVector<ldomNode *> comicCenters, comicImages;
+    QVector<int> comicVerticalOffsets;
+    QVector<QRect> comicImageRects;
     int comicInternalPages = 0;
     int firstPage(int page) const
     {
