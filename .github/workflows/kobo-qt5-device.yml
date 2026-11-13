@@ -8,6 +8,12 @@ name: Kobo qt5 device build
 on:
   push:
     branches: [arena/9e626d86-kobalt-ru]
+    # Manual diagnostic/screenshot uploads and documentation do not change binaries.
+    # Mixed source + documentation pushes still build; workflow_dispatch is unaffected.
+    paths-ignore:
+      - 'doc/**'
+      - 'tests/manual/screenshots/**'
+      - '**/*.md'
   workflow_dispatch:
     inputs:
       build_qt6_once:

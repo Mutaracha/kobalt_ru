@@ -53,7 +53,7 @@ sha256sum -c tests/manual/materials.sha256
 ## Comics profile and chapter marks (Kobo Qt5)
 
 See [the single-page EPUB and provenance](books/comics/README.md) and
-[the approved contract](../../doc/comics-progress-proposal.md). Check enabled /
+[the approved contract](../../FB2_FORK_PLAN.md). Check enabled /
 disabled mode, portrait / landscape, editable saved margins and chrome while
 active, reopening / sleep, then latest-value restoration. Compare with the
 original Nickel/Kobalt evidence in screenshots/kobo-qt5/comics-report/.
@@ -62,22 +62,12 @@ positions after changing font size/orientation. No separate tick setting.
 Automated native checks are not evidence of a hardware screenshot match.
 
 
-## Build106 device feedback
+## Актуальный статус проверок
 
-Build106 device feedback and opening samples: screenshots/kobo-qt5/build106-review/. Preserve this set separately from earlier evidence; see doc/build106-device-review.md for pending ghosting/progress/notes checks.
-
-
-## Progress/comics follow-up implementation
-
-Added approved description and content-measured compact row; Off/Bottom/Top
-selector with legacy bottom default; top progress reuses fill/ticks with compact
-reservation and header snapshot invalidation. Qt5 comics uses graphics repair
-waveform on submitted damage, preserving screen-refresh preferences; hardware
-quality/latency still needs verification. Added opening_id and cache-save wrapper
-reasons, not guessed parsed-cache miss reasons. No cache cleanup or memory-budget
-increase. Native/Qt5 CI pending. Test plan: doc/build107-test-plan.md.
-
-Incomplete explicitly: exact body-to-footnote gap (requires renderer/hit-test
-coordination) and lazy construction of settings/appearance panels. These are not
-claimed fixed or sped up by this patch. New approved EN/RU pairs: comics mode
-description, progress Bottom/Внизу and Top/Вверху; no other UI text changes.
+Build106 screenshots и raw opening times остаются в
+`screenshots/kobo-qt5/build106-review/`; это evidence d5c64a5, не новых сборок.
+Завершённые разборы, действующие требования и checklist сведены в
+[план форка](../../FB2_FORK_PLAN.md#подготовка-beta8--актуальный-статус).
+Пользователь подтвердил отсутствие ghosting; waveform не менять. Проверка
+landscape на устройстве и gap нижних сносок остаются открытыми. General opening
+optimization остановлена; не требовать новых замеров как условия docs cleanup.

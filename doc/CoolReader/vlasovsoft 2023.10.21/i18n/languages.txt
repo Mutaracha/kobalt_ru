@@ -1,3 +1,0 @@
-System     | System       | 0            | eu.kbd 
-English    | English      | 0            | eu.kbd
-Russian    | Русский      | Russian.qm   | ru.kbd

@@ -1271,16 +1271,9 @@ void EngineDocument::applyStyleSheet()
                                 lString8(inPageFootnotes_ ? notes::epubInPageCss : "");
     // The graphics profile comes last: publisher/user typography remains saved but
     // must not add an inline image baseline or leading-image protection padding.
-    const auto comicsCss = comicsMode_ ? lString8(
-            "\nhtml,body,DocFragment,div,p,section { margin:0 !important; padding:0 !important; "
-            "text-indent:0 !important; }\n"
-            "body[data-kobalt-leading-image=\"1\"] { padding-top:0 !important; }\n"
-            "img { display:block !important; width:auto !important; height:auto !important; "
-            "max-width:100% !important; max-height:100vh !important; margin:0 auto !important; "
-            "padding:0 !important; page-break-inside:avoid !important; page-break-after:always !important; }\n") : lString8();
-    const auto spreadCss = comicsMode_ && size_.width() > size_.height() ? lString8(
-            "img[data-kobalt-comic-portrait=\"1\"], image[data-kobalt-comic-portrait=\"1\"] "
-            "{ max-width:50vw !important; }\n") : lString8();
+    const auto comicsCss = comicsMode_ ? lString8(comicPageCss()) : lString8();
+    const auto spreadCss = comicsMode_ && size_.width() > size_.height()
+            ? lString8(comicSpreadCss()) : lString8();
     engine_->setStyleSheet(base + lString8(overrides.toUtf8().constData()) + lString8("\n") +
                            lString8(userStyleSheet_.constData()) + comicsCss + spreadCss);
 }

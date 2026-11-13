@@ -299,7 +299,7 @@ See doc/qt6-one-off.md. Record binary SHA/artifact separately from device proof.
 
 ### Beta7 device review and author proposals
 
-Use doc/beta7-ui-review.md for the pending screenshot findings R1/R2 and
+Use FB2_FORK_PLAN.md for the pending screenshot findings R1/R2 and
 per-frame evidence. Do not treat the saved-language confirmation as proof of
 an actual language change after reopening. Preserve original captures and
 provenance in doc/dddace7/. External language packs and a graphics-reading
@@ -323,7 +323,7 @@ not a promise that every listed font is classified as serif.
 
 ### Comics/progress constraints and opening performance
 
-Follow doc/comics-progress-proposal.md and doc/coolreader-opening-analysis.md.
+Follow FB2_FORK_PLAN.md and FB2_FORK_PLAN.md.
 New captures establish zero configured margins/chrome with residual bottom space;
 do not claim a proven 18px engine margin or introduce magic cropping. Existing
 engine native header is already disabled. Comics must be an effective override,
@@ -343,26 +343,26 @@ binary source. Measure existing opening phases before claiming optimization.
   способом, значения сохраняются, но при активном режиме не применяются.
   После выключения применяются последние сохранённые значения, а не snapshot
   на момент включения. Apply/cancel сохраняет обычную семантику настроек.
-- Одна исходная страница на экран в обеих ориентациях; без auto-spread.
+- Portrait: одна исходная страница; landscape: две portrait-страницы рядом, wide spread отдельно без поворота/crop/stretch.
 - Отметки глав без отдельной настройки, только на существующей progress bar.
-- Название EN/RU принято; новых descriptions не требуется.
+- Название и description EN/RU согласованы; использовать текущие строки без новых вариантов.
 
 Сохранять этот контракт; проверять edit→apply
 при активном режиме, close/reopen и выключение с восстановлением обновлённых
 значений; отдельно edit→cancel не должен менять сохранённую базу.
 
-Comics implementation: see doc/comics-progress-proposal.md and engine.comics regression.
+Comics implementation: see FB2_FORK_PLAN.md and engine.comics regression.
 Never claim device verification from a synthetic regression or report unmeasured speedups.
 
 
 ## Build106 device feedback
 
-Build106 follow-up: use doc/build106-device-review.md. Do not confuse KOReader CRe image-coverage refresh with its KOpt/Kaleido path. Tie comics quality refresh to committed frames, not repaint loops; preserve base refresh preferences. Footnote root-font margin is not body line spacing or page remainder. New caption/top-bottom wording awaits approval.
+Build106 follow-up: use FB2_FORK_PLAN.md. Do not confuse KOReader CRe image-coverage refresh with its KOpt/Kaleido path. Tie comics quality refresh to committed frames, not repaint loops; preserve base refresh preferences. Footnote root-font margin is not body line spacing or page remainder. New caption/top-bottom wording awaits approval.
 
 
 ### Diagnostics 5bbff30 and approved wording
 
-The comics description EN/RU in doc/build106-diagnostics-analysis.md is approved; no further wording approval needed. Off/Bottom/Top is also approved. Preserve editable base settings. For diagnostics, distinguish parsed-cache vs layout-cache hits and open-end vs reader-shown. Do not assign unnamed openings to user benchmark books, sum nested counters or infer every save=false is an I/O error.
+The comics description EN/RU in FB2_FORK_PLAN.md is approved; no further wording approval needed. Off/Bottom/Top is also approved. Preserve editable base settings. For diagnostics, distinguish parsed-cache vs layout-cache hits and open-end vs reader-shown. Do not assign unnamed openings to user benchmark books, sum nested counters or infer every save=false is an I/O error.
 
 
 ## Progress/comics follow-up implementation
@@ -373,7 +373,7 @@ reservation and header snapshot invalidation. Qt5 comics uses graphics repair
 waveform on submitted damage, preserving screen-refresh preferences; hardware
 quality/latency still needs verification. Added opening_id and cache-save wrapper
 reasons, not guessed parsed-cache miss reasons. No cache cleanup or memory-budget
-increase. Native/Qt5 CI pending. Test plan: doc/build107-test-plan.md.
+increase. Native/Qt5 CI pending. Test plan: FB2_FORK_PLAN.md.
 
 Incomplete explicitly: exact body-to-footnote gap (requires renderer/hit-test
 coordination) and lazy construction of settings/appearance panels. These are not
@@ -457,3 +457,17 @@ fallback and independent save veto. Runtime 61dbfaa verified by run
 offline / package-content checks PASS; Qt6 skipped. General opening optimization
 remains stopped; this is a correctness fix, no startup speedup promise. Device
 confirmation of uninterrupted opening remains outstanding.
+
+## beta.8 preparation (not integrated)
+
+Canonical current state and archived-report provenance: FB2_FORK_PLAN.md, section
+«Подготовка beta.8». Completed doc uploads have been removed from the current tree,
+not from Git history. Do not recreate raw vendor binaries or diagnostic logs in doc/.
+Keep permanent instructions and tests/manual fixtures. General opening optimization
+is stopped; Settings remains eager; preserve the device-confirmed refresh policy.
+Upstream beta.8 already contains openingWorkPending; reconcile it once, not twice.
+Back up the whole Kobo profile before database migration; do not claim rollback
+compatibility. Preserve fork default-on footnotes and legacy appearance-key mapping.
+Documentation-only pushes are excluded from the fork device workflow; mixed source
+pushes and workflow_dispatch still build. Actions cleanup needs actions:write;
+never treat a 403 as a successful deletion. See platforms/ci/cleanup-runs.sh.

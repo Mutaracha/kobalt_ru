@@ -13,3 +13,8 @@ saved values return. Check the lower edge against the original Nickel image,
 without cropping natural image borders or distorting its aspect ratio.
 
 EPUB SHA256: `5476b8256ca1206b112171cd0d1b8d6ce0b496bedce21966f5e9ee7266573145`.
+
+Исходный unpacked upload удалён из текущего дерева после разбора; доступен
+в истории: commit `bc07d8b0b60f354ac6892f0496e0ac0434590062`, путь
+`doc/Spice and Wolf v01.kepub.epub/`. Сохранённый manual EPUB и screenshots
+не изменялись. Итоги анализа — в `FB2_FORK_PLAN.md` (корень репозитория).

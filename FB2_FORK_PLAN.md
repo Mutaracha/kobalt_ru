@@ -1,14 +1,120 @@
 # Техническое задание для ИИ-агента: Форк Kobalt с нативной поддержкой FB2 на Kobo (Сценарий 1)
 
-## Новые задачи: progress chapter marks, comics profile, opening performance
+## Подготовка beta.8 — актуальный статус
 
-Пользователь запросил ticks границ глав в нижней progress bar и отдельную
-опцию «Режим чтения комиксов» с сохранением исходных полей/колонтитулов.
-[Проект и EN/RU proposal](doc/comics-progress-proposal.md),
-[CoolReader source/config audit и performance plan](doc/coolreader-opening-analysis.md).
-Стадия — первичный анализ; новый UI/код не применялись. Новая пара EN/RU и
-предлагаемая per-book scope ожидают согласования; affected book/SHA нужны для
-точного воспроизведения остаточной полосы. Qt5 — основной target.
+**beta.8 НЕ слита.** База подготовки: fork `bc07d8b0b60f354ac6892f0496e0ac0434590062`;
+upstream `v1.0-beta.8` = `679175046d8c806ea3b404525180fbc29a26fcd2`.
+Ниже — исторический журнал этапов, не очередь действующих задач; более поздние
+решения заменяют ранние предложения. Текущий runtime устройства — `61dbfaa`.
+
+### Выполнено и подтверждено
+
+- Standby при открытии исправлен `e31dcdd`, тест включён в CI `61dbfaa`.
+  [CI 43213319349](https://github.com/Mutaracha/kobalt_ru/actions/runs/43213319349)
+  PASS native + Kobo Qt5; Qt6 skipped. Qt5 artifact **13943347072**,
+  36 437 415 bytes; native evidence 13943227295.
+- Device evidence: upload `bc07d8b`, `doc/diagnostics 61dbfaa.zip`, runtime
+  `61dbfaa`, Qt5.2.1 / firmware 4.38.23828. Нет suspend в течение открытия;
+  reader-shown **11881.27 ms**, prepare 4582 / engine 4175 / UI 1278 / show
+  1728 ms (вложенные величины, не суммировать). Document/layout cache hit.
+  Boot-minus-monotonic оставался 67632 ms между loading и reader-shown.
+  После закрытия standby снова успешен; native-save verified, cache-save 24 ms;
+  ошибок/давления памяти нет. Это cached run, не доказательство общего ускорения.
+- Comics: per-book/default off, aspect-fit без crop/stretch; обычные поля и
+  колонтитулы редактируются/сохраняются, но временно игнорируются. Выключение
+  возвращает последние значения. Landscape: две portrait-страницы рядом,
+  широкая исходная spread отдельно без поворота. Без zero-leading у прозы.
+  Пользователь подтвердил отсутствие ghosting: рабочую waveform policy сохранить.
+- Progress: Off/Bottom/Top = Выключено/Внизу/Вверху, legacy enabled → Bottom.
+  Верхняя полоса НАД header, ticks вниз; нижняя ticks вверх. Без второго
+  нижнего резерва; comics временно скрывает обе позиции, не теряя выбор.
+- Согласованное comics description EN/RU: “Hides margins, headers and footers,
+  ignoring the current layout settings.” / «Убирает поля и колонтитулы,
+  игнорируя текущие настройки раскладки.» Строка использует shared presentation.
+- R1/R2 beta7 исправлены `2c9a474`, R3 «Резервные шрифты» — `d7b7d55`;
+  CI 42514895433 / 42516367475 PASS. Каталог/поведение выбора не менялись;
+  длинное пояснение R3 отклонено. Исторические снимки не доказывают новый UI.
+- Appearance deferred `e21c3de`, Settings остаётся eager. CI 43202483204 PASS;
+  Qt5 artifact 13935374416 (36 439 377 bytes), native 13935813257.
+  Общая оптимизация открытия **остановлена пользователем**, не возобновлять.
+
+### Незавершённое / проверки при переносе
+
+- Нижние сноски: gap должен совпадать с обычным зазором соседних body lines.
+  `FOOTNOTE_MARGIN_REM=1` — root-font reservation, не body line spacing;
+  `lvdocview.cpp` добавляет `h_avail-footnotes_height` перед первой сноской.
+  Не делать draw-only сдвиг: согласовать drawing, hit testing, pagination,
+  selection и tap/popup. FB2 + EPUB, одна/несколько/split notes, 100/150/200%
+  интервал, разные font sizes, cached reopen и preview. Исправления gap пока нет.
+- После переноса проверить portrait → landscape → wide → odd page, обратный ход,
+  сохранение позиции/reopen и читаемость FB2/EPUB с comics on/off. CI не заменяет
+  физическую проверку landscape. Для progress — header/footer on/off, размеры
+  текста, reflow, preview, ticks, смена положения без остатка старой полосы.
+- Appearance: Settings до Text/Layout, theme/interface-font change до первого
+  открытия панели, повторное открытие без дублирования/reset; отдельно latency
+  первого panel-open. Не считать deferred build доказанным общим ускорением.
+- Standby: кроме подтверждённого успешного открытия, повторить cancel/error/
+  fallback/restart и независимый save veto на устройстве после миграции.
+  Закрытие книги = выход в Nickel; A и B можно выполнять в общем логе по порядку.
+  Boot/monotonic различать, не очищать пользовательские кэши для сравнения.
+
+### Сверка upstream beta.8 и порядок будущей миграции
+
+[Release](https://github.com/nicoverbruggen/kobalt/releases/tag/v1.0-beta.8).
+Сравнена beta7 `e86533c` → beta8 `679175046`; это подготовка, не merged/tested build.
+
+| Область | Найденное пересечение / правило переноса |
+|---|---|
+| `native_lifecycle.*`, `reader_coordinator.cpp` | Upstream уже содержит `openingWorkPending` и `busy && !run.fallbackAlert`; сохранить единственную реализацию + regression `platform.shutdown`, не накладывать наш патч второй раз. |
+| `engine_document.cpp`, appearance/settings, notes | Upstream вводит `inpage_footnotes` с default false; fork default-on и сохранённые `fb2_inpage_footnotes`/EPUB keys требуют явного mapping. Не потерять popup и numeric-title semantics, preview/cache invalidation. |
+| Reader controls / presets / Zen | Новые upstream text presets и Zen пересекаются с fork comics/progress effective geometry. Не перезаписывать base values; top остаётся над header. |
+| Kobo progress save | Upstream исправляет duplicate-ID save; перенести исправление, сохранив FB2 time/percentage-only positions и существующий upstream EPUB path. |
+| Sleep / settings / About | Новые privacy/styles/feature hiding требуют контекстной EN/RU сверки. Stock About и fork UTC rendering не менять; новые строки сначала согласовать. |
+| Engine/UI shared files | My Words, search scopes, color normalization, opening logo и large TOC — upstream функциональность; не затереть при переносе FB2/comics overrides. |
+| Storage | Beta8 обновляет БД: до первого запуска полный backup `.adds/kobalt/` и штатной Kobo БД; старые beta не читают обновлённую БД. Откат только с согласованным восстановлением backup, не поверх migrated profile. Репагинация ожидаема. |
+
+Подготовительный refactor: fork comics CSS вынесен из upstream-heavy
+`EngineDocument::applyStyleSheet` в существующий `reader_page_layout.*`.
+Литералы и порядок применения publisher/user → comics → spread сохранены;
+геометрия, waveform, storage и opening lifecycle не менялись.
+Следующий этап — отдельно разрешённый merge, resolution по таблице, Qt5 syntax,
+focused native/EPUB/FB2/comics/cache/lifecycle/UI, package/adapter checks, затем
+устройство. Ни beta8 runtime, ни совместимость миграции сейчас не подтверждены.
+
+### Свёрнутые отчёты и исходные evidence
+
+Удалены из текущего `doc/` выполненные отчёты и исходные uploads; история Git
+сохранена. Полные документы/оригиналы доступны по базе
+[`bc07d8b`](https://github.com/Mutaracha/kobalt_ru/tree/bc07d8b0b60f354ac6892f0496e0ac0434590062/doc).
+Постоянные инструкции, opt-in manual books и нормализованные screenshots в
+`tests/manual/` сохранены без изменения байтов; vendor CoolReader binaries не
+являются зависимостями сборки и больше не лежат в текущем дереве.
+
+| Удалённый отчёт / исходник в указанном commit | Сохранённый итог |
+|---|---|
+| `beta7-ui-review.md`, `dddace7/` | R1/R2/R3 решения и CI выше; полный покадровый аудит в истории. Не выдавать исходные captures за проверку последующих SHA. |
+| `comics-progress-proposal.md`, `Spice and Wolf v01.kepub.epub/` | Контракт выше заменяет раннее single-page-in-both-orientations предложение. Byte-preserved reduced EPUB остаётся `tests/manual/books/comics/`; происхождение ad349b7. |
+| `build106-device-review.md`, `build106-diagnostics-analysis.md` | 94/d7b7d55 → 106/d5c64a5: repeat medians 5.10→4.85, 5.70→5.70, 7.20→7.00 s; общего ускорения не доказано. 5bbff30 opening reader-shown 8.769/5.300/7.780/9.055 s; parsed misses не доказывают сломанный cache. Settings ~0.53s, Appearance ~0.31s — вложенные spans. |
+| `build109-device-review.md`, `0533a90/`, `diagnostics a b/` | Общий A→B журнал принят; model_load 3678/747/4383 ms — не usable-screen timing. CI 43090289292 PASS, Qt5 13888743153 (36 429 810 bytes), native 13890060155; поздние исправления описаны ниже в истории. |
+| `build107-test-plan.md` | Активная часть checklist перенесена выше; подтверждённые CI и device standby отделены от непроведённых проверок. |
+| `coolreader-opening-analysis.md`, `CoolReader/` | Публичный Vlasovsoft frontend 2015 не доказанный source 2022/2023 binaries. FB2 embedded-font enumeration пропущена; общие external fonts/hyphenation обязательны; измеримого выигрыша не заявлено. Оптимизация остановлена. |
+| `diagnostics comics/`, `diagnostics e21c3de/`, `diagnostics 61dbfaa.zip` | 0533a90 software logs не доказывают physical ghosting. e21: реальный suspend 29.895s, а не доказанная UI regression. 61dbfaa device result выше закрывает этот дефект. |
+
+Референсы: [KOReader image refresh rule](https://github.com/koreader/koreader/blob/eb8fe6a3e4b0a8aefce4f8875083ae922963c4e2/frontend/apps/reader/modules/readerview.lua#L263-L297)
+(coverage/change >=7.5% для CRe, не универсальный CBR алгоритм),
+[CREngine](https://github.com/koreader/crengine/tree/f335f7a97e240f505bb8a0dfb721fcb7912a7824),
+[Vlasovsoft source](https://github.com/sergeyvl/vlasovsoft/tree/5f799936b020f5d87055f1837956524ca1324be1).
+
+### CI uploads и очистка Actions
+
+Fork device workflow игнорирует doc-only/Markdown/manual-screenshot pushes;
+source+docs по-прежнему собираются, workflow_dispatch сохранён. Upstream
+`ci.yml` на эту ветку не подписан; его release/tag triggers не менялись.
+Удаление run 43219532382 получило **403 Resource not accessible by integration**;
+**ничего не удалено**. `bash platforms/ci/cleanup-runs.sh` показывает кандидатов,
+`--delete` удаляет только completed failed/cancelled и exact manual-upload-title
+runs текущей ветки, с повторной проверкой перед DELETE. Нужны Actions write права.
+Удаление необратимо, включая artifacts/logs; active runs не удалять.
 
 ## beta7 — интеграция и автоматические проверки завершены; устройство ожидается
 
@@ -2628,7 +2734,7 @@ disabled состояние; не менять input behavior ради испр�
   поэтому точная причина пользовательского случая не объявлена доказанной.
 - Просмотрена вся серия doc/dddace7/screen_001–053.png из 2cdb862, отдельные
   плотные окна рассмотрены в исходном разрешении. Покадровая карта/ограничения
-  и открытые предложения: doc/beta7-ui-review.md. Provenance + SHA256SUMS
+  и открытые предложения: FB2_FORK_PLAN.md. Provenance + SHA256SUMS
   добавлены рядом с неизменёнными оригиналами; scratch sheets не публикуются.
 - R1: 035 — значение «Из книги» vs «Издатель» в paragraph_choices_description.
   Предложена точечная замена имени значения, assets не менялись.
@@ -2660,7 +2766,7 @@ disabled состояние; не менять input behavior ради испр�
 - UI regression: initial Automatic, повторное открытие English/Russian/Automatic
   при русском UI, все три checked-state, отсутствие записи при open/cancel,
   сохранение live locale. Существующие async save/geometry assertions сохранены.
-- Пример R3 приведён в doc/beta7-ui-review.md только для обсуждения. Нужно
+- Пример R3 приведён в FB2_FORK_PLAN.md только для обсуждения. Нужно
   объяснять serif fallback/family mapping, не только отсутствие font file.
 - Diff-only clang-format и точечная проверка RU/placeholder PASS. Локального
   Qt/SDK нет; native/Qt5 CI и новый artifact ожидаются. Qt6 повторно не запускается.
@@ -2854,12 +2960,12 @@ sleep/reopen, возврат последних полей/chrome и ticks по�
 
 ## Build106 device feedback
 
-Build 106 hardware review: per-book mode, aspect and zero margins confirmed. Preserve raw timing/evidence; no general speedup demonstrated. Next: KOReader-informed committed-page full refresh policy for comics, compact row + approved description, top/bottom progress placement, measured body-to-note gap. See doc/build106-device-review.md; new wording pending approval, no runtime change in this evidence commit.
+Build 106 hardware review: per-book mode, aspect and zero margins confirmed. Preserve raw timing/evidence; no general speedup demonstrated. Next: KOReader-informed committed-page full refresh policy for comics, compact row + approved description, top/bottom progress placement, measured body-to-note gap. See FB2_FORK_PLAN.md; new wording pending approval, no runtime change in this evidence commit.
 
 
 ### Diagnostics 5bbff30 and approved wording
 
-Diagnostics 5bbff30 parsed: 16,447 valid records, four openings. Parsed-document cache misses in all four; layout cache hits in three. UI build1.26–1.50s, with Settings~0.53s and Appearance~0.31s. Investigate miss reasons, lazy unopened GUI panels and image-resource churn; no speedup/cache-bug claim. Details: doc/build106-diagnostics-analysis.md. User approved comics description EN/RU and three-way progress selector. Retain partial damage and investigate graphics waveforms before forcing every-turn full flashes.
+Diagnostics 5bbff30 parsed: 16,447 valid records, four openings. Parsed-document cache misses in all four; layout cache hits in three. UI build1.26–1.50s, with Settings~0.53s and Appearance~0.31s. Investigate miss reasons, lazy unopened GUI panels and image-resource churn; no speedup/cache-bug claim. Details: FB2_FORK_PLAN.md. User approved comics description EN/RU and three-way progress selector. Retain partial damage and investigate graphics waveforms before forcing every-turn full flashes.
 
 
 ## Progress/comics follow-up implementation
@@ -2870,7 +2976,7 @@ reservation and header snapshot invalidation. Qt5 comics uses graphics repair
 waveform on submitted damage, preserving screen-refresh preferences; hardware
 quality/latency still needs verification. Added opening_id and cache-save wrapper
 reasons, not guessed parsed-cache miss reasons. No cache cleanup or memory-budget
-increase. Native/Qt5 CI pending. Test plan: doc/build107-test-plan.md.
+increase. Native/Qt5 CI pending. Test plan: FB2_FORK_PLAN.md.
 
 Incomplete explicitly: exact body-to-footnote gap (requires renderer/hit-test
 coordination) and lazy construction of settings/appearance panels. These are not
@@ -2969,3 +3075,13 @@ fallback and independent save veto. Runtime 61dbfaa verified by run
 offline / package-content checks PASS; Qt6 skipped. General opening optimization
 remains stopped; this is a correctness fix, no startup speedup promise. Device
 confirmation of uninterrupted opening remains outstanding.
+
+## Проверки подготовки beta.8
+
+Локально: YAML без duplicate keys; push filters и manual dispatch проверены;
+CSS-литералы до/после refactor byte-equivalent; `bash -n` cleanup helper;
+mock API проверки dry-run/delete/revalidation/changed-run skip и остановки
+при ошибках list/get/delete; `sha256sum -c tests/manual/materials.sha256` PASS.
+Реальный cleanup dry-run выполнен, DELETE после 403 не повторялся.
+CMake/Qt SDK локально отсутствуют: C++ syntax/build и runtime regressions
+переданы профильному CI; beta8 migration/device validation не выполнялась.

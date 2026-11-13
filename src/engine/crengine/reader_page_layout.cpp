@@ -5,6 +5,22 @@
 #include <vector>
 
 namespace kobalt {
+const char *comicPageCss()
+{
+    return "\nhtml,body,DocFragment,div,p,section { margin:0 !important; padding:0 !important; "
+            "text-indent:0 !important; }\n"
+            "body[data-kobalt-leading-image=\"1\"] { padding-top:0 !important; }\n"
+            "img { display:block !important; width:auto !important; height:auto !important; "
+            "max-width:100% !important; max-height:100vh !important; margin:0 auto !important; "
+            "padding:0 !important; page-break-inside:avoid !important; page-break-after:always !important; }\n";
+}
+
+const char *comicSpreadCss()
+{
+    return "img[data-kobalt-comic-portrait=\"1\"], image[data-kobalt-comic-portrait=\"1\"] "
+            "{ max-width:50vw !important; }\n";
+}
+
 namespace {
 ldomNode *leadingImage(ldomNode *root)
 {

@@ -1,3 +1,0 @@
-CoolLib|http://coollib.com/opds
-Flibusta|http://flibusta.is/opds
-LibRusEc|http://lib.rus.ec/opds

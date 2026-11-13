@@ -281,7 +281,7 @@ No book parsing takes place in paint.
 Opening performance remains under investigation. FB2 now explicitly skips
 EPUB embedded-font enumeration, while necessary shared font initialization and
 generic-family fallbacks are preserved. No measured opening-time speedup is
-claimed; see `doc/coolreader-opening-analysis.md`.
+claimed; see `FB2_FORK_PLAN.md`.
 
 ## Historical implementation: manual rendering-cache cleanup
 

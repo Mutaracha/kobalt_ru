@@ -7,4 +7,5 @@ screen_001-8: mode disabled in Layout; row too tall, description requested.
 screen_002-6 / screen_003-4: lower progress ticks with in-page notes on/off;
 progress redraw confirmed. cr.png is the CoolReader comparison, not Kobalt.
 Screenshots alone do not distinguish framebuffer residue from physical ghosting.
-See doc/build106-device-review.md for raw opening times and pending UI wording.
+Raw opening times remain in opening-times.json here. Current approvals and results
+are in the repository-root FB2_FORK_PLAN.md; the former report is in Git history.
