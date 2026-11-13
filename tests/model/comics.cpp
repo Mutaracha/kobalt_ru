@@ -187,9 +187,9 @@ int main(int argc, char **argv)
     require(center.saveDocumentCache(), "Save centered spread cache");
     EngineDocument centerCached(test::readerFonts());
     centerCached.setDocumentCache(centeredCache.path(), "centered-spread", "comics-center-test", 1024 * 1024);
-    openCentered(centerCached, {{appearance::comicsModeKey, true}});
-    require(centerCached.openedFromCache() && centerCached.pages() == 2,
-            "Cached center placement lost standalone page mapping");
+    openCentered(centerCached, center.state());
+    require(centerCached.openedFromCache(), "Compatible centered checkpoint missed parsed cache");
+    require(centerCached.pages() == 2, "Cached center placement lost standalone page mapping");
     require(center.applyAppearance({}, QSize(1264, 1680)) && center.pages() == 2,
             "Portrait center mapping changed");
     require(center.applyAppearance({}, QSize(1680, 1264)) && center.pages() == 2,

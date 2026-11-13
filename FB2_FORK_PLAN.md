@@ -3152,3 +3152,12 @@ mock API проверки dry-run/delete/revalidation/changed-run skip и ост
 Реальный cleanup dry-run выполнен, DELETE после 403 не повторялся.
 CMake/Qt SDK локально отсутствуют: C++ syntax/build и runtime regressions
 переданы профильному CI; beta8 migration/device validation не выполнялась.
+
+### Проверка нового center-spread патча
+
+`353f3e88`: run43485767884 — Qt5/offline/adapter/package PASS, native FAIL
+на новом cached-center regression. Первое открытие standalone center проходит;
+cache checkpoint test должен передавать сохранённый `state()`, как существующий
+comics cache-test, а не восстанавливать только один флаг на default appearance.
+Тест исправлен; cache hit и число screens теперь проверяются независимо.
+Это не подтверждение hardware landscape или устранения reading freeze.

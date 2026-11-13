@@ -1,5 +1,12 @@
 # Нижние сноски EPUB / FB2
 
+> Документ описывает текущую fork/beta7 реализацию. Новое решение пользователя:
+> при интеграции beta.8 заменить её полным upstream механизмом, включая
+> `inpage_footnotes` / default false, DOM markers и note interaction tests.
+> Прежний default-on/custom-CSS контракт ниже не является условием миграции.
+> Полный beta8 перенос пока не выполнен; актуальный статус — в FB2_FORK_PLAN.md.
+
+
 Текущая реализация следует стандартным CSS-профилям KOReader на том же
 закреплённом CREngine f335f7a97e24. Полная карта исходников, отличий и проверок:
 [архив сверки с KOReader](../FB2_FORK_PLAN.md#archive-koreader).
