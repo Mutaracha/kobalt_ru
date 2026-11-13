@@ -379,5 +379,6 @@ preparation stays deferred. Request identity survives cached draws and neighbour
 map pressure. `comic-frame-images` records pending counts around publication.
 Regression coverage includes unequal-height halves, hit/letterbox bounds, cold and
 mixed-ready frames, neighbour pressure and wide center artwork. Waveform unchanged;
-opening-speed work remains stopped. Native and Kobo Qt5 CI pending for this patch;
+opening-speed work remains stopped. Native and Kobo Qt5 CI passed for runtime `3e810b7` (run
+[43502596739](https://github.com/Mutaracha/kobalt_ru/actions/runs/43502596739));
 physical simultaneous display remains device acceptance, not a CI claim.

@@ -3272,5 +3272,16 @@ preparation stays deferred. Request identity survives cached draws and neighbour
 map pressure. `comic-frame-images` records pending counts around publication.
 Regression coverage includes unequal-height halves, hit/letterbox bounds, cold and
 mixed-ready frames, neighbour pressure and wide center artwork. Waveform unchanged;
-opening-speed work remains stopped. Native and Kobo Qt5 CI pending for this patch;
+opening-speed work remains stopped. Native and Kobo Qt5 CI passed for runtime `3e810b7` (run
+[43502596739](https://github.com/Mutaracha/kobalt_ru/actions/runs/43502596739));
 physical simultaneous display remains device acceptance, not a CI claim.
+
+Qt5 package: [artifact 14075461820](https://github.com/Mutaracha/kobalt_ru/actions/runs/43502596739/artifacts/14075461820),
+36 443 425 bytes. Native-results artifact 14074293299. Qt6 intentionally skipped.
+Device evidence: `test & diagnostic/1a56b68/`, 9118 events, unmodified source
+1a56b68 / Qt5.2.1 / firmware4.38.23828. Repeated ~750–800ms image-load captures
+remain in that old build; the events do not identify left/right publication and
+are not proof of a particular physical refresh. New pending-count diagnostics
+separate readiness from screen-paint confirmation. Verify portrait-only center
+rotation, no rotation for wide center, independently centered halves, viewer hits,
+forward/back/reopen/orientation and simultaneous pair display on device.
