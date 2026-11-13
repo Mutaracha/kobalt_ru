@@ -472,7 +472,7 @@ void EngineDocument::setDocumentCache(QString directory, QByteArray fingerprint,
     // Parsed pages from older density, image and double-scaled line-height
     // policies must not survive these renderer changes. The density is fixed by the host
     // before any document opens and is shared by the main reader and previews.
-    cachePolicy_ = std::move(policy) + ":css-density-leading-v1:page-layout-v2:line-height-v3:"
+    cachePolicy_ = std::move(policy) + ":css-density-leading-v1:page-layout-v3:line-height-v3:"
             + QByteArray::number(readingPpi.load());
     cacheBytes_ = bytes;
 }
@@ -481,9 +481,9 @@ QByteArray EngineDocument::documentCachePolicy() const
 {
     // Detect CSS edits for cache reuse only. User CSS is never an installation asset.
     if (userStyleSheet_.isEmpty()) {
-        return cachePolicy_ + (comicsMode_ ? ":comics-v2:on" : "");
+        return cachePolicy_ + (comicsMode_ ? ":comics-v3:on" : "");
     }
-    return cachePolicy_ + (comicsMode_ ? ":comics-v2:on" : "") + ":user-css-v1:"
+    return cachePolicy_ + (comicsMode_ ? ":comics-v3:on" : "") + ":user-css-v1:"
             + QCryptographicHash::hash(userStyleSheet_, QCryptographicHash::Sha256).toHex();
 }
 

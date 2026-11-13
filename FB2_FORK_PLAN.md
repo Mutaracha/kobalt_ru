@@ -1,5 +1,72 @@
 # Техническое задание для ИИ-агента: Форк Kobalt с нативной поддержкой FB2 на Kobo (Сценарий 1)
 
+## Новые данные 64930c0 / a9a7660: freeze и center spread
+
+### Диагностика зависания runtime 61dbfaa
+
+Архив `test & diagnostic/diagnostics 61dbfaa.zip` не равен прежнему архиву
+из bc07d8b. Разобраны все сохранённые JSONL rotations; строки корректны.
+Время ниже — UTC из лога, не дата составления документа.
+
+- До инцидента runtime `61dbfaa`, unmodified, Qt5.2.1 / fw4.38.23828.
+  История boot session с 20:05:46 до 22:05:07 2026-11-12 сохранена.
+- В 22:05:07.143 принят forward с page 64. Render 75 завершён в .148
+  (3 ms), frame-ready .157; display-flush завершён .217 (10.984 ms),
+  page-turn-painted page **65** .217 (73.675 ms). Это software submission,
+  не доказательство успешного обновления физического экрана.
+- Последний completed standby attempt **487**: kernel-suspend вернулся
+  успешно до turn, все operation-start/end этой session закрыты. Затем
+  neighbours-end .410, последнее событие **image-load-end .437**, 451 ms,
+  failed=false, memory_pressure=false, RSS ~190152 KiB, available ~289540 KiB,
+  fd_count45/soft1024. Нет доказательства OOM, незавершённого render/flush
+  или зависания внутри последнего standby syscall.
+- После этого события отсутствуют: повторные нажатия, power-button/sleep
+  request, orderly shutdown, crash/fatal/backtrace. Лог обрывается до
+  следующего startup **22:06:51.260**, boot_ms19875 (новый boot; PID216
+  повторился — PID сам по себе не идентификатор reboot).
+- Вывод: хвост перед зависанием и граница reboot сохранились, **точная
+  причина зависания не записана**. Нельзя объявить исправлением ни смену
+  waveform, ни новый opening guard. Не добавлять ложную привязку page65
+  к page-spread-center из отдельного уменьшенного EPUB без общей identity.
+  При повторе нужны независимые kernel/system crash logs либо stack snapshot
+  до reset; текущий архив сохранить целиком, повтор уже не требуется для анализа.
+
+### Ошибка отдельного разворота a9a7660
+
+`Sin City vol 4.kepub.epub`: spine kcc-0055 обычная portrait-страница,
+kcc-0056 имеет **rendition:page-spread-center**. Оба PNG portrait-shaped;
+второй содержит повёрнутую композицию. Поэтому dimensions-only classifier
+ошибочно разрешал pair. Теперь OPF center переносится во временный engine
+input body marker и исключает страницу из pairing и half-width CSS. Исходный
+EPUB не меняется, rotation/crop/stretch не добавлены. Parsed cache policy
+`page-layout-v3` / `comics-v3` исключает старые DOM без нового metadata;
+это также покрывает cached-open comics off → on.
+Synthetic regression: portrait-shaped center отдельно от соседа, cached reopen,
+portrait/landscape roundtrip, enable после opening off. Физическая проверка
+новой сборки ещё не проведена. Рабочая waveform policy не менялась.
+
+### Решение пользователя о beta.8
+
+**Заменяем fork standby и footnotes на upstream beta.8**, не поддерживаем
+параллельную собственную реализацию. Это заменяет прежнее требование сохранить
+default-on/custom CSS/numeric-title presentation как обязательные условия
+переноса сносок. База upstream: `c1d6db8e` (standby) и `1112e27d` (footnotes).
+Standby gate приведён к upstream ordering/comments/callback placement, семантика
+та же `busy && !run.fallbackAlert`; локальный regression сохраняется.
+Footnotes переносить целиком: canonical `inpage_footnotes`, default false,
+DOM markers, note links, selection/hit testing, appearance persistence и tests.
+Не ограничиваться копированием CSS. Общий beta8 merge ещё не выполнен;
+отдельный incomplete backport с конфликтующими двумя переключателями не выпускать.
+Сохранённые значения legacy key перенести явно, новые строки EN/RU согласовать
+до UI изменений. Ни freeze fix, ни footnote-gap fix этим решением не доказаны.
+
+### Владение данными
+
+Новые сырые данные принадлежат `test & diagnostic/`, checksums рядом; `doc/`
+оставляем для инструкций/результатов. Проверка текущего `doc/` не обнаружила
+оставшихся сырых uploads: в предыдущей очистке они уже убраны в Git history.
+Curated `tests/manual/` не перемещаем и не ломаем workflow publisher arguments.
+
 ## Подготовка beta.8 — актуальный статус
 
 **beta.8 НЕ слита.** База подготовки: fork `bc07d8b0b60f354ac6892f0496e0ac0434590062`;
@@ -66,7 +133,7 @@ upstream `v1.0-beta.8` = `679175046d8c806ea3b404525180fbc29a26fcd2`.
 | Область | Найденное пересечение / правило переноса |
 |---|---|
 | `native_lifecycle.*`, `reader_coordinator.cpp` | Upstream уже содержит `openingWorkPending` и `busy && !run.fallbackAlert`; сохранить единственную реализацию + regression `platform.shutdown`, не накладывать наш патч второй раз. |
-| `engine_document.cpp`, appearance/settings, notes | Upstream вводит `inpage_footnotes` с default false; fork default-on и сохранённые `fb2_inpage_footnotes`/EPUB keys требуют явного mapping. Не потерять popup и numeric-title semantics, preview/cache invalidation. |
+| `engine_document.cpp`, appearance/settings, notes | По новому решению заменить fork механизм полностью upstream beta8, default false / `inpage_footnotes`; legacy values мигрировать явно. Не сохранять отдельный fork CSS/номерной presentation как обязательный контракт. Перенести upstream links/selection/hit-testing/cache tests целиком, сохранить FB2 поддержку. |
 | Reader controls / presets / Zen | Новые upstream text presets и Zen пересекаются с fork comics/progress effective geometry. Не перезаписывать base values; top остаётся над header. |
 | Kobo progress save | Upstream исправляет duplicate-ID save; перенести исправление, сохранив FB2 time/percentage-only positions и существующий upstream EPUB path. |
 | Sleep / settings / About | Новые privacy/styles/feature hiding требуют контекстной EN/RU сверки. Stock About и fork UTC rendering не менять; новые строки сначала согласовать. |

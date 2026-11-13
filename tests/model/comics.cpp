@@ -161,5 +161,42 @@ int main(int argc, char **argv)
     require(spread.goTo(widePosition), "Wide anchor lost after rotation");
     require(spread.applyAppearance({}, QSize(1680, 1264)), "Rotate mixed art back");
     require(spread.page() == 1 && spread.pages() == 3, "Spread anchor/page mapping changed after rotation");
+    // KCC can store a spread in a portrait-shaped bitmap and mark its spine
+    // item as page-spread-center. Aspect ratio alone must never pair it.
+    auto centered = mixed;
+    centered["book.opf"] = "<package xmlns='http://www.idpf.org/2007/opf' version='3.0'><metadata/><manifest><item id='p' href='c.xhtml' media-type='application/xhtml+xml'/><item id='s' href='center.xhtml' media-type='application/xhtml+xml'/><item id='i' href='art.png' media-type='image/png'/></manifest><spine><itemref idref='p'/><itemref idref='s' properties='rendition:page-spread-center'/></spine></package>";
+    centered["c.xhtml"] = "<html xmlns='http://www.w3.org/1999/xhtml'><head/><body><div><img src='art.png'/></div></body></html>";
+    centered["center.xhtml"] = centered["c.xhtml"];
+    const auto openCentered = [&centered](EngineDocument &document, const QJsonObject &settings) {
+        QMap<QString, qint64> lengths;
+        for (auto it = centered.cbegin(); it != centered.cend(); ++it) lengths[it.key()] = it.value().size();
+        auto resources = std::make_shared<ResourceCache>(centered.keys(),
+            [centered](const QString &name, const ResourceCache::Sink &sink, QString *) {
+                const auto bytes = centered.value(name);
+                return sink(bytes.constData(), bytes.size());
+            }, std::make_shared<std::atomic_bool>(false));
+        QString error;
+        require(document.openResources(resources, lengths, QSize(1680, 1264), settings, &error), qPrintable(error));
+    };
+    QTemporaryDir centeredCache;
+    require(centeredCache.isValid(), "Create centered spread cache");
+    EngineDocument center(test::readerFonts());
+    center.setDocumentCache(centeredCache.path(), "centered-spread", "comics-center-test", 1024 * 1024);
+    openCentered(center, {{appearance::comicsModeKey, true}});
+    require(center.pages() == 2, "Centered portrait-shaped source paired with its neighbour");
+    require(center.saveDocumentCache(), "Save centered spread cache");
+    EngineDocument centerCached(test::readerFonts());
+    centerCached.setDocumentCache(centeredCache.path(), "centered-spread", "comics-center-test", 1024 * 1024);
+    openCentered(centerCached, {{appearance::comicsModeKey, true}});
+    require(centerCached.openedFromCache() && centerCached.pages() == 2,
+            "Cached center placement lost standalone page mapping");
+    require(center.applyAppearance({}, QSize(1264, 1680)) && center.pages() == 2,
+            "Portrait center mapping changed");
+    require(center.applyAppearance({}, QSize(1680, 1264)) && center.pages() == 2,
+            "Center placement lost after landscape round trip");
+    EngineDocument centerToggle(test::readerFonts());
+    openCentered(centerToggle, {{appearance::comicsModeKey, false}});
+    require(centerToggle.applyAppearance({{appearance::comicsModeKey, true}}) && centerToggle.pages() == 2,
+            "Opening with comics off lost standalone metadata on enable");
     std::puts("PASS: comics fit, zero effective margins, orientation and editable base persistence");
 }

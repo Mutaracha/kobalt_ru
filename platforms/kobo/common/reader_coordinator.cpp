@@ -158,13 +158,12 @@ ReaderCoordinator::ReaderCoordinator(ReaderEnvironment &environment, Coordinator
         disposeForTransition([this] { status("authorization-lost"); }, false);
     };
     lifecycle->readerInputActive = [this] { return run.reader && run.reader->isVisible(); };
-    // Query the coordinator's existing state rather than holding a global
-    // wake lock: all completion/cancellation/error paths already clear busy.
-    // An error/fallback dialog awaiting the user is not opening work.
-    lifecycle->openingWorkPending = [this] { return busy && !run.fallbackAlert; };
     lifecycle->beforeStandby = [this] {
         return busy || !run.reader || run.reader->flushBeforeStandby();
     };
+    // busy covers the whole opening, also before and after its engine jobs.
+    // A fallback or error dialog also sets busy, but waits for the user.
+    lifecycle->openingWorkPending = [this] { return busy && !run.fallbackAlert; };
     lifecycle->sleepWorkPending = [this] {
         return run.reader && (run.reader->pendingNetworkSync() || run.reader->pendingStorageSave());
     };

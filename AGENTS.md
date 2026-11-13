@@ -471,3 +471,21 @@ compatibility. Preserve fork default-on footnotes and legacy appearance-key mapp
 Documentation-only pushes are excluded from the fork device workflow; mixed source
 pushes and workflow_dispatch still build. Actions cleanup needs actions:write;
 never treat a 403 as a successful deletion. See platforms/ci/cleanup-runs.sh.
+
+## New device evidence and beta.8 replacement decision
+
+Raw user uploads now belong to `test & diagnostic/` (64930c0), not doc/. Preserve
+original bytes and checksums; curated tests/manual stays where its workflow paths
+expect it. Data-only uploads in this directory must not trigger package builds.
+A source bitmap's aspect ratio is not sufficient for comic pairing: OPF
+rendition:page-spread-center is standalone even when the bitmap is portrait-shaped.
+Honor it through parsing, cache reuse, comics toggling and orientation changes;
+never rotate artwork automatically or change the device-confirmed waveform.
+The new 61dbfaa archive ends after completed page65 submission and image loading,
+then shows a new boot. Cause of the reported freeze is unproven; do not claim an
+opening standby repair also fixes reading freezes.
+User now chooses upstream beta8 standby AND footnotes instead of fork mechanisms.
+This supersedes earlier default-on/custom bottom-note rendering requirements for
+the migration. Adopt full upstream note pipeline, not only its CSS; one canonical
+inpage_footnotes key (default false), explicit legacy-value migration and full
+links/selection/hit-test regressions. General beta8 merge is not performed yet.

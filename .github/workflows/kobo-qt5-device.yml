@@ -12,6 +12,7 @@ on:
     # Mixed source + documentation pushes still build; workflow_dispatch is unaffected.
     paths-ignore:
       - 'doc/**'
+      - 'test & diagnostic/**'
       - 'tests/manual/screenshots/**'
       - '**/*.md'
   workflow_dispatch:

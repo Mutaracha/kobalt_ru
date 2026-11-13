@@ -231,7 +231,7 @@ class ContentContainer : public LVContainer
 {
 public:
     explicit ContentContainer(LVContainerRef source, QSet<QString> skippedFonts = {})
-        : source(source), skippedFonts_(std::move(skippedFonts))
+        : source(source), skippedFonts_(std::move(skippedFonts)), singleComicPages_(singleComicPages(source))
     {
     }
 
@@ -281,6 +281,18 @@ public:
             return stream;
         }
         auto cleaned = withoutKoboStyleHacks(bytes);
+        if (singleComicPages_.contains(QDir::cleanPath(path))) {
+            // Byte offsets from Latin-1 are identical to the source, including UTF-8.
+            // Keep the source file unchanged; only the engine input gets the marker.
+            const QRegularExpression body(QStringLiteral("<body(?=[\\s>])"), QRegularExpression::CaseInsensitiveOption);
+            const auto match = body.match(QString::fromLatin1(cleaned));
+            if (match.hasMatch()) {
+                const int end = cleaned.indexOf('>', match.capturedEnd());
+                const auto bodyTag = cleaned.mid(match.capturedStart(), end - match.capturedStart());
+                if (!bodyTag.contains("data-kobalt-comic-single="))
+                    cleaned.insert(match.capturedEnd(), " data-kobalt-comic-single=\"1\"");
+            }
+        }
         if (cleaned == bytes) {
             stream->SetPos(0);
             return stream;
@@ -293,6 +305,7 @@ protected:
 
 private:
     QSet<QString> skippedFonts_;
+    QSet<QString> singleComicPages_;
 };
 
 class SectionContainer : public ContentContainer

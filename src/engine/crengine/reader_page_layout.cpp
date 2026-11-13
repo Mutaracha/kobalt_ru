@@ -3,6 +3,13 @@
 #include <lvimg.h>
 #include <QString>
 #include <vector>
+#include <QDir>
+#include <QHash>
+#include <QFileInfo>
+#include <QXmlStreamReader>
+#include <QRegularExpression>
+#include <QUrl>
+#include "support/qt_compat.h"
 
 namespace kobalt {
 const char *comicPageCss()
@@ -19,6 +26,53 @@ const char *comicSpreadCss()
 {
     return "img[data-kobalt-comic-portrait=\"1\"], image[data-kobalt-comic-portrait=\"1\"] "
             "{ max-width:50vw !important; }\n";
+}
+
+QSet<QString> singleComicPages(const LVContainerRef &container)
+{
+    QSet<QString> result;
+    if (container.isNull()) return result;
+    const auto read = [&container](const QString &path) {
+        auto stream = container->OpenStream(Utf8ToUnicode(path.toUtf8().constData()).c_str(), LVOM_READ);
+        // Package metadata is bounded, just like the chapter sanitizer.
+        if (stream.isNull() || stream->GetSize() > 2 * 1024 * 1024) return QByteArray();
+        QByteArray bytes(int(stream->GetSize()), '\0');
+        lvsize_t count = 0;
+        return stream->Read(bytes.data(), bytes.size(), &count) == LVERR_OK
+                && count == lvsize_t(bytes.size()) ? bytes : QByteArray();
+    };
+    QXmlStreamReader descriptor(read(QStringLiteral("META-INF/container.xml")));
+    QString package;
+    while (!descriptor.atEnd()) {
+        if (descriptor.readNext() == QXmlStreamReader::StartElement
+            && descriptor.name() == QLatin1String("rootfile")) {
+            package = descriptor.attributes().value("full-path").toString();
+            break;
+        }
+    }
+    if (package.isEmpty()) return result;
+    QXmlStreamReader xml(read(package));
+    QHash<QString, QString> manifest;
+    QSet<QString> centered;
+    const QRegularExpression whitespace(QStringLiteral("\\s+"));
+    while (!xml.atEnd()) {
+        if (xml.readNext() != QXmlStreamReader::StartElement) continue;
+        const auto attributes = xml.attributes();
+        if (xml.name() == QLatin1String("item")) {
+            manifest.insert(attributes.value("id").toString(), attributes.value("href").toString());
+        } else if (xml.name() == QLatin1String("itemref")) {
+            const auto properties = attributes.value("properties").toString().split(whitespace, qt::skipEmptyParts);
+            if (properties.contains(QStringLiteral("rendition:page-spread-center")))
+                centered.insert(attributes.value("idref").toString());
+        }
+    }
+    if (xml.hasError()) return result;
+    for (const auto &id : centered) {
+        const auto href = manifest.value(id);
+        if (!href.isEmpty())
+            result.insert(QDir::cleanPath(QFileInfo(package).path() + '/' + QUrl::fromPercentEncoding(href.toUtf8())));
+    }
+    return result;
 }
 
 namespace {
@@ -152,7 +206,10 @@ void markComicImages(LVDocView *view)
         if (!node || !node->isElement()) continue;
         if (node->isNodeName("img") || node->isNodeName("image")) {
             const auto image = node->getObjectImageSource();
-            const bool portrait = !image.isNull() && image->GetWidth() > 0
+            bool standalone = false;
+            for (auto *parent = node; parent && !parent->isNodeName("DocFragment"); parent = parent->getParentNode())
+                standalone |= parent->getAttributeValue("data-kobalt-comic-single") == U"1";
+            const bool portrait = !standalone && !image.isNull() && image->GetWidth() > 0
                     && image->GetHeight() > image->GetWidth();
             node->setAttributeValue(0, attribute, portrait ? U"1" : U"0");
         }
