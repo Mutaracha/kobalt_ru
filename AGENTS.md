@@ -530,5 +530,6 @@ relative to the screen after a half-turn. System invertPageTurnButtons and expli
 Kobalt button assignments retain priority. Other models, directional arrow keys,
 touch navigation and the Qt6 Nickel-owned mapping are unchanged. Regression checks
 cover both model polarities, all four orientations, both system inversion states
-and explicit assignments. Native/Kobo Qt5 CI pending; physical button acceptance
-on Libra 2 remains a device check. Comics rendering was confirmed correct by user.
+and explicit assignments. Native/Kobo Qt5 CI passed for runtime `e0b7c1f`
+([run 43510939320](https://github.com/Mutaracha/kobalt_ru/actions/runs/43510939320));
+physical button acceptance on Libra 2 remains a device check. Comics rendering was confirmed correct by user.
