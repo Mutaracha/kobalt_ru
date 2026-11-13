@@ -18,3 +18,7 @@ manual materials и checksums остаются в `tests/manual/`. В текущ
 тестовых/диагностических файлов после предыдущей очистки уже нет; удалённые
 оригиналы доступны в Git history bc07d8b, vendor binaries не восстанавливаем.
 Архивы не перепаковывать, изображения и книги не перекодировать.
+
+- `diagnostics a170389.zip` — upload853ba8c; содержит a170389 и более старые
+  61dbfaa sessions. Для landscape analysis брать startup a17038919:30:21 и
+  orientation request19:35:41.269 UTC. Итог — в корневом плане форка.

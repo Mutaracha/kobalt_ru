@@ -3,6 +3,7 @@
 #include <QtGlobal>
 #include <QVector>
 #include <QString>
+#include <QRect>
 #include <vector>
 #include <algorithm>
 
@@ -23,15 +24,34 @@ public:
                         - comicStarts[page] : 1;
     }
 
+    ldomNode *rotatedComicNode(int page) const
+    {
+        const int internal = firstPage(page);
+        return internal >= 0 && internal < comicCenters.size() ? comicCenters[internal] : nullptr;
+    }
+
+    QRect rotatedComicRect(int page) const
+    {
+        auto *node = rotatedComicNode(page);
+        const auto source = node ? node->getObjectImageSource() : LVImageSourceRef();
+        if (source.isNull()) return {};
+        const auto fitted = QSize(source->GetHeight(), source->GetWidth())
+                .scaled(QSize(viewportWidth, viewportHeight), Qt::KeepAspectRatio);
+        return QRect(QPoint((viewportWidth - fitted.width()) / 2,
+                            (viewportHeight - fitted.height()) / 2), fitted);
+    }
+
     // Called only after pagination, never from the paint or page-turn path.
     // Pair only adjacent image-only pages with one known portrait bitmap each.
     // Prose, wide art, covers and ambiguous/multiple-image pages remain single.
     void rebuildComicSpreads()
     {
         comicStarts.clear();
+        comicCenters.clear();
         if (!comicSpreads || viewportWidth <= viewportHeight || columns != 1) return;
         comicInternalPages = LVDocView::getPageCount();
         QVector<int> portraits(comicInternalPages, 0), images(comicInternalPages, 0);
+        comicCenters.fill(nullptr, comicInternalPages);
         std::vector<ldomNode *> pending{ getDocument()->getRootNode() };
         while (!pending.empty()) {
             auto *node = pending.back();
@@ -42,6 +62,14 @@ public:
                 const int page = LVDocView::getBookmarkPage(ldomXPointer(node, 0), true);
                 if (page >= 0 && page < comicInternalPages) {
                     ++images[page];
+                    bool centered = false, linked = false;
+                    for (auto *parent = node; parent && !parent->isNodeName("DocFragment"); parent = parent->getParentNode()) {
+                        centered |= parent->getAttributeValue("data-kobalt-comic-single") == U"1";
+                        linked |= parent->isNodeName("a");
+                    }
+                    const auto source = centered && !linked ? node->getObjectImageSource() : LVImageSourceRef();
+                    if (!source.isNull() && source->GetWidth() > 0 && source->GetHeight() > source->GetWidth())
+                        comicCenters[page] = node;
                     if (node->getAttributeValue("data-kobalt-comic-portrait") == U"1") ++portraits[page];
                 }
             }
@@ -51,8 +79,10 @@ public:
         QVector<bool> pairable(comicInternalPages, false);
         for (int page = 0; page < comicInternalPages; ++page) {
             const auto text = LVDocView::getPageText(false, page);
-            pairable[page] = images[page] == 1 && portraits[page] == 1
+            const bool imageOnly = images[page] == 1
                     && QString::fromUtf8(UnicodeToUtf8(text).c_str()).trimmed().isEmpty();
+            pairable[page] = imageOnly && portraits[page] == 1;
+            if (!imageOnly) comicCenters[page] = nullptr;
         }
         for (int page = 0; page < comicInternalPages;) {
             comicStarts.append(page);
@@ -84,6 +114,7 @@ public:
     void Resize(int w, int h)
     {
         comicStarts.clear();
+        comicCenters.clear();
         viewportWidth = w;
         viewportHeight = h;
         // Side margins belong to the screen; spacing separates the text columns.
@@ -154,6 +185,11 @@ public:
 
     ldomXPointer getNodeByPoint(lvPoint point, bool strict = false, bool selection = false)
     {
+        // The standalone image is composed rotated, not in its DOM rectangle.
+        // It contains no text or linked content; image-viewer hit identity is unchanged.
+        if (auto *node = rotatedComicNode(getCurPage()))
+            return rotatedComicRect(getCurPage()).contains(QPoint(point.x, point.y))
+                    ? ldomXPointer(node, 0) : ldomXPointer();
         if (!comicStarts.isEmpty() && comicPageCount(getCurPage()) == 2) {
             const int physical = point.x < viewportWidth / 2 ? 0 : 1;
             const int column = rightToLeft() ? 1 - physical : physical;
@@ -222,6 +258,7 @@ public:
 private:
     bool comicSpreads = false;
     QVector<int> comicStarts;
+    QVector<ldomNode *> comicCenters;
     int comicInternalPages = 0;
     int firstPage(int page) const
     {

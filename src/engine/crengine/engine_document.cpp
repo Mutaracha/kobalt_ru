@@ -337,6 +337,7 @@ EngineDocument::EngineDocument(EngineFontInputs fonts) : fonts_(std::move(fonts)
 EngineDocument::~EngineDocument()
 {
     sourceIndex_.reset();
+    comicImageRequests_.clear();
     engine_.reset();
     source_.reset();
     // Document work and destruction run on the engine worker. A preview may
@@ -481,9 +482,9 @@ QByteArray EngineDocument::documentCachePolicy() const
 {
     // Detect CSS edits for cache reuse only. User CSS is never an installation asset.
     if (userStyleSheet_.isEmpty()) {
-        return cachePolicy_ + (comicsMode_ ? ":comics-v3:on" : "");
+        return cachePolicy_ + (comicsMode_ ? ":comics-v4:on" : "");
     }
-    return cachePolicy_ + (comicsMode_ ? ":comics-v3:on" : "") + ":user-css-v1:"
+    return cachePolicy_ + (comicsMode_ ? ":comics-v4:on" : "") + ":user-css-v1:"
             + QCryptographicHash::hash(userStyleSheet_, QCryptographicHash::Sha256).toHex();
 }
 
@@ -1368,7 +1369,22 @@ bool EngineDocument::loadNextImage()
 {
     if (!source_ || !source_->resources)
         return false;
-    source_->resources->loadNextImage();
+    auto &resources = *source_->resources;
+    bool batch = false;
+    // A spread is one displayed screen. Load only its requested images, not
+    // the neighbour queue, before ReaderSession captures the next frame.
+    if (comicsMode_ && engine_ && engine_->comicPageCount(page()) == 2) {
+        const auto names = comicImageRequests_.value(page());
+        if (names.size() <= 2) {
+            for (const auto &name : names) {
+                if (!resources.prioritizePendingImage(name)) continue;
+                batch = true;
+                resources.loadNextImage();
+                if (!resources.error().isEmpty()) break;
+            }
+        }
+    }
+    if (!batch) resources.loadNextImage();
     return refreshImages();
 }
 
@@ -1382,6 +1398,7 @@ void EngineDocument::releaseImages()
     if (engine_)
         engine_->getDocument()->clearAlternateLayout();
     alternateViewport_ = {};
+    comicImageRequests_.clear();
     cache_.clear();
     spareImage_ = {};
     damage_.clear();
@@ -1500,11 +1517,34 @@ QImage EngineDocument::image(int pageNumber)
     if (result.isNull())
         return {};
     PageDrawBuffer buffer(result, darkMode_, true, &imageInversion_);
-    if (columns_ == 1) {
+    const bool trackSpread = comicsMode_ && source_ && source_->resources
+            && engine_->comicPageCount(pageNumber) == 2;
+    if (trackSpread) source_->resources->beginImageRequests();
+    if (auto *node = engine_->rotatedComicNode(pageNumber)) {
+        const auto source = node->getObjectImageSource();
+        const auto rect = engine_->rotatedComicRect(pageNumber);
+        result.fill(darkMode_ ? Qt::black : Qt::white);
+        // Scale to the final viewport before the quarter-turn: no additional source-sized
+        // bitmap copy, second resampling or artwork cropping is introduced.
+        QImage layer(rect.height(), rect.width(), QImage::Format_RGB32);
+        if (layer.isNull()) return {};
+        layer.fill(darkMode_ ? Qt::black : Qt::white);
+        PageDrawBuffer part(layer, darkMode_, true, &imageInversion_);
+        part.Draw(source, 0, 0, layer.width(), layer.height(), false);
+        QPainter painter(&result);
+        painter.translate(rect.x() + rect.width(), rect.y());
+        painter.rotate(90);
+        painter.drawImage(0, 0, layer);
+        buffer.hasImages = true;
+        buffer.imageRegions.append(rect);
+    } else if (columns_ == 1) {
         if (engine_->comicPageCount(pageNumber) == 2) {
             result.fill(Qt::white);
             QImage layer(size_, QImage::Format_RGB32);
-            if (layer.isNull()) return {};
+            if (layer.isNull()) {
+                if (trackSpread) source_->resources->endImageRequests();
+                return {};
+            }
             QPainter painter(&result);
             for (int i = 0; i < 2; ++i) {
                 PageDrawBuffer part(layer, darkMode_, true, &imageInversion_);
@@ -1538,6 +1578,10 @@ QImage EngineDocument::image(int pageNumber)
             for (const auto &region : part.imageRegions)
                 buffer.imageRegions.append(region.translated(x, 0));
         }
+    }
+    if (trackSpread) {
+        if (comicImageRequests_.size() >= 8) comicImageRequests_.clear();
+        comicImageRequests_[pageNumber] = source_->resources->endImageRequests();
     }
     // CREngine composites into 0x00RRGGBB. Qt's opaque RGB32 contract requires
     // 0xffRRGGBB, including when a painter uses this image as a source.

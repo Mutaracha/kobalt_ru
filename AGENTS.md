@@ -489,3 +489,18 @@ This supersedes earlier default-on/custom bottom-note rendering requirements for
 the migration. Adopt full upstream note pipeline, not only its CSS; one canonical
 inpage_footnotes key (default false), explicit legacy-value migration and full
 links/selection/hit-test regressions. General beta8 merge is not performed yet.
+
+## Landscape comics follow-up (supersedes the no-rotation center rule)
+
+For a170389 diagnostic follow-up see FB2_FORK_PLAN.md. A displayed portrait pair
+must load its actually requested visible image resources as one bounded batch,
+not capture/repaint the whole spread after each half or consume the neighbour
+queue first. Preserve normal one-image behavior, cancellation, optional failures,
+encoded-resource memory budget, source integrity and the verified waveform.
+The user now requests quarter-turn rotation for portrait-shaped page-spread-center
+art in landscape. Rotate clockwise, aspect-fit, on isolated image-only/non-linked
+center pages; already-wide art and portrait view stay unchanged. Preserve image
+viewer hit identity, letterbox exclusion, anchor preview and orientation roundtrip.
+Do not claim source downsampling from a smaller output buffer; PNG, SVG and JPEG
+have different decoder paths. This is a page-rendering correction, not permission
+to resume the stopped general opening-speed optimization.

@@ -184,6 +184,16 @@ int main(int argc, char **argv)
     center.setDocumentCache(centeredCache.path(), "centered-spread", "comics-center-test", 1024 * 1024);
     openCentered(center, {{appearance::comicsModeKey, true}});
     require(center.pages() == 2, "Centered portrait-shaped source paired with its neighbour");
+    require(center.go(1), "Select standalone centered screen");
+    const auto centerBounds = inkBounds(center.image(1));
+    require(centerBounds.width() == 1680 && qAbs(centerBounds.height() - 1160) <= 1,
+            "Portrait-shaped center spread was not rotated to full landscape width");
+    require(center.imageAt(centerBounds.center()).size() == QSize(1160, 1680),
+            "Rotated center hit did not retain the original image identity");
+    require(center.imageAt(QPoint(0, 0)).isNull(), "Letterbox outside rotated center hit artwork");
+    const auto centerAnchor = center.position();
+    require(inkBounds(center.imageFromAnchor()) == centerBounds,
+            "Anchored center preview lost landscape rotation");
     require(center.saveDocumentCache(), "Save centered spread cache");
     EngineDocument centerCached(test::readerFonts());
     centerCached.setDocumentCache(centeredCache.path(), "centered-spread", "comics-center-test", 1024 * 1024);
@@ -198,9 +208,52 @@ int main(int argc, char **argv)
             "Portrait center mapping changed");
     require(center.applyAppearance({}, QSize(1680, 1264)) && center.pages() == 2,
             "Center placement lost after landscape round trip");
+    require(center.goTo(centerAnchor) && inkBounds(center.image(center.page())) == centerBounds,
+            "Standalone anchor lost rotation after orientation round trip");
     EngineDocument centerToggle(test::readerFonts());
     openCentered(centerToggle, {{appearance::comicsModeKey, false}});
     require(centerToggle.applyAppearance({{appearance::comicsModeKey, true}}) && centerToggle.pages() == 2,
             "Opening with comics off lost standalone metadata on enable");
+    // Both resources of the visible spread must be ready before the next
+    // image-load frame. Neighbour resources remain pending, not preloaded.
+    auto deferredData = data;
+    QImage blue(1160, 1680, QImage::Format_RGB32);
+    blue.fill(Qt::blue);
+    QByteArray bluePng;
+    QBuffer blueBuffer(&bluePng);
+    require(blueBuffer.open(QIODevice::WriteOnly) && blue.save(&blueBuffer, "PNG"), "Encode second portrait");
+    deferredData["blue.png"] = bluePng;
+    deferredData["neighbor.png"] = bluePng;
+    deferredData["book.opf"] = "<package xmlns='http://www.idpf.org/2007/opf' version='2.0'><metadata/><manifest><item id='c' href='c.xhtml' media-type='application/xhtml+xml'/><item id='i' href='art.png' media-type='image/png'/><item id='b' href='blue.png' media-type='image/png'/></manifest><spine><itemref idref='c'/></spine></package>";
+    deferredData["c.xhtml"] = "<html xmlns='http://www.w3.org/1999/xhtml'><head/><body><div><img src='art.png'/></div><div><img src='blue.png'/></div></body></html>";
+    QMap<QString, qint64> deferredLengths;
+    QMap<QString, int> loads;
+    for (auto it = deferredData.cbegin(); it != deferredData.cend(); ++it) deferredLengths[it.key()] = it.value().size();
+    auto deferredResources = std::make_shared<ResourceCache>(deferredData.keys(),
+        [&loads, deferredData](const QString &name, const ResourceCache::Sink &sink, QString *) {
+            ++loads[name];
+            const auto bytes = deferredData.value(name);
+            return sink(bytes.constData(), bytes.size());
+        }, std::make_shared<std::atomic_bool>(false), ResourceCache::Statistics(),
+        [](const QString &name) { return name.endsWith(".png") ? QSize(1160, 1680) : QSize(); });
+    EngineDocument deferredSpread(test::readerFonts());
+    require(deferredSpread.openResources(deferredResources, deferredLengths, QSize(1680, 1264),
+                {{appearance::comicsModeKey, true}}, &error), qPrintable(error));
+    require(deferredSpread.pages() == 1, "Deferred portrait resources did not form one spread");
+    deferredSpread.image(0);
+    require(deferredResources->statistics().value("pending_images").toInt() == 2,
+            "Visible spread did not queue both deferred portraits");
+    // A neighbour is intentionally queued before the visible requests are
+    // loaded; batching must still select only resources of the visible screen.
+    deferredResources->imageReady("neighbor.png");
+    require(deferredResources->prioritizePendingImage("neighbor.png"), "Queue neighbour first");
+    require(deferredSpread.loadNextImage(), "Visible spread load made no progress");
+    require(loads.value("art.png") == 1 && loads.value("blue.png") == 1 && !loads.contains("neighbor.png"),
+            "Spread load published one side or eagerly loaded a neighbour");
+    require(deferredResources->statistics().value("pending_images").toInt() == 1,
+            "Visible spread batch consumed the neighbour queue");
+    const auto readySpread = deferredSpread.image(0);
+    require(qRed(readySpread.pixel(420, 600)) > 200 && qBlue(readySpread.pixel(1260, 600)) > 200,
+            "Completed spread frame lacks one of the visible portraits");
     std::puts("PASS: comics fit, zero effective margins, orientation and editable base persistence");
 }

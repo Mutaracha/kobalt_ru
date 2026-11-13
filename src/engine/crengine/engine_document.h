@@ -403,6 +403,7 @@ private:
     int alternateColumns_ = 1, alternateColumnSpacing_ = 0, layoutPpi_ = 0;
     QByteArray layoutCss_;
     QMap<int, QImage> cache_;
+    QMap<int, QStringList> comicImageRequests_;
     // One retired page, owned only by this document. Never retain client images.
     QImage spareImage_;
     quint64 imageRevision_ = 0;

@@ -43,6 +43,10 @@ public:
     QSize deferredImageSize(const QString &name);
     bool imageReady(const QString &name);
     bool loadNextImage();
+    // Worker-only: collect resources actually requested by one rendered screen.
+    void beginImageRequests() { imageRequests_.clear(); trackingImages_ = true; }
+    QStringList endImageRequests() { trackingImages_ = false; return imageRequests_; }
+    bool prioritizePendingImage(const QString &name);
     // Keep dimensions and integrity checks, but no encoded resource bytes.
     void releaseBytes();
 
@@ -82,6 +86,8 @@ private:
     QSet<QString> readyImages_;
     QStringList pendingImages_;
     quint64 imageRevision_ = 0;
+    bool trackingImages_ = false;
+    QStringList imageRequests_;
     std::function<bool()> cancelled_;
     std::map<QString, Entry> entries_;
     std::map<QString, QByteArray> fingerprints_;

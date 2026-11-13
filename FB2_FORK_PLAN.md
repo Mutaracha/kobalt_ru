@@ -1,5 +1,76 @@
 # Техническое задание для ИИ-агента: Форк Kobalt с нативной поддержкой FB2 на Kobo (Сценарий 1)
 
+## Landscape a170389: последовательные половины и поворот center
+
+Новые данные: upload `853ba8c`, `test & diagnostic/diagnostics a170389.zip`.
+Предыдущий патч a170389 прошёл native/Qt5 CI43488325963; новый архив содержит
+также старые 61dbfaa sessions, их нельзя приписывать a170389.
+Разобрана session startup a170389 2026-11-13T19:30:21.200Z, Qt5.2.1 /
+firmware4.38.23828. Локальные строки времени ниже — UTC из логов.
+
+### Что видно по диагностике и исходникам
+
+- Orientation request 19:35:41.269: viewport1264×1680 → 1680×1264;
+  после apply основная книга перешла page142 →76 (spread numbering).
+- До rotation image-load-end median406.5ms (диапазон377–469), после —
+  median787ms (57–899). Эти интервалы включают load + `capture()` / drawing,
+  **не являются временем чистого I/O/PNG decode**. Cached render-end 3–17ms
+  не означает готовность всех изображений; uncached renders после turn доходят
+  примерно до0.55–0.77s, repaint готовых страниц значительно дешевле.
+- Например, page84: placeholder frame19:36:48.410, затем image-load-end
+  19:36:49.052 (611ms) и19:36:49.846 (748ms). Код `ReaderSession::loadImages`
+  раньше делал capture после **каждого** `EngineDocument::loadNextImage()`.
+  На spread это пересобирает левую и правую половины последовательно и может
+  повторно декодировать уже готовую половину. Нет evidence memory_pressure;
+  это не доказательство физической waveform latency или причины прошлой freeze.
+
+### KOReader audit (пин источников)
+
+Frontend `4184b73a737b5dcc77b29e2eaf69c31a06501ab9`:
+[credocument.lua](https://github.com/koreader/koreader/blob/4184b73a737b5dcc77b29e2eaf69c31a06501ab9/frontend/document/credocument.lua),
+[renderimage.lua](https://github.com/koreader/koreader/blob/4184b73a737b5dcc77b29e2eaf69c31a06501ab9/frontend/ui/renderimage.lua),
+[picdocument.lua](https://github.com/koreader/koreader/blob/4184b73a737b5dcc77b29e2eaf69c31a06501ab9/frontend/document/picdocument.lua).
+EPUB выводится CREngine drawCurrentPage в reusable viewport buffer, затем blit;
+есть configurable smooth scaling. Constructor false не доказывает пользовательскую
+настройку конкретного устройства. Image viewer/PicDocument/TurboJPEG — отдельные
+пути, их нельзя выдавать за ускорение EPUB page rendering. Viewer scaler принимает
+целевой размер; из этого не следует, что raster PNG EPUB декодируется заранее
+в половинном разрешении. В fork pinned CREngine
+[f335f7a](https://github.com/koreader/crengine/blob/f335f7a97e240f505bb8a0dfb721fcb7912a7824/crengine/src/lvimg.cpp)
+GetTargetSize direct rasterization относится к SVG; PNG decoder отдельно. В проверенных
+путях не найдено специального half-resolution PNG decode для двухстраничного EPUB.
+Это ограниченный source audit, не benchmark KOReader на этой книге.
+
+### Новый узкий патч (не общая opening optimization)
+
+- Во время сборки spread сохраняются имена реально запрошенных видимых bitmap.
+  Перед следующим image-load capture загружаются оба pending ресурса **только
+  текущего spread**, даже если раньше в очереди стояли neighbours. Кадр после
+  первого загруженного bitmap больше отдельно не пересобирается. Начальный
+  placeholder frame и обычная очередь/optional failures/cancellation остаются.
+  Обычные книги и одиночные страницы сохраняют прежний one-image механизм.
+  Нет unbounded preload или увеличения32MiB encoded-resource budget.
+- Пользователь отменил запрет rotation для `rendition:page-spread-center` в
+  landscape: portrait-shaped center bitmap теперь рисуется отдельно с **90°
+  clockwise**. В присланном KCC примере это правильная ориентация текста.
+  Aspect-fit занимает весь viewport по доступному измерению, без stretch/crop;
+  полное заполнение обоих измерений без полей возможно только при совпадении
+  пропорций. Уже широкие bitmap и portrait orientation не поворачиваются.
+- Rotation применяется только к единственному bitmap на image-only center-page
+  без linked content; DOM positions/pagination не вращаются. Используется
+  scaled-to-viewport intermediate + painter quarter-turn, без дополнительной
+  source-sized bitmap copy; native decoder всё ещё может обрабатывать исходный
+  raster. Hit testing image viewer возвращает исходный DOM image в новом rect;
+  taps по letterbox не открывают изображение. Anchored preview тот же путь.
+- Comics cache policy `comics-v4` исключает старые pixel/layout expectations.
+  Waveform, smooth-scaling quality, общий screen-refresh и opening speed не менялись.
+
+Regression: deferred left+right готовы в одном load batch, neighbour остаётся
+pending; tracing deduplicated/priority/error/cancellation coverage; center rotation
+fit / cached reopen / anchor / imageAt и letterbox / orientation roundtrip.
+Новых EN/RU strings нет. Реальное ускорение и hardware visual acceptance требуют
+повторной проверки нового бинарника, сейчас не заявлены.
+
 ## Новые данные 64930c0 / a9a7660: freeze и center spread
 
 ### Диагностика зависания runtime 61dbfaa

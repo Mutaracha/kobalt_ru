@@ -75,6 +75,30 @@ int main(int argc, char **argv)
                 "Renewed source did not retry its failed image");
     }
     {
+        QStringList loaded;
+        ResourceCache images({ "neighbour", "left", "right" },
+            [&loaded](const QString &name, const ResourceCache::Sink &sink, QString *) {
+                loaded.append(name);
+                return sink("ok", 2);
+            }, cancelled);
+        images.imageReady("neighbour");
+        images.beginImageRequests();
+        images.imageReady("left");
+        images.imageReady("right");
+        images.imageReady("left");
+        require(images.endImageRequests() == QStringList({ "left", "right" }),
+                "Visible requests were duplicated or included previous neighbours");
+        require(images.prioritizePendingImage("right") && images.loadNextImage()
+                    && loaded == QStringList({ "right" }), "Visible image priority did not preserve queue identity");
+        require(!images.prioritizePendingImage("right") && !images.prioritizePendingImage("missing"),
+                "Priority requeued ready or unknown image");
+        require(images.loadNextImage() && loaded.last() == "neighbour",
+                "Visible priority discarded the neighbour queue");
+        images.releaseBytes();
+        images.beginImageRequests();
+        require(images.endImageRequests().isEmpty(), "Release kept image request tracing");
+    }
+    {
         auto revoked = std::make_shared<kobalt::SourceLease>();
         int goodLoads = 0;
         ResourceCache images(
