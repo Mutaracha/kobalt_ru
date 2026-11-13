@@ -3240,3 +3240,22 @@ CREngine сообщает style-hash mismatch и делает full render. Не 
 сохранение standalone geometry после save/reopen независимо от разрешённой
 репагинации; отдельный существующий single-spine regression по-прежнему требует
 реальный rendered-cache hit. Общая оптимизация кэша не возобновлялась.
+
+### Landscape patch — CI verified
+
+Runtime **1a56b68**: [CI43496279219](https://github.com/Mutaracha/kobalt_ru/actions/runs/43496279219)
+SUCCESS. Native focused engine EPUB/FB2/comics/cache, model.resource-cache,
+settings/UI/lifecycle/standby и publisher EPUB checks PASS. Kobo Qt5
+build/offline/adapter/package contents PASS. Qt6 intentionally skipped.
+[Qt5 device artifact14071288327](https://github.com/Mutaracha/kobalt_ru/actions/runs/43496279219/artifacts/14071288327),
+36 442 305 bytes; native results artifact14073055865. Это code SHA пакета,
+последующий docs-only commit не требует новой сборки.
+
+Device acceptance pending: те же paired portraits в landscape — оба готовы
+после одного image-load обновления; быстрые forward/back без stale frame;
+center page отдельно, 90° clockwise и aspect-fit, нормальное направление текста;
+portrait→landscape→portrait, reopen/anchor, image viewer/letterbox, comics off
+возвращает обычную раскладку; waveform/ghosting и общая screen-refresh настройка
+сохраняются. Cache cleanup, переустановка profile и новые общие opening замеры
+для этой проверки не нужны. Hardware speedup и устранение прежнего freeze
+не подтверждены этим CI.
