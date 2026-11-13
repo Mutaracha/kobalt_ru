@@ -3285,3 +3285,15 @@ are not proof of a particular physical refresh. New pending-count diagnostics
 separate readiness from screen-paint confirmation. Verify portrait-only center
 rotation, no rotation for wide center, independently centered halves, viewer hits,
 forward/back/reopen/orientation and simultaneous pair display on device.
+
+
+### Libra 2 page-button polarity (Qt5)
+
+Device-reported F23/F24 polarity is reversed only when Nickel identifies Libra 2
+(`Device::isIo`). Default target: upper/left previous, lower/right next, retained
+relative to the screen after a half-turn. System invertPageTurnButtons and explicit
+Kobalt button assignments retain priority. Other models, directional arrow keys,
+touch navigation and the Qt6 Nickel-owned mapping are unchanged. Regression checks
+cover both model polarities, all four orientations, both system inversion states
+and explicit assignments. Native/Kobo Qt5 CI pending; physical button acceptance
+on Libra 2 remains a device check. Comics rendering was confirmed correct by user.

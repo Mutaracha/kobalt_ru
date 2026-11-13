@@ -4,6 +4,7 @@
 #include "support/diagnostics.h"
 #include "platforms/kobo/common/publication_source.h"
 #include "native_labels.h"
+#include "platforms/kobo/common/page_button_mapping.h"
 #include <QApplication>
 #include <QUrl>
 #include <QWidget>
@@ -88,25 +89,18 @@ bool nativeReaderReverseLandscapeButtons()
 
 int nativePageButtonDirection(QKeyEvent *event)
 {
-    // Firmware 4.46 exports no button mapping. In its stock reader the lower
-    // button, F24, turns forward unless the Reading setting inverts the pair.
     const int key = event->key();
-    if (key == Qt::Key_Left || key == Qt::Key_Up)
-        return -1;
-    if (key == Qt::Key_Right || key == Qt::Key_Down)
-        return 1;
     if (key != Qt::Key_F23 && key != Qt::Key_F24)
-        return 0;
+        return qt5PageButtonDirection(key, Qt::PrimaryOrientation, false, false);
+    static const auto current = symbol<const void *(*)()>("_ZN6Device16getCurrentDeviceEv");
+    static const auto io = symbol<bool (*)(const void *)>("_ZNK6Device4isIoEv");
+    const auto *device = current ? current() : nullptr;
+    const bool libra2 = device && io && io(device);
     QSettings settings("/mnt/onboard/.kobo/Kobo/Kobo eReader.conf", QSettings::IniFormat);
-    bool inverted = settings.value("Reading/invertPageTurnButtons", false).toBool();
-    // The buttons sit on one edge of the device. Turned upside down, the lower
-    // button is the physically upper one, so the pair swaps.
+    const bool inverted = settings.value("Reading/invertPageTurnButtons", false).toBool();
     const auto *screen = QGuiApplication::primaryScreen();
-    if (screen
-        && (screen->orientation() == Qt::InvertedPortraitOrientation
-            || screen->orientation() == Qt::InvertedLandscapeOrientation))
-        inverted = !inverted;
-    return (key == Qt::Key_F24) != inverted ? 1 : -1;
+    return qt5PageButtonDirection(key, screen ? screen->orientation() : Qt::PrimaryOrientation,
+                                 inverted, libra2);
 }
 
 bool nativeReaderSleepScreenAvailable()

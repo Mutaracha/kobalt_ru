@@ -3,6 +3,8 @@
 #include "reading/remaining_time.h"
 #include "support/qt_compat.h"
 #include "check.h"
+#include "platforms/kobo/common/page_button_mapping.h"
+#include "platform/api/page_buttons.h"
 #include <QJsonArray>
 #include <cstdio>
 #include <utility>
@@ -12,6 +14,32 @@ using namespace kobalt;
 // Checks appearance settings: defaults, invalid values, migrations, global and book precedence, new-book inheritance and which changes need a new layout.
 int main()
 {
+    // Libra 2 device acceptance target: upper/left previous, lower/right next.
+    // The raw key pair swaps after a half-turn; the displayed-position action
+    // must stay stable. Other Qt5 devices retain their baseline polarity.
+    for (const auto orientation : {Qt::PortraitOrientation, Qt::LandscapeOrientation,
+                                   Qt::InvertedPortraitOrientation, Qt::InvertedLandscapeOrientation}) {
+        const bool halfTurn = orientation == Qt::InvertedPortraitOrientation
+                || orientation == Qt::InvertedLandscapeOrientation;
+        for (const bool libra2 : {false, true}) {
+            for (const bool inverted : {false, true}) {
+                const int expectedF24 = (libra2 != inverted) != halfTurn ? -1 : 1;
+                const int f24 = nickel::qt5PageButtonDirection(Qt::Key_F24, orientation, inverted, libra2);
+                require(f24 == expectedF24, "Qt5 model/inversion/orientation mapping mismatch");
+                require(nickel::qt5PageButtonDirection(Qt::Key_F23, orientation, inverted, libra2) == -f24,
+                        "Qt5 paging buttons must have opposite actions");
+                require(nickel::qt5PageButtonDirection(Qt::Key_Left, orientation, inverted, libra2) == -1
+                            && nickel::qt5PageButtonDirection(Qt::Key_Right, orientation, inverted, libra2) == 1
+                            && nickel::qt5PageButtonDirection(Qt::Key_A, orientation, inverted, libra2) == 0,
+                        "Model correction changed arrows or unrelated keys");
+                const QJsonObject override{{pageButtons::preferenceKey,
+                    QJsonObject{{"page_upper", "next"}, {"page_lower", "none"}}}};
+                require(pageButtons::direction(override, "page_upper", -f24) == 1
+                            && pageButtons::direction(override, "page_lower", f24) == 0,
+                        "Explicit button assignments lost priority over native mapping");
+            }
+        }
+    }
     const QJsonObject comicBook{{appearance::comicsModeKey, true}, {"margin_pixels", 42}};
     QJsonObject copy;
     appearance::copy(copy, comicBook);
