@@ -91,7 +91,7 @@ int nativePageButtonDirection(QKeyEvent *event)
 {
     const int key = event->key();
     if (key != Qt::Key_F23 && key != Qt::Key_F24)
-        return qt5PageButtonDirection(key, Qt::PrimaryOrientation, false, false);
+        return nickel::qt5PageButtonDirection(key, Qt::PrimaryOrientation, false, false);
     static const auto current = symbol<const void *(*)()>("_ZN6Device16getCurrentDeviceEv");
     static const auto io = symbol<bool (*)(const void *)>("_ZNK6Device4isIoEv");
     const auto *device = current ? current() : nullptr;
@@ -99,7 +99,7 @@ int nativePageButtonDirection(QKeyEvent *event)
     QSettings settings("/mnt/onboard/.kobo/Kobo/Kobo eReader.conf", QSettings::IniFormat);
     const bool inverted = settings.value("Reading/invertPageTurnButtons", false).toBool();
     const auto *screen = QGuiApplication::primaryScreen();
-    return qt5PageButtonDirection(key, screen ? screen->orientation() : Qt::PrimaryOrientation,
+    return nickel::qt5PageButtonDirection(key, screen ? screen->orientation() : Qt::PrimaryOrientation,
                                  inverted, libra2);
 }
 
