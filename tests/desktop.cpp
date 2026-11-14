@@ -3226,7 +3226,7 @@ private slots:
         QTest::addColumn<int>("nativeDirection");
         QTest::addColumn<int>("expectedDirection");
         QTest::addColumn<int>("rotation");
-        QTest::newRow("both-forward") << QString("next") << -1 << 1 << 1 << 1;
+        QTest::newRow("both-forward") << QString("next") << -1 << 1 << 1;
         QTest::newRow("previous") << QString("previous") << 1 << -1 << 1;
         QTest::newRow("none") << QString("none") << 1 << 0 << 1;
         QTest::newRow("native-inverted") << QString() << 1 << 1 << 1;
