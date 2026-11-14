@@ -3297,6 +3297,18 @@ No stored preferences are migrated or overwritten; none stays disabled. Native
 fallback still honors system inversion. Other models and Qt6 retain existing
 mapping/assignment behavior, as do arrow keys and touch navigation. Menu/list/
 preview use native directions, not custom reading actions. UI action labels remain
-canonical assignments. Native and Kobo Qt5 CI pending; physical acceptance pending.
+canonical assignments. Native and Kobo Qt5 CI passed for `c4b8c1e`
+([run43645562443](https://github.com/Mutaracha/kobalt_ru/actions/runs/43645562443));
+physical acceptance remains pending.
 User example (button1 assigned next, button2 previous): portrait +/-, opposite
 portrait -/+, buttons-top landscape -/+, buttons-bottom landscape +/-.
+
+Device package: [Qt5 artifact14134257020](https://github.com/Mutaracha/kobalt_ru/actions/runs/43645562443/artifacts/14134257020),
+36 441 133 bytes; native-results14133572838. Qt6 intentionally skipped.
+Focused model checks cover both model policies, all orientations and system
+inversion states; desktop buttonMappingActions verifies reading dispatch for
+rotated next/previous/none/default/invalid assignments and independent buttons.
+Settings default labels are unrotated to canonical assignment space; no saved
+assignment is rewritten. Changes from 3e810b7 are restricted to this rotation
+correction, tests and documentation; the prior all-orientation polarity patch
+is superseded without rewriting branch history.

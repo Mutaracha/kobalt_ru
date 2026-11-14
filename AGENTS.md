@@ -532,6 +532,8 @@ No stored preferences are migrated or overwritten; none stays disabled. Native
 fallback still honors system inversion. Other models and Qt6 retain existing
 mapping/assignment behavior, as do arrow keys and touch navigation. Menu/list/
 preview use native directions, not custom reading actions. UI action labels remain
-canonical assignments. Native and Kobo Qt5 CI pending; physical acceptance pending.
+canonical assignments. Native and Kobo Qt5 CI passed for `c4b8c1e`
+([run43645562443](https://github.com/Mutaracha/kobalt_ru/actions/runs/43645562443));
+physical acceptance remains pending.
 User example (button1 assigned next, button2 previous): portrait +/-, opposite
 portrait -/+, buttons-top landscape -/+, buttons-bottom landscape +/-.
