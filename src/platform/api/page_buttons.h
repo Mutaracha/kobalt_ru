@@ -11,6 +11,7 @@ struct Button
     QString id, labelKey;
     int key = 0;
     int defaultDirection = 1;
+    int actionRotation = 1; // Host transform for explicit reading actions only.
 };
 
 using Buttons = QVector<Button>;
@@ -32,13 +33,14 @@ inline Buttons volume(int available)
     return result;
 }
 
-inline int direction(const QJsonObject &preferences, const QString &id, int nativeDirection)
+inline int direction(const QJsonObject &preferences, const QString &id, int nativeDirection,
+                     int actionRotation = 1)
 {
     const auto action = preferences.value(preferenceKey).toObject().value(id).toString();
     if (action == "previous")
-        return -1;
+        return -actionRotation;
     if (action == "next")
-        return 1;
+        return actionRotation;
     if (action == "none")
         return 0;
     // Missing and invalid values retain the host's rotation and inversion policy.

@@ -3287,19 +3287,16 @@ rotation, no rotation for wide center, independently centered halves, viewer hit
 forward/back/reopen/orientation and simultaneous pair display on device.
 
 
-### Libra 2 page-button polarity (Qt5)
+### Libra 2 rotation-only correction (supersedes 76852b5/e0b7c1f)
 
-Device-reported F23/F24 polarity is reversed only when Nickel identifies Libra 2
-(`Device::isIo`). Default target: upper/left previous, lower/right next, retained
-relative to the screen after a half-turn. System invertPageTurnButtons and explicit
-Kobalt button assignments retain priority. Other models, directional arrow keys,
-touch navigation and the Qt6 Nickel-owned mapping are unchanged. Regression checks
-cover both model polarities, all four orientations, both system inversion states
-and explicit assignments. Native/Kobo Qt5 CI passed for runtime `e0b7c1f`
-([run 43510939320](https://github.com/Mutaracha/kobalt_ru/actions/runs/43510939320));
-physical button acceptance on Libra 2 remains a device check. Comics rendering was confirmed correct by user.
-
-Qt5 package: [artifact 14079465656](https://github.com/Mutaracha/kobalt_ru/actions/runs/43510939320/artifacts/14079465656),
-36 438 737 bytes; native results14077929307. Qt6 intentionally skipped.
-Initial run43510117910 passed native checks but failed Qt5 compilation due to
-an unqualified helper name; corrected before the successful final run.
+Restore the 3e810b7 portrait polarity; invert ONLY landscape and inverted-landscape
+native directions on Libra 2 / Qt5 (`Device::isIo`). Explicit physical-button
+reading assignments now follow the same rotation transform after selection:
+portrait +1, landscape -1, inverted portrait -1, inverted landscape +1.
+No stored preferences are migrated or overwritten; none stays disabled. Native
+fallback still honors system inversion. Other models and Qt6 retain existing
+mapping/assignment behavior, as do arrow keys and touch navigation. Menu/list/
+preview use native directions, not custom reading actions. UI action labels remain
+canonical assignments. Native and Kobo Qt5 CI pending; physical acceptance pending.
+User example (button1 assigned next, button2 previous): portrait +/-, opposite
+portrait -/+, buttons-top landscape -/+, buttons-bottom landscape +/-.

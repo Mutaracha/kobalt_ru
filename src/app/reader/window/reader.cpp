@@ -2371,7 +2371,7 @@ void Reader::pageButton(int direction, quint32 sourceTime, bool userInput, int p
     if (userInput && physicalKey && services.buttonControls) {
         for (const auto &button : services.buttonControls()) {
             if (button.key == physicalKey) {
-                direction = pageButtons::direction(preferences, button.id, direction);
+                direction = pageButtons::direction(preferences, button.id, direction, button.actionRotation);
                 break;
             }
         }

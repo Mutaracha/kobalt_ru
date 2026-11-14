@@ -96,6 +96,9 @@ bool nativeReaderReverseLandscapeButtons()
     return device && ((spa && spa(device)) || (bw && bw(device)));
 }
 
+// Qt6 retains Nickel-owned mapping and existing explicit-assignment semantics.
+int nativeReaderButtonActionRotation() { return 1; }
+
 int nativePageButtonDirection(QKeyEvent *event)
 {
     static const auto map =

@@ -2,19 +2,22 @@
 #include <Qt>
 
 namespace kobalt::nickel {
-// Qt5 fallback only. Libra 2 reports the opposite F23/F24 pair to the
-// firmware-4.46 baseline. Keep model polarity separate from user inversion
-// and the half-turn compensation; arrow keys already express directions.
-inline int qt5PageButtonDirection(int key, Qt::ScreenOrientation orientation,
-                                 bool inverted, bool libra2)
+// Relative to the portrait button assignments. Only Libra 2 opts in.
+inline int libra2ButtonRotation(Qt::ScreenOrientation orientation)
+{
+    // Preserve 3e810b7 portrait/half-turn behavior; reverse both landscape poses.
+    return orientation == Qt::InvertedPortraitOrientation
+            || orientation == Qt::LandscapeOrientation ? -1 : 1;
+}
+inline int qt5PagingDirection(int key, Qt::ScreenOrientation orientation,
+                              bool inverted, bool libra2)
 {
     if (key == Qt::Key_Left || key == Qt::Key_Up) return -1;
     if (key == Qt::Key_Right || key == Qt::Key_Down) return 1;
     if (key != Qt::Key_F23 && key != Qt::Key_F24) return 0;
-    if (libra2) inverted = !inverted;
-    if (orientation == Qt::InvertedPortraitOrientation
-        || orientation == Qt::InvertedLandscapeOrientation)
-        inverted = !inverted;
-    return (key == Qt::Key_F24) != inverted ? 1 : -1;
+    const int rotation = libra2 ? libra2ButtonRotation(orientation)
+            : (orientation == Qt::InvertedPortraitOrientation
+               || orientation == Qt::InvertedLandscapeOrientation ? -1 : 1);
+    return ((key == Qt::Key_F24) != inverted ? 1 : -1) * rotation;
 }
 } // namespace kobalt::nickel

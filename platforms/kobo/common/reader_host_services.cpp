@@ -259,7 +259,10 @@ ReaderHostServices readerHostServices()
     result.buttonControls = [] {
         if (!nativeReaderHasPageButtons())
             return pageButtons::Buttons{};
-        return pageButtons::paging();
+        auto buttons = pageButtons::paging();
+        for (auto &button : buttons)
+            button.actionRotation = nativeReaderButtonActionRotation();
+        return buttons;
     };
     result.reverseLandscapeButtons = nativeReaderReverseLandscapeButtons;
     result.pageButtonDirection = nativePageButtonDirection;

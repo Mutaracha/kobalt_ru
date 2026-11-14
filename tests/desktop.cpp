@@ -3225,12 +3225,18 @@ private slots:
         QTest::addColumn<QString>("action");
         QTest::addColumn<int>("nativeDirection");
         QTest::addColumn<int>("expectedDirection");
-        QTest::newRow("both-forward") << QString("next") << -1 << 1;
-        QTest::newRow("previous") << QString("previous") << 1 << -1;
-        QTest::newRow("none") << QString("none") << 1 << 0;
-        QTest::newRow("native-inverted") << QString() << 1 << 1;
-        QTest::newRow("native-rotated") << QString() << -1 << -1;
-        QTest::newRow("invalid-default") << QString("unknown") << -1 << -1;
+        QTest::addColumn<int>("rotation");
+        QTest::newRow("both-forward") << QString("next") << -1 << 1 << 1 << 1;
+        QTest::newRow("previous") << QString("previous") << 1 << -1 << 1;
+        QTest::newRow("none") << QString("none") << 1 << 0 << 1;
+        QTest::newRow("native-inverted") << QString() << 1 << 1 << 1;
+        QTest::newRow("native-rotated") << QString() << -1 << -1 << 1;
+        QTest::newRow("invalid-default") << QString("unknown") << -1 << -1 << 1;
+        QTest::newRow("libra-landscape-next") << QString("next") << -1 << -1 << -1;
+        QTest::newRow("libra-landscape-previous") << QString("previous") << 1 << 1 << -1;
+        QTest::newRow("libra-landscape-none") << QString("none") << 1 << 0 << -1;
+        QTest::newRow("libra-landscape-default") << QString() << 1 << 1 << -1;
+        QTest::newRow("libra-landscape-invalid") << QString("unknown") << -1 << -1 << -1;
     }
 
     void buttonMappingActions()
@@ -3238,9 +3244,14 @@ private slots:
         QFETCH(QString, action);
         QFETCH(int, nativeDirection);
         QFETCH(int, expectedDirection);
-        Fixture fixture(false, false, false, true, false, false, [](ReaderHostServices &services) {
+        QFETCH(int, rotation);
+        Fixture fixture(false, false, false, true, false, false, [rotation](ReaderHostServices &services) {
             services.pageButtons = [] { return true; };
-            services.buttonControls = [] { return pageButtons::paging(); };
+            services.buttonControls = [rotation] {
+                auto buttons = pageButtons::paging();
+                for (auto &button : buttons) button.actionRotation = rotation;
+                return buttons;
+            };
         });
         auto preferences = storage::readJson(fixture.paths.preferences());
         QJsonObject actions{ { "page_lower", "next" } };
@@ -3262,7 +3273,7 @@ private slots:
         test::skipPageTurnWindow();
         fixture.window.readerWindow()->physicalPageButton(Qt::Key_F24, -1);
         QTRY_VERIFY(!fixture.state().value("busy").toBool());
-        QTRY_COMPARE(fixture.state().value("page").toInt(), initial + expectedDirection + 1);
+        QTRY_COMPARE(fixture.state().value("page").toInt(), initial + expectedDirection + rotation);
     }
 
     void buttonMappingUnavailable()

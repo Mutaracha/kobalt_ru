@@ -14,29 +14,33 @@ using namespace kobalt;
 // Checks appearance settings: defaults, invalid values, migrations, global and book precedence, new-book inheritance and which changes need a new layout.
 int main()
 {
-    // Libra 2 device acceptance target: upper/left previous, lower/right next.
-    // The raw key pair swaps after a half-turn; the displayed-position action
-    // must stay stable. Other Qt5 devices retain their baseline polarity.
-    for (const auto orientation : {Qt::PortraitOrientation, Qt::LandscapeOrientation,
-                                   Qt::InvertedPortraitOrientation, Qt::InvertedLandscapeOrientation}) {
-        const bool halfTurn = orientation == Qt::InvertedPortraitOrientation
-                || orientation == Qt::InvertedLandscapeOrientation;
-        for (const bool libra2 : {false, true}) {
+    // Orientation order: portrait, landscape, inverted portrait, inverted landscape.
+    const Qt::ScreenOrientation poses[] = {Qt::PortraitOrientation, Qt::LandscapeOrientation,
+        Qt::InvertedPortraitOrientation, Qt::InvertedLandscapeOrientation};
+    const int libraRotation[] = {1, -1, -1, 1};
+    const int baselineRotation[] = {1, 1, -1, -1};
+    for (int i = 0; i < 4; ++i) {
+        require(nickel::libra2ButtonRotation(poses[i]) == libraRotation[i], "Libra 2 rotation table mismatch");
+        for (const bool libra : {false, true}) {
             for (const bool inverted : {false, true}) {
-                const int expectedF24 = (libra2 != inverted) != halfTurn ? -1 : 1;
-                const int f24 = nickel::qt5PageButtonDirection(Qt::Key_F24, orientation, inverted, libra2);
-                require(f24 == expectedF24, "Qt5 model/inversion/orientation mapping mismatch");
-                require(nickel::qt5PageButtonDirection(Qt::Key_F23, orientation, inverted, libra2) == -f24,
-                        "Qt5 paging buttons must have opposite actions");
-                require(nickel::qt5PageButtonDirection(Qt::Key_Left, orientation, inverted, libra2) == -1
-                            && nickel::qt5PageButtonDirection(Qt::Key_Right, orientation, inverted, libra2) == 1
-                            && nickel::qt5PageButtonDirection(Qt::Key_A, orientation, inverted, libra2) == 0,
-                        "Model correction changed arrows or unrelated keys");
-                const QJsonObject override{{pageButtons::preferenceKey,
-                    QJsonObject{{"page_upper", "next"}, {"page_lower", "none"}}}};
-                require(pageButtons::direction(override, "page_upper", -f24) == 1
-                            && pageButtons::direction(override, "page_lower", f24) == 0,
-                        "Explicit button assignments lost priority over native mapping");
+                const int rotation = libra ? libraRotation[i] : baselineRotation[i];
+                for (const int key : {int(Qt::Key_F23), int(Qt::Key_F24)}) {
+                    const int base = ((key == Qt::Key_F24) != inverted) ? 1 : -1;
+                    const int native = nickel::qt5PagingDirection(key, poses[i], inverted, libra);
+                    require(native == base * rotation, "Native inversion or model rotation changed");
+                    for (const auto &action : {QString("next"), QString("previous"), QString("none"), QString()}) {
+                        const QJsonObject prefs{{pageButtons::preferenceKey, QJsonObject{{"test", action}}}};
+                        const int transform = libra ? rotation : 1;
+                        const int expected = action == "next" ? transform : action == "previous" ? -transform
+                                : action == "none" ? 0 : native;
+                        require(pageButtons::direction(prefs, "test", native, transform) == expected,
+                                "Explicit physical action did not follow rotation or none/default changed");
+                    }
+                }
+                require(nickel::qt5PagingDirection(Qt::Key_Left, poses[i], inverted, libra) == -1
+                            && nickel::qt5PagingDirection(Qt::Key_Right, poses[i], inverted, libra) == 1
+                            && nickel::qt5PagingDirection(Qt::Key_A, poses[i], inverted, libra) == 0,
+                        "Rotation correction affected arrows or unrelated keys");
             }
         }
     }

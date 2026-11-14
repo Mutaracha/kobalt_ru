@@ -87,20 +87,34 @@ bool nativeReaderReverseLandscapeButtons()
     return device && bw && bw(device);
 }
 
+namespace {
+bool isLibra2()
+{
+    static const auto current = symbol<const void *(*)()>("_ZN6Device16getCurrentDeviceEv");
+    static const auto io = symbol<bool (*)(const void *)>("_ZNK6Device4isIoEv");
+    const auto *device = current ? current() : nullptr;
+    return device && io && io(device);
+}
+Qt::ScreenOrientation buttonOrientation()
+{
+    const auto *screen = QGuiApplication::primaryScreen();
+    return screen ? screen->orientation() : Qt::PrimaryOrientation;
+}
+} // namespace
+
+int nativeReaderButtonActionRotation()
+{
+    return isLibra2() ? nickel::libra2ButtonRotation(buttonOrientation()) : 1;
+}
+
 int nativePageButtonDirection(QKeyEvent *event)
 {
     const int key = event->key();
     if (key != Qt::Key_F23 && key != Qt::Key_F24)
-        return nickel::qt5PageButtonDirection(key, Qt::PrimaryOrientation, false, false);
-    static const auto current = symbol<const void *(*)()>("_ZN6Device16getCurrentDeviceEv");
-    static const auto io = symbol<bool (*)(const void *)>("_ZNK6Device4isIoEv");
-    const auto *device = current ? current() : nullptr;
-    const bool libra2 = device && io && io(device);
+        return nickel::qt5PagingDirection(key, Qt::PrimaryOrientation, false, false);
     QSettings settings("/mnt/onboard/.kobo/Kobo/Kobo eReader.conf", QSettings::IniFormat);
     const bool inverted = settings.value("Reading/invertPageTurnButtons", false).toBool();
-    const auto *screen = QGuiApplication::primaryScreen();
-    return nickel::qt5PageButtonDirection(key, screen ? screen->orientation() : Qt::PrimaryOrientation,
-                                 inverted, libra2);
+    return nickel::qt5PagingDirection(key, buttonOrientation(), inverted, isLibra2());
 }
 
 bool nativeReaderSleepScreenAvailable()
