@@ -615,7 +615,9 @@ pageButtons::Buttons Reader::buttonControls() const
         QKeyEvent event(QEvent::KeyPress, button.key, Qt::NoModifier);
         const int nativeDirection = services.pageButtonDirection(&event);
         if (nativeDirection)
-            button.defaultDirection = nativeDirection;
+            // The picker edits canonical portrait assignments. Reading applies
+            // actionRotation later; do not bake the current pose into a default.
+            button.defaultDirection = nativeDirection * button.actionRotation;
     }
     return buttons;
 }
