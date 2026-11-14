@@ -3264,6 +3264,7 @@ private slots:
         QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
         QTRY_VERIFY(!fixture.state().value("busy").toBool());
         QVERIFY(fixture.turnPage(1));
+        QVERIFY(fixture.turnPage(1)); // Leave room for two rotated previous actions.
         const int initial = fixture.state().value("page").toInt();
         test::skipPageTurnWindow();
         fixture.window.readerWindow()->physicalPageButton(Qt::Key_F23, nativeDirection);
