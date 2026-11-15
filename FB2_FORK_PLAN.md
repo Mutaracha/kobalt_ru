@@ -1,5 +1,24 @@
 # kobalt_ru — актуальный план
 
+## Принятое решение — текущий этап интеграции
+
+Все предложенные переводы согласованы пользователем, включая уточнённую группу.
+258 строк EN/RU внесены в assets; это подготовка ресурсов, **не готовая beta.8**.
+Новые функции ещё не доступны без завершения runtime merge.
+
+Для кнопок использовать **позиционную модель upstream beta.8**: held(),
+назначения одинаковых действий, none, частичные назначения и отображение
+настроек — из базовой версии. От форка оставить только Libra 2 / Qt5 landscape
+correction в определении поворота. Старый actionRotation убрать при интеграции,
+не применять его поверх held(). Это новое решение заменяет прежнее требование
+сохранять physical-action семантику для обоих-next/none.
+
+Если механизмы дублируют друг друга (standby при открытии, notes и т.п.),
+брать цельную реализацию upstream. Если изменены отдельные пункты общей функции,
+делать контекстное слияние с сохранением согласованных fork-отличий. Текущая
+runtime-база c4b8c1e не заменена пробным merge; бинарник beta.8 пока не выпущен.
+Подробности незавершённой интеграции — в FB2_FORK_PLAN.md.
+
 Этот файл — действующая очередь, не накопительный журнал прошлых сборок.
 Требования к реализации: [AGENTS.md](AGENTS.md). Пользовательская инструкция:
 [doc/fork-kobalt_ru.md](doc/fork-kobalt_ru.md).
@@ -38,7 +57,8 @@
 **Статус:** подготовка начата; пробное трёхстороннее объединение выполнено без
 изменения рабочего кода. 433 upstream-changed файла, **31 конфликтующий путь**.
 Production merge пока не опубликован: основная группа EN/RU согласована,
-уточнение20 контекстных ключей — на повторном согласовании.
+включая20 контекстных ключей. Подготовительные EN/RU assets применены;
+runtime merge ещё не завершён.
 Подробная карта конфликтов/семантических пересечений и проверки:
 [doc/beta8-migration.md](doc/beta8-migration.md).
 
@@ -52,7 +72,7 @@ Production merge пока не опубликован: основная груп
    механически. Основная группа принята; opening.protected — без точки,
    settings.inpage_footnotes — «Сноски внизу страницы», термин «ридер».
    [Контекстный аудит](doc/beta8-context-review.md) уточняет sleep.letter_*,
-   pill, annotate/annotations, page_turn(s), from/to; эти20 строк ещё proposal.
+   pill, annotate/annotations, page_turn(s), from/to; эти20 строк также согласованы и внесены в assets.
 2. **Перенести beta.8 целиком**, контекстно разрешить конфликты и проверить
    автоматически объединённые файлы. Не выбирать ours/theirs для общих модулей.
 3. **Заменить fork сноски upstream-реализацией**: canonical `inpage_footnotes`,
@@ -71,8 +91,9 @@ Production merge пока не опубликован: основная груп
    Bottom/Off и ticks, durable/effective geometry, Libra 2 rotation mapping,
    deferred Appearance и успешную waveform. Upstream held()/positional IDs
    пересекается с fork actionRotation: не применять оба преобразования.
-   Сохранить подтверждённый Libra 2 contract, отдельно проверить both-next,
-   none и частичные назначения; не менять их семантику молча. Upstream Zen/presets не должны
+   Для кнопок оставить только нашу Libra 2 landscape correction, а held(),
+   both-next/none/частичные назначения и отображение брать из upstream
+   по явному решению пользователя. Upstream Zen/presets не должны
    перезаписывать обычные значения comics/chrome/margins.
 7. **Storage**: перенести schema upgrade и исправление duplicate-ID native save,
    сохранив FB2 percentage/time-only positions. Актуализировать doc/storage.md.
@@ -143,5 +164,17 @@ Kobo Qt5 — приоритет. Desktop/Android не blockers, но общий 
 Сырые diagnostics и uploads принадлежат `test & diagnostic/`, не `doc/`.
 Curated `tests/manual/` fixtures и publisher-check arguments не перемещать.
 
-В этой подготовительной итерации изменены только план, инструкции, proposal
-и supplied evidence. Новый runtime/merge/package ещё не создавался.
+В текущей итерации применены согласованные EN/RU ресурсы и закреплено правило
+разрешения пересечений. Пробный runtime merge разобран, но ещё не завершён
+и не опубликован. Новый пакет beta.8 не создавался.
+
+
+### Проверки подготовительных переводов
+
+- Применены258 согласованных EN/RU значений; общий словарь1421 ключей.
+- CMake kobalt_check_string_parity, placeholders, генерация EN/RU и полный
+  source-reference scan текущего src/ + Kobo adapters: PASS.
+- platforms/strings-test.cmake с Ninja: PASS (включая invalid/duplicate/missing
+  key, regeneration и locale-parity negative cases). Локальный Make-generator
+  прогон упёрся в timestamp-sensitive fixture; код теста не ослаблялся.
+- Это не проверка runtime beta.8: merge core/notes/UI ещё не завершён.
