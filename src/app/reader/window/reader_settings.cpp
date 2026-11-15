@@ -390,7 +390,6 @@ void Reader::openSettings()
     inpageFootnotesOption->setChecked(session->state().value("inpage_footnotes").toBool(false));
     hideNonlinearOption->setChecked(
             session->state().value("hide_nonlinear_fragments").toBool(false));
-    inpageFootnotesOption->setChecked(session->state().value("inpage_footnotes").toBool(false));
     auto *displaySettings = static_cast<SettingsPanel *>(general);
     settingsVerticalSpacing =
             appearance::verticalSpacingMode(session->state().value("vertical_justification"));
@@ -891,7 +890,6 @@ void Reader::applySettings()
     for (const auto *key : appearance::fallbackFontKeys)
         settings[key] = preferences.value(key).toString();
     settings["dark_mode"] = darkOption->isChecked();
-    settings["inpage_footnotes"] = inpageFootnotesOption->isChecked();
     settings["hide_nonlinear_fragments"] = hideNonlinearOption->isChecked();
     settings["inpage_footnotes"] = inpageFootnotesOption->isChecked();
     settings["vertical_justification"] = preferences.value("vertical_justification");

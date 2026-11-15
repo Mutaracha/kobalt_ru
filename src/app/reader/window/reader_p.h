@@ -540,7 +540,7 @@ private:
     // Settings > Defaults > Restore default presets was confirmed. It applies
     // when Settings closes.
     bool restoringPresets = false;
-    kobalt::ui::FontButton *fontButton;
+    kobalt::ui::FontButton *fontButton = nullptr;
     QVector<QPushButton *> alignmentButtons, hyphenButtons;
     // Header and footer. The preset is saved per book; the Custom layout is
     // shared by every book that selects it.
