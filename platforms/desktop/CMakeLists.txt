@@ -721,6 +721,9 @@ if(BUILD_TESTING)
     # `light`, `fast` and `integration` must not appear in one because the lane
     # presets filter on them.
     set(kobalt_test_areas
+        "settings:^desktop\\.lazyAppearance$"
+        "chrome:^desktop\\.progressStripMirrors$"
+        "settings:^model\\.strings-locale$"
         "gallery:^(build\\.screenshotBooks|desktop\\.(gallery.*|phoneFrame|primaryViews))$"
         "evaluation:^(build\\.(loadLock|eval-device-outcomes)|desktop\\.timingEvents|platform\\.scenario-sleep|lifecycle\\.benchmarkNoticeAfterRun)$"
         "kosync:^(lifecycle\\.(kosync.*|wifi.*)|desktop\\.(kosyncChoice|syncChoiceView)|model\\.(kosync|sync-coordinator)|component\\.kosync-ui|platform\\.native-sync-network)$"

@@ -1134,9 +1134,8 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
     auto *comicsOption = appearance.comicsOption;
     connect(comicsOption, &QCheckBox::clicked, this, [this](bool enabled) {
         mutateAppearance([enabled](ReaderSession &preview) {
-            auto next = preview.requestedState();
-            next[kobalt::appearance::comicsModeKey] = enabled;
-            preview.apply(next);
+            preview.editAppearance(kobalt::appearance::Patch(
+                    kobalt::qt::object({ { kobalt::appearance::comicsModeKey, enabled } })));
         });
     });
     marginSlider = appearance.marginSlider;

@@ -291,7 +291,11 @@ void openCold(OpeningJob &job, OpeningState &state)
     // Reinspect warnings so diagnostics always contain the cause.
     state.cacheHit = state.cacheHit && layout.verdict == LayoutCompatibility::Supported;
     if (!state.cacheHit && !job.cancelled() && outcome.ready()) {
-        layout = inspectLayout(*state.resources, state.publication.sizes());
+        // FB2 is a single XML document, not an EPUB package with container.xml.
+        if (state.publication.format() == Publication::PublicationFormat::Fb2)
+            layout.verdict = LayoutCompatibility::Supported;
+        else
+            layout = inspectLayout(*state.resources, state.publication.sizes());
         if (!job.cancelled())
             state.cacheStored = cache.store(state.digest, layout);
     }
