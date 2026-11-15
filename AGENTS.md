@@ -1,3 +1,4 @@
+<!-- Current migration/acceptance status is maintained in FB2_FORK_PLAN.md. -->
 # Working on Kobalt
 
 Read [Building](doc/building.md) before running a build. Do not restore retired runners wholesale.
@@ -246,7 +247,7 @@ not KOReader's per-spec default. Keep the synthetic InDesign matrix portable;
 fork device workflow. Do not copy commercial book text/fonts into new fixtures
 or runtime assets. EPUB cache v3 invalidates earlier per-spec-only layouts.
 
-### beta7 integration — approved RU, CI passed, device gate pending
+### beta7 integration — archived implementation/CI record
 
 Use FB2_FORK_PLAN.md, including its complete Beta7 approved integration archive,
 for the e86533c integration. The checked binary is dddace7 / CI 42500439074;
@@ -299,7 +300,7 @@ See doc/qt6-one-off.md. Record binary SHA/artifact separately from device proof.
 
 ### Beta7 device review and author proposals
 
-Use FB2_FORK_PLAN.md for the pending screenshot findings R1/R2 and
+Use FB2_FORK_PLAN.md for the completed screenshot findings R1/R2 and
 per-frame evidence. Do not treat the saved-language confirmation as proof of
 an actual language change after reopening. Preserve original captures and
 provenance in doc/dddace7/. External language packs and a graphics-reading
@@ -357,7 +358,7 @@ Never claim device verification from a synthetic regression or report unmeasured
 
 ## Build106 device feedback
 
-Build106 follow-up: use FB2_FORK_PLAN.md. Do not confuse KOReader CRe image-coverage refresh with its KOpt/Kaleido path. Tie comics quality refresh to committed frames, not repaint loops; preserve base refresh preferences. Footnote root-font margin is not body line spacing or page remainder. New caption/top-bottom wording awaits approval.
+Build106 follow-up: use FB2_FORK_PLAN.md. Do not confuse KOReader CRe image-coverage refresh with its KOpt/Kaleido path. Tie comics quality refresh to committed frames, not repaint loops; preserve base refresh preferences. Footnote root-font margin is not body line spacing or page remainder. Caption/top-bottom wording was approved and implemented.
 
 
 ### Diagnostics 5bbff30 and approved wording
@@ -370,14 +371,14 @@ The comics description EN/RU in FB2_FORK_PLAN.md is approved; no further wording
 Added approved description and content-measured compact row; Off/Bottom/Top
 selector with legacy bottom default; top progress reuses fill/ticks with compact
 reservation and header snapshot invalidation. Qt5 comics uses graphics repair
-waveform on submitted damage, preserving screen-refresh preferences; hardware
-quality/latency still needs verification. Added opening_id and cache-save wrapper
+waveform on submitted damage, preserving screen-refresh preferences; user confirmed
+correct rendering and no ghosting (no general latency speedup claim). Added opening_id and cache-save wrapper
 reasons, not guessed parsed-cache miss reasons. No cache cleanup or memory-budget
-increase. Native/Qt5 CI pending. Test plan: FB2_FORK_PLAN.md.
+increase. Subsequent native/Qt5 CI passed; current status: FB2_FORK_PLAN.md.
 
 Incomplete explicitly: exact body-to-footnote gap (requires renderer/hit-test
-coordination) and lazy construction of settings/appearance panels. These are not
-claimed fixed or sped up by this patch. New approved EN/RU pairs: comics mode
+coordination) and lazy construction of Settings. Appearance was subsequently
+made lazy; general opening optimization remains stopped. New approved EN/RU pairs: comics mode
 description, progress Bottom/Внизу and Top/Вверху; no other UI text changes.
 
 
@@ -412,11 +413,11 @@ fit half the landscape viewport, wide art fits the whole viewport, no rotation.
 Numbering, source bookmarks and hit coordinates use the same screen mapping;
 rebuild it after pagination, never on page turns. Base typography/layout choices
 remain saved and are restored when comics is disabled. Added mixed-art rotation
-and FB2/HTML prose geometry regressions. CI verification pending.
+and FB2/HTML prose geometry regressions. Subsequent native/Qt5 CI passed.
 
 Also corrected the missing area label/comment for the previous progress-mirror
 regression, which prevented native CI configuration (Qt5 packaging itself passed).
-Footnote gap and lazy-panel work remain unfinished; no opening speedup claim.
+Footnote gap and lazy Settings remain deferred; lazy Appearance was completed. No opening speedup claim.
 
 
 ## Verified comics follow-up and deferred Appearance slice
@@ -519,7 +520,7 @@ Regression coverage includes unequal-height halves, hit/letterbox bounds, cold a
 mixed-ready frames, neighbour pressure and wide center artwork. Waveform unchanged;
 opening-speed work remains stopped. Native and Kobo Qt5 CI passed for runtime `3e810b7` (run
 [43502596739](https://github.com/Mutaracha/kobalt_ru/actions/runs/43502596739));
-physical simultaneous display remains device acceptance, not a CI claim.
+User confirmed correct comics rendering, including the visible pair and centering.
 
 
 ### Libra 2 rotation-only correction (supersedes 76852b5/e0b7c1f)
@@ -534,6 +535,27 @@ mapping/assignment behavior, as do arrow keys and touch navigation. Menu/list/
 preview use native directions, not custom reading actions. UI action labels remain
 canonical assignments. Native and Kobo Qt5 CI passed for `c4b8c1e`
 ([run43645562443](https://github.com/Mutaracha/kobalt_ru/actions/runs/43645562443));
-physical acceptance remains pending.
+User confirmed physical Libra 2 behavior in all four orientations.
 User example (button1 assigned next, button2 previous): portrait +/-, opposite
 portrait -/+, buttons-top landscape -/+, buttons-bottom landscape +/-.
+
+
+## Active beta.8 migration checkpoint
+
+The user confirmed the preceding comics fixes and Libra 2 rotation-only mapping;
+do not retain pending-device labels for those changes. The concise active plan is
+FB2_FORK_PLAN.md; older build-stage notes are historical, not a work queue.
+Migration to upstream679175046 is authorized and in preparation (31 conflicting
+paths identified); no new runtime is published yet. Approve the EN/RU proposal
+in doc/beta8-strings-review.md before UI string changes. Integration decisions and
+validation gates are in doc/beta8-migration.md.
+
+Extend upstream Hidden features with a switch for the reading-menu dark-theme
+toggle, with an explicit description. Hiding must preserve the active/saved theme;
+it is not a global dark-mode prohibition. New names/descriptions require approval.
+Replace fork notes with the full upstream beta.8 mechanism (canonical setting,
+links/selection/hits/cache/tests) while preserving native FB2 support. EPUB screenshots
+from stock beta.8 show the body-to-note gap is still excessive even with a smaller
+font; keep that defect open independently of notes migration. Supplied images and
+checksums: test & diagnostic/beta8-baseline/. General opening optimization remains
+stopped. All deferred items are grouped in FB2_FORK_PLAN.md, not separate queues.

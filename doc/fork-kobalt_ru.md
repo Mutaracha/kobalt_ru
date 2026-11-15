@@ -1,3 +1,4 @@
+<!-- Current migration/acceptance status is maintained in FB2_FORK_PLAN.md. -->
 # Kobalt `kobalt_ru` — пользовательская инструкция
 
 Это форк читалки Kobalt для электронных книг Kobo. От исходной версии он отличается тремя вещами:
@@ -381,7 +382,7 @@ Regression coverage includes unequal-height halves, hit/letterbox bounds, cold a
 mixed-ready frames, neighbour pressure and wide center artwork. Waveform unchanged;
 opening-speed work remains stopped. Native and Kobo Qt5 CI passed for runtime `3e810b7` (run
 [43502596739](https://github.com/Mutaracha/kobalt_ru/actions/runs/43502596739));
-physical simultaneous display remains device acceptance, not a CI claim.
+User confirmed correct comics rendering, including the visible pair and centering.
 
 
 ### Libra 2 rotation-only correction (supersedes 76852b5/e0b7c1f)
@@ -396,6 +397,27 @@ mapping/assignment behavior, as do arrow keys and touch navigation. Menu/list/
 preview use native directions, not custom reading actions. UI action labels remain
 canonical assignments. Native and Kobo Qt5 CI passed for `c4b8c1e`
 ([run43645562443](https://github.com/Mutaracha/kobalt_ru/actions/runs/43645562443));
-physical acceptance remains pending.
+User confirmed physical Libra 2 behavior in all four orientations.
 User example (button1 assigned next, button2 previous): portrait +/-, opposite
 portrait -/+, buttons-top landscape -/+, buttons-bottom landscape +/-.
+
+
+## Active beta.8 migration checkpoint
+
+The user confirmed the preceding comics fixes and Libra 2 rotation-only mapping;
+do not retain pending-device labels for those changes. The concise active plan is
+FB2_FORK_PLAN.md; older build-stage notes are historical, not a work queue.
+Migration to upstream679175046 is authorized and in preparation (31 conflicting
+paths identified); no new runtime is published yet. Approve the EN/RU proposal
+in doc/beta8-strings-review.md before UI string changes. Integration decisions and
+validation gates are in doc/beta8-migration.md.
+
+Extend upstream Hidden features with a switch for the reading-menu dark-theme
+toggle, with an explicit description. Hiding must preserve the active/saved theme;
+it is not a global dark-mode prohibition. New names/descriptions require approval.
+Replace fork notes with the full upstream beta.8 mechanism (canonical setting,
+links/selection/hits/cache/tests) while preserving native FB2 support. EPUB screenshots
+from stock beta.8 show the body-to-note gap is still excessive even with a smaller
+font; keep that defect open independently of notes migration. Supplied images and
+checksums: test & diagnostic/beta8-baseline/. General opening optimization remains
+stopped. All deferred items are grouped in FB2_FORK_PLAN.md, not separate queues.
