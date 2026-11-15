@@ -4192,9 +4192,9 @@ int main(int argc, char **argv)
                         && !ru->isChecked(),
                 "Missing override must select Automatic in the debug language modal");
         require(lastRow && firstRow && ru && !lastRow->presentation().dividers.testFlag(Qt::BottomEdge) &&
-                    !firstRow->presentation().dividers.testFlag(Qt::TopEdge) &&
+                    firstRow->presentation().dividers.testFlag(Qt::TopEdge) &&
                     firstRow->presentation().dividers.testFlag(Qt::BottomEdge),
-                "Debug choices have duplicate outer rules or missing internal separators");
+                "Debug choices must use the shared modal content separator and omit the action-owned bottom rule");
         const auto locale = kobalt::strings::locale();
         english->click();
         QElapsedTimer waiting;

@@ -2099,7 +2099,7 @@ private slots:
         QCOMPARE(host.session()->state()["font_pixels"], original["font_pixels"]);
         QVERIFY(!text->isVisible());
         QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSettingsStyling")));
-        auto *pageNotes = host.window()->findChild<QCheckBox *>("rrInPageFootnotes");
+        auto *pageNotes = host.window()->findChild<QCheckBox *>("rrInpageFootnotes");
         QVERIFY(pageNotes);
         auto *noteRow = dynamic_cast<ui::DescribedOption *>(pageNotes);
         auto *neighbour = dynamic_cast<ui::DescribedOption *>(
@@ -2118,10 +2118,10 @@ private slots:
             QCoreApplication::processEvents();
         }
         QTRY_VERIFY(notesExposed());
-        QVERIFY(pageNotes->isChecked());
+        QVERIFY(!pageNotes->isChecked()); // Upstream default is off.
         QVERIFY(click(canvas, pageNotes));
-        QVERIFY(!pageNotes->isChecked());
-        QVERIFY(host.session()->state().value("fb2_inpage_footnotes").toBool());
+        QVERIFY(pageNotes->isChecked());
+        QVERIFY(!host.session()->state().value("inpage_footnotes").toBool());
         QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSettingsSystem")));
         auto *counter = host.window()->findChild<QLabel *>("rrSettingsOptionsPage");
         QVERIFY(counter && counter->isVisible());

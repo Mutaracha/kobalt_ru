@@ -367,6 +367,7 @@ Reader::Reader(std::unique_ptr<kobalt::ReadingBook> openedBook,
     buildBottomControls();
     built("bottom_controls");
     appearanceLayout = buildMenu();
+    buildTextPresets();
     built("menu");
     buildOverlays();
     built("overlays");
@@ -1140,7 +1141,6 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
     });
     marginSlider = appearance.marginSlider;
     verticalMarginSlider = appearance.verticalMarginSlider;
-    buildTextPresets();
     appearancePreview = new kobalt::reader::AppearancePreview(this);
     appearancePreview->followPanel(menu, [this] { syncAppearancePreview(); });
     connect(panels, &QStackedWidget::currentChanged, this, [this] { syncAppearancePreview(); });
