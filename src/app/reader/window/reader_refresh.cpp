@@ -289,7 +289,7 @@ bool Reader::syncFontPicker()
 // footer's place until it clears.
 void Reader::showChapterText()
 {
-    const bool comics = session->requestedState().value(appearance::comicsModeKey).toBool(false);
+    const bool comics = session->requestedAppearance().fields().value(appearance::comicsModeKey).toBool(false);
     if (page->comicsMode != comics) {
         page->comicsMode = comics;
         header->setVisible(page->showHeader());
@@ -510,7 +510,7 @@ void Reader::syncAppearanceControls(bool pickingFont)
     auto *settings =
             appearanceEdit.edited() && appearanceEdit.ready() ? appearanceEdit.preview() : session;
     if (auto *option = findChild<QCheckBox *>("rrComicsReadingMode")) {
-        option->setChecked(settings->requestedState().value(appearance::comicsModeKey).toBool(false));
+        option->setChecked(settings->requestedAppearance().fields().value(appearance::comicsModeKey).toBool(false));
     }
     previewLabel->setText(appearanceEdit.error());
     previewLabel->setVisible(!pickingFont && !appearanceEdit.error().isEmpty());

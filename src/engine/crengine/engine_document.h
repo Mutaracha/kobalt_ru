@@ -15,7 +15,6 @@
 #include "reader_links.h"
 #include "reader_word_counts.h"
 #include "reading/reading_density.h"
-#include "reading/appearance_settings.h"
 #include <QString>
 #include <QStringList>
 #include <QVector>

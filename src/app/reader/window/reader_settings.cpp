@@ -1397,7 +1397,7 @@ void Reader::finishPreview()
     preferences = next;
     appearanceEdit.clearError();
     if (appearanceEdit.ready())
-        page->comicsMode = appearanceEdit.preview()->requestedState()
+        page->comicsMode = appearanceEdit.preview()->requestedAppearance().fields()
                                   .value(appearance::comicsModeKey).toBool(false);
     const QSize viewport = bodySize();
     if (appearanceEdit.ready())
