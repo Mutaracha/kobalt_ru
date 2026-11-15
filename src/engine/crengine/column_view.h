@@ -356,10 +356,8 @@ private:
     }
     int noteTop(const LVRendPageInfo &page) const
     {
-        int y = viewportHeight - margins.bottom;
-        for (int i = 0; i < page.footnotes.length(); ++i)
-            y -= page.footnotes[i].height;
-        return y;
+        return margins.top + page.footnoteTop(
+                viewportHeight - margins.top - margins.bottom, getFontSize());
     }
 
     bool rightToLeft()

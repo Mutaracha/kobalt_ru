@@ -24,3 +24,5 @@ crengine-vertical-buffer.patch
 crengine-search-preparation.patch
 crengine-figure-breaks.patch
 crengine-empty-pages.patch
+
+crengine-adjacent-footnotes.patch

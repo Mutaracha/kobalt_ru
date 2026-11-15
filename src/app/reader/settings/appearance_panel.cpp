@@ -247,6 +247,9 @@ int AppearanceSheet::fitHeight(int width, int availableHeight)
         if (shown)
             sectionHeight = topSection->sizeHint().height();
         QMargins margins = metrics::panel::margins;
+        // Reduce the outer gap, not the comics row's touch target.
+        if (pages->currentIndex() == int(AppearancePage::Layout))
+            margins.setTop(ui::px(8));
         margins.setTop(margins.top() + sectionHeight);
         layout()->setContentsMargins(margins);
     }

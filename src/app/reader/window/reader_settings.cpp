@@ -1,4 +1,5 @@
 #include <QKeyEvent>
+#include <QScopedValueRollback>
 #include "reading/remaining_time.h"
 #include "reading/sleep_screen.h"
 #include "ui/controls/buttons.h"
@@ -1197,6 +1198,11 @@ void Reader::resizeText()
 {
     if (!isVisible() || closing)
         return;
+    const auto *draft = appearanceEdit.edited() && appearanceEdit.ready()
+            ? appearanceEdit.preview() : session;
+    const bool draftComics = draft->requestedAppearance().fields()
+            .value(appearance::comicsModeKey).toBool(false);
+    QScopedValueRollback<bool> previewMode(page->comicsMode, draftComics);
     const QSize viewport = bodySize();
     kobalt::diagnostic(
             "reader-resize-text",

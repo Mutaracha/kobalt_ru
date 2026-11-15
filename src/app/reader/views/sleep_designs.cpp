@@ -126,9 +126,15 @@ QFont body(const QString &family, qreal pixels)
 void text(QPainter &painter, const QFont &font, const QColor &color, const QRectF &area,
           const QString &value, Qt::Alignment alignment = Qt::AlignLeft | Qt::AlignVCenter)
 {
-    painter.setFont(font);
+    QFont fitted = font;
+    const int room = qMax(1, qFloor(area.width()));
+    const int minimum = qMax(1, font.pixelSize() / 2);
+    while (fitted.pixelSize() > minimum && ui::interfaceTextWidth(value, fitted) > room)
+        fitted.setPixelSize(fitted.pixelSize() - 1);
+    painter.setFont(fitted);
     painter.setPen(color);
-    ui::drawInterfaceText(painter, area.toAlignedRect(), value, alignment);
+    ui::drawInterfaceText(painter, area.toAlignedRect(),
+                          ui::elideInterfaceText(value, fitted, room), alignment);
 }
 
 // Draws one line so its baseline sits at `baseline`, like SVG text.
@@ -728,8 +734,11 @@ void paintWidgets(QPainter &painter, const Frame &frame, const Content &content,
               QPointF(layout.left.left() + pad, layout.left.center().y() - caption->height / 2.0),
               colors.ink);
     const auto &left = content.shot.details.left;
-    baselineText(painter, remaining, colors.ink, QPointF(layout.left.right() - pad, baseline),
-                 left.isEmpty() ? content.shot.remaining : left, Qt::AlignRight);
+    const qreal estimateLeft = layout.left.left() + pad + 42 * u;
+    text(painter, remaining, colors.ink,
+         QRectF(estimateLeft, baseline - ui::interfaceLineAscent(remaining),
+                qMax<qreal>(1, layout.left.right() - pad - estimateLeft), lineHeight(remaining)),
+         left.isEmpty() ? content.shot.remaining : left, Qt::AlignRight | Qt::AlignTop);
 }
 
 QVector<QRect> widgetsAreas(const Frame &frame, const sleep::Snapshot &shot)

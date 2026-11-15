@@ -194,9 +194,13 @@ void paintBookmark(QPainter &painter, const QRect &ribbon, const Content &conten
     const int textLeft = ribbon.left() + padding;
     const int width = ribbon.width() - 2 * padding;
     const auto centered = [&](const QString &text, const QFont &font, int y, int height) {
-        painter.setFont(font);
+        QFont fitted = font;
+        const int minimum = qMax(1, font.pixelSize() / 2);
+        while (fitted.pixelSize() > minimum && ui::interfaceTextWidth(text, fitted) > width)
+            fitted.setPixelSize(fitted.pixelSize() - 1);
+        painter.setFont(fitted);
         ui::drawInterfaceText(painter, QRect(textLeft, y, width, height),
-                              ui::elideInterfaceText(text, font, width),
+                              ui::elideInterfaceText(text, fitted, width),
                               Qt::AlignHCenter | Qt::AlignVCenter);
     };
     painter.setPen(QPen(ink, int(sleepMetrics::border)));

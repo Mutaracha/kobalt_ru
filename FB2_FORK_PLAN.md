@@ -230,3 +230,12 @@ The build is ready for physical Libra2 testing, **not yet physically accepted**.
 Keep the successful waveform policy; opening-speed optimization remains stopped.
 The large footnote/body gap remains a separate physical review item, not declared
 fixed by the merge. Backup/installation and checks: `doc/beta8-device-check.md`.
+
+## Device fixes после build153 — WIP
+
+- Согласовано: «Капсула» вместо «Плашка»; текст письма без изменений.
+- Подготовлены изменения fitting sleep-текстов, draft comics viewport/chrome,
+  компактного верхнего отступа Layout и промежутка перед примечаниями.
+- Перед выпуском: проверить координаты ссылок/выделения, cache reopen,
+  preview on/off без повторного открытия; native + Kobo Qt5 и скриншоты.
+- Это не новая проверенная сборка. Рабочая база: build153.

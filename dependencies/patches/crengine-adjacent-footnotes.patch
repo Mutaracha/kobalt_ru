@@ -1,0 +1,62 @@
+--- a/crengine/include/lvpagesplitter.h
++++ b/crengine/include/lvpagesplitter.h
+@@ -293,6 +293,23 @@
+         }
+         return y - previous;
+     }
++    // Keep page notes next to the body using its neighboring line-box gap.
++    // The existing serialized line map makes this identical after cache reopen.
++    int footnoteBodyGap(int fallback) const {
++        int count = justificationLines.length();
++        if (count < 2) return fallback;
++        const lvPoint &before = justificationLines[count-2];
++        const lvPoint &last = justificationLines[count-1];
++        int gap = last.x - before.y;
++        return gap >= 0 && gap <= last.y-last.x ? gap : fallback;
++    }
++    int footnoteTop(int available, int fallback) const {
++        int bottom = available;
++        for (int i=0; i<footnotes.length(); ++i) bottom -= footnotes[i].height;
++        if (!height || !justificationLines.length()) return bottom;
++        int adjacent = height + footnoteBodyGap(fallback);
++        return adjacent < bottom ? adjacent : bottom;
++    }
+     int start; /// start of page
+ 
+     int index;  /// index of page
+--- a/crengine/src/lvdocview.cpp
++++ b/crengine/src/lvdocview.cpp
+@@ -2224,7 +2224,7 @@
+ 			// could have their content painted over the footnotes)
+ 			bool has_footnotes = page.footnotes.length() > 0;
+ 			#define FOOTNOTE_MARGIN_REM 1 // as in lvpagesplitter.cpp
+-			int footnote_margin = FOOTNOTE_MARGIN_REM * m_font_size;
++			int footnote_margin = page.footnoteBodyGap(FOOTNOTE_MARGIN_REM * m_font_size);
+ 			int footnotes_height = 0;
+ 			for (int fn = 0; fn < page.footnotes.length(); fn++) {
+ 				footnotes_height += page.footnotes[fn].height;
+@@ -2233,7 +2233,9 @@
+ 				// We'll be drawing a separator at 2/3 in the footnote margin.
+ 				// Allow over-painting to 1/2 in this footnote margin (so any
+ 				// drop-cap tail and such may not get clipped out.
+-				draw_extra_info.content_overflow_clip.bottom = fullRect.bottom - m_pageMargins.bottom - footnotes_height - footnote_margin/2;
++				draw_extra_info.content_overflow_clip.bottom = clip.top + page.footnoteTop(
++                    m_dy - getPageHeaderHeight() - m_pageMargins.top - m_pageMargins.bottom,
++                    footnote_margin) - footnote_margin/2;
+ 			}
+ 
+ 			// draw main page text
+@@ -2274,10 +2276,9 @@
+ 			int fny = clip.top + (page.height ? page.height + footnote_margin
+ 					: footnote_margin);
+ 			if ( has_footnotes) {
+-				int h_avail = m_dy - getPageHeaderHeight()
+-						   - m_pageMargins.top - m_pageMargins.bottom
+-						   - height - footnote_margin;
+-				fny += h_avail - footnotes_height; // put empty space before first footnote
++                fny = clip.top + page.footnoteTop(
++                    m_dy - getPageHeaderHeight() - m_pageMargins.top - m_pageMargins.bottom,
++                    footnote_margin);
+ 				draw_extra_info.draw_body_background = false;
+ 				// We'll be drawing a separator at 2/3 in the footnote margin.
+ 				// Allow over-painting up to it in this footnote margin (so any glyph head

@@ -1,4 +1,5 @@
 #include "render/page_content.h"
+#include <QScopedValueRollback>
 #include "ui/controls/text.h"
 #include "ui/controls/buttons.h"
 #include "ui/controls/icons.h"
@@ -1134,9 +1135,14 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
     spacingSlider = appearance.spacingSlider;
     auto *comicsOption = appearance.comicsOption;
     connect(comicsOption, &QCheckBox::clicked, this, [this](bool enabled) {
-        mutateAppearance([enabled](ReaderSession &preview) {
+        QSize viewport;
+        {
+            QScopedValueRollback<bool> mode(page->comicsMode, enabled);
+            viewport = bodySize();
+        }
+        mutateAppearance([enabled, viewport](ReaderSession &preview) {
             preview.editAppearance(kobalt::appearance::Patch(
-                    kobalt::qt::object({ { kobalt::appearance::comicsModeKey, enabled } })));
+                    kobalt::qt::object({ { kobalt::appearance::comicsModeKey, enabled } })), viewport);
         });
     });
     marginSlider = appearance.marginSlider;

@@ -256,10 +256,12 @@ void inpageFootnotes()
             }
             require(fragments > 2 && notePages > 1, "Long note did not continue across pages");
             require(document.go(0), "Cannot return to note reference");
-            int noteTop =
-                    viewport.height() - document.state().value("bottom_margin_pixels").toInt();
-            for (int i = 0; i < first.footnotes.length(); ++i)
-                noteTop -= first.footnotes[i].height;
+            const auto margins = view.getPageMargins();
+            const int noteTop = margins.top + first.footnoteTop(
+                    viewport.height() - margins.top - margins.bottom, view.getFontSize());
+            if (first.justificationLines.length() >= 2)
+                require(noteTop <= margins.top + first.height + first.footnoteBodyGap(view.getFontSize()),
+                        "Page notes retain extra bottom-justification gap above the first note");
             bool popup = false, backlink = false;
             QString noteTarget;
             for (const auto &link : document.pageLinks()) {

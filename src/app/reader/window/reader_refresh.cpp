@@ -1,4 +1,5 @@
 #include "render/page_content.h"
+#include <QScopedValueRollback>
 #include "ui/controls/rows.h"
 #include "ui/controls/text.h"
 #include "ui/panel_timing.h"
@@ -345,6 +346,10 @@ void Reader::syncAppearancePreview()
     }
     auto *settings =
             appearanceEdit.edited() && appearanceEdit.ready() ? appearanceEdit.preview() : session;
+    // Compose draft chrome using draft geometry, not the applied book mode.
+    const bool comics = settings->requestedAppearance().fields()
+            .value(appearance::comicsModeKey).toBool(false);
+    QScopedValueRollback<bool> mode(page->comicsMode, comics);
     const int side = kobalt::readingPixels(marginSlider->value());
     const int vertical = kobalt::readingPixels(verticalMarginSlider->value());
     kobalt::reader::AppearancePreview::Content content;
@@ -356,8 +361,8 @@ void Reader::syncAppearancePreview()
         content.footer =
                 page->showFooter() || page->showProgress() ? page->footerImage() : QImage();
     }
-    content.horizontalMargin = side;
-    content.verticalMargin = vertical;
+    content.horizontalMargin = comics ? 0 : side;
+    content.verticalMargin = comics ? 0 : vertical;
     content.axis = appearancePreviewAxis;
     content.text = textOpen;
     content.cropTop = qMax(0, settings->topMargin() - int(ui::px(16)));
