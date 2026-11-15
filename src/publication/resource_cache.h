@@ -4,7 +4,6 @@
 #include <QStringList>
 #include <QSize>
 #include <QSet>
-#include <array>
 #include <atomic>
 #include <functional>
 #include <list>
@@ -71,12 +70,11 @@ public:
     QJsonObject statistics() const;
 
 private:
-    using Block = std::array<char, blockBytes>;
-
     struct Entry
     {
         qint64 size = 0;
-        std::vector<std::unique_ptr<Block>> blocks;
+        qint64 capacity = 0;
+        std::vector<std::unique_ptr<char[]>> blocks;
     };
 
     QStringList names_;

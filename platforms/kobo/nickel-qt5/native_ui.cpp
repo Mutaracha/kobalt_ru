@@ -1,4 +1,6 @@
 #include "support/qt_compat.h"
+#include "platforms/kobo/common/page_button_mapping.h"
+#include "platforms/kobo/common/native_symbol.h"
 #include "platforms/kobo/common/native_ui.h"
 #include "support/strings.h"
 #include "support/diagnostics.h"
@@ -37,14 +39,6 @@
 #include <dlfcn.h>
 
 namespace kobalt {
-namespace {
-template <class T>
-T symbol(const char *name)
-{
-    return reinterpret_cast<T>(dlsym(RTLD_DEFAULT, name));
-}
-} // namespace
-
 QStringList nativeReaderFontFamilies()
 {
     if (!qApp || QThread::currentThread() != qApp->thread())
@@ -87,34 +81,22 @@ bool nativeReaderReverseLandscapeButtons()
     return device && bw && bw(device);
 }
 
-namespace {
-bool isLibra2()
+bool nativePageButtonsRotated()
 {
     static const auto current = symbol<const void *(*)()>("_ZN6Device16getCurrentDeviceEv");
     static const auto io = symbol<bool (*)(const void *)>("_ZNK6Device4isIoEv");
     const auto *device = current ? current() : nullptr;
-    return device && io && io(device);
-}
-Qt::ScreenOrientation buttonOrientation()
-{
     const auto *screen = QGuiApplication::primaryScreen();
-    return screen ? screen->orientation() : Qt::PrimaryOrientation;
-}
-} // namespace
-
-int nativeReaderButtonActionRotation()
-{
-    return isLibra2() ? nickel::libra2ButtonRotation(buttonOrientation()) : 1;
+    return screen && nickel::pageButtonsRotated(screen->orientation(), device && io && io(device));
 }
 
 int nativePageButtonDirection(QKeyEvent *event)
 {
     const int key = event->key();
     if (key != Qt::Key_F23 && key != Qt::Key_F24)
-        return nickel::qt5PagingDirection(key, Qt::PrimaryOrientation, false, false);
-    QSettings settings("/mnt/onboard/.kobo/Kobo/Kobo eReader.conf", QSettings::IniFormat);
-    const bool inverted = settings.value("Reading/invertPageTurnButtons", false).toBool();
-    return nickel::qt5PagingDirection(key, buttonOrientation(), inverted, isLibra2());
+        return 0;
+    const bool inverted = nativeInvertedPageButtons();
+    return (key == Qt::Key_F24) != (inverted != nativePageButtonsRotated()) ? 1 : -1;
 }
 
 bool nativeReaderSleepScreenAvailable()

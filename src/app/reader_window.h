@@ -40,6 +40,9 @@ public:
     // Cancel revoked native work before hiding can stop the reading interval.
     virtual void revokeNativeReading() { }
 
+    // Turns to a saved position, keeping a way back to the reading position.
+    virtual void showPosition(const QString &) { }
+
     // Revocation drains local data without writing through a revoked native account.
     virtual void finishStorageSave(std::function<void(bool)> finished, bool nativeAllowed = true)
     {
@@ -80,9 +83,20 @@ public:
     // duplicate input, so a sample measures the turn and not the filter.
     virtual void scriptedPageButton(int direction) { pageButton(direction); }
 
+    // For the scenario player: a panel or pop-up closed so recently that the
+    // reader ignores a tap where its close cell was. A person cannot tap again
+    // that fast, so the player waits until this ends before its next press.
+    virtual bool closeGuardActive() const { return false; }
+
     // Whether the reading engine has work in flight, such as a layout, a render
     // or drawing the pages beside the current one.
     virtual bool busy() const { return false; }
+
+    // Optional in-memory driver for a temporary benchmark session. Commands
+    // use normal reader operations: 1 forward, 2 backward, 3 jump to page.
+    virtual QJsonObject benchmarkState() const { return {}; }
+
+    virtual bool benchmarkCommand(int, int) { return false; }
 
     // When the opening began and the host's stages before and around the
     // window's construction. The window adds its own build, theme and show

@@ -2,7 +2,6 @@
 #include "support/strings.h"
 #include "engine_document.h"
 #include "reader_fb2.h"
-#include "reader_notes.h"
 #include "reader_source.h"
 #include "kobo_styles.h"
 #include "reader_render_callback.h"
@@ -442,7 +441,8 @@ bool EngineDocument::openResources(std::shared_ptr<ResourceCache> resources,
                                    const QMap<QString, qint64> &sizes, QSize size,
                                    const QJsonObject &saved, QString *error,
                                    OpeningProgress progress, OpeningResult *result,
-                                   std::function<void()> coverReady)
+                                   std::function<void()> coverReady,
+                                   std::function<void()> cacheReady)
 {
     auto source = std::make_shared<ReaderSource>();
     source->resources = std::move(resources);
@@ -450,7 +450,7 @@ bool EngineDocument::openResources(std::shared_ptr<ResourceCache> resources,
     source->isFb2 = sizes.contains(QString::fromLatin1(Publication::singleFb2ResourceName));
     source->container = LVContainerRef(new ResourceContainer(source->resources, sizes));
     return openSource(std::move(source), size, saved, error, std::move(progress), result,
-                      std::move(coverReady));
+                      std::move(coverReady), {}, std::move(cacheReady));
 }
 
 bool EngineDocument::rebindResources(const std::shared_ptr<ResourceCache> &resources,
@@ -480,7 +480,7 @@ QJsonObject EngineDocument::resourceStats() const
 bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size,
                                 const QJsonObject &saved, QString *error, OpeningProgress progress,
                                 OpeningResult *result, std::function<void()> coverReady,
-                                QSet<QString> skippedFonts)
+                                QSet<QString> skippedFonts, std::function<void()> cacheReady)
 {
     if (result)
         *result = {};
@@ -537,8 +537,7 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
                               Utf8ToUnicode(lString8(cacheName.toUtf8().constData())));
         properties->setHex(
             DOC_PROP_FILE_CRC32,
-            documentCacheChecksum(documentCachePolicy() + fb2::cachePolicy(loadingFb2, inPageFootnotes_) +
-                                      notes::epubCachePolicy(loadingFb2, inPageFootnotes_) +
+            documentCacheChecksum(documentCachePolicy() + fb2::cachePolicy(loadingFb2) +
                                       ":bionic-v3:" + bionic_.toUtf8(),
                                   domVersion_));
         properties->setString(DOC_PROP_FILE_SIZE, lString32::itoa(int(cacheBytes_ < 0         ? 0
@@ -584,6 +583,8 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
         openedFromCache_ = loaded && cache.enabled() && engine_->getDocument()->isRendered();
     }
     openingTimes_["model_cache_hit"] = openedFromCache_;
+    if (openedFromCache_ && cacheReady)
+        cacheReady();
     if (!loaded) {
         const auto resourceFailure = resourceError();
         engine_.reset();
@@ -592,14 +593,23 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
                        strings::key("error.the_reading_engine_could_not_open_this_epub"))
                 : fail(OpeningFailureKind::Io, "opening.resource-read", resourceFailure);
     }
-    if (fb2Document_ && !openedFromCache_)
-        fb2::normalizeNoteTitles(engine_->getDocument()->getRootNode());
     if (coverReady)
         coverReady();
     source_->embeddedFonts = fb2Document_ ? 0
             : source_->parent ? source_->parent->embeddedFonts : embeddedFontCount();
     applyPublisherFontFallbacks();
-    engine_->getDocument()->getProps()->setInt("kobalt.bionic.mode", bionic_ == "bold" ? 1 : 0);
+    auto *document = engine_->getDocument();
+    const auto renderingPolicy = Utf8ToUnicode(lString8(KOBALT_RENDERING_POLICY));
+    // A compatible engine update keeps the parsed DOM and Kobalt's markers.
+    // Rebuild only its layout when shaping or hyphenation rules have changed.
+    if (openedFromCache_
+        && document->getProps()->getStringDef("kobalt.rendering.policy", "") != renderingPolicy) {
+        document->forceReinitStyles();
+        engine_->requestRender();
+        document->setCacheFileStale(true);
+    }
+    document->getProps()->setString("kobalt.rendering.policy", renderingPolicy);
+    document->getProps()->setInt("kobalt.bionic.mode", bionic_ == "bold" ? 1 : 0);
     openingTimes_["model_parse_ms"] = double(phase.restart());
     // The package language selects hyphenation patterns and line-breaking
     // rules for text without its own lang attribute.
@@ -608,6 +618,9 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
         properties->setString(PROP_TEXTLANG_MAIN_LANG, language);
         engine_->propsApply(properties);
     }
+    // These optional markers can be added to older parsed caches without
+    // changing source text, IDs or saved positions.
+    markPageNotes();
     // A cached book was saved with these markers and its styles. Marking it
     // again would discard the cached pages.
     if (!openedFromCache_) {

@@ -1,18 +1,20 @@
 #include "appearance_settings.h"
+#include "features.h"
 #include "support/qt_compat.h"
 #include "page_navigation.h"
 #include "header_footer.h"
 #include "sleep_screen.h"
 #include "session_timeout.h"
+#include "text_presets.h"
 #include <QStringList>
 
 namespace kobalt::appearance {
 QJsonObject afterContentChange(const QJsonObject &saved) {
     QJsonObject result;
-    for (const auto *key : {comicsModeKey, "bold_reading", "dark_mode", "hide_nonlinear_fragments",
+    for (const auto *key : {comicsModeKey, "bold_reading", "dark_mode", "inpage_footnotes", "hide_nonlinear_fragments",
                             "normalize_page_margins", "reduce_chapter_spacing", "hanging_punctuation", "two_columns_landscape", "column_spacing_percent",
                             "word_spacing", "paragraph_spacing", "paragraph_indent",
-                            "justification_tracking", "widows_orphans", "fb2_inpage_footnotes"})
+                            "justification_tracking", "widows_orphans"})
         if (saved.contains(key))
             result[key] = saved.value(key);
     return result;
@@ -23,6 +25,7 @@ QJsonObject normalizationSettings(const QJsonObject &settings)
     const bool legacy = settings.value("avoid_wasteful_styling").toBool(true);
     result["normalize_page_margins"] = settings.value("normalize_page_margins").toBool(legacy);
     result["reduce_chapter_spacing"] = settings.value("reduce_chapter_spacing").toBool(legacy);
+    result["normalize_text_colors"] = settings.value("normalize_text_colors").toBool(false);
     return result;
 }
 
@@ -75,6 +78,7 @@ QJsonObject readerPreferences(const QJsonObject &global, const QJsonObject &book
 
 QJsonObject globalPreferences(QJsonObject preferences)
 {
+    migrateLegacyNotes(preferences);
     if (preferences.contains("schema") && preferences.value("schema").toDouble(-1) != 1)
         return preferences;
     if (!preferences.contains("bold_reading") && preferences.contains("bionic_reading"))
@@ -105,6 +109,7 @@ QJsonObject globalPreferences(QJsonObject preferences)
     preferences.remove("heavier_interface_text");
     preferences.remove("native_hide_status_bar");
     preferences.remove(comicsModeKey); // Per-book only; never inherit into the next book.
+    preferences.remove("light_dark_mode_shortcut");
     preferences.remove("columns");
     preferences.remove("column_spacing");
     preferences.remove(pageNavigation::barVisibleKey);
@@ -115,11 +120,13 @@ QJsonObject globalPreferences(QJsonObject preferences)
                 pageNavigation::value(pageNavigation::menuView(preferences));
     preferences.remove("pin_stats");
     preferences.remove(pageNavigation::thumbnailsKey);
+    features::normalize(preferences);
     return preferences;
 }
 
 QJsonObject cleanPreferences(QJsonObject preferences)
 {
+    migrateLegacyNotes(preferences);
     preferences = globalPreferences(std::move(preferences));
     if (preferences.contains("schema") && preferences.value("schema").toDouble(-1) != 1)
         return preferences;
@@ -141,18 +148,20 @@ QJsonObject cleanPreferences(QJsonObject preferences)
     for (const auto *key : { "show_header", "show_footer", "show_clock", "show_progress_bar",
                              "header_text_size", "footer_text_size" })
         preferences.remove(key);
-    for (const auto *key : { "dark_mode", "fb2_inpage_footnotes",
-                             "light_dark_mode_shortcut",
+    for (const auto *key : { "dark_mode",
                              "hide_tab_labels",
+                             "save_looked_up_words",
                              "disable_reader_standby",
                              "inherit_text_layout",
                              "two_columns_landscape",
                              "page_animations",
                              "edge_light_gestures",
                              "show_light_gesture_feedback",
+                             "show_opening_cover",
                              "dense_stats_chart",
                              "hanging_punctuation",
                              "hide_nonlinear_fragments",
+                             "inpage_footnotes",
                              "normalize_page_margins",
                              "reduce_chapter_spacing",
                              "minimal_annotation_mode",
@@ -160,7 +169,8 @@ QJsonObject cleanPreferences(QJsonObject preferences)
                              "show_footer",
                              "show_clock",
                              "auto_rotate",
-                             "turn_off_wifi_on_open" })
+                             "turn_off_wifi_on_open",
+                             "reverse_page_swipes" })
         if (preferences.contains(key) && !preferences.value(key).isBool())
             preferences.remove(key);
     for (const auto *key : beautifierKeys)
@@ -182,6 +192,12 @@ QJsonObject cleanPreferences(QJsonObject preferences)
     choice("marks_sort", { "position", "newest", "oldest" });
     choice("sleep_screen", { "stock", "cover", "page", "overlay" });
     choice("sleep_tile", { "card", "bookmark", "none" });
+    choice(sleep::designKey, sleep::designValues());
+    if (preferences.contains(sleep::greetingKey)
+        && (!preferences.value(sleep::greetingKey).isString()
+            || preferences.value(sleep::greetingKey).toString().size() > sleep::greetingLength))
+        preferences.remove(sleep::greetingKey);
+    textpresets::clean(preferences);
     choice("time_remaining_format", { "detailed", "approximate" });
     if (preferences.contains(sessionTimeout::preferenceKey)
         && !sessionTimeout::valid(preferences.value(sessionTimeout::preferenceKey)))
@@ -245,7 +261,6 @@ QJsonObject bookDefaults(const QJsonObject &preferences)
     const auto normalization = normalizationSettings(preferences);
     for (const auto *key : normalizationKeys)
         defaults[key] = normalization.value(key);
-    defaults["fb2_inpage_footnotes"] = preferences.value("fb2_inpage_footnotes").toBool(true);
     defaults.remove("font_face");
     applyFontDefault(defaults, preferences);
     defaults["vertical_justification"] =
@@ -268,13 +283,23 @@ QJsonObject bookDefaults(const QJsonObject &preferences)
                         : marginDesign(defaults.value(key).toInt()));
         defaults[key] = readingPixels(qBound(0, design, 120));
     }
+    defaults["inpage_footnotes"] = preferences.value("inpage_footnotes").toBool(false);
     defaults["word_spacing"] = preferences.value("word_spacing").toInt(100);
     defaults["paragraph_spacing"] = paragraphSpacing(preferences.value("paragraph_spacing"));
     defaults["paragraph_indent"] = paragraphIndent(preferences.value("paragraph_indent"));
     defaults["justification_tracking"] = preferences.value("justification_tracking").toInt(0);
     defaults["hanging_punctuation"] = preferences.value("hanging_punctuation").toBool(false);
     defaults["widows_orphans"] = preferences.value("widows_orphans").toString("publisher");
-    if (!preferences.value(inheritTextLayoutKey).toBool(true)) {
+    const auto newBook = textpresets::newBookChoice(preferences);
+    if (newBook == "book")
+        return defaults;
+    if (newBook != "last") {
+        const auto presets = textpresets::load(preferences);
+        if (const auto *preset = textpresets::find(presets, newBook)) {
+            const auto chosen = textpresets::values(*preset);
+            for (auto it = chosen.begin(); it != chosen.end(); ++it)
+                defaults[it.key()] = it.value();
+        }
         return defaults;
     }
     auto last = preferences.value(lastTextLayoutKey).toObject();
@@ -315,7 +340,6 @@ void applyBookDefaults(QJsonObject &saved, const QJsonObject &defaults)
     saved.remove("avoid_wasteful_styling");
     saved.remove("book_beautifier");
     // Settings choices replace stale book values.
-    saved["fb2_inpage_footnotes"] = defaults.value("fb2_inpage_footnotes").toBool(true);
     saved["columns"] = 1;
     saved["vertical_justification"] = verticalSpacingMode(defaults.value("vertical_justification"));
     saved["vertical_spacing_scope"] =
@@ -323,6 +347,7 @@ void applyBookDefaults(QJsonObject &saved, const QJsonObject &defaults)
     saved["two_columns_landscape"] = defaults.value("two_columns_landscape").toBool(false);
     saved["column_spacing_percent"] =
             defaults.value("column_spacing_percent").toInt(defaultColumnSpacingPercent);
+    saved["inpage_footnotes"] = defaults.value("inpage_footnotes").toBool(false);
     saved["word_spacing"] = defaults.value("word_spacing").toInt(100);
     saved["paragraph_spacing"] = paragraphSpacing(defaults.value("paragraph_spacing"));
     saved["paragraph_indent"] = paragraphIndent(defaults.value("paragraph_indent"));
@@ -382,10 +407,8 @@ void applyFontDefault(QJsonObject &saved, const QJsonObject &preferences)
         saved["font_face"] = face;
 }
 
-QJsonObject benchmarkTypography(const QString &identity)
+QJsonObject benchmarkTypography()
 {
-    if (identity != QStringLiteral("file:///mnt/onboard/kobalt-benchmark.kepub.epub"))
-        return {};
     return qt::object({ { "font_face", QString() },
                         { "default_font_face", QStringLiteral("Libron") },
                         { "font_pixels", defaultFontPixels() },
@@ -418,5 +441,42 @@ QJsonObject typographyDefaults()
               { "font_weight", defaultVariableFontWeight },
               { "font_optical_size", 0 },
               { "hyphenation", QStringLiteral("off") } });
+}
+} // namespace kobalt::appearance
+
+namespace kobalt::appearance {
+Patch::Patch(const QJsonObject &fields)
+{
+    copy(fields_, fields);
+}
+
+Requested Requested::fromResolvedState(const QJsonObject &state)
+{
+    QJsonObject fields;
+    copy(fields, state);
+    return Requested(std::move(fields));
+}
+
+Requested Requested::edited(const Patch &patch) const
+{
+    auto fields = fields_;
+    for (auto it = patch.fields().begin(); it != patch.fields().end(); ++it)
+        fields[it.key()] = it.value();
+    return Requested(std::move(fields));
+}
+
+void Requested::replaceIn(QJsonObject &state) const
+{
+    copy(state, fields_);
+}
+
+SavedInput::SavedInput(const QJsonObject &record)
+{
+    copy(fields_, record);
+}
+
+void SavedInput::restoreIn(QJsonObject &record) const
+{
+    copy(record, fields_);
 }
 } // namespace kobalt::appearance

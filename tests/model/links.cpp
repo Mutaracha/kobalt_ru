@@ -1,17 +1,22 @@
 #include "reader_inputs.h"
-#include "anchor_preview.h"
-#include "reader_source_index_probe.h"
-#include "engine/crengine/reader_notes.h"
-#include "reader_styles.h"
+#include "engine/crengine/column_view.h"
+#include "book_fixtures.h"
+#include <QTemporaryDir>
 #include "support/qt_compat.h"
 #include "engine/crengine/engine_document.h"
 #include <QBuffer>
 #include <QFile>
 #include <QGuiApplication>
 #include <QMap>
-#include <QTemporaryDir>
 #include <cstdio>
 #include "check.h"
+
+namespace kobalt {
+struct ReaderFootnoteProbe
+{
+    static ColumnView &view(EngineDocument &document) { return *document.engine_; }
+};
+} // namespace kobalt
 
 namespace {
 QImage decoratedLink(const QByteArray &markup, const QByteArray &css, bool dark)
@@ -48,6 +53,297 @@ QImage decoratedLink(const QByteArray &markup, const QByteArray &css, bool dark)
     require(preview.openPreview(model, QSize(800, 600), &error), qPrintable(error));
     require(preview.image(0) == image, "Link decoration changed in the appearance preview");
     return image;
+}
+
+void inpageMarkup()
+{
+    using namespace kobalt;
+
+    struct Case
+    {
+        QByteArray body;
+        bool note;
+    };
+
+    const QList<Case> cases{
+        { "<aside id='note' epub:type='footnote'><p>Explicit note.</p></aside>", true },
+        { "<section id='note' epub:type='note'><p>Explicit note.</p></section>", true },
+        { "<div id='note' epub:type='endnote'><p>Explicit note.</p></div>", true },
+        { "<div id='note' epub:type='rearnote'><p>Explicit note.</p></div>", true },
+        { "<aside id='note' epub:type='annotation footnote'><p>Tokenized note.</p></aside>", true },
+        { "<aside id='note' role='doc-footnote'><p>Explicit note.</p></aside>", true },
+        { "<aside id='note' role='doc-endnote'><p>Explicit note.</p></aside>", true },
+        { "<aside id='note' role='doc-note'><p>Explicit note.</p></aside>", true },
+        { "<aside id='note' role='doc-rearnote'><p>Explicit note.</p></aside>", true },
+        { "<div class='_idFootnotes'><div class='_idFootnote'><p id='note'>InDesign note.</p></div><p>Group text.</p></div>",
+          true },
+        { "<div class='footnotes'><div class='footnote'><p><a class='label' id='note' href='#ref'>[1]</a> Labeled note.</p></div></div>",
+          true },
+        { "<p id='note' data-kobalt-page-note='start'>A source-supplied marker.</p>", false },
+        { "<div class='footnotes'><div class='footnote'><p id='note'>An unlinked note.</p></div></div>",
+          false },
+        { "<p id='note'>An ordinary numeric destination.</p>", false },
+        { "<section id='note' epub:type='footnotes'><p>A whole note group.</p></section>", false },
+        { "<a id='note' epub:type='note' href='#ref'>Backlink.</a>", false },
+        { "<div class='_idFootnotes'><a id='note' class='_idFootnote' href='#ref'>Backlink.</a></div>",
+          false },
+        { "<aside id='note' epub:type='footnote' style='display:none'><p>Hidden note.</p></aside>",
+          false }
+    };
+    for (const auto &test : cases) {
+        auto files = test::linkBook();
+        files["OEBPS/first.xhtml"] =
+                "<html xmlns='http://www.w3.org/1999/xhtml' xmlns:epub='http://www.idpf.org/2007/ops'><body>"
+                "<p id='ref'>Read the reference <a href='#note'>1</a>.</p>"
+                + test.body + "</body></html>";
+        QMap<QString, qint64> sizes;
+        for (auto it = files.cbegin(); it != files.cend(); ++it)
+            sizes[it.key()] = it.value().size();
+        auto resources = std::make_shared<ResourceCache>(
+                files.keys(),
+                [files](const QString &name, const ResourceCache::Sink &sink, QString *) {
+                    const auto bytes = files.value(name);
+                    return sink(bytes.constData(), bytes.size());
+                },
+                std::make_shared<std::atomic_bool>(false));
+        EngineDocument document(test::readerFonts());
+        QString error;
+        require(document.openResources(resources, sizes, QSize(800, 900),
+                                       { { "inpage_footnotes", true } }, &error),
+                qPrintable(error));
+        require((ReaderFootnoteProbe::view(document)
+                         .getPageList()
+                         ->operator[](0)
+                         ->footnotes.length()
+                 > 0) == test.note,
+                test.body.constData());
+    }
+}
+
+// Compare actual pixels so publisher boxes cannot leak through the footer clip.
+void inpageStyling()
+{
+    using namespace kobalt;
+    for (bool dark : { false, true }) {
+        const auto render = [dark](const QByteArray &css, bool enabled, bool markup) {
+            auto files = test::linkBook();
+            const QByteArray content = markup
+                    ? "A <em>formatted</em> note with <strong>emphasis</strong> and x<sup>2</sup>."
+                    : "A formatted note with emphasis and x2.";
+            files["OEBPS/first.xhtml"] = "<html xmlns='http://www.w3.org/1999/xhtml'><head><style>"
+                    + css
+                    + "</style></head><body><p id='ref'>Text <a href='#note'>1</a> and <a href='#second'>2</a>.</p>"
+                      "<div class='footnotes'><h3>FOOTNOTES:</h3><div class='footnote'>"
+                      "<p><a class='label' id='note' href='#ref'>[1]</a> "
+                    + content
+                    + "</p><p>Continuation paragraph.</p>"
+                      "<p><a class='label' id='second' href='#ref'>[2]</a> Another note.</p>"
+                      "</div></div></body></html>";
+            QMap<QString, qint64> sizes;
+            for (auto it = files.cbegin(); it != files.cend(); ++it)
+                sizes[it.key()] = it.value().size();
+            auto resources = std::make_shared<ResourceCache>(
+                    files.keys(),
+                    [files](const QString &name, const ResourceCache::Sink &sink, QString *) {
+                        const auto bytes = files.value(name);
+                        return sink(bytes.constData(), bytes.size());
+                    },
+                    std::make_shared<std::atomic_bool>(false));
+            EngineDocument document(test::readerFonts());
+            QString error;
+            require(document.openResources(
+                            resources, sizes, QSize(800, 900),
+                            qt::object({ { "inpage_footnotes", enabled }, { "dark_mode", dark } }),
+                            &error),
+                    qPrintable(error));
+            if (enabled)
+                require(ReaderFootnoteProbe::view(document)
+                                        .getPageList()
+                                        ->operator[](0)
+                                        ->footnotes.length()
+                                == 2,
+                        "Labeled Gutenberg notes were merged or their continuation was split");
+            return document.image(0);
+        };
+        const QByteArray publisher =
+                ".footnotes,.footnote,.footnote p,.footnote a,.footnote em{"
+                "margin:27px!important;padding:13px!important;border:3px dashed!important;"
+                "background-color:#888!important;text-indent:3em!important}";
+        const auto clean = render({}, true, true);
+        require(render(publisher, true, true) == clean,
+                "Publisher boxes or spacing override Kobalt page-note styling");
+        require(render(publisher, false, true) != render({}, false, true),
+                "Disabled page notes discarded publisher styling");
+        require(render({}, true, false) != clean,
+                "Page-note styling discarded inline content markup");
+    }
+}
+
+// Exercise the engine's actual note fragments, not just a changed stylesheet.
+void inpageFootnotes()
+{
+    using namespace kobalt;
+    auto files = test::linkBook();
+    files["OEBPS/first.xhtml"].replace(
+            "</body>",
+            "<p id='legacy-ref'>Another reference <a href='#legacy-note'>7</a>.</p>"
+            "<div class='footnotes'><div class='footnote'><p>"
+            "<a id='legacy-note' class='label' href='#legacy-ref'>[7]</a> Cached labeled note."
+            "</p><p>Its continuation.</p></div></div></body>");
+    // Keep this book small, but long enough to write a real parsed-book cache.
+    files["OEBPS/Notes/foot notes.xhtml"].replace(QByteArray("Long note text. ").repeated(10000),
+                                                  QByteArray("Hidden text."));
+    files["OEBPS/Notes/foot notes.xhtml"].replace(
+            "Second paragraph of the same note.",
+            "Second paragraph of the same note. <a href='../first.xhtml#short-ref'>Return</a>");
+    QMap<QString, qint64> sizes;
+    for (auto it = files.cbegin(); it != files.cend(); ++it)
+        sizes[it.key()] = it.value().size();
+    auto resources = std::make_shared<ResourceCache>(
+            files.keys(),
+            [files](const QString &name, const ResourceCache::Sink &sink, QString *) {
+                const auto bytes = files.value(name);
+                return sink(bytes.constData(), bytes.size());
+            },
+            std::make_shared<std::atomic_bool>(false));
+    const QSize viewport(800, 900);
+    QString error;
+    QTemporaryDir cache;
+    require(cache.isValid(), "Cannot create note cache directory");
+    const auto open = [&](EngineDocument &document, const QJsonObject &settings, bool cached) {
+        if (cached)
+            document.setDocumentCache(cache.path() + "/.cache", QByteArray(64, 'f'),
+                                      "inpage-notes-test", 1024 * 1024);
+        require(document.openResources(resources, sizes, viewport, settings, &error),
+                qPrintable(error));
+    };
+    bool cacheWritten = false;
+    for (int columns : { 1, 2 }) {
+        for (bool dark : { false, true }) {
+            auto settings = qt::object(
+                    { { "font_pixels", 32 }, { "dark_mode", dark }, { "columns", columns } });
+            EngineDocument document(test::readerFonts());
+            open(document, settings, false);
+            const auto original = document.image(0);
+            const int originalPages = document.pages();
+            auto &view = ReaderFootnoteProbe::view(document);
+            require(view.getPageList()->operator[](0)->footnotes.length() == 0,
+                    "Default layout enabled page notes");
+            const auto origin = document.position();
+            require(document.applyAppearance(appearance::Patch({ { "inpage_footnotes", true } })),
+                    "Cannot enable page notes");
+            require(document.position() == origin, "Page notes lost the source reading position");
+            require(document.image(0) != original, "Page notes did not change the rendered page");
+            const auto &first = *view.getPageList()->operator[](0);
+            require(first.footnotes.length() >= 1, "Semantic EPUB notes were not paginated");
+            int fragments = 0, notePages = 0;
+            for (int page = 0; page < view.getPageList()->length(); ++page) {
+                const auto &info = *view.getPageList()->operator[](page);
+                int noteHeight = 0;
+                for (int i = 0; i < info.footnotes.length(); ++i) {
+                    require(info.footnotes[i].height > 0, "Empty note fragment");
+                    noteHeight += info.footnotes[i].height;
+                    ++fragments;
+                }
+                if (noteHeight) {
+                    ++notePages;
+                    require(info.height + noteHeight < viewport.height(),
+                            "Overflowing note overlaps the main text or page boundary");
+                }
+                require(!document.image(page / columns).isNull(), "Cannot draw note continuation");
+            }
+            require(fragments > 2 && notePages > 1, "Long note did not continue across pages");
+            require(document.go(0), "Cannot return to note reference");
+            int noteTop =
+                    viewport.height() - document.state().value("bottom_margin_pixels").toInt();
+            for (int i = 0; i < first.footnotes.length(); ++i)
+                noteTop -= first.footnotes[i].height;
+            bool popup = false, backlink = false;
+            QString noteTarget;
+            for (const auto &link : document.pageLinks()) {
+                const auto detail = document.linkDetails(link.source);
+                if (detail.kind == LinkKind::Footnote && detail.html.contains("short")) {
+                    popup = true;
+                    noteTarget = detail.target;
+                }
+                if (detail.label == "Return" && detail.kind == LinkKind::Passage) {
+                    backlink = link.rectangles.first().top() >= noteTop;
+                    const auto word = document.wordAt(link.rectangles.first().center());
+                    require(word.text == "Return",
+                            "Displayed note text cannot be selected for Follow link");
+                    require(document.rangeVisible(word.start, word.end),
+                            "Displayed note selection is not considered visible");
+                    require(!document.rangeRects(word.start, word.end).isEmpty(),
+                            "Displayed note selection has no rectangles");
+                    const auto geometry = document.annotationGeometry(word.start, word.end);
+                    require(!geometry.rectangles.isEmpty() && geometry.start.visible
+                                    && geometry.end.visible,
+                            "Displayed note selection lost its rectangles or handles");
+                    const QVector<QPair<QString, QString>> ranges{ { word.start, word.end } };
+                    require(document.visibleRanges(ranges) == QVector<int>{ 0 },
+                            "Displayed note highlight is filtered out");
+                    const auto highlights = document.pageRangeRects(0, ranges);
+                    require(highlights.size() == 1 && highlights.first() == geometry.rectangles,
+                            "Saved note highlight cannot be redrawn");
+                }
+            }
+            require(popup, "In-page notes disabled the existing popup");
+            require(backlink, "Displayed note backlink has no usable hit region");
+            require(document.goTo(noteTarget), "Popup Show in book cannot open the note");
+            auto targetPoint =
+                    view.getDocument()
+                            ->createXPointer(Utf8ToUnicode(noteTarget.toUtf8().constData()))
+                            .toPoint();
+            require(view.docToWindowPoint(targetPoint),
+                    "Popup Show in book opens an invisible note");
+            require(document.goTo(origin), "Cannot return from the note to its reference");
+            // Reflow and viewport layout reuse must use the new note policy.
+            document.resize(QSize(1100, 700));
+            document.resize(viewport);
+            EngineDocument fresh(test::readerFonts());
+            settings["inpage_footnotes"] = true;
+            open(fresh, settings, false);
+            require(document.pages() == fresh.pages() && document.image(0) == fresh.image(0),
+                    "Reflow retained stale page-note layout");
+            require(document.applyAppearance(appearance::Patch({ { "inpage_footnotes", false } })),
+                    "Cannot disable page notes");
+            require(document.pages() == originalPages && document.image(0) == original,
+                    "Disabling page notes did not restore ordinary pagination and pixels");
+            // A parsed cache saved with either choice must reopen with the other
+            // choice without reparsing, and match a fresh layout at every page.
+            for (bool enabled : { false, true, false }) {
+                settings["inpage_footnotes"] = enabled;
+                EngineDocument cached(test::readerFonts()), uncached(test::readerFonts());
+                open(cached, settings, true);
+                require(cached.openedFromCache() == cacheWritten,
+                        "Page-note setting changed the parsed-cache identity");
+                open(uncached, settings, false);
+                require(cached.pages() == uncached.pages(), "Cached note pagination is stale");
+                for (int page = 0; page < cached.pages(); ++page)
+                    require(cached.image(page) == uncached.image(page),
+                            "Cached note pixels differ from a fresh parse");
+                if (!cacheWritten) {
+                    // Simulate a parsed cache saved before optional note markers.
+                    auto *dom = ReaderFootnoteProbe::view(cached).getDocument();
+                    dom->getProps()->setInt("kobalt.page-notes.version", 0);
+                    const auto marker = dom->getAttrNameIndex("data-kobalt-page-note");
+                    QVector<ldomNode *> pending{ dom->getRootNode() };
+                    while (!pending.isEmpty()) {
+                        auto *node = pending.takeLast();
+                        if (!node->isElement())
+                            continue;
+                        if (node->hasAttribute(marker))
+                            node->setAttributeValue(0, marker, U"");
+                        for (int i = 0; i < node->getChildCount(); ++i)
+                            pending.append(node->getChildNode(i));
+                    }
+                    dom->setCacheFileStale(true);
+                }
+                require(cached.saveDocumentCache(), "Cannot save page-note cache");
+                cacheWritten = true;
+            }
+        }
+    }
 }
 
 void linkDecoration()
@@ -165,282 +461,6 @@ kobalt::LinkDetails inspectNote(const NoteCase &test, bool dark)
                 qPrintable(QString(test.name) + ": preview crossed its boundary"));
     }
     return details;
-}
-
-// Real CREngine pagination, including notes in a different spine document.
-void inPageNotes()
-{
-    using namespace kobalt;
-    struct Case {
-        QByteArray attribute;
-        bool referenced = true;
-        bool inPage = true;
-        bool ignoreSource = false;
-        bool longNote = false;
-        bool nested = false;
-    };
-    const QVector<Case> cases{
-        {"epub:type='footnote'"}, {"role='doc-endnote'"}, {"ops:type='sidebar endnote'"},
-        {"type='note'"}, {"role='doc-rearnote'"},
-        {"epub:type='footnote' style='font-size:300% !important'"},
-        {"class='footnote'", true, false}, {"class='endnote'", true, false},
-        {"style='-cr-hint:footnote'", true, false},
-        {"style='-cr-hint:footnote-inpage'"},
-        {"epub:type='footnote' style='-cr-hint:footnote-ignore'"},
-        {"data-kobalt-inpage-note='1'", true, false},
-        {"epub:type='footnote'", true, false, true},
-        {"epub:type='footnote'", false, false},
-        {"epub:type='footnote'", true, true, false, true},
-        {"epub:type='footnote'", true, true, false, false, true}
-    };
-    for (const auto &testCase : cases) {
-        const auto &attribute = testCase.attribute;
-        QMap<QString, QByteArray> files{
-            {"mimetype", "application/epub+zip"},
-            {"META-INF/container.xml",
-             "<container xmlns='urn:oasis:names:tc:opendocument:xmlns:container' version='1.0'><rootfiles><rootfile full-path='book.opf' media-type='application/oebps-package+xml'/></rootfiles></container>"},
-            {"book.opf",
-             "<package xmlns='http://www.idpf.org/2007/opf' version='3.0'><metadata><title>Page notes</title></metadata><manifest><item id='c' href='c.xhtml' media-type='application/xhtml+xml'/><item id='n' href='notes.xhtml' media-type='application/xhtml+xml'/></manifest><spine><itemref idref='c'/><itemref idref='n' linear='no'/></spine></package>"},
-            {"c.xhtml",
-             "<html xmlns='http://www.w3.org/1999/xhtml' xmlns:epub='http://www.idpf.org/2007/ops'><body><p>Opening text <a epub:type='noteref' href='notes.xhtml#note'>1</a> and following text.</p><p>Another ordinary paragraph.</p></body></html>"},
-            {"notes.xhtml",
-             "<html xmlns='http://www.w3.org/1999/xhtml' xmlns:epub='http://www.idpf.org/2007/ops' xmlns:ops='http://www.idpf.org/2007/ops'><body><aside "
-                     + attribute + "><p id='note'>First note paragraph.</p><p>Continuation of the same note.</p></aside><aside epub:type='footnote' id='unused'><p>Unreferenced note.</p></aside><p id='passage'>A chapter passage.</p></body></html>"}
-        };
-        if (!testCase.referenced)
-            files["c.xhtml"].replace("notes.xhtml#note", "notes.xhtml#passage");
-        if (testCase.ignoreSource)
-            files["c.xhtml"].replace("epub:type='noteref'", "style='-cr-hint:noteref-ignore'");
-        if (testCase.longNote) {
-            QByteArray paragraphs;
-            for (int i = 0; i < 80; ++i)
-                paragraphs += "<p>Long note paragraph " + QByteArray::number(i)
-                        + " with enough words to continue across several reading pages.</p>";
-            files["notes.xhtml"].replace("<p>Continuation", paragraphs + "<p>Continuation");
-        }
-        if (testCase.nested) {
-            files["notes.xhtml"].replace("<p id='note'>", "<div epub:type='footnote'><p id='note'>");
-            files["notes.xhtml"].replace("same note.</p></aside>", "same note.</p></div></aside>");
-        }
-        QMap<QString, qint64> sizes;
-        for (auto it = files.cbegin(); it != files.cend(); ++it)
-            sizes[it.key()] = it.value().size();
-        auto resources = std::make_shared<ResourceCache>(
-                files.keys(),
-                [files](const QString &name, const ResourceCache::Sink &sink, QString *) {
-                    const auto bytes = files.value(name);
-                    return sink(bytes.constData(), bytes.size());
-                }, std::make_shared<std::atomic_bool>(false));
-        EngineDocument model(test::readerFonts());
-        QTemporaryDir cacheRoot;
-        require(cacheRoot.isValid(), "Cannot create EPUB notes cache directory");
-        const auto cacheDirectory = cacheRoot.path() + "/.cache";
-        const auto cache = [&](EngineDocument &target) {
-            target.setDocumentCache(cacheDirectory, QByteArray(64, 'a'), "epub-page-notes", 1024 * 1024);
-        };
-        cache(model);
-        QString error;
-        require(model.openResources(resources, sizes, QSize(1072, 1300),
-                                    qt::object({{"font_pixels", 32}}), &error), qPrintable(error));
-        require((ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0) == testCase.inPage,
-                qPrintable(QString("EPUB page-note recognition failed: %1").arg(QString::fromUtf8(attribute))));
-        if (!testCase.referenced)
-            continue;
-        if (!testCase.inPage) {
-            if (testCase.ignoreSource)
-                continue;
-            for (const auto &link : model.pageLinks())
-                require(model.linkDetails(link.source).html.contains("Continuation"),
-                        "Excluding the in-page block disabled explicit popup");
-            continue;
-        }
-        require(!model.image(0).isNull(), "EPUB page notes did not paint");
-        test::requireAnchoredPreviewRestores(model);
-        if (testCase.longNote)
-            require(ReaderSourceIndexProbe::footnotePageCount(model) > 1,
-                    "Long EPUB note did not continue on later pages");
-        const auto origin = model.position();
-        QString source;
-        for (const auto &link : model.pageLinks())
-            if (model.linkDetails(link.source).label == "1")
-                source = link.source;
-        require(!source.isEmpty(), "EPUB page note lost the source link");
-        const auto popup = model.linkDetails(source);
-        // EPUB import prefixes IDs with the spine fragment; inspect the
-        // resolved XPointer, not the publisher's unqualified "note" id.
-        const auto notePixels = ReaderSourceIndexProbe::fontPixelsAt(model, popup.target);
-        if (attribute == "style='-cr-hint:footnote-inpage'") {
-            // An inline hint is applied AFTER the stylesheet (lvrend.cpp,
-            // setNodeStyle): even KOReader's late conditional cannot see it.
-            // Compare with a separate engine using only the reference profile,
-            // rather than inventing a stronger font guarantee than KOReader.
-            EngineDocument reference(test::readerFonts());
-            require(reference.openResources(resources, sizes, QSize(1072, 1300),
-                                            qt::object({{"font_pixels", 32}}), &error), qPrintable(error));
-            const QByteArray profile = R"css(
-*[type~="note"], *[type~="endnote"], *[type~="footnote"], *[type~="rearnote"],
-*[role~="doc-note"], *[role~="doc-endnote"], *[role~="doc-footnote"], *[role~="doc-rearnote"] {
-    -cr-only-if: -fb2-document;
-    -cr-hint: footnote-inpage;
-    margin: 0 !important;
-}
-*, autoBoxing {
-    -cr-hint: late;
-    -cr-only-if: -fb2-document inpage-footnote;
-    font-size: 0.8urem !important;
-}
-)css";
-            ReaderSourceIndexProbe::useReferenceStyleSheet(reference,
-                    QByteArray(readerHtmlCss) + readerOverridesCss + profile);
-            const auto referenceLinks = reference.pageLinks();
-            require(!referenceLinks.isEmpty() && ReaderSourceIndexProbe::inPageFootnoteCount(reference) > 0,
-                    "Reference KOReader profile lost the publisher inpage note");
-            const auto referenceTarget = reference.linkDetails(referenceLinks.first().source).target;
-            require(notePixels == ReaderSourceIndexProbe::fontPixelsAt(reference, referenceTarget),
-                    "Publisher inline-hint font differs from the reference KOReader profile");
-        } else {
-            require(notePixels >= 24 && notePixels <= 27,
-                    qPrintable(QString("KOReader 80% inpage font lost to publisher CSS: %1 (%2)")
-                               .arg(notePixels).arg(QString::fromUtf8(attribute))));
-        }
-        require(popup.kind == LinkKind::Footnote && popup.html.contains("Continuation") &&
-                    !popup.html.contains("Unreferenced"), "EPUB note popup lost its boundary");
-        require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})) &&
-                    ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0,
-                "Disabling EPUB page notes did not remove bottom fragments");
-        require(model.linkDetails(source).html.contains("Continuation"),
-                "Disabling EPUB page notes also disabled popup");
-        require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", true}})) &&
-                    ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
-                "Re-enabling EPUB page notes did not reflow");
-        require(model.position() == origin, "EPUB page-note toggle lost the source anchor");
-        require(model.applyAppearance(qt::object({{"font_pixels", 40}, {"columns", 2}})) &&
-                    ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
-                "EPUB page notes disappeared after font/column reflow");
-        require(model.saveDocumentCache(), "Cannot cache EPUB page notes");
-        EngineDocument restored(test::readerFonts());
-        cache(restored);
-        require(restored.openResources(resources, sizes, QSize(1072, 1300), model.state(), &error) &&
-                    restored.openedFromCache() &&
-                    ReaderSourceIndexProbe::inPageFootnoteCount(restored) > 0,
-                "Restored EPUB cache lost page notes");
-        require(restored.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})) &&
-                    restored.saveDocumentCache(), "Cannot cache disabled EPUB page notes");
-        EngineDocument off(test::readerFonts());
-        cache(off);
-        require(off.openResources(resources, sizes, QSize(1072, 1300), restored.state(), &error) &&
-                    off.openedFromCache() && ReaderSourceIndexProbe::inPageFootnoteCount(off) == 0,
-                "Disabled EPUB mode reused the enabled cache or failed to save its identity");
-    }
-    require(notes::epubCachePolicy(false, true) != notes::epubCachePolicy(false, false),
-            "EPUB page-note modes share parsed cache identity");
-    require(notes::epubCachePolicy(true, true).isEmpty(), "EPUB policy changed FB2 cache identity");
-}
-
-// InDesign EPUB 2 notes lack EPUB3 type/role. Keep this structural fixture
-// synthetic: no commercial book text or embedded fonts are copied into tests.
-void inDesignNotes()
-{
-    using namespace kobalt;
-    const QMap<QString, QByteArray> files{
-        {"mimetype", "application/epub+zip"},
-        {"META-INF/container.xml", "<container xmlns='urn:oasis:names:tc:opendocument:xmlns:container' version='1.0'><rootfiles><rootfile full-path='book.opf' media-type='application/oebps-package+xml'/></rootfiles></container>"},
-        {"book.opf", "<package xmlns='http://www.idpf.org/2007/opf' version='2.0'><metadata><title>Publisher notes</title></metadata><manifest><item id='c' href='Text/chapter.xhtml' media-type='application/xhtml+xml'/></manifest><spine><itemref idref='c'/></spine></package>"},
-        {"Text/chapter.xhtml", R"html(<html xmlns='http://www.w3.org/1999/xhtml'><head><style>
-p { margin:4px; font-size:1em; line-height:1.3; text-indent:1.5em; }
-p.Snoska { font-size:0.8em; line-height:1.1; margin:1em 0; }
-span.Superscript { font-size:0.8em; vertical-align:super; }
-</style></head><body><div class='Basic-Text-Frame'>
-<p>First ordinary passage <span class='Superscript'><span id='footnote-014-backlink'><a class='_idFootnoteLink _idGenColorInherit' href='../Text/chapter.xhtml#footnote-014'>4</a></span></span> with more words.</p>
-<p>Second ordinary passage <span class='Superscript'><span id='footnote-013-backlink'><a class='_idFootnoteLink _idGenColorInherit' href='../Text/chapter.xhtml#footnote-013'>5</a></span></span> and an unrelated <a href='#standalone'>6</a>.</p>
-<div class='_idFootnotes'>
-<div id='footnote-014' class='_idFootnote'><p class='Snoska'><span class='Superscript'><a class='_idFootnoteAnchor _idGenColorInherit' href='../Text/chapter.xhtml#footnote-014-backlink'>4</a></span> First synthetic note.</p><p class='Snoska'>Continuation of the first note.</p></div>
-<div id='footnote-013' class='_idFootnote'><p class='Snoska'><a class='_idFootnoteAnchor' href='#footnote-013-backlink'>5</a> Second synthetic note.</p></div>
-<div id='unreferenced' class='_idFootnote'><p class='Snoska'>Unreferenced synthetic note.</p></div>
-</div><div class='_idFootnote' id='standalone'><p>A standalone class is not enough.</p></div>
-</div></body></html>)html"}
-    };
-    QMap<QString, qint64> sizes;
-    for (auto it = files.cbegin(); it != files.cend(); ++it)
-        sizes[it.key()] = it.value().size();
-    auto resources = std::make_shared<ResourceCache>(files.keys(),
-            [files](const QString &name, const ResourceCache::Sink &sink, QString *) {
-                const auto bytes = files.value(name);
-                return sink(bytes.constData(), bytes.size());
-            }, std::make_shared<std::atomic_bool>(false));
-    EngineDocument model(test::readerFonts());
-    QString error;
-    require(model.openResources(resources, sizes, QSize(1072, 1300),
-                                qt::object({{"font_pixels", 32}}), &error), qPrintable(error));
-    require(ReaderSourceIndexProbe::inPageFootnoteCount(model) == 2,
-            "InDesign must include only the two referenced individual notes, not the group or unrelated classes");
-    test::requireAnchoredPreviewRestores(model);
-    QString source;
-    for (const auto &link : model.pageLinks()) {
-        const auto details = model.linkDetails(link.source);
-        if (details.label == "4" && details.html.contains("First synthetic note")) {
-            source = link.source;
-            break;
-        }
-    }
-    require(!source.isEmpty(), "InDesign note 4 lost its source link/popup");
-    const auto details = model.linkDetails(source);
-    require(details.html.contains("Continuation") && !details.html.contains("Second synthetic note"),
-            "InDesign popup lost continuation or swallowed the neighbouring note");
-    require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})) &&
-                ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0 &&
-                model.linkDetails(source).html.contains("First synthetic note"),
-            "InDesign off must remove bottom fragments and keep popup");
-    require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", true}})) &&
-                ReaderSourceIndexProbe::inPageFootnoteCount(model) == 2,
-            "InDesign on must restore individual page notes");
-}
-
-// Explicitly invoked by the device workflow against the user's unchanged EPUB.
-// It is not a mandatory commercial-book dependency of the portable native suite.
-void publisherBookNotes(const QString &path)
-{
-    using namespace kobalt;
-    QFile file(path);
-    require(file.open(QIODevice::ReadOnly), "Cannot open supplied publisher EPUB");
-    EngineDocument model(test::readerFonts());
-    QString error;
-    require(model.open(file.readAll(), QSize(1072, 1300),
-                       qt::object({{"font_pixels", 32}, {"fb2_inpage_footnotes", false}}), &error),
-            qPrintable(error));
-    for (const auto &label : {QStringLiteral("4"), QStringLiteral("5")}) {
-        const auto query = QString::fromUtf8(label == "4" ? "Водолея" : "Касабланку");
-        const auto noteText = QString::fromUtf8(label == "4" ? "астрологический" : "Марокко");
-        QString source;
-        for (int page = 0; page < model.pages() && source.isEmpty(); ++page) {
-            if (model.searchPage(query, page).hits.isEmpty())
-                continue;
-            require(model.go(page), "Cannot visit the supplied EPUB reference page");
-            for (const auto &link : model.pageLinks()) {
-                const auto details = model.linkDetails(link.source);
-                if (details.label == label && details.html.contains(noteText)) {
-                    source = link.source;
-                    break;
-                }
-            }
-        }
-        require(!source.isEmpty(), "Supplied EPUB did not reproduce screenshot note");
-        const auto target = model.linkDetails(source).target;
-        require(ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0,
-                "Publisher EPUB off mode unexpectedly contains page notes");
-        require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", true}})) && model.goTo(source),
-                "Cannot reflow publisher EPUB with page notes enabled");
-        require(ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
-                "Supplied EPUB still has no bottom fragments on the source page of the note");
-        require(model.linkDetails(source).target == target && !model.image(model.page()).isNull(),
-                "Publisher EPUB note reflow changed its target or failed to paint");
-        test::requireAnchoredPreviewRestores(model);
-        require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})) && model.goTo(source) &&
-                    ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0 &&
-                    model.linkDetails(source).html.contains(noteText),
-                "Publisher EPUB off lost popup or retained bottom fragments");
-    }
-    puts("PASS: supplied publisher EPUB screenshot notes 4/5, bottom fragments, painting, target and off/popup");
 }
 
 void noteMatching()
@@ -623,26 +643,19 @@ void noteMatching()
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
-    if (argc == 3 && QByteArray(argv[1]) == "--publisher-notes") {
-        publisherBookNotes(QString::fromLocal8Bit(argv[2]));
-        return 0;
-    }
     require(argc == 2, "Pass the synthetic links EPUB");
     QFile file(QString::fromLocal8Bit(argv[1]));
     require(file.open(QIODevice::ReadOnly), "Cannot open link fixture");
     kobalt::EngineDocument model(kobalt::test::readerFonts());
     QString error;
-    // This legacy classification fixture puts every reference on one page.
-    // A long bottom note intentionally changes that pagination. Test its old
-    // routing matrix with page notes off; inPageNotes() above tests default-on
-    // pagination, popup, reflow and both cache modes independently.
     require(model.open(file.readAll(), QSize(1072, 1300),
-                       kobalt::qt::object({ { "font_pixels", 32 }, { "fb2_inpage_footnotes", false } }), &error),
+                       kobalt::qt::object({ { "font_pixels", 32 } }), &error),
             qPrintable(error));
     linkDecoration();
+    inpageMarkup();
+    inpageStyling();
+    inpageFootnotes();
     noteMatching();
-    inPageNotes();
-    inDesignNotes();
     const auto origin = model.position();
     for (const bool dark : { false, true }) {
         model.setDarkMode(dark);

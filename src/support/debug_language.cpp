@@ -57,7 +57,7 @@ QThreadPool &languagePool() {
             threads.setMaxThreadCount(1); // Serialize choices even across reader lifetimes.
             threads.setExpiryTimeout(0);
             const auto drain = [this] {
-                mainthread::AllowBlocking allow("debug language at application shutdown");
+                mainthread::AllowBlocking allow("application quits");
                 mainthread::BlockingOperation operation("debug-language-shutdown");
                 threads.waitForDone();
             };

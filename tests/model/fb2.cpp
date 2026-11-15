@@ -29,14 +29,8 @@ void formatBoundaries() {
     require(!fb2::matchesHead("<FictionBookish>"), "FB2 root delimiter");
     require(!fb2::matchesHead("<?xml?><!ENTITY x 'text'><FictionBook>"), "FB2 entity guard");
     require(fb2::cachePolicy(false).isEmpty(), "EPUB cache policy must not acquire the FB2 marker");
-    require(fb2::cachePolicy(true, false) != fb2::cachePolicy(true, true),
-            "Toggling page notes must not reuse the other mode's parsed cache");
-    require(fb2::cachePolicy(false, false).isEmpty(), "EPUB mode must not affect its cache key");
-    require(fb2::noteNumber("[12]") == "12" && fb2::noteNumber(" (3) ") == "3" &&
-                fb2::noteNumber("4") == "4" && fb2::noteNumber("[See 12]") == "[See 12]" &&
-                fb2::noteNumber("IV") == "IV" && fb2::noteNumber("[]") == "[]",
-            "FB2 number cleanup changed a non-numeric label or left brackets");
-    require(fb2::cachePolicy(true) == QByteArray(":fb2-v6:inpage-on:"), "In-page FB2 CSS must invalidate the old parsed-book cache");
+    require(fb2::cachePolicy(true) == QByteArray(":fb2-v7:"), "FB2 migration cache marker");
+
 }
 
 QByteArray utf8FictionBook() {
@@ -136,7 +130,7 @@ void renderFictionBook() {
     const auto bytes = utf8FictionBook();
     EngineDocument model(test::readerFonts());
     QString error;
-    require(model.open(bytes, QSize(1072, 1300), qt::object({{"font_pixels", 32}, {"hyphenation", "on"}}),
+    require(model.open(bytes, QSize(1072, 1300), qt::object({{"font_pixels", 32}, {"hyphenation", "on"}, {"inpage_footnotes", true}}),
                        &error),
             qPrintable(error));
     require(model.pages() > 0, "FB2 rendered no pages");
@@ -170,8 +164,8 @@ void renderFictionBook() {
     require(!model.image(model.page()).isNull(), "FB2 page with an in-page footnote did not paint");
     test::requireAnchoredPreviewRestores(model);
     const auto anchor = model.position();
-    require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", false}})), "Page notes toggle off");
-    require(!model.state().value("fb2_inpage_footnotes").toBool(true) &&
+    require(model.applyAppearance(qt::object({{"inpage_footnotes", false}})), "Page notes toggle off");
+    require(!model.state().value("inpage_footnotes").toBool(true) &&
                 ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0,
             "Disabled page notes still reserve a bottom block");
     bool popupWhileOff = false;
@@ -181,7 +175,7 @@ void renderFictionBook() {
             popupWhileOff = details.html.contains("Second note paragraph");
     }
     require(popupWhileOff, "Turning off page notes also disabled the multi-paragraph popup");
-    require(model.applyAppearance(qt::object({{"fb2_inpage_footnotes", true}})) &&
+    require(model.applyAppearance(qt::object({{"inpage_footnotes", true}})) &&
                 ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
             "Enabling page notes did not repaginate the current book");
     require(model.position() == anchor, "Page-note toggle lost the source anchor");
@@ -195,17 +189,8 @@ void renderFictionBook() {
                      "</section><section id=\"unused\"><title><p>Additional remarks</p></title><p>Unreferenced endnote.</p></section></body>\n<binary");
     comments.replace("<title><p>1</p></title>", "<title><p><strong>[1]</strong></p></title>");
     EngineDocument endnotes(test::readerFonts());
-    require(endnotes.open(comments, QSize(1072, 1300), qt::object({{"font_pixels", 32}}), &error),
+    require(endnotes.open(comments, QSize(1072, 1300), qt::object({{"font_pixels", 32}, {"inpage_footnotes", true}}), &error),
             qPrintable(error));
-    require(ReaderSourceIndexProbe::noteTitle(endnotes, "n1") == "1",
-            qPrintable(QString("FB2 note-number cleanup: title='%1', marker=%2")
-                       .arg(ReaderSourceIndexProbe::noteTitle(endnotes, "n1"))
-                       .arg(ReaderSourceIndexProbe::numericNoteTitle(endnotes, "n1"))));
-    require(ReaderSourceIndexProbe::noteTitle(endnotes, "unused") == "Additional remarks" &&
-                !ReaderSourceIndexProbe::numericNoteTitle(endnotes, "unused"),
-            "FB2 prose heading was converted to a numeric label");
-    require(ReaderSourceIndexProbe::numericNoteTitle(endnotes, "n1"),
-            "FB2 number was not marked for superscript styling");
     require(goToNoteReference(endnotes), "FB2 comments lost the bracketed source reference");
     require(ReaderSourceIndexProbe::inPageFootnoteCount(endnotes) == 1,
             "FB2 comments must show the referenced note only");
@@ -214,14 +199,14 @@ void renderFictionBook() {
     nestedBytes.replace("<section id=\"n1\">", "<section id=\"group\"><section id=\"n1\">");
     nestedBytes.replace("</section></body>\n<binary", "</section></section></body>\n<binary");
     EngineDocument nestedNotes(test::readerFonts());
-    require(nestedNotes.open(nestedBytes, QSize(1072, 1300), qt::object({{"font_pixels", 32}}), &error),
+    require(nestedNotes.open(nestedBytes, QSize(1072, 1300), qt::object({{"font_pixels", 32}, {"inpage_footnotes", true}}), &error),
             qPrintable(error));
     require(goToNoteReference(nestedNotes) && ReaderSourceIndexProbe::inPageHint(nestedNotes, "n1") &&
                 ReaderSourceIndexProbe::inPageFootnoteCount(nestedNotes) > 0,
             "Nested FB2 sections did not receive KOReader's inpage hint");
     const auto nestedPixels = ReaderSourceIndexProbe::nodeFontPixels(nestedNotes, "n1");
-    require(nestedPixels >= 23 && nestedPixels <= 25,
-            "Nested FB2 footnote must inherit 75%, not shrink again at each section");
+    require(nestedPixels >= 25 && nestedPixels <= 26,
+            "Nested FB2 footnote must use upstream 0.8rem without compounding");
     EngineDocument preview(test::readerFonts());
     require(preview.openPreview(model, QSize(800, 600), &error), qPrintable(error));
     require(preview.pages() > 0, "FB2 font preview rendered no pages");

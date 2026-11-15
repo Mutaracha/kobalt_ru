@@ -113,6 +113,7 @@ public:
 
     void setCurrent(int index);
     void setMinimumRowHeight(int pixels);
+    // PopupCard sets this from adjacent visible content; other containers choose their own rule.
     void setTopDivider(bool shown);
     // Suppress only the final row edge when the next control owns the rule.
     void setBottomDivider(bool shown);

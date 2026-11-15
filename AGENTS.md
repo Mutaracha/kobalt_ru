@@ -69,6 +69,8 @@ Block the main thread only where it is absolutely necessary: where no input can 
 
 `src/support/main_thread.h` enforces this rule. Every operation that writes storage or waits for another thread must call `mainthread::blocking()`, including a new storage helper or a new firmware call. The native tests run with `KOBALT_STRICT_MAIN_THREAD=1` and abort on a violation. Run them with `KOBALT_STRICT_MAIN_THREAD=trace` to list every violation with its call stack. Kobo logs a `main-thread-blocked` event instead. See [the main-thread guard](doc/validation.md#main-thread-guard).
 
+The [source checks](doc/validation.md#source-checks) in `platforms/checks/` fail on storage writes in interface code, unlisted `AllowBlocking` reasons, unlisted `reader_*` names, short timers and unlisted `reading/` headers in the folders below `reading/`. Run `cmake -P platforms/checks/source-checks.cmake` after such a change. A change to an allowlist there is a decision for the user: say so and wait.
+
 ## UI integration and verification
 
 Before changing UI, identify the closest existing control or screen. Trace its construction, shared styling, metrics and later presentation adjustments. Reusing its widget class alone is not enough.
@@ -89,7 +91,7 @@ Before declaring the UI complete, compare it directly with the closest existing 
 
 When reviewers are requested, give them these specific comparisons. Require findings or explicit verification for both the surrounding screen and the new control.
 
-Review visible UI changes with the user through [Screen review](doc/screen-review.md). After such a change, capture the affected screens, create a round, start the review server and send the user the link. Read the feedback with the `notes` command, fix the screens that need changes and the pinned notes, then create the next round. Use an annotation-first review: moving on records the screen as seen, seen screens without annotations need no changes, and notes or pins mean Needs changes. Allow pins on either screenshot and arrow navigation outside text boxes. Repeat until the requested fixes are reviewed. Only the user supplies review notes; the tool records seen status from the user’s navigation. Respect questions, accepted behavior and explicitly deferred ideas in the feedback. Keep review data in the worktree's `build/review/`. Stop the server when the review ends.
+Review visible UI changes with the user through [Screen review](doc/screen-review.md). Before changing existing screens, capture them at the base with `platforms/review/baseline.cmake`, so the review can compare each screen with how it was before the feature. After such a change, capture the affected screens, create a round, start the review server and send the user the link. When the user presses Finish review, or says the review is done, read the feedback with the `notes` command, fix the screens that need changes and the pinned notes, then create the next round. Use an annotation-first review: moving on records the screen as seen, seen screens without annotations need no changes, and notes or pins mean Needs changes. Allow pins on either screenshot and arrow navigation outside text boxes. Repeat until the requested fixes are reviewed. Only the user supplies review notes; the tool records seen status from the user’s navigation. Respect questions, accepted behavior and explicitly deferred ideas in the feedback. Answer a note that needs no change with the `reply` command, so that the next round shows the answer instead of the same open note. To ask the user about specific screens, queue them with the `ask` command and a question; the page then offers only those screens first, so the user does not have to go through the whole gallery. Keep review data in the worktree's `build/review/`. Stop the server when the review ends.
 
 ## Execution and cleanup
 
@@ -181,7 +183,7 @@ Format first-party C and C++ code with the checked-in `.clang-format` (Qt projec
 
 Read [Storage compatibility](doc/storage.md) before changing settings, book state, bookmarks, annotations or rendering caches. This also applies to backup tools and test database inspection: follow the backup contract and never open the live exclusive profile through an external SQLite connection. Keep saved reading data separate from disposable caches. App releases must not reset either format merely because the release version changed. Compatible optional data fields keep the current format version and must load older records with explicit defaults. Preserve supported optional fields when editing records. An incompatible saved-data change requires a format-version bump, a migration that preserves existing user data, and regression tests before it ships. Never overwrite or delete the original files of unsupported or damaged saved data. Profile preparation moves them into `backups/` and starts from defaults; other reads reject them and leave them in place. Do not assume older builds preserve unknown fields or can safely write newer schemas.
 
-Bump the format version in `documentCacheChecksum` when parser or preprocessing changes make parsed-book caches incompatible. Bump the inspection-cache format separately when verdict rules change incompatibly. Cache invalidation must rebuild disposable data only; it must never clear settings, bookmarks or annotations.
+Review cache compatibility for every engine dependency or local patch change. Compatible changes retain parsed-book caches; source revisions, recipes and patch checksums alone do not invalidate them. Bump `rendering_version` in `platforms/cache-policy.cmake` when shaping or layout changes require repagination without reparsing. Bump the format version in `documentCacheChecksum` when parser or preprocessing changes make parsed-book caches incompatible. Bump the inspection-cache format separately when verdict rules change incompatibly. Cache invalidation must rebuild disposable data only; it must never clear settings, bookmarks or annotations.
 
 Keep Markdown instructions in `doc/`, except root `README.md`, `AGENTS.md`, the canonical `FB2_FORK_PLAN.md`, and provenance/index READMEs beside test materials. The user owns root README edits. Keep these instructions and build commands current in the same change as tooling updates.
 
@@ -602,3 +604,9 @@ button positions use held() and differ from the confirmed physical-action
 rotation for equal actions/none/partial assignments. Never double-transform or
 silently migrate the meaning of saved button preferences. Keep Libra 2 behavior
 and use a single selected transform path. This audit is not runtime validation.
+
+Beta.8 integration validation: notes and opening standby follow upstream; retain
+only the Libra2 landscape correction on top of upstream positional buttons.
+Dark-theme hidden feature must hide the toolbar control without resetting theme.
+Do not treat the runtime integration candidate as device-validated before CI and
+physical Kobo checks; opening-speed optimization remains stopped.

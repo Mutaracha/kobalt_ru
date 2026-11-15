@@ -236,6 +236,24 @@ public:
             point.y -= comicVerticalOffsets.value(firstPage(getCurPage()) + column);
             return LVDocView::getNodeByPoint(point, strict, selection);
         }
+        const int first = getCurPage() * columns;
+        for (int column = 0; column < columns && first + column < LVDocView::getPageCount();
+             ++column) {
+            const auto &page = *getPageList()->operator[](first + column);
+            const int left = columns > 1 ? columnOffset(column) + overflow : margins.left;
+            const int right = columns > 1 ? left + width : viewportWidth - margins.right;
+            if (point.x < left || point.x >= right)
+                continue;
+            int y = noteTop(page);
+            for (int i = 0; i < page.footnotes.length(); ++i) {
+                const auto &note = page.footnotes[i];
+                if (point.y >= y && point.y < y + note.height)
+                    return getDocument()->createXPointer(
+                            lvPoint(point.x - left, note.start + point.y - y), PT_DIR_EXACT,
+                            strict);
+                y += note.height;
+            }
+        }
         if (columns == 1)
             return LVDocView::getNodeByPoint(point, strict, selection);
         point.x -= sideMargin;
@@ -264,9 +282,27 @@ public:
             point.y += comicVerticalOffsets.value(target);
             return true;
         }
+        // Page notes use their source coordinates in the DOM, but the engine
+        // draws their fragments at the bottom of each referencing page.
+        const int first = getCurPage() * columns;
+        for (int column = 0; column < columns && first + column < LVDocView::getPageCount();
+             ++column) {
+            const auto &page = *getPageList()->operator[](first + column);
+            int y = noteTop(page);
+            for (int i = 0; i < page.footnotes.length(); ++i) {
+                const auto &note = page.footnotes[i];
+                if (point.y >= note.start
+                    && (point.y < note.start + note.height
+                        || (bottom && point.y == note.start + note.height))) {
+                    point.y += y - note.start;
+                    point.x += columns > 1 ? columnOffset(column) + overflow : margins.left;
+                    return true;
+                }
+                y += note.height;
+            }
+        }
         if (columns == 1)
             return LVDocView::docToWindowPoint(point, bottom, fit);
-        const int first = getCurPage() * columns;
         const int target = getPageList()->FindNearestPage(point.y - (bottom ? 1 : 0), 0);
         if (target < first || target >= first + columns)
             return false;
@@ -318,6 +354,14 @@ private:
     {
         return (physical * viewportWidth / 2 + (physical + 1) * viewportWidth / 2 - viewportWidth) / 2;
     }
+    int noteTop(const LVRendPageInfo &page) const
+    {
+        int y = viewportHeight - margins.bottom;
+        for (int i = 0; i < page.footnotes.length(); ++i)
+            y -= page.footnotes[i].height;
+        return y;
+    }
+
     bool rightToLeft()
     {
         return getDocument()

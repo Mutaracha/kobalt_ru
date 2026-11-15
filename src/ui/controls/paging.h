@@ -9,7 +9,7 @@ namespace kobalt::ui {
 bool turnVisiblePageControl(QWidget *scope, int direction);
 
 // A full-width bar with a cell at each end and the count between them.
-// It hides itself when there is only one page.
+// It hides itself when there is only one page unless showSinglePage is set.
 // Horizontal swipes in the parent panel use its arrows. Controls with their
 // own gestures can opt out with the reader_owns_swipes property.
 // reader_swipe_hold preserves a row's long-press action
@@ -19,7 +19,19 @@ class PagerBar : public QWidget
 public:
     PagerBar(QWidget *parent, const QString &prefix);
     ~PagerBar() override;
-    void setPage(int page, int count, const QString &label = {}, bool wrap = false);
+
+    // Modal cards reuse the preceding list's bottom rule at this boundary.
+    void setTopDivider(bool shown)
+    {
+        if (topDivider == shown)
+            return;
+        topDivider = shown;
+        arrange();
+        update();
+    }
+
+    void setPage(int page, int count, const QString &label = {}, bool wrap = false,
+                 const QRect &blank = {}, bool showSinglePage = false);
     // Coordinates in the pager's parent. Never reserve space or cover list rows.
     void setBlankArea(const QRect &bounds);
     // Resolve a user turn using the last presented page and list bounds.
@@ -33,10 +45,11 @@ protected:
 
 private:
     int page = 0, count = 1;
-    bool wrap = false;
+    bool wrap = false, topDivider = true;
     QPointer<QLabel> continuationHint;
     QRect blankArea;
     void updateHint();
+    void arrange();
 };
 
 class PageControls : public QWidget

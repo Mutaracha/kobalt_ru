@@ -2,6 +2,7 @@
 #include "reading/reading_density.h"
 #include <QJsonObject>
 #include <array>
+#include <utility>
 
 namespace kobalt {
 inline constexpr auto defaultFontFace = "Libron";
@@ -11,6 +12,14 @@ inline constexpr int defaultVariableFontWeight = 450;
 inline constexpr int defaultColumnSpacingPercent = 150;
 
 namespace appearance {
+inline void migrateLegacyNotes(QJsonObject &settings)
+{
+    const auto legacy = settings.value("fb2_inpage_footnotes");
+    if (!settings.value("inpage_footnotes").isBool() && legacy.isBool())
+        settings["inpage_footnotes"] = legacy;
+    settings.remove("fb2_inpage_footnotes");
+}
+
 inline constexpr std::array<int, 4> dictionaryFontSizes{ 80, 100, 120, 140 };
 
 inline bool validDictionaryFontSize(int percent)
@@ -74,15 +83,15 @@ inline QJsonObject beautifierSettings(const QJsonObject &settings)
 }
 
 inline constexpr auto normalizationPresetKey = "book_normalization_preset";
-inline constexpr std::array<const char *, 5> normalizationKeys{
-    "normalize_page_margins", "reduce_chapter_spacing", "beautifier_initials", "beautifier_spacing",
-    "beautifier_indent"
+inline constexpr std::array<const char *, 6> normalizationKeys{
+    "normalize_page_margins", "reduce_chapter_spacing", "beautifier_initials",
+    "beautifier_spacing",     "beautifier_indent",      "normalize_text_colors"
 };
 QJsonObject normalizationSettings(const QJsonObject &settings);
 QString normalizationPreset(const QJsonObject &settings);
 QJsonObject normalizationPresetSettings(const QString &preset);
 inline constexpr auto comicsModeKey = "comics_reading_mode";
-inline constexpr std::array<const char *, 38> keys{ comicsModeKey, "line_spacing_version",
+inline constexpr std::array<const char *, 39> keys{ comicsModeKey, "line_spacing_version",
                                                     "font_pixels",
                                                     "line_spacing",
                                                     "paragraph_spacing",
@@ -97,14 +106,16 @@ inline constexpr std::array<const char *, 38> keys{ comicsModeKey, "line_spacing
                                                     "weight_steps",
                                                     "font_weight",
                                                     "font_optical_size",
-                                                    "hyphenation", "fb2_inpage_footnotes",
+                                                    "hyphenation",
                                                     "dark_mode",
                                                     "hide_nonlinear_fragments",
+                                                    "inpage_footnotes",
                                                     "beautifier_initials",
                                                     "beautifier_spacing",
                                                     "beautifier_indent",
                                                     "normalize_page_margins",
                                                     "reduce_chapter_spacing",
+                                                    "normalize_text_colors",
                                                     "serif_font_face",
                                                     "sans_font_face",
                                                     "monospace_font_face",
@@ -171,6 +182,62 @@ inline bool validWidowsOrphans(const QString &mode)
 // not have is removed from `to`, so the engine uses its own default for it.
 void copy(QJsonObject &to, const QJsonObject &from);
 
+// A partial edit. Missing keys leave the current requested values unchanged.
+// Values are validated by the engine; unrelated book and navigation keys are ignored.
+class Patch
+{
+public:
+    Patch() = default;
+    explicit Patch(const QJsonObject &fields);
+
+    const QJsonObject &fields() const { return fields_; }
+
+private:
+    QJsonObject fields_;
+};
+
+// A complete appearance snapshot from an opened session or completed frame.
+// Editing it retains every field not named by the patch. It carries no position.
+class Requested
+{
+public:
+    static Requested fromResolvedState(const QJsonObject &state);
+    Requested edited(const Patch &patch) const;
+
+    const QJsonObject &fields() const { return fields_; }
+
+    void replaceIn(QJsonObject &state) const;
+
+    bool operator==(const Requested &other) const { return fields_ == other.fields_; }
+
+    bool operator!=(const Requested &other) const { return !(*this == other); }
+
+private:
+    explicit Requested(QJsonObject fields) : fields_(std::move(fields)) { }
+
+    QJsonObject fields_;
+};
+
+// Stored input may omit fields or retain explicit null values. Do not fill them
+// from a temporary appearance when making a checkpoint.
+class SavedInput
+{
+public:
+    SavedInput() = default;
+    explicit SavedInput(const QJsonObject &record);
+    void restoreIn(QJsonObject &record) const;
+
+private:
+    QJsonObject fields_;
+};
+
+// Captured with the pixels, never taken from an unfinished appearance request.
+struct Displayed
+{
+    Requested settings;
+    quint64 renderId;
+};
+
 // Converts the old double-scaled spacing once, preserving its approximate height.
 inline void migrateLineSpacing(QJsonObject &saved)
 {
@@ -189,8 +256,8 @@ inline void migrateLineSpacing(QJsonObject &saved)
 bool same(const QJsonObject &a, const QJsonObject &b);
 // The typography that Restore appearance defaults selects.
 QJsonObject typographyDefaults();
-// Empty for every identity except the benchmark-owned EPUB.
-QJsonObject benchmarkTypography(const QString &identity);
+// Reproducible typography for host-selected evaluation publications.
+QJsonObject benchmarkTypography();
 // A global default selects the override for new books, not Publisher Fonts.
 // Existing saved book selections stay unchanged.
 void applyFontDefault(QJsonObject &saved, const QJsonObject &preferences);

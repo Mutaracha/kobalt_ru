@@ -193,3 +193,15 @@ Libra 2 landscape guard; затем hidden dark toggle и полный relevant 
 Пробное дерево с частично разрешёнными конфликтами не опубликовано, поскольку
 оно ещё содержит несовместимые старые/новые символы. Ветка содержит только
 согласованные ресурсы и документированный порядок интеграции, не сломанный merge.
+
+### beta.8 runtime integration candidate — 2026-10-26
+
+Integrated pinned upstream 679175046d8c806ea3b404525180fbc29a26fcd2 using
+upstream notes/opening standby and positional button semantics; retained the
+Libra2-only landscape correction and individual FB2/comics/progress changes.
+Approved dark-toggle hidden feature wired without resetting the current theme.
+Legacy FB2 notes preference migrates to the canonical key (canonical wins).
+Offline checks and string-generation checks pass; native and Kobo Qt5 compilation
+and runtime regressions must pass before this candidate is offered for installation.
+Debug-language shutdown uses the existing `application quits` blocking reason;
+no new allowlist exception or opening optimization was introduced.

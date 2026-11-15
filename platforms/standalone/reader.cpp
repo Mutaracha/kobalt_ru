@@ -2,6 +2,7 @@
 #include "reading/reading_density.h"
 #include "support/strings.h"
 #include "support/main_thread.h"
+#include "ui/style/private_text.h"
 #include "support/diagnostics.h"
 #include "reader.h"
 #include "app/reader_interface.h"
@@ -21,6 +22,7 @@
 #include <utility>
 #ifdef Q_OS_ANDROID
 #  include <QCoreApplication>
+#  include <QStandardPaths>
 #  include <QJniObject>
 #  include <QtCore/qnativeinterface.h>
 #endif
@@ -96,9 +98,14 @@ bool ReaderController::resetBook(const QString &path)
     if (!idle() || path.isEmpty())
         return false;
     const auto identity = QUrl::fromLocalFile(QFileInfo(path).absoluteFilePath()).toString();
-    // Keep an identity-only checkpoint so the prototype fallback cannot restore
-    // old settings or progress on the next opening.
-    return storage::writeBookState(paths, identity, { { "book", identity } });
+    // Reset progress and reading preferences, retaining this book's privacy choice.
+    const auto saved = storage::readBookState(paths, identity, paths.bookState(identity));
+    if (saved.status != storage::ReadStatus::Ok && saved.status != storage::ReadStatus::Missing)
+        return false;
+    QJsonObject reset{ { "book", identity } };
+    if (saved.object.value("hide_book_on_sleep_screen").toBool(false))
+        reset["hide_book_on_sleep_screen"] = true;
+    return storage::writeBookState(paths, identity, reset);
 }
 
 void ReaderController::open(const QString &path, QSize pixels, QString sourceKey,
@@ -116,6 +123,7 @@ void ReaderController::open(const QString &path, QSize pixels, QString sourceKey
     }
     this->restartAtStart = restartAtStart;
     currentSourceKey = std::move(sourceKey);
+    openingPosition = std::exchange(startPosition, {});
     begin(path, pixels);
 }
 
@@ -200,6 +208,26 @@ void ReaderController::begin(const QString &path, QSize pixels)
         identity, path, viewport, saved, {}, paths.layoutCache(), lease, source->resources(lease)
     };
 #ifdef Q_OS_ANDROID
+    // Materialize the selected document trees before the engine discovers
+    // fonts. This factory runs on the opening worker, after the old reader drains.
+    const auto resources = request.resources;
+    request.resources = [resources](const QMap<QString, qint64> &sizes, const QString &font,
+                                    std::shared_ptr<std::atomic_bool> rejected) {
+        mainthread::BlockingOperation operation("android-resource-folder-refresh");
+        if (QNativeInterface::QAndroidApplication::context().callMethod<jboolean>(
+                    "refreshUserFolders")) {
+            // Posted before this worker's opening completion constructs the next reader.
+            QMetaObject::invokeMethod(
+                    qApp,
+                    [] {
+                        ui::forgetPrivateInterfaceFonts(
+                                QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                                + "/user-folders/fonts");
+                    },
+                    Qt::QueuedConnection);
+        }
+        return resources(sizes, font, std::move(rejected));
+    };
     const QJniObject context = QNativeInterface::QAndroidApplication::context();
     request.syncFilename =
             context.callObjectMethod("syncFilename", "(Ljava/lang/String;)Ljava/lang/String;",
@@ -211,6 +239,12 @@ void ReaderController::begin(const QString &path, QSize pixels)
 #endif
     request.restartAtStart = restartAtStart;
     request.userStyleSheetPath = paths.directory + "/userstyle.css";
+#ifdef Q_OS_ANDROID
+    request.customPinsPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+            + "/user-folders/custom-pins";
+#else
+    request.customPinsPath = paths.customPins();
+#endif
     request.appearanceDefaults = appearance::bookDefaults(settings);
     opening->open(
             std::move(request),
@@ -276,24 +310,26 @@ void ReaderController::begin(const QString &path, QSize pixels)
                 const double created = creating.nsecsElapsed() / 1e6;
                 QElapsedTimer waiting;
                 waiting.start();
-                window->preparePresentation(
-                        [guard, pendingWindow, lease, engine, created, waiting](bool ready) {
-                            if (!guard || !pendingWindow || guard->phase != Phase::Opening
-                                || guard->window_ != pendingWindow || guard->lease != lease) {
-                                return;
-                            }
-                            if (!ready || !lease || lease->revoked()) {
-                                guard->retire();
-                                return;
-                            }
-                            guard->phase = Phase::Reading;
-                            pendingWindow->setOpeningTiming(
-                                    guard->openingStarted,
-                                    QJsonObject{ { "engine_ms", engine },
-                                                 { "window_ms", created },
-                                                 { "wait_ms", waiting.nsecsElapsed() / 1e6 } });
-                            emit guard->opened();
-                        });
+                window->preparePresentation([guard, pendingWindow, lease, engine, created,
+                                             waiting](bool ready) {
+                    if (!guard || !pendingWindow || guard->phase != Phase::Opening
+                        || guard->window_ != pendingWindow || guard->lease != lease) {
+                        return;
+                    }
+                    if (!ready || !lease || lease->revoked()) {
+                        guard->retire();
+                        return;
+                    }
+                    guard->phase = Phase::Reading;
+                    if (!guard->openingPosition.isEmpty())
+                        pendingWindow->showPosition(std::exchange(guard->openingPosition, {}));
+                    pendingWindow->setOpeningTiming(
+                            guard->openingStarted,
+                            QJsonObject{ { "engine_ms", engine },
+                                         { "window_ms", created },
+                                         { "wait_ms", waiting.nsecsElapsed() / 1e6 } });
+                    emit guard->opened();
+                });
             },
             [guard, lastStage = OpeningStage::Content,
              painted = QElapsedTimer{}](OpeningStage stage, int percent) mutable {
@@ -312,6 +348,10 @@ void ReaderController::begin(const QString &path, QSize pixels)
             [guard](QImage cover) {
                 if (guard && guard->phase == Phase::Opening)
                     emit guard->openingCover(std::move(cover));
+            },
+            [guard] {
+                if (guard && guard->phase == Phase::Opening)
+                    emit guard->reopeningBook();
             });
 }
 
