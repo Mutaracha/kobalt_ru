@@ -178,3 +178,18 @@ Curated `tests/manual/` fixtures и publisher-check arguments не переме�
   key, regeneration и locale-parity negative cases). Локальный Make-generator
   прогон упёрся в timestamp-sensitive fixture; код теста не ослаблялся.
 - Это не проверка runtime beta.8: merge core/notes/UI ещё не завершён.
+
+Подготовительные переводы `d4953148`: [CI43747021251](https://github.com/Mutaracha/kobalt_ru/actions/runs/43747021251)
+PASS native focused + Kobo Qt5/offline/package. Qt5 artifact14175205488,
+36 454 953 bytes; native-results14174718835. Qt6 skipped. Этот пакет всё ещё
+beta.7-based runtime с новыми ресурсами, **не merged beta.8**, не выдавать его
+за проверку upstream notes/schema/buttons. Последний подтверждённый пользователем
+runtime остаётся c4b8c1e.
+
+Следующий implementation checkpoint: заменить остатки fork notes в engine/UI/
+settings/tests canonical upstream реализацией; совместить FB2/comics с новым
+opening pipeline и page_content; завершить positional buttons с единственным
+Libra 2 landscape guard; затем hidden dark toggle и полный relevant CI.
+Пробное дерево с частично разрешёнными конфликтами не опубликовано, поскольку
+оно ещё содержит несовместимые старые/новые символы. Ветка содержит только
+согласованные ресурсы и документированный порядок интеграции, не сломанный merge.
