@@ -63,7 +63,8 @@ Reader::~Reader()
     mainthread::AllowBlocking allow("closing reader");
     // QWidget hides children after Reader's members are destroyed. Stop child-owned
     // callbacks now; removing this Reader's own event filters does not stop them.
-    appearancePreview->followPanel(nullptr, {});
+    if (appearancePreview)
+        appearancePreview->followPanel(nullptr, {});
     static_cast<SettingsPanel *>(general)->stylingHidden = {};
     cancelStylingSamples();
     if (kosyncClient)
