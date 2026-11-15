@@ -1,4 +1,6 @@
 #include "reader_inputs.h"
+#include "anchor_preview.h"
+#include "reader_source_index_probe.h"
 #include "engine/crengine/column_view.h"
 #include "book_fixtures.h"
 #include <QTemporaryDir>
@@ -463,6 +465,53 @@ kobalt::LinkDetails inspectNote(const NoteCase &test, bool dark)
     return details;
 }
 
+// Explicitly invoked by the device workflow against the user's unchanged EPUB.
+// It is not a mandatory commercial-book dependency of the portable native suite.
+void publisherBookNotes(const QString &path)
+{
+    using namespace kobalt;
+    QFile file(path);
+    require(file.open(QIODevice::ReadOnly), "Cannot open supplied publisher EPUB");
+    EngineDocument model(test::readerFonts());
+    QString error;
+    require(model.open(file.readAll(), QSize(1072, 1300),
+                       qt::object({{"font_pixels", 32}, {"inpage_footnotes", false}}), &error),
+            qPrintable(error));
+    for (const auto &label : {QStringLiteral("4"), QStringLiteral("5")}) {
+        const auto query = QString::fromUtf8(label == "4" ? "Водолея" : "Касабланку");
+        const auto noteText = QString::fromUtf8(label == "4" ? "астрологический" : "Марокко");
+        QString source;
+        for (int page = 0; page < model.pages() && source.isEmpty(); ++page) {
+            if (model.searchPage(query, page).hits.isEmpty())
+                continue;
+            require(model.go(page), "Cannot visit the supplied EPUB reference page");
+            for (const auto &link : model.pageLinks()) {
+                const auto details = model.linkDetails(link.source);
+                if (details.label == label && details.html.contains(noteText)) {
+                    source = link.source;
+                    break;
+                }
+            }
+        }
+        require(!source.isEmpty(), "Supplied EPUB did not reproduce screenshot note");
+        const auto target = model.linkDetails(source).target;
+        require(ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0,
+                "Publisher EPUB off mode unexpectedly contains page notes");
+        require(model.applyAppearance(appearance::Patch(qt::object({{"inpage_footnotes", true}}))) && model.goTo(source),
+                "Cannot reflow publisher EPUB with page notes enabled");
+        require(ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
+                "Supplied EPUB still has no bottom fragments on the source page of the note");
+        require(model.linkDetails(source).target == target && !model.image(model.page()).isNull(),
+                "Publisher EPUB note reflow changed its target or failed to paint");
+        test::requireAnchoredPreviewRestores(model);
+        require(model.applyAppearance(appearance::Patch(qt::object({{"inpage_footnotes", false}}))) && model.goTo(source) &&
+                    ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0 &&
+                    model.linkDetails(source).html.contains(noteText),
+                "Publisher EPUB off lost popup or retained bottom fragments");
+    }
+    puts("PASS: supplied publisher EPUB screenshot notes 4/5, bottom fragments, painting, target and off/popup");
+}
+
 void noteMatching()
 {
     using kobalt::LinkKind;
@@ -643,6 +692,10 @@ void noteMatching()
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
+    if (argc == 3 && QByteArray(argv[1]) == "--publisher-notes") {
+        publisherBookNotes(QString::fromLocal8Bit(argv[2]));
+        return 0;
+    }
     require(argc == 2, "Pass the synthetic links EPUB");
     QFile file(QString::fromLocal8Bit(argv[1]));
     require(file.open(QIODevice::ReadOnly), "Cannot open link fixture");
