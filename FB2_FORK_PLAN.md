@@ -205,3 +205,28 @@ Offline checks and string-generation checks pass; native and Kobo Qt5 compilatio
 and runtime regressions must pass before this candidate is offered for installation.
 Debug-language shutdown uses the existing `application quits` blocking reason;
 no new allowlist exception or opening optimization was introduced.
+
+### beta.8 integration verification — completed for device-test build
+
+Runtime source: **dcc9ead5d25dc60e8ffa1923ccf1c82bef5cd1fa**.
+Upstream 679175046d8c806ea3b404525180fbc29a26fcd2 is a merge ancestor.
+CI **43755468526**, build **153**: SUCCESS.
+- Native EPUB/FB2/comics/appearance/settings/lifecycle/button regressions: PASS.
+- Additional supplied publisher EPUB note 4/5 regression: PASS with upstream notes.
+- Kobo Qt5 compile, offline release checks and package validation: PASS.
+- Artifact **14178457535**, `Kobalt-qt5-device`, 36,926,875 bytes.
+- Artifact transport SHA-256: `345dcc7daa95083495912022cf04c66e70d7d48d2911be1639d0d735a8efe99c`.
+  This is GitHub's artifact digest, not the inner installer ZIP checksum.
+- Qt6 device build was intentionally skipped; desktop native tests use the pinned Linux SDK.
+
+API and merge repairs include typed appearance patches, preset-cache shell
+initialization, null initialization and safe teardown of deferred controls, and
+updating legacy test assumptions to upstream default-off notes/modal separators.
+Hidden-theme preference and Libra2-only four-orientation polarity have regression
+coverage. No tests were disabled. Earlier preparation-only entries above are
+historical and superseded by this completed runtime/CI checkpoint.
+
+The build is ready for physical Libra2 testing, **not yet physically accepted**.
+Keep the successful waveform policy; opening-speed optimization remains stopped.
+The large footnote/body gap remains a separate physical review item, not declared
+fixed by the merge. Backup/installation and checks: `doc/beta8-device-check.md`.

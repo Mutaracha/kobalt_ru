@@ -241,19 +241,23 @@ Settings that become damaged, too large or of a newer version while a book is op
 The fork quiet-light option is replaced by upstream beta6 feedback controls, without a legacy-key migration. Cache cleanup is deferred until after beta; no cleanup action is provided. Existing device caches and durable data are not deleted by this removal.
 
 
-## Fork in-page notes
+## Fork notes migration and hidden theme control
 
-The existing boolean `fb2_inpage_footnotes` now controls FB2 and EPUB bottom
-notes. Its name is retained for checkpoint/default compatibility; no migration
-or schema bump is needed. Default remains true. EPUB parsed-cache identity adds
-`:epub-notes-v3:inpage-on:` or `:epub-notes-v3:inpage-off:` at both initial load
-and live appearance changes. This prevents reuse of pre-marker EPUB caches and
-caches rendered in the other mode. FB2 policy now uses `:fb2-v6:inpage-on:` /
-`:fb2-v6:inpage-off:` to rebuild styles after aligning nested sections and font sizes with KOReader.
-EPUB v3 additionally recognizes the narrow InDesign EPUB 2 note structure.
-The earlier v2 replaced private DOM markers with standard CSS; old markers are no
-longer read. The mode also controls the engine PROP_FOOTNOTES flag. Old
-cache files are not deleted; XPointer positions and progress storage are unchanged.
+Upstream beta.8's canonical `inpage_footnotes` Boolean controls page notes,
+including the fork's native FB2 resources. Missing values default to false.
+A Boolean legacy `fb2_inpage_footnotes` is copied only when the canonical value
+is not Boolean; the legacy key is then removed. An explicit canonical choice
+wins. Global preferences and saved opening/engine input normalize this legacy
+field. The old custom note-number rewriting and duplicated EPUB note implementation
+are retired; upstream owns classification and page-note layout. FB2 parsed cache
+identity has format marker `:fb2-v7:`; note appearance follows canonical render
+settings. Existing cache files and canonical source positions are not deleted.
+
+`disable_dark_mode` is an optional global Boolean, default false, in settings
+schema 1. True hides only the reading-menu dark-theme button. It does not modify
+`dark_mode`, the current theme, or the Light/Settings theme controls. Invalid
+values are removed like other hidden-feature flags. Hiding/re-enabling the control
+is independent of book layout and saved reading data.
 
 
 `comics_reading_mode` is an optional per-book Boolean, default false. It is
@@ -262,7 +266,7 @@ false. Checkpoints retain base margin/column values alongside the mode; global
 header/footer settings are never replaced by its effective hidden chrome.
 Edits while active save the ordinary base settings for use after disabling.
 It participates in retained-layout identity and the parsed-cache policy
-(`comics-v1:on` only while enabled; ordinary caches keep their policy), without changing reading-data schemas or clearing data.
+(`comics-v5:on` only while enabled; ordinary caches keep their policy), without changing reading-data schemas or clearing data.
 
 
 Header/footer Custom optional Boolean `progress_top` chooses top when progress_bar
