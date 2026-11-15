@@ -44,7 +44,9 @@ Production merge пока не опубликован: сначала согла
 ### Порядок работ
 
 1. **Согласовать тексты** [EN/RU proposal](doc/beta8-strings-review.md):
-   256 новых/изменённых upstream значений и 2 новые строки для dark-toggle hiding.
+   256 новых/изменённых upstream значений; 2 строки dark-toggle hiding уже
+   согласованы пользователем. [Сводная таблица старого и нового RU](doc/beta8-strings-comparison.md)
+   отделяет 8 прямых замен, новое имя настройки сносок и 247 новых upstream-ключей.
    Согласованные fork-подписи, нижние вкладки и standby warning не заменять
    механически. До согласования runtime assets не менять.
 2. **Перенести beta.8 целиком**, контекстно разрешить конфликты и проверить
@@ -59,7 +61,7 @@ Production merge пока не опубликован: сначала согла
    Не восстанавливать fork power policy/Wi-Fi saver.
 5. **Добавить скрытие переключателя тёмной темы** в upstream Hidden features.
    Скрывается кнопка меню чтения; активная тема и сохранённый выбор остаются.
-   По умолчанию кнопка видима. Название и описание — в EN/RU proposal.
+   По умолчанию кнопка видима. Название и описание согласованы; текст — в EN/RU proposal.
 6. **Сохранить fork поведение**: FB2, RU locale/plurals, stock About и fork UTC,
    comics/spread/complete-pair publication/hits, progress Top над header,
    Bottom/Off и ticks, durable/effective geometry, Libra 2 rotation mapping,

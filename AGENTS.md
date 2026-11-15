@@ -559,3 +559,13 @@ from stock beta.8 show the body-to-note gap is still excessive even with a small
 font; keep that defect open independently of notes migration. Supplied images and
 checksums: test & diagnostic/beta8-baseline/. General opening optimization remains
 stopped. All deferred items are grouped in FB2_FORK_PLAN.md, not separate queues.
+
+
+### Beta.8 translation review update
+
+The user approved features.dark_mode and features.dark_mode_description exactly
+as proposed. This does not approve the remaining upstream translation proposal.
+Use doc/beta8-strings-comparison.md for old RU vs proposed RU, same-key changes,
+the renamed footnotes label, new keys and Russian plural/context review notes.
+Do not rewrite existing RU for English-only capitalization or stylistic changes
+without approval. No runtime strings or code changed in this documentation step.
