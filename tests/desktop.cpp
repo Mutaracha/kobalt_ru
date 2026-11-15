@@ -9959,7 +9959,7 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         saved["navigation_bar_buttons"] = "pages";
         QVERIFY(storage::writeJson(fixture.paths.preferences(), saved));
         const char *keys[] = { "disable_navigate",  "disable_stats",  "disable_annotations",
-                               "disable_bookmarks", "disable_kosync", "disable_words" };
+                               "disable_bookmarks", "disable_kosync", "disable_words", "disable_dark_mode" };
         for (int pass = 0; pass < 2; ++pass) {
             QSignalSpy opened(&fixture.window, &desktop::Window::bookOpened);
             fixture.window.openBook(book);
@@ -9977,7 +9977,7 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
             QVERIFY(revealSettingsOption(fixture, "rrDisabledFeatures"));
             auto *featuresButton =
                     static_cast<ui::CaptionButton *>(fixture.widget("rrDisabledFeatures"));
-            const QString allHidden = "Navigation, Stats, Annotations, Bookmarks, KOSync, My Words";
+            const QString allHidden = "Navigation, Stats, Annotations, Bookmarks, KOSync, My Words, Dark theme toggle";
             QCOMPARE(featuresButton->caption(), pass ? allHidden : QString("None"));
             QVERIFY(fixture.press("rrDisabledFeatures"));
             QTRY_VERIFY(fixture.visible("rrDisabledFeaturesPopup"));
@@ -10012,6 +10012,7 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
             QCOMPARE(fixture.visible("rrNavStats"), pass == 1);
             QCOMPARE(fixture.visible("rrAnnotate"), pass == 1);
             QCOMPARE(fixture.visible("rrBookmarks"), pass == 1);
+            QCOMPARE(fixture.visible("rrDarkTheme"), pass == 1);
             const auto preferences = storage::readJson(fixture.paths.preferences());
             QCOMPARE(preferences.value("default_menu_view").toString(), QString("none"));
             QVERIFY(!preferences.value("dense_stats_chart").toBool());

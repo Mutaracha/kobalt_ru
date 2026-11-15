@@ -177,6 +177,25 @@ int main()
             require(features::enabled(clean, feature), "Invalid feature flag hid a feature");
         }
     }
+    // Hiding the toolbar switch is independent of the selected theme and layout.
+    for (const bool dark : { false, true }) {
+        const auto hidden = appearance::cleanPreferences(
+                {{"disable_dark_mode", true}, {"dark_mode", dark}});
+        require(!features::enabled(hidden, features::DarkMode)
+                        && hidden.value("dark_mode").toBool(!dark) == dark,
+                "Hiding the theme switch changed the selected theme");
+    }
+    // Only Libra2 landscape polarity differs from upstream; portrait stays shared.
+    const Qt::ScreenOrientation poses[] = {Qt::PortraitOrientation, Qt::LandscapeOrientation,
+            Qt::InvertedPortraitOrientation, Qt::InvertedLandscapeOrientation};
+    const bool libra2[] = {false, true, true, false};
+    const bool upstream[] = {false, false, true, true};
+    for (int i = 0; i < 4; ++i) {
+        require(nickel::pageButtonsRotated(poses[i], true) == libra2[i],
+                "Libra2 orientation correction changed");
+        require(nickel::pageButtonsRotated(poses[i], false) == upstream[i],
+                "Libra2 correction leaked to another device");
+    }
     const auto hiddenFeatures =
             appearance::cleanPreferences({ { "disable_navigate", true },
                                            { "disable_stats", true },
