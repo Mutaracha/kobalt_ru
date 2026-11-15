@@ -239,3 +239,10 @@ fixed by the merge. Backup/installation and checks: `doc/beta8-device-check.md`.
 - Перед выпуском: проверить координаты ссылок/выделения, cache reopen,
   preview on/off без повторного открытия; native + Kobo Qt5 и скриншоты.
 - Это не новая проверенная сборка. Рабочая база: build153.
+
+### Проверочная сборка157
+
+Runtime: `5edbf1975e869bf1495823d53ffbaa5d7b2b6958`.
+CI: https://github.com/Mutaracha/kobalt_ru/actions/runs/43765998650 — native
+regressions и Kobo Qt5 package SUCCESS. Устройство и визуальные результаты
+ещё не подтверждены. Артефакт Kobalt-qt5-device: 14182328674.
