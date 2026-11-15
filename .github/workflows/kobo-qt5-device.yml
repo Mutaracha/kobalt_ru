@@ -96,6 +96,15 @@ jobs:
               END { if (count) print "::error::" report }
             ' "$log"
           fi
+          if [ "$status" -ne 0 ] && [ -f build/desktop-linux/Testing/Temporary/LastTest.log ]; then
+            # Surface runtime output through the checks API as well as artifacts.
+            # Some clients cannot follow the external artifact/log redirects.
+            awk '
+              { gsub(/%/, "%25"); gsub(/\r/, "%0D"); report = report $0 "%0A" }
+              length(report) > 5000 { print "::error::" report; report = "" }
+              END { if (length(report)) print "::error::" report }
+            ' build/desktop-linux/Testing/Temporary/LastTest.log
+          fi
           exit "$status"
       - name: Preserve native test results
         if: always()
