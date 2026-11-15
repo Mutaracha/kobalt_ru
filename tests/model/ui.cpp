@@ -4263,7 +4263,7 @@ int main(int argc, char **argv)
         inputs.readerStandbySupported = true;
         kobalt::reader::SettingsPanel settings(&host, inputs);
         require(settings.disableStandbyOption && settings.inpageFootnotesOption
-                        && settings.reverseSwipesOption,
+                        && settings.zenModeOption,
                 "Russian Settings lost fork or beta7 options");
         require(settings.disableStandbyOption->presentation()
                         == settings.inpageFootnotesOption->presentation(),
@@ -4289,7 +4289,7 @@ int main(int argc, char **argv)
         // Constructor-time styling must cover every main-page option. Merely
         // using DescribedOption leaves its default Toggle and zero inset.
         auto *notes = settings.inpageFootnotesOption;
-        require(notes && notes->objectName() == "rrInPageFootnotes", "Missing page-notes settings row");
+        require(notes && notes->objectName() == "rrInpageFootnotes", "Missing page-notes settings row");
         const auto expected = settings.hideNonlinearOption->presentation();
         using namespace kobalt::ui;
         require(expected.indicator == DescribedOption::Indicator::Square && expected.pressedFill &&
