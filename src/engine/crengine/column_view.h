@@ -354,7 +354,7 @@ private:
     {
         return (physical * viewportWidth / 2 + (physical + 1) * viewportWidth / 2 - viewportWidth) / 2;
     }
-    int noteTop(const LVRendPageInfo &page) const
+    int noteTop(const LVRendPageInfo &page)
     {
         return margins.top + page.footnoteTop(
                 viewportHeight - margins.top - margins.bottom, getFontSize());
