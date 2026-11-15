@@ -65,7 +65,7 @@ int main(int argc, char **argv)
                     .arg(bounds.x()).arg(bounds.y()).arg(bounds.width()).arg(bounds.height()).arg(ppi)));
         require(model.pages() == 1, "Single graphic page acquired an extra page");
         require(model.state().value("margin_pixels").toInt() == baseMargin, "Overlay overwrote saved margin");
-        require(model.applyAppearance({{"margin_pixels", editedMargin}, {"top_margin_pixels", editedTop}}), "Edit while active");
+        require(model.applyAppearance(appearance::Patch(QJsonObject{{"margin_pixels", editedMargin}, {"top_margin_pixels", editedTop}})), "Edit while active");
         require(ReaderSourceIndexProbe::comicsGeometry(model) && model.margin() == editedMargin,
                 "Active edit must save base without changing effective margins");
         require(model.applyAppearance({}, QSize(1680, 1264)), "Rotate comic");
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
         require(reopened.openedFromCache(), "Compatible comics checkpoint did not use parsed cache");
         require(ReaderSourceIndexProbe::comicsGeometry(reopened) && reopened.margin() == editedMargin,
                 "Reopen lost mode or updated base settings");
-        require(reopened.applyAppearance({{appearance::comicsModeKey, false}}), "Disable comic mode");
+        require(reopened.applyAppearance(appearance::Patch(QJsonObject{{appearance::comicsModeKey, false}})), "Disable comic mode");
         require(reopened.margin() == editedMargin && reopened.state().value("top_margin_pixels").toInt() == editedTop
                     && reopened.state().value("bottom_margin_pixels").toInt() == baseBottom && reopened.state().value("columns").toInt() == 2,
                 "Disable did not restore latest base layout");
@@ -212,7 +212,7 @@ int main(int argc, char **argv)
             "Standalone anchor lost rotation after orientation round trip");
     EngineDocument centerToggle(test::readerFonts());
     openCentered(centerToggle, {{appearance::comicsModeKey, false}});
-    require(centerToggle.applyAppearance({{appearance::comicsModeKey, true}}) && centerToggle.pages() == 2,
+    require(centerToggle.applyAppearance(appearance::Patch(QJsonObject{{appearance::comicsModeKey, true}})) && centerToggle.pages() == 2,
             "Opening with comics off lost standalone metadata on enable");
     // Both resources of the visible spread must be ready before the next
     // image-load frame. Neighbour resources remain pending, not preloaded.

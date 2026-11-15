@@ -164,7 +164,7 @@ void renderFictionBook() {
     require(!model.image(model.page()).isNull(), "FB2 page with an in-page footnote did not paint");
     test::requireAnchoredPreviewRestores(model);
     const auto anchor = model.position();
-    require(model.applyAppearance(qt::object({{"inpage_footnotes", false}})), "Page notes toggle off");
+    require(model.applyAppearance(appearance::Patch(qt::object({{"inpage_footnotes", false}}))), "Page notes toggle off");
     require(!model.state().value("inpage_footnotes").toBool(true) &&
                 ReaderSourceIndexProbe::inPageFootnoteCount(model) == 0,
             "Disabled page notes still reserve a bottom block");
@@ -175,7 +175,7 @@ void renderFictionBook() {
             popupWhileOff = details.html.contains("Second note paragraph");
     }
     require(popupWhileOff, "Turning off page notes also disabled the multi-paragraph popup");
-    require(model.applyAppearance(qt::object({{"inpage_footnotes", true}})) &&
+    require(model.applyAppearance(appearance::Patch(qt::object({{"inpage_footnotes", true}}))) &&
                 ReaderSourceIndexProbe::inPageFootnoteCount(model) > 0,
             "Enabling page notes did not repaginate the current book");
     require(model.position() == anchor, "Page-note toggle lost the source anchor");
