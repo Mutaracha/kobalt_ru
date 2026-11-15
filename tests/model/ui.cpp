@@ -4262,11 +4262,11 @@ int main(int argc, char **argv)
         kobalt::reader::SettingsPanelInputs inputs;
         inputs.readerStandbySupported = true;
         kobalt::reader::SettingsPanel settings(&host, inputs);
-        require(settings.disableStandbyOption && settings.inPageFootnotesOption
-                        && settings.invertSwipesOption,
+        require(settings.disableStandbyOption && settings.inpageFootnotesOption
+                        && settings.reverseSwipesOption,
                 "Russian Settings lost fork or beta7 options");
         require(settings.disableStandbyOption->presentation()
-                        == settings.inPageFootnotesOption->presentation(),
+                        == settings.inpageFootnotesOption->presentation(),
                 "Beta7 standby bypasses shared row presentation");
         settings.setGeometry(host.rect());
         host.show();
@@ -4275,7 +4275,7 @@ int main(int argc, char **argv)
         app.processEvents();
         for (const char *name : { "rrBeautifierSpacing", "rrBeautifierIndent" }) {
             auto *option = dynamic_cast<kobalt::ui::DescribedOption *>(
-                    settings.fontDialog->findChild<QCheckBox *>(name));
+                    settings.sheet->findChild<QCheckBox *>(name));
             require(option && option->height() >= option->heightForWidth(option->width()),
                     "Approved Russian normalization description is vertically clipped");
         }
@@ -4288,7 +4288,7 @@ int main(int argc, char **argv)
         kobalt::reader::SettingsPanel settings(&reader, {});
         // Constructor-time styling must cover every main-page option. Merely
         // using DescribedOption leaves its default Toggle and zero inset.
-        auto *notes = settings.inPageFootnotesOption;
+        auto *notes = settings.inpageFootnotesOption;
         require(notes && notes->objectName() == "rrInPageFootnotes", "Missing page-notes settings row");
         const auto expected = settings.hideNonlinearOption->presentation();
         using namespace kobalt::ui;
