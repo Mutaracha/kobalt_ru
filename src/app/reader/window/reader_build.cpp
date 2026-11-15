@@ -1137,7 +1137,8 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
     connect(comicsOption, &QCheckBox::clicked, this, [this](bool enabled) {
         QSize viewport;
         {
-            QScopedValueRollback<bool> mode(page->comicsMode, enabled);
+            QScopedValueRollback<bool> mode(page->comicsMode);
+            page->comicsMode = enabled;
             viewport = bodySize();
         }
         mutateAppearance([enabled, viewport](ReaderSession &preview) {

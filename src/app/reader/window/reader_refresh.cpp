@@ -349,7 +349,8 @@ void Reader::syncAppearancePreview()
     // Compose draft chrome using draft geometry, not the applied book mode.
     const bool comics = settings->requestedAppearance().fields()
             .value(appearance::comicsModeKey).toBool(false);
-    QScopedValueRollback<bool> mode(page->comicsMode, comics);
+    QScopedValueRollback<bool> mode(page->comicsMode);
+    page->comicsMode = comics;
     const int side = kobalt::readingPixels(marginSlider->value());
     const int vertical = kobalt::readingPixels(verticalMarginSlider->value());
     kobalt::reader::AppearancePreview::Content content;

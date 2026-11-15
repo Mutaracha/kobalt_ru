@@ -1202,7 +1202,8 @@ void Reader::resizeText()
             ? appearanceEdit.preview() : session;
     const bool draftComics = draft->requestedAppearance().fields()
             .value(appearance::comicsModeKey).toBool(false);
-    QScopedValueRollback<bool> previewMode(page->comicsMode, draftComics);
+    QScopedValueRollback<bool> previewMode(page->comicsMode);
+    page->comicsMode = draftComics;
     const QSize viewport = bodySize();
     kobalt::diagnostic(
             "reader-resize-text",
