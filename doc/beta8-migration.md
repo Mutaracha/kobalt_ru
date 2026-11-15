@@ -64,3 +64,18 @@
 
 Current code remains the previously verified beta.7-based runtime c4b8c1e.
 This checkpoint changes documentation/evidence only, so it does not produce a new binary.
+
+
+## Context audit after translation review
+
+See [beta8-context-review.md](beta8-context-review.md) for code-backed letter
+placeholders, action-vs-list labels, session turn counter, sync positions and
+functional overlaps beyond notes. The beta.8 page-button change is a semantic
+collision, not a clean equivalent: positional held() swapping differs from the
+fork physical-action rotation for both-next, none and partial assignments.
+Never apply both transforms or silently reinterpret saved assignments. Preserve
+the confirmed Libra 2 contract until a separate positional migration is approved.
+
+Main translation batch accepted by user with fixed labels/reader terminology;
+20 context-reviewed keys are a new proposal awaiting confirmation. No runtime
+merge or assets were published by this documentation-only step.

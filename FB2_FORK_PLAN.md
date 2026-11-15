@@ -37,7 +37,8 @@
 
 **Статус:** подготовка начата; пробное трёхстороннее объединение выполнено без
 изменения рабочего кода. 433 upstream-changed файла, **31 конфликтующий путь**.
-Production merge пока не опубликован: сначала согласование новых EN/RU строк.
+Production merge пока не опубликован: основная группа EN/RU согласована,
+уточнение20 контекстных ключей — на повторном согласовании.
 Подробная карта конфликтов/семантических пересечений и проверки:
 [doc/beta8-migration.md](doc/beta8-migration.md).
 
@@ -48,7 +49,10 @@ Production merge пока не опубликован: сначала согла
    согласованы пользователем. [Сводная таблица старого и нового RU](doc/beta8-strings-comparison.md)
    отделяет 8 прямых замен, новое имя настройки сносок и 247 новых upstream-ключей.
    Согласованные fork-подписи, нижние вкладки и standby warning не заменять
-   механически. До согласования runtime assets не менять.
+   механически. Основная группа принята; opening.protected — без точки,
+   settings.inpage_footnotes — «Сноски внизу страницы», термин «ридер».
+   [Контекстный аудит](doc/beta8-context-review.md) уточняет sleep.letter_*,
+   pill, annotate/annotations, page_turn(s), from/to; эти20 строк ещё proposal.
 2. **Перенести beta.8 целиком**, контекстно разрешить конфликты и проверить
    автоматически объединённые файлы. Не выбирать ours/theirs для общих модулей.
 3. **Заменить fork сноски upstream-реализацией**: canonical `inpage_footnotes`,
@@ -65,7 +69,10 @@ Production merge пока не опубликован: сначала согла
 6. **Сохранить fork поведение**: FB2, RU locale/plurals, stock About и fork UTC,
    comics/spread/complete-pair publication/hits, progress Top над header,
    Bottom/Off и ticks, durable/effective geometry, Libra 2 rotation mapping,
-   deferred Appearance и успешную waveform. Upstream Zen/presets не должны
+   deferred Appearance и успешную waveform. Upstream held()/positional IDs
+   пересекается с fork actionRotation: не применять оба преобразования.
+   Сохранить подтверждённый Libra 2 contract, отдельно проверить both-next,
+   none и частичные назначения; не менять их семантику молча. Upstream Zen/presets не должны
    перезаписывать обычные значения comics/chrome/margins.
 7. **Storage**: перенести schema upgrade и исправление duplicate-ID native save,
    сохранив FB2 percentage/time-only positions. Актуализировать doc/storage.md.

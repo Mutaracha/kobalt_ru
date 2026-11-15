@@ -569,3 +569,16 @@ Use doc/beta8-strings-comparison.md for old RU vs proposed RU, same-key changes,
 the renamed footnotes label, new keys and Russian plural/context review notes.
 Do not rewrite existing RU for English-only capitalization or stylistic changes
 without approval. No runtime strings or code changed in this documentation step.
+
+
+### Beta.8 contextual review decisions
+
+The user accepted the main translation batch with opening.protected without a
+period, settings.inpage_footnotes = «Сноски внизу страницы», and «ридер» instead
+of «читалка». Twenty context-reviewed keys (sleep.letter_*, design_pill,
+navigation.annotate/annotations, stats.page_turn/page_turns, kosync.from/to)
+remain a revised proposal in doc/beta8-context-review.md. Upstream beta.8
+button positions use held() and differ from the confirmed physical-action
+rotation for equal actions/none/partial assignments. Never double-transform or
+silently migrate the meaning of saved button preferences. Keep Libra 2 behavior
+and use a single selected transform path. This audit is not runtime validation.

@@ -24,6 +24,16 @@ EN/RU length — число Unicode-символов (без учёта пере
 Сравнение со старым русским переводом и языковые замечания:
 [сводная таблица](beta8-strings-comparison.md).
 
+## Уточнение после проверки контекста
+
+Пользователь согласовал прежние рекомендации с исключениями: opening.protected
+без точки; settings.inpage_footnotes — «Сноски внизу страницы»; термин «ридер»
+вместо «читалка». Остальные строки приняты за исключением повторно обсуждаемых
+sleep.letter_*, sleep.design_pill, navigation.annotate/annotations,
+stats.page_turn/page_turns и kosync.from/to. Их обновлённые формулировки ниже —
+**новое предложение по коду, ожидает подтверждения**, а не молча применённый перевод.
+Полный разбор: [beta8-context-review.md](beta8-context-review.md).
+
 ## Upstream beta.8: новые и изменённые строки
 
 256 новых/изменённых EN значений относительно beta.7. Строки с числами требуют
@@ -43,19 +53,19 @@ EN/RU length — число Unicode-символов (без учёта пере
 | `bookmarks.custom_errors_count` | Files that could not be loaded: %1 | Не удалось загрузить файлов: %1 | 34/31 |
 | `bookmarks.custom_errors_more` | And %1 more. | И ещё %1. | 12/9 |
 | `bookmarks.custom_errors_limit` | Some files were not checked. Kobalt loads up to 120 icons and checks up to 256 folder entries. | Часть файлов не проверена. Kobalt загружает до 120 значков и проверяет до 256 элементов папки. | 94/94 |
-| `kosync.invalid_account` | Enter an HTTP or HTTPS server URL, username and password. The URL cannot contain credentials, a query or a fragment. | Введите HTTP- или HTTPS-адрес сервера, имя и пароль. Адрес не должен содержать данные входа, запрос или фрагмент. | 116/113 |
+| `kosync.invalid_account` | Enter an HTTP or HTTPS server URL, username and password. The URL cannot contain credentials, a query or a fragment. | Введите HTTP- или HTTPS-адрес сервера, имя и пароль. Адрес не должен содержать данные входа, параметры запроса или фрагмент. | 116/124 |
 | `chapter_graph.show_more_chapters` | Show more chapters | Больше глав | 18/11 |
 | `chapter_graph.show_wider_bars` | Show wider chapter bars | Более широкие столбцы глав | 23/26 |
-| `header_footer.customize_title` | Customize Header and Footer | Настройка колонтитулов | 27/22 |
+| `header_footer.customize_title` | Customize Header and Footer | Настроить колонтитулы | 27/21 |
 | `opening.preparing` | Preparing your book | Подготовка книги | 19/16 |
 | `opening.reopening` | Reopening your book | Повторное открытие книги | 19/24 |
 | `reader.choose_typeface` | Choose a typeface | Выберите шрифт | 17/14 |
 | `settings.section_opening` | Opening books | Открытие книг | 13/13 |
 | `settings.opening_cover` | Do not show book cover while opening | Не показывать обложку при открытии | 36/34 |
 | `settings.opening_cover_description` | Always show the Kobalt logo when opening a book. | При открытии книги всегда показывать логотип Kobalt. | 48/52 |
-| `settings.automatic_book_opening_off_title` | Have Kobo open books by default? | Открывать книги в читалке Kobo? | 32/31 |
-| `settings.automatic_book_opening_off_description` | Books from your library will open in Kobo's built-in reader. To open a book in Kobalt, long-press it and choose Read with Kobalt. | Книги из библиотеки будут открываться в штатной читалке Kobo. Для открытия в Kobalt удерживайте книгу и выберите «Читать в Kobalt». | 129/131 |
-| `settings.automatic_book_opening_off` | Use built-in reader | Использовать читалку Kobo | 19/25 |
+| `settings.automatic_book_opening_off_title` | Have Kobo open books by default? | Открывать книги в ридере Kobo? | 32/30 |
+| `settings.automatic_book_opening_off_description` | Books from your library will open in Kobo's built-in reader. To open a book in Kobalt, long-press it and choose Read with Kobalt. | Книги из библиотеки будут открываться в штатном ридере Kobo. Для открытия в Kobalt удерживайте книгу и выберите «Читать в Kobalt». | 129/130 |
+| `settings.automatic_book_opening_off` | Use built-in reader | Использовать ридер Kobo | 19/23 |
 | `settings.hide_book_on_sleep_screen` | Hide this book while asleep | Скрывать эту книгу во сне | 27/25 |
 | `settings.hide_book_on_sleep_screen_description` | Keep the style and progress, but hide the cover and identifying text on sleep and power-off screens. Saved for this book only. | Сохраняет стиль и прогресс, но скрывает обложку и сведения о книге на экранах сна и выключения. Только для этой книги. | 126/118 |
 | `settings.sleep_screen` | Sleep and power-off screen | Экран сна и выключения | 26/22 |
@@ -81,19 +91,19 @@ EN/RU length — число Unicode-символов (без учёта пере
 | `sleep.time_remaining_in_book` | Time remaining<br>in this book | Осталось времени<br>в этой книге | 27/29 |
 | `sleep.today_minutes` | %1m | %1 мин | 3/6 |
 | `sleep.today_hours` | %1h %2m | %1 ч %2 мин | 7/11 |
-| `sleep.letter_heading` | Reading desk | Читательский стол | 12/17 |
+| `sleep.letter_heading` | Reading desk | Письмо читателю | 12/15 |
 | `sleep.letter_greeting` | Dear reader, | Дорогой читатель! | 12/17 |
-| `sleep.letter_progress` | I have gone to sleep. You were %1 of the way through %2%3. | Я уснул. Вы прочли %1 книги «%2»%3. | 58/35 |
-| `sleep.letter_progress_off` | I have switched off. You were %1 of the way through %2%3. | Я выключился. Вы прочли %1 книги «%2»%3. | 57/40 |
-| `sleep.letter_chapter` | , in “%1” | , в главе «%1» | 9/14 |
-| `sleep.letter_finished` | I have gone to sleep. You finished %1. | Я уснул. Вы дочитали «%1». | 38/26 |
-| `sleep.letter_finished_off` | I have switched off. You finished %1. | Я выключился. Вы дочитали «%1». | 37/31 |
-| `sleep.letter_remaining` | About %1 of reading remains. | Осталось примерно %1 чтения. | 28/28 |
-| `sleep.letter_charging` | I am charging in the meantime. | Пока я заряжаюсь. | 30/17 |
-| `sleep.letter_battery` | The battery is at %1. | Заряд батареи — %1. | 21/19 |
-| `sleep.letter_wake` | Press the power button and we will carry on with this book. | Нажмите кнопку питания, и продолжим читать. | 59/43 |
-| `sleep.letter_restart` | Press the power button to start me again. | Нажмите кнопку питания, чтобы включить меня. | 41/44 |
-| `sleep.letter_closing` | Yours, | Ваш, | 6/4 |
+| `sleep.letter_progress` | I have gone to sleep. You were %1 of the way through %2%3. | Я перешёл в спящий режим. Прочитано %1. Книга: %2%3. | 58/52 |
+| `sleep.letter_progress_off` | I have switched off. You were %1 of the way through %2%3. | Я выключен. Прочитано %1. Книга: %2%3. | 57/38 |
+| `sleep.letter_chapter` | , in “%1” | , глава «%1» | 9/12 |
+| `sleep.letter_finished` | I have gone to sleep. You finished %1. | Я перешёл в спящий режим. Чтение завершено: %1. | 38/47 |
+| `sleep.letter_finished_off` | I have switched off. You finished %1. | Я выключен. Чтение завершено: %1. | 37/33 |
+| `sleep.letter_remaining` | About %1 of reading remains. | До конца книги — примерно %1. | 28/29 |
+| `sleep.letter_charging` | I am charging in the meantime. | Тем временем я заряжаюсь. | 30/25 |
+| `sleep.letter_battery` | The battery is at %1. | Заряд батареи: %1. | 21/18 |
+| `sleep.letter_wake` | Press the power button and we will carry on with this book. | Нажмите кнопку питания, чтобы продолжить чтение. | 59/48 |
+| `sleep.letter_restart` | Press the power button to start me again. | Нажмите кнопку питания, чтобы включить ридер. | 41/45 |
+| `sleep.letter_closing` | Yours, | С уважением, | 6/12 |
 | `sleep.gallery_title` | Sleep and power-off screen | Экран сна и выключения | 26/22 |
 | `sleep.design_stock` | Use Kobo’s screen | Экран Kobo | 17/10 |
 | `sleep.design_bookmark` | Bookmark | Закладка | 8/8 |
@@ -101,7 +111,7 @@ EN/RU length — число Unicode-символов (без учёта пере
 | `sleep.design_cover` | Cover only | Только обложка | 10/14 |
 | `sleep.design_seal` | Seal | Печать | 4/6 |
 | `sleep.design_medallion` | Stamp | Марка | 5/5 |
-| `sleep.design_pill` | Pill | Капсула | 4/7 |
+| `sleep.design_pill` | Pill | Плашка | 4/6 |
 | `sleep.design_caption` | Caption | Подпись | 7/7 |
 | `sleep.design_widgets` | Widgets | Виджеты | 7/7 |
 | `sleep.design_framed` | Framed | Рамка | 6/5 |
@@ -112,9 +122,9 @@ EN/RU length — число Unicode-символов (без учёта пере
 | `sleep.design_page` | Reading page | Страница книги | 12/14 |
 | `sleep.design_overlay` | PNG over text | PNG поверх текста | 13/17 |
 | `navigation.search` | SEARCH | ПОИСК | 6/5 |
-| `navigation.annotate` | ANNOTATE | АННОТАЦИИ | 8/9 |
+| `navigation.annotate` | ANNOTATE | ВЫДЕЛИТЬ | 8/8 |
 | `navigation.bookmarks` | BOOKMARKS | ЗАКЛАДКИ | 9/8 |
-| `navigation.annotations` | ANNOTATIONS | АННОТАЦИИ | 11/9 |
+| `navigation.annotations` | ANNOTATIONS | ПОМЕТКИ | 11/7 |
 | `navigation.zen` | ZEN | ДЗЕН | 3/4 |
 | `zen.reading_stats` | Reading stats | Статистика чтения | 13/17 |
 | `zen.this_session` | This session | Этот сеанс | 12/10 |
@@ -122,16 +132,16 @@ EN/RU length — число Unicode-символов (без учёта пере
 | `zen.chapter_left` | Chapter left | До конца главы | 12/14 |
 | `zen.hours` | h | ч | 1/1 |
 | `zen.minutes` | min | мин | 3/3 |
-| `stats.page_turn` | %1 page turn | %1 перелистывание | 12/17 |
-| `stats.page_turns` | %1 page turns | %1 перелистываний | 13/17 |
-| `opening.native` | Letting Kobo handle this book | Передаём книгу читалке Kobo | 29/27 |
+| `stats.page_turn` | %1 page turn | Перелистываний: %1 | 12/18 |
+| `stats.page_turns` | %1 page turns | Перелистываний: %1 | 13/18 |
+| `opening.native` | Letting Kobo handle this book | Открытие в ридере Kobo | 29/22 |
 | `opening.protected` | This book is protected | Книга защищена | 22/14 |
-| `opening.remembered` | This book uses Kobo's reader | Книга открывается в читалке Kobo | 28/32 |
-| `settings.inpage_footnotes` | Footnotes below the text | Сноски под текстом | 24/18 |
+| `opening.remembered` | This book uses Kobo's reader | Эта книга открывается во встроенном ридере. | 28/43 |
+| `settings.inpage_footnotes` | Footnotes below the text | Сноски внизу страницы | 24/21 |
 | `settings.inpage_footnotes_description` | Show recognized notes below the text. Long notes continue on the next page. References keep their usual popup. | Показывает распознанные сноски под текстом. Длинные продолжаются на следующей странице. Ссылки по-прежнему открывают всплывающее окно. | 110/134 |
 | `settings.section_dictionary_ui` | Dictionary | Словарь | 10/7 |
 | `settings.zen_mode` | Zen mode | Режим дзен | 8/10 |
-| `settings.zen_mode_description` | A special mode for those who want to focus on reading. Simplifies the reading menu user interface. | Режим для сосредоточенного чтения. Упрощает меню читалки. | 98/57 |
+| `settings.zen_mode_description` | A special mode for those who want to focus on reading. Simplifies the reading menu user interface. | Режим для сосредоточенного чтения. Упрощает меню ридера. | 98/56 |
 | `settings.zen_leave` | Hold to leave Zen mode | Удерживайте для выхода из дзен | 22/30 |
 | `settings.zen_leave_holding` | Keep holding | Продолжайте удерживать | 12/22 |
 | `settings.zen_leave_note` | All settings return when Zen mode is off. | При выходе из дзен все настройки возвращаются. | 41/46 |
@@ -156,8 +166,8 @@ EN/RU length — число Unicode-символов (без учёта пере
 | `kosync.here` | Here | Здесь | 4/5 |
 | `kosync.synced_label` | Synced | Синхронизировано | 6/16 |
 | `kosync.percent` | %1% | %1% | 3/3 |
-| `kosync.from` | From | Откуда | 4/6 |
-| `kosync.to` | To | Куда | 2/4 |
+| `kosync.from` | From | Сейчас | 4/6 |
+| `kosync.to` | To | После перехода | 2/14 |
 | `kosync.device` | Device | Устройство | 6/10 |
 | `kosync.synced` | Synced | Синхронизировано | 6/16 |
 | `kosync.same_chapter` | Same chapter | Та же глава | 12/11 |
