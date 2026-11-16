@@ -519,11 +519,14 @@ Geometry geometry(ControlIcon icon, bool sideButtons)
         transform.translate(-12, -12);
         path = transform.map(path);
     } else if (icon == ControlIcon::Comics) {
-        // A page of comic panels, using the shared 24-unit stroke geometry.
-        path.addRoundedRect(QRectF(3, 3, 18, 18), 1, 1);
-        path.moveTo(3, 11); path.lineTo(21, 11);
-        path.moveTo(11, 3); path.lineTo(11, 11);
-        path.moveTo(15, 11); path.lineTo(15, 21);
+        // Match the regular action assets: 256-unit canvas, 16-unit stroke.
+        // Explicit units avoid scaling a 24-unit path with the default 64-unit pen.
+        result.canvas = 256;
+        result.stroke = 16;
+        path.addRoundedRect(QRectF(32, 32, 192, 192), 8, 8);
+        path.moveTo(32, 112); path.lineTo(224, 112);
+        path.moveTo(112, 32); path.lineTo(112, 112);
+        path.moveTo(160, 112); path.lineTo(160, 224);
     } else if (icon == ControlIcon::DarkTheme) {
         // The Fluent dark-theme asset ships beside the checked Phosphor set
         // but uses its own snapshot instead of the Phosphor name table.

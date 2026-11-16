@@ -1385,7 +1385,7 @@ int main(int argc, char **argv)
             host.setProperty("reader_dark", false);
             Button action(&host);
             for (auto glyph : { ControlIcon::Close, ControlIcon::Search, ControlIcon::Portrait,
-                                ControlIcon::Download }) {
+                                ControlIcon::Download, ControlIcon::Comics }) {
                 action.setIconConfiguration({ glyph, IconRendition::Action });
                 for (auto state : { QIcon::Off, QIcon::On }) {
                     const auto image = action.icon()
@@ -1405,12 +1405,26 @@ int main(int argc, char **argv)
                             }
                         }
                     require(ink > 20, "Action rendition has no visible ink");
+                    if (glyph == ControlIcon::Comics) {
+                        // Sample a straight outer edge, away from panel intersections.
+                        const int y = bounds.top() + bounds.height() / 4;
+                        int run = 0;
+                        for (int x = bounds.left(); x <= bounds.right(); ++x) {
+                            if (qAlpha(image.pixel(x, y)) > 128)
+                                ++run;
+                            else if (run)
+                                break;
+                        }
+                        require(run > 0 && run <= bounds.width() / 9 + 1,
+                                "Comics action frame is heavier than the shared regular stroke");
+                    }
                     int extent = qRound(128.
                                         * int(glyph == ControlIcon::Close
                                                       ? metrics::control::closeInkSize
                                                       : metrics::control::actionInkSize)
                                         / int(metrics::control::iconCanvas));
-                    if (glyph == ControlIcon::Search || glyph == ControlIcon::Download) {
+                    if (glyph == ControlIcon::Search || glyph == ControlIcon::Download
+                        || glyph == ControlIcon::Comics) {
                         // Regular Phosphor icons keep a shared scale rather than
                         // stretching each silhouette to the same visible extent.
                         const auto original = controlIcon(glyph).pixmap(256, 256).toImage();
