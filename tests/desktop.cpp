@@ -4624,6 +4624,9 @@ private slots:
         QVERIFY(!fixture.widget("rrComicsReadingMode"));
         QVERIFY(!fixture.widget("rrHeaderFooterSlot0"));
         QVERIFY(fixture.press("rrPage"));
+        auto *pageCount = qobject_cast<QLabel *>(fixture.widget("rrMenuPage"));
+        QVERIFY(pageCount);
+        QTRY_VERIFY(!pageCount->text().isEmpty());
         QVERIFY(fixture.press("rrSettings"));
         QVERIFY(!fixture.state().value("appearance_controls_built").toBool());
         QVERIFY(fixture.press("rrSettingsClose"));
