@@ -288,3 +288,13 @@ fork добавляет native FB2 input, preview и selector для notes/comme
 Номер перед нижней сноской надстрочный: targeted note-label CSS только внутри
 inpage notes, FB2 title и EPUB a.label/_idFootnoteAnchor. Позиционирование блока
 сносок остаётся upstream после отмены adjacent-footnotes. Нужна проверка на устройстве.
+
+### Build162 для устройства
+
+Runtime `ba309f791508a926f036dfc66040d2cdfd8f2eb6`: native regressions и Qt5
+SUCCESS, включая проверку заполнения rrMenuPage при открытии меню.
+CI: https://github.com/Mutaracha/kobalt_ru/actions/runs/43905062782
+Пакет: https://github.com/Mutaracha/kobalt_ru/actions/runs/43905062782/artifacts/14244978065
+Проверить: счётчик перед батареей при comics/без колонтитулов, отсутствие
+наложения на время чтения, надстрочные номера внизу EPUB/FB2. Позиционирование
+сносок upstream; физическая приёмка открыта.

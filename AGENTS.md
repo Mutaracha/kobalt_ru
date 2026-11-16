@@ -655,3 +655,6 @@ fork добавляет native FB2 input, preview и selector для notes/comme
 Номер перед нижней сноской надстрочный: targeted note-label CSS только внутри
 inpage notes, FB2 title и EPUB a.label/_idFootnoteAnchor. Позиционирование блока
 сносок остаётся upstream после отмены adjacent-footnotes. Нужна проверка на устройстве.
+
+Build162 `ba309f79`: native + Qt5 SUCCESS; меню page counter и raised note
+labels готовы к device-проверке, визуальная приёмка не выполнена.
