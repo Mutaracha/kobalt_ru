@@ -64,4 +64,4 @@ https://github.com/Mutaracha/kobalt_ru/actions/runs/43765998650/artifacts/141823
   из draft-состояния, включая верхний progress без header; проверить остальные
   настройки chrome (header/footer enabled, положение/видимость progress, размер).
 - Строка comics: большой квадратный checkbox слева, общий размер settings,
-  верхняя/нижняя границы; полный hit target.
+  границы/отступы как в Light через общий stylePanelCheckbox; полный hit target.

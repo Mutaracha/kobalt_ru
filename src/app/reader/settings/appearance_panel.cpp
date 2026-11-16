@@ -387,12 +387,7 @@ AppearancePanel::AppearancePanel(const AppearanceLayout &layout,
     comicsOption = new ui::DescribedOption(strings::get("reader.comics_reading_mode"),
             strings::get("reader.comics_reading_mode_description"), pageLayout);
     comicsOption->setObjectName("rrComicsReadingMode");
-    styleSettingsOption(comicsOption);
-    auto compact = comicsOption->presentation();
-    // Shared settings checkbox size/typography; lead the label like the Light row.
-    compact.leadingIndicator = true;
-    compact.dividers = Qt::TopEdge | Qt::BottomEdge;
-    comicsOption->setPresentation(compact);
+    ui::stylePanelCheckbox(comicsOption);
     pageRows->addWidget(comicsOption);
     marginSlider = kobalt::ui::sliderRow(pageLayout, pageRows, "rrMargins", "rrMarginsValue",
                                          strings::get("reader.margins"), "rrNarrower", "rrWider", 0,

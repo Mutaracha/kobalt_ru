@@ -257,4 +257,4 @@ regressions и Kobo Qt5 package SUCCESS. Устройство и визуаль�
   из draft-состояния, включая верхний progress без header; проверить остальные
   настройки chrome (header/footer enabled, положение/видимость progress, размер).
 - Строка comics: большой квадратный checkbox слева, общий размер settings,
-  верхняя/нижняя границы; полный hit target.
+  границы/отступы как в Light через общий stylePanelCheckbox; полный hit target.

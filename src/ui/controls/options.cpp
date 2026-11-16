@@ -15,6 +15,19 @@
 #include <QPointer>
 
 namespace kobalt::ui {
+void stylePanelCheckbox(DescribedOption *option)
+{
+    DescribedOption::Presentation presentation;
+    presentation.indicator = DescribedOption::Indicator::Square;
+    presentation.labelPixels = metrics::chrome::labelText;
+    presentation.descriptionPixels = metrics::chrome::descriptionText;
+    presentation.indicatorSize = { metrics::chrome::checkSize, metrics::chrome::checkSize };
+    presentation.leadingIndicator = true;
+    presentation.minimumRowHeight = metrics::control::stepSize;
+    presentation.descriptionPadding = 0;
+    option->setPresentation(presentation);
+}
+
 void DescribedOption::mouseReleaseEvent(QMouseEvent *event)
 {
     // Batch Qt's released-state paint with the changes made by clicked.

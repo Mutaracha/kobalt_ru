@@ -78,18 +78,8 @@ LightPanel::LightPanel(LightControls &light, QWidget *parent)
         if (darkModeChanged)
             darkModeChanged(enabled);
     });
-    for (auto *option : { automaticBrightness, automaticWarmth, darkMode }) {
-        auto presentation = option->presentation();
-        presentation.indicator = ui::DescribedOption::Indicator::Square;
-        presentation.labelPixels = metrics::chrome::labelText;
-        presentation.descriptionPixels = metrics::chrome::descriptionText;
-        presentation.indicatorSize = { metrics::chrome::checkSize, metrics::chrome::checkSize };
-        presentation.leadingIndicator = true;
-        presentation.minimumRowHeight = metrics::control::stepSize;
-        // This compact panel must fit between the toolbar and navigation.
-        presentation.descriptionPadding = 0;
-        option->setPresentation(presentation);
-    }
+    for (auto *option : { automaticBrightness, automaticWarmth, darkMode })
+        ui::stylePanelCheckbox(option);
     connect(automaticBrightness, &QCheckBox::clicked, this, [this](bool enabled) {
         this->light.setAutomaticBrightness(enabled);
         refreshValues();

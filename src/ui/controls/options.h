@@ -139,4 +139,6 @@ private:
     bool topDivider = false, bottomDivider = true, uniformRows = true;
     void arrange();
 };
+// Shared compact checkbox row used by Light and Layout panels.
+void stylePanelCheckbox(DescribedOption *option);
 } // namespace kobalt::ui
