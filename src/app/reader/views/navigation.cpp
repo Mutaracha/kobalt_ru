@@ -823,6 +823,7 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
       annotate(controls.annotate),
       clock(controls.clock),
       session(controls.session),
+      page(controls.page),
       battery(controls.battery),
       bluetooth(controls.bluetooth),
       wifi(controls.wifi),
@@ -1145,6 +1146,7 @@ void Navigation::placeToolbar(QSize size, const QVector<QWidget *> &actions, boo
     battery->setVisible(statusVisible);
     // Zen mode hides the minutes-open count, also under Chapters and Bookmarks.
     session->setVisible(statusVisible && !zen && !session->text().isEmpty());
+    if (page) page->setVisible(statusVisible && !zen && !page->text().isEmpty());
     settings->setFixedWidth(chrome::cellWidth);
     int rightActions = 0;
     for (auto *action : actions)
@@ -1361,6 +1363,11 @@ void Navigation::updateSessionGeometry()
     if (wifi && wifi->active())
         right = qMin(right, wifi->x());
     right = qMax(0, right - int(chrome::inset));
+    if (page && !page->isHidden()) {
+        const int width = qMin(page->sizeHint().width(), right);
+        page->setGeometry(right - width, clock->y(), width, ui::metrics::panel::statusHeight);
+        right = qMax(0, right - width - int(chrome::inset));
+    }
     const int left = qMin(right, clock->geometry().right() + 1 + int(chrome::inset));
     // Center the session in the gap after the time text, without reserving
     // the clock's unused width or moving the status icons.

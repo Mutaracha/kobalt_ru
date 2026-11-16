@@ -30,7 +30,7 @@ struct ToolbarComposition
     QLayout *rows = nullptr;
     QWidget *exitAction = nullptr;
     QPushButton *settings = nullptr, *bookmarks = nullptr, *annotate = nullptr;
-    QLabel *clock = nullptr, *session = nullptr;
+    QLabel *clock = nullptr, *session = nullptr, *page = nullptr;
     ui::BatteryIndicator *battery = nullptr;
     ui::BluetoothIndicator *bluetooth = nullptr;
     ui::WifiIndicator *wifi = nullptr;
@@ -217,7 +217,7 @@ private:
     // Paper beside Zen mode's bottom group while Chapters or Bookmarks fills
     // the screen above it.
     QWidget *zenViewBase;
-    QLabel *clock, *session;
+    QLabel *clock, *session, *page;
     ui::BatteryIndicator *battery;
     ui::BluetoothIndicator *bluetooth;
     ui::WifiIndicator *wifi;

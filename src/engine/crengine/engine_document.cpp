@@ -1293,6 +1293,26 @@ body[name="notes"] section, body[name="comments"] section {
     font-size: 0.8rem;
 }
 [data-kobalt-page-note="extend"] { -cr-hint: extend-footnote-inpage; }
+/* Raise only the note's own label, never every link or inline number. */
+a.label, a._idFootnoteAnchor {
+    -cr-hint: late;
+    -cr-only-if: inside-inpage-footnote;
+    vertical-align: super !important;
+    font-size: 0.75em !important;
+}
+body[name="notes"] section > title, body[name="comments"] section > title {
+    -cr-hint: late;
+    -cr-only-if: inside-inpage-footnote;
+    display: inline !important;
+    vertical-align: super !important;
+    font-size: 0.75em !important;
+}
+body[name="notes"] section > title > p, body[name="comments"] section > title > p {
+    -cr-hint: late;
+    -cr-only-if: inside-inpage-footnote;
+    display: inline !important;
+    font-size: inherit !important;
+}
 /* Dedicated note groups must not paint their original box around moved notes. */
 [data-kobalt-page-note="box"], ._idFootnotes {
     -cr-hint: late;

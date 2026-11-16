@@ -452,7 +452,7 @@ private:
     // The minute of the day the clock timer was last armed in.
     int clockMinute = -1;
     const bool liveState = QFile::exists(book->paths().directory + "/live-state");
-    QLabel *menuClock, *menuSession;
+    QLabel *menuClock, *menuSession, *menuPage;
     kobalt::ui::BatteryIndicator *menuBattery;
     kobalt::ui::BluetoothIndicator *menuBluetooth;
     kobalt::ui::WifiIndicator *menuWifi;

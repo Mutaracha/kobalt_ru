@@ -706,10 +706,16 @@ void Reader::buildToolbar()
     status->addWidget(menuSession, 0, 1);
     status->setColumnStretch(0, 1);
     status->setColumnStretch(2, 1);
+    menuPage = new ui::InterfaceLabel(topControls);
+    menuPage->setObjectName("rrMenuPage");
+    menuPage->setFixedHeight(metrics::panel::statusHeight);
+    menuPage->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    readerStyle(menuPage, styles::font(metrics::panel::statusText));
+    status->addWidget(menuPage, 0, 2, Qt::AlignRight);
     menuBattery = new kobalt::ui::BatteryIndicator(topControls);
     menuBattery->setObjectName("rrMenuBattery");
     readerStyle(menuBattery, styles::font(metrics::panel::batteryText));
-    status->addWidget(menuBattery, 0, 2, Qt::AlignRight);
+    status->addWidget(menuBattery, 0, 3, Qt::AlignRight);
     menuBluetooth = new kobalt::ui::BluetoothIndicator(topControls);
     menuBluetooth->setObjectName("rrMenuBluetooth");
     toolbarComposition.bluetooth = menuBluetooth;
@@ -843,6 +849,7 @@ void Reader::buildToolbar()
     toolbarButtons.settings = toolbarComposition.settings;
     toolbarComposition.clock = menuClock;
     toolbarComposition.session = menuSession;
+    toolbarComposition.page = menuPage;
     toolbarComposition.battery = menuBattery;
     for (auto *button :
          topControls->findChildren<QPushButton *>(QString(), Qt::FindDirectChildrenOnly)) {

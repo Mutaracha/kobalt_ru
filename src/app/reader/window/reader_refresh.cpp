@@ -815,6 +815,10 @@ void Reader::updateMenuStatus()
         menuClock->setText(time);
     const auto battery = services.battery();
     menuBattery->setStatus(battery.percent, battery.charging);
+    const bool showPage = !hideNativeStatus() && !zenMode() && session->pages() > 0;
+    menuPage->setText(showPage ? strings::get("navigation.page_count")
+            .arg(session->page() + 1).arg(session->pages()) : QString());
+    menuPage->setVisible(showPage);
     const auto reading = book->sessionReadingMilliseconds();
     const auto session = reading > 300000
             ? strings::get("reader.session_minutes").arg(reading / 60000)
@@ -822,7 +826,7 @@ void Reader::updateMenuStatus()
     if (menuSession->text() != session)
         menuSession->setText(session);
     menuSession->setVisible(!hideNativeStatus() && !zenMode() && !session.isEmpty());
-    if (clockChanged && navigation && topControls->isVisible())
+    if (navigation && topControls->isVisible())
         navigation->updateSessionGeometry();
     // Zen mode centers the clock in its group and shows a low battery, and
     // its reading stats follow the minutes read.

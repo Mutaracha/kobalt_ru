@@ -646,3 +646,12 @@ fork добавляет native FB2 input, preview и selector для notes/comme
 Сноски не считать визуально принятыми. Предложение page indicator в меню чтения
 «22 из 997» отдельно от времени — ждёт согласования, пока не реализовывать.
 Скриншоты и подробности: test & diagnostic/build159-review/README.md.
+
+### Согласованные page counter и raised note labels
+
+Пользователь подтвердил контрольные sleep screenshots и отдельный счётчик
+«22 из 997» в верхней строке меню перед батареей, без изменения фразы времени.
+Счётчик доступен и при comics/скрытых колонтитулах; в Zen сохраняем скрытие status.
+Номер перед нижней сноской надстрочный: targeted note-label CSS только внутри
+inpage notes, FB2 title и EPUB a.label/_idFootnoteAnchor. Позиционирование блока
+сносок остаётся upstream после отмены adjacent-footnotes. Нужна проверка на устройстве.
