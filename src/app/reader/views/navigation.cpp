@@ -829,7 +829,7 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
       wifi(controls.wifi),
       formattingWarning(controls.formattingWarning),
       search(controls.search),
-      sync(controls.sync), darkTheme(controls.darkTheme)
+      sync(controls.sync), darkTheme(controls.darkTheme), comics(controls.comics)
 {
     zenViewBase = new ZenViewBase(parent);
     zenViewBase->setObjectName("rrZenViewBase");
@@ -894,6 +894,15 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
         darkTheme->setFixedSize(chrome::cellWidth, chrome::actionHeight);
         if (auto *button = dynamic_cast<ui::Button *>(darkTheme)) {
             darkThemePaint = button->paintMode();
+            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
+        }
+    }
+    if (comics) {
+        comicsStyle = comics->styleSheet();
+        ui::readerStyle(comics, "QPushButton{border:none;padding:0;}");
+        comics->setFixedSize(chrome::cellWidth, chrome::actionHeight);
+        if (auto *button = dynamic_cast<ui::Button *>(comics)) {
+            comicsPaint = button->paintMode();
             button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
         }
     }
@@ -981,6 +990,13 @@ Navigation::~Navigation()
         darkTheme->setFixedSize(ui::metrics::control::toolbarButtonSize, ui::metrics::control::toolbarButtonSize);
         if (auto *button = dynamic_cast<ui::Button *>(darkTheme)) {
             button->setPaintMode(darkThemePaint);
+        }
+    }
+    if (comics) {
+        comics->setStyleSheet(comicsStyle);
+        comics->setFixedSize(ui::metrics::control::toolbarButtonSize, ui::metrics::control::toolbarButtonSize);
+        if (auto *button = dynamic_cast<ui::Button *>(comics)) {
+            button->setPaintMode(comicsPaint);
         }
     }
     session->setStyleSheet(sessionStyle);
@@ -1229,7 +1245,7 @@ void Navigation::update(QSize size, const NavigationState &state)
     rules->show();
     rules->raise();
     const QVector<QWidget *> actions{
-        settings, bookmarks, annotate, darkTheme, search, sync, formattingWarning
+        settings, bookmarks, annotate, darkTheme, comics, search, sync, formattingWarning
     };
     if (zenTop)
         placeZenToolbar(size, actions, state);

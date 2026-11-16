@@ -518,6 +518,12 @@ Geometry geometry(ControlIcon icon, bool sideButtons)
         transform.rotate(-90 * (int(icon) - int(ControlIcon::Portrait)));
         transform.translate(-12, -12);
         path = transform.map(path);
+    } else if (icon == ControlIcon::Comics) {
+        // A page of comic panels, using the shared 24-unit stroke geometry.
+        path.addRoundedRect(QRectF(3, 3, 18, 18), 1, 1);
+        path.moveTo(3, 11); path.lineTo(21, 11);
+        path.moveTo(11, 3); path.lineTo(11, 11);
+        path.moveTo(15, 11); path.lineTo(15, 21);
     } else if (icon == ControlIcon::DarkTheme) {
         // The Fluent dark-theme asset ships beside the checked Phosphor set
         // but uses its own snapshot instead of the Phosphor name table.

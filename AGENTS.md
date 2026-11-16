@@ -658,3 +658,16 @@ inpage notes, FB2 title и EPUB a.label/_idFootnoteAnchor. Позиционир�
 
 Build162 `ba309f79`: native + Qt5 SUCCESS; меню page counter и raised note
 labels готовы к device-проверке, визуальная приёмка не выполнена.
+
+### Build162 device feedback / comics shortcut / note report
+
+Пользователь подтвердил по screenshots003–004 правильный полный preview comics.
+Добавлена отдельная quick toolbar кнопка comics (панели страницы), тот же
+per-book comics_mode; при открытой раскладке менять draft через canonical checkbox.
+Новых строк нет, используется согласованное название режима.
+Сноски остаются открытыми: сравнение CREngine lvpagesplitter.cpp из beta7 и
+текущей зависимости даёт идентичный исходник. addLinesFootnotesToPage() явно
+откладывает note при нехватке первой строки, не откатывая reference-bearing body
+line. Стилевые различия могут менять threshold, конкретный CSS виновник не доказан.
+English report: doc/reports/epub-note-reference-pagination.md (без ссылок на
+коммиты/код форка). Не выдавать этот анализ за уже исправленную pagination.

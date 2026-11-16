@@ -4609,6 +4609,30 @@ private slots:
     }
 
     // Checks that appearance rows are absent at startup and created exactly once on first use.
+    void comicsQuickToggle()
+    {
+        Fixture fixture;
+        QVERIFY(fixture.prepared);
+        QSignalSpy opened(&fixture.window, &desktop::Window::bookOpened);
+        fixture.window.openBook(book);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        QTRY_VERIFY(!fixture.state().value("busy").toBool());
+        QVERIFY(fixture.press("rrPage"));
+        auto *toggle = fixture.window.readerWindow()->findChild<QPushButton *>("rrComicsToggle");
+        QVERIFY(toggle);
+        QTRY_VERIFY(toggle->isVisible());
+        QVERIFY(!toggle->isChecked());
+        QVERIFY(fixture.press("rrComicsToggle"));
+        QTRY_VERIFY(!fixture.state().value("busy").toBool());
+        QTRY_VERIFY(toggle->isChecked());
+        QVERIFY(fixture.press("rrNavLayout"));
+        auto *option = fixture.window.readerWindow()->findChild<QCheckBox *>("rrComicsReadingMode");
+        QVERIFY(option);
+        QTRY_VERIFY(option->isChecked());
+        QVERIFY(fixture.press("rrComicsToggle"));
+        QTRY_VERIFY(!option->isChecked());
+    }
+
     void lazyAppearance_data() { bookmarks_data(); }
 
     void lazyAppearance()

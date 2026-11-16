@@ -105,3 +105,16 @@ CI: https://github.com/Mutaracha/kobalt_ru/actions/runs/43905062782
 Проверить: счётчик перед батареей при comics/без колонтитулов, отсутствие
 наложения на время чтения, надстрочные номера внизу EPUB/FB2. Позиционирование
 сносок upstream; физическая приёмка открыта.
+
+### Build162 device feedback / comics shortcut / note report
+
+Пользователь подтвердил по screenshots003–004 правильный полный preview comics.
+Добавлена отдельная quick toolbar кнопка comics (панели страницы), тот же
+per-book comics_mode; при открытой раскладке менять draft через canonical checkbox.
+Новых строк нет, используется согласованное название режима.
+Сноски остаются открытыми: сравнение CREngine lvpagesplitter.cpp из beta7 и
+текущей зависимости даёт идентичный исходник. addLinesFootnotesToPage() явно
+откладывает note при нехватке первой строки, не откатывая reference-bearing body
+line. Стилевые различия могут менять threshold, конкретный CSS виновник не доказан.
+English report: doc/reports/epub-note-reference-pagination.md (без ссылок на
+коммиты/код форка). Не выдавать этот анализ за уже исправленную pagination.

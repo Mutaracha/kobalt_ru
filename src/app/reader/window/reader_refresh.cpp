@@ -682,6 +682,14 @@ void Reader::syncReadingControls()
         toolbarComposition.darkTheme->setVisible(!settingsOpen && !zen
                 && features::enabled(preferences, features::DarkMode));
     }
+    if (toolbarComposition.comics) {
+        auto *source = appearanceEdit.edited() && appearanceEdit.ready()
+                ? appearanceEdit.preview() : session;
+        toolbarComposition.comics->setChecked(source->requestedAppearance().fields()
+                .value(appearance::comicsModeKey).toBool(false));
+        toolbarComposition.comics->setVisible(!settingsOpen && !zen);
+        toolbarComposition.comics->setEnabled(!source->busy());
+    }
     const bool bookmarksShown = features::enabled(preferences, features::Bookmarks);
     const bool annotationsShown = features::enabled(preferences, features::Annotations);
     const bool wordsShown = savedWords && features::enabled(preferences, features::Words);

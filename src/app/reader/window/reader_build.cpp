@@ -801,6 +801,26 @@ void Reader::buildToolbar()
             });
     toolbarComposition.darkTheme->setCheckable(true);
     static_cast<kobalt::ui::Button *>(toolbarComposition.darkTheme)->setHighlightChecked(false);
+    toolbarComposition.comics = iconButton(topControls, top, "rrComicsToggle",
+            strings::get("reader.comics_reading_mode"), ControlIcon::Comics, [this] {
+                if (appearanceEdit.panelOpen()) {
+                    if (auto *option = findChild<QCheckBox *>("rrComicsReadingMode"))
+                        option->click();
+                    return;
+                }
+                const bool enabled = !session->requestedAppearance().fields()
+                        .value(kobalt::appearance::comicsModeKey).toBool(false);
+                QSize viewport;
+                {
+                    QScopedValueRollback<bool> mode(page->comicsMode);
+                    page->comicsMode = enabled;
+                    viewport = bodySize();
+                }
+                session->editAppearance(kobalt::appearance::Patch(kobalt::qt::object({
+                    { kobalt::appearance::comicsModeKey, enabled } })), viewport);
+                refresh();
+            });
+    toolbarComposition.comics->setCheckable(true);
     toolbarComposition.search =
             iconButton(topControls, top, "rrSearchOpen", strings::get("reader.search_book"),
                        ControlIcon::Search,
@@ -857,7 +877,7 @@ void Reader::buildToolbar()
             continue;
         if (button->objectName() != "rrSettings" && button->objectName() != "rrBookmarks" &&
             button->objectName() != "rrAnnotate" && button->objectName() != "rrFormattingWarning" &&
-            button->objectName() != "rrSearchOpen" && button->objectName() != "rrKosyncManual" && button->objectName() != "rrDarkTheme")
+            button->objectName() != "rrSearchOpen" && button->objectName() != "rrKosyncManual" && button->objectName() != "rrDarkTheme" && button->objectName() != "rrComicsToggle")
             topActions.append(button);
         if (auto *action = dynamic_cast<kobalt::ui::Button *>(button))
             action->setPaintMode(kobalt::ui::ButtonPaintMode::ToolbarSquare);

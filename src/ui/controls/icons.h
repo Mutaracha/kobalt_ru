@@ -92,6 +92,7 @@ enum class ControlIcon {
     Hidden,
     // Fork-only quick toggle for the display settings' dark mode.
     DarkTheme,
+    Comics,
     WidowsOrphans,
     HangingPunctuation,
     Star,
