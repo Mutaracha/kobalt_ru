@@ -8,12 +8,12 @@
 ## База и состояние
 
 - Upstream beta.8 интегрирована; этап runtime merge **done**, не «подготовка».
-- Последний проверенный runtime: **build163 / `5b6c8afe`**.
-  [CI43948942647](https://github.com/Mutaracha/kobalt_ru/actions/runs/43948942647):
-  focused native (включая comicsQuickToggle) и Kobo Qt5 package **PASS**.
-  [Kobalt-qt5-device](https://github.com/Mutaracha/kobalt_ru/actions/runs/43948942647/artifacts/14266591934).
+- Последний проверенный runtime: **build164 / `9fa0d952`**.
+  [CI43968831087](https://github.com/Mutaracha/kobalt_ru/actions/runs/43968831087):
+  focused native (включая icon stroke/scale regression) и Kobo Qt5 package **PASS**.
+  [Kobalt-qt5-device](https://github.com/Mutaracha/kobalt_ru/actions/runs/43968831087/artifacts/14277809212).
 - Пользователь подтвердил полный preview comics при переключении режима.
-  Новая quick-кнопка есть; её иконка требует визуальной доработки по скриншоту.
+  Иконка quick-кнопки приведена к общей толщине/масштабу; ждёт сравнения на устройстве.
 - Сноски **не приняты**. Эксперимент положения отменён, базовое поведение
   восстановлено, надстрочные labels добавлены. Pagination defect не исправлен.
 - Полная all-variant/платформенная матрица и устройство не подменяются focused CI.
@@ -22,8 +22,8 @@
 
 | Задача | Статус | Следующее действие / проверка |
 |---|---|---|
-| Разделить инструкции, план и решения | in progress | English AGENTS; компактный план; decision register; сохранить исторические evidence и проверить ссылки. |
-| Облегчить иконку quick comics | in progress | Общая action-геометрия/толщина; native + Qt5, затем сравнение на Libra2. Поведение кнопки не менять. |
+| Разделить инструкции, план и решения | done | English AGENTS, отдельный реестр решений, компактная очередь; история сохранена, локальные ссылки проверены. |
+| Облегчить иконку quick comics | in progress | Код и native/Qt5 проверены в build164; осталось визуальное сравнение на Libra2. Поведение кнопки не изменено. |
 | Сноска целиком переносится после ссылки | planned | Использовать готовый English report; собрать контролируемую репродукцию, computed styles и regression reference+first fragment. Не менять renderer без отдельного задания. |
 | Зазор перед/после нижних сносок, интервалы | planned | Визуальная проверка EPUB/FB2; одна/несколько/длинная note, 1/2 колонки, cache reopen, popup/links/selection. См. D05. |
 

@@ -126,3 +126,17 @@ Runtime `5b6c8afe622b26c85244ef48230f2d4705c7e790`: native including
 CI https://github.com/Mutaracha/kobalt_ru/actions/runs/43948942647
 Package https://github.com/Mutaracha/kobalt_ru/actions/runs/43948942647/artifacts/14266591934
 Footnote pagination was analysed, not modified or declared fixed.
+
+### Build164 — comics icon stroke/scale
+
+Runtime `9fa0d952adad6554a41d30237692c94a586b3793`.
+CI https://github.com/Mutaracha/kobalt_ru/actions/runs/43968831087 — SUCCESS:
+focused native including component.ui icon scale/stroke checks at multiple
+densities and active states; Kobo Qt5 build/package/contents validation.
+Artifact: https://github.com/Mutaracha/kobalt_ru/actions/runs/43968831087/artifacts/14277809212
+
+Icon canvas/stroke now matches regular action artwork (256/16); hit target,
+button behavior and waveform unchanged. Compare against search/light/dark toggle
+on Libra2 in both themes and checked states. Hardware visual acceptance unrun;
+footnote pagination remains unresolved. Documentation ownership is defined in
+AGENTS.md; accepted decisions are in doc/fork-decisions.md, tasks in FB2_FORK_PLAN.md.
