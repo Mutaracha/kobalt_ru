@@ -258,3 +258,13 @@ regressions и Kobo Qt5 package SUCCESS. Устройство и визуаль�
   настройки chrome (header/footer enabled, положение/видимость progress, размер).
 - Строка comics: большой квадратный checkbox слева, общий размер settings,
   границы/отступы как в Light через общий stylePanelCheckbox; полный hit target.
+
+### Проверочная сборка159 — preview chrome
+
+Runtime `3633da452b02b9cdfdcd0811e9ed427d2265d765`. Native (включая
+`desktop.appearanceChromeDraft`) и Kobo Qt5 SUCCESS:
+https://github.com/Mutaracha/kobalt_ru/actions/runs/43870347038
+Пакет: https://github.com/Mutaracha/kobalt_ru/actions/runs/43870347038/artifacts/14227993687
+Исправлен stale chrome cache preview, включая top progress без header;
+Light и comics используют общий stylePanelCheckbox. Физическая приёмка не
+выполнена. **Сноски остаются проблемными, в этой сборке не дорабатывались.**

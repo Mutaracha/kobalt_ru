@@ -632,3 +632,6 @@ physical Kobo checks; opening-speed optimization remains stopped.
   настройки chrome (header/footer enabled, положение/видимость progress, размер).
 - Строка comics: большой квадратный checkbox слева, общий размер settings,
   границы/отступы как в Light через общий stylePanelCheckbox; полный hit target.
+
+Build159 `3633da45`: native + Qt5 SUCCESS, preview chrome regression включён
+в CI. Физическая приёмка не выполнена; сноски — подтверждённая незавершённая задача.
