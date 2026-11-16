@@ -1368,6 +1368,16 @@ void ReadingPage::hideEvent(QHideEvent *event)
     QWidget::hideEvent(event);
 }
 
+QImage ReadingPage::headerImage()
+{
+    return renderStrip(topHeight(), [this](QPainter &p) { paintHeader(p); });
+}
+
+QImage ReadingPage::footerImage()
+{
+    return renderStrip(bottomHeight(), [this](QPainter &p) { paintFooter(p); });
+}
+
 QImage ReadingPage::renderStrip(int height, const std::function<void(QPainter &)> &draw)
 {
     if (!height)

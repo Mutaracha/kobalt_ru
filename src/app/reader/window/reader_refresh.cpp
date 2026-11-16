@@ -358,9 +358,8 @@ void Reader::syncAppearancePreview()
     content.bodyTop = page->topHeight();
     content.bodyHeight = bodySize().height();
     if (!textOpen) {
-        content.header = page->showHeader() ? page->headerImage() : QImage();
-        content.footer =
-                page->showFooter() || page->showProgress() ? page->footerImage() : QImage();
+        content.header = page->headerImage();
+        content.footer = page->footerImage();
     }
     content.horizontalMargin = comics ? 0 : side;
     content.verticalMargin = comics ? 0 : vertical;

@@ -49,7 +49,9 @@ public:
 
     bool viewportTransition() const { return changingViewport; }
 
-    const QImage &headerImage() const { return headerPixels; }
+    // Draft appearance can differ from the applied page and its paint caches.
+    // Render chrome from current fields without repainting the reading screen.
+    QImage headerImage();
 
     // Leaves the header and footer bands blank without changing the page's
     // layout. Zen mode's reading menu uses it while it is open.
@@ -57,7 +59,7 @@ public:
 
     bool stripsHidden() const { return stripsBlank; }
 
-    const QImage &footerImage() const { return footerPixels; }
+    QImage footerImage();
 
     // What the header and footer show. `notice`, such as an error, replaces
     // the footer's slots while it is set. It never adds a footer, because

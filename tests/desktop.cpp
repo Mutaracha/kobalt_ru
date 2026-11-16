@@ -4644,6 +4644,40 @@ private slots:
     }
 
     // Checks that top progress and chapter ticks mirror bottom progress above the header.
+    // Preview chrome must not depend on the last applied page's paint cache.
+    void appearanceChromeDraft()
+    {
+        ReadingPage page(nullptr, [] { });
+        page.resize(800, 600);
+        page.setPalette(ui::readerPalette(page.palette(), false));
+        page.chrome = headerfooter::presetLayout(headerfooter::Preset::Default);
+        page.chrome.headerEnabled = true;
+        page.chrome.footerEnabled = true;
+        page.chrome.progressBar = true;
+        page.progressFraction = .35;
+        page.comicsMode = true;
+        page.refreshContent();
+        QVERIFY(page.headerImage().isNull());
+        QVERIFY(page.footerImage().isNull());
+        // Toggle off without refreshContent: exactly the draft preview case.
+        page.comicsMode = false;
+        QVERIFY(!page.headerImage().isNull());
+        QVERIFY(!page.footerImage().isNull());
+        page.chrome.headerEnabled = false;
+        page.chrome.footerEnabled = false;
+        page.chrome.progressTop = true;
+        QVERIFY(!page.headerImage().isNull());
+        QVERIFY(page.footerImage().isNull());
+        const auto before = page.headerImage();
+        page.progressFraction = .8;
+        QVERIFY(page.headerImage() != before);
+        page.chrome.progressTop = false;
+        QVERIFY(page.headerImage().isNull());
+        QVERIFY(!page.footerImage().isNull());
+        page.chrome.progressBar = false;
+        QVERIFY(page.footerImage().isNull());
+    }
+
     void progressStripMirrors()
     {
         ReadingPage page(nullptr, [] { });

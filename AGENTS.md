@@ -620,3 +620,15 @@ only the Libra2 landscape correction on top of upstream positional buttons.
 Dark-theme hidden feature must hide the toolbar control without resetting theme.
 Do not treat the runtime integration candidate as device-validated before CI and
 physical Kobo checks; opening-speed optimization remains stopped.
+
+### Отзыв build157 / открытые дефекты
+
+- Сноски: пользователь подтвердил проблемы; задача **не завершена**, нужна
+  доработка. Прохождение CI не означает визуальную приёмку.
+- Comics preview: при выключении из активного режима пустые места вместо
+  chrome; после повторного открытия правильно. Причина: preview использовал
+  headerPixels/footerPixels применённой страницы. Генерировать полосы заново
+  из draft-состояния, включая верхний progress без header; проверить остальные
+  настройки chrome (header/footer enabled, положение/видимость progress, размер).
+- Строка comics: большой квадратный checkbox слева, общий размер settings,
+  верхняя/нижняя границы; полный hit target.
