@@ -75,3 +75,14 @@ https://github.com/Mutaracha/kobalt_ru/actions/runs/43870347038
 Исправлен stale chrome cache preview, включая top progress без header;
 Light и comics используют общий stylePanelCheckbox. Физическая приёмка не
 выполнена. **Сноски остаются проблемными, в этой сборке не дорабатывались.**
+
+### Отзыв screenshots008–020 после build159
+
+Карточки сна017–020 зафиксированы как контрольный результат. EPUB notes вернуть
+к upstream beta8: убрать общий adjacent-footnotes patch и восстановить noteTop
+и тестовые координаты. Эксперимент затрагивал оба формата, его отмена тоже общая.
+FB2 использует общий CREngine pagination/notes, а не отдельный самописный layout;
+fork добавляет native FB2 input, preview и selector для notes/comments.
+Сноски не считать визуально принятыми. Предложение page indicator в меню чтения
+«22 из 997» отдельно от времени — ждёт согласования, пока не реализовывать.
+Скриншоты и подробности: test & diagnostic/build159-review/README.md.
