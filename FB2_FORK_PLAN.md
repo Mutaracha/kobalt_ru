@@ -311,3 +311,11 @@ per-book comics_mode; при открытой раскладке менять dr
 line. Стилевые различия могут менять threshold, конкретный CSS виновник не доказан.
 English report: doc/reports/epub-note-reference-pagination.md (без ссылок на
 коммиты/код форка). Не выдавать этот анализ за уже исправленную pagination.
+
+### Build163: comics quick toggle
+
+Runtime `5b6c8afe622b26c85244ef48230f2d4705c7e790`: native including
+`desktop.comicsQuickToggle` and Qt5 package SUCCESS. Physical acceptance pending.
+CI https://github.com/Mutaracha/kobalt_ru/actions/runs/43948942647
+Package https://github.com/Mutaracha/kobalt_ru/actions/runs/43948942647/artifacts/14266591934
+Footnote pagination was analysed, not modified or declared fixed.

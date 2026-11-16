@@ -671,3 +671,6 @@ per-book comics_mode; при открытой раскладке менять dr
 line. Стилевые различия могут менять threshold, конкретный CSS виновник не доказан.
 English report: doc/reports/epub-note-reference-pagination.md (без ссылок на
 коммиты/код форка). Не выдавать этот анализ за уже исправленную pagination.
+
+Build163 `5b6c8afe`: comics quick toggle native regression + Qt5 SUCCESS.
+English pagination report ready; notes not fixed. Preview device feedback positive.
