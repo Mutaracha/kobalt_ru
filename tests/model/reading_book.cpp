@@ -1781,7 +1781,7 @@ int main(int argc, char **argv)
                         "file:///mnt/onboard/Books/test.fb2", hash, std::make_unique<Bridge>(calls),
                         calls.current, calls.current);
         const int writes = calls.writes;
-        require(fb2.writeNative("ignored-rmsdk-location", "position cannot be mapped"),
+        require(fb2.writeNative("ignored-rmsdk-location", "position cannot be mapped").saved(),
                 "FB2 mapping failure blocked the exit save");
         require(calls.writes == writes + 1 && calls.location.isEmpty(),
                 "FB2 writeback was not time-only after a mapping failure");
