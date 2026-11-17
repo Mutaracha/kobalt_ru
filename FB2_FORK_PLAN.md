@@ -10,19 +10,17 @@
 - Работа со сносками завершена: индексы работают верно, текущие отступы оставлены
   без изменений. Дальнейшая доработка зазоров и пагинации не запланирована;
   закрытие задачи не означает отдельного исправления общего алгоритма пагинации.
-- Последний CI-проверенный runtime: `9e03e25d31bfc000a88048c01f102b16e57d6a8f`.
-  [CI №172 / 44100128546](https://github.com/Mutaracha/kobalt_ru/actions/runs/44100128546):
-  расширенный focused native и Kobo Qt5 package/contents **PASS**. Не all-variant.
-  [Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44100128546/artifacts/14336795926).
-  Пользователь подтвердил запуск первого и второго этапов на устройстве.
-  Третий этап на устройстве пока не проверен. При чтении FB2 на втором этапе
-  найдены два недочёта без описания; вернуться к ним после рефакторинга.
+- Рефакторинг этапов 1–4 — **done / device accepted**. Пользователь проверил
+  финальный runtime `0e3e9f98bddc9e1ac219b04fe76d895c30e11f4b`: FB2/EPUB открытие,
+  comics/ориентация, восстановление полей, top/bottom progress и панель чтения.
+  [CI №173](https://github.com/Mutaracha/kobalt_ru/actions/runs/44102979954) PASS.
+  Это приёмка перечисленного сценария, не all-variant и не закрытие ошибок ниже.
 - Старые отчёты, снимки интерфейса и review-материалы удалены из текущего дерева;
   история Git сохранена. Диагностические архивы и исходные книги сохранены.
 
 ## Рефакторинг сопровождения (новый запрос)
 
-**done / CI verified**, устройство этапов 3+4 pending. Первый этап **done / CI verified**:
+**done / CI verified**, этапы 3+4 device accepted. Первый этап **done / CI verified**:
 составлена [карта отличий beta.8](doc/fork-delta.md), вынесены fork algorithms по
 слоям: comics/ColumnView/frame readiness, FB2 semantic predicates, progress painter,
 glyph geometry и window actions/lazy Appearance. Generated vectors совпадают с
@@ -107,11 +105,13 @@ offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен.
 [Native results](https://github.com/Mutaracha/kobalt_ru/actions/runs/44102979954/artifacts/14338460061).
 Устройство, отдельный RTL и all-variant не проверены; два FB2-недочёта не исправлялись.
 
-## После завершения рефакторинга
+## Ошибки FB2 после рефакторинга
 
-| Задача | Статус | Условие начала |
+| Задача | Статус | Следующее действие |
 |---|---|---|
-| Два новых недочёта при чтении FB2 | planned | Пользователь сообщил о наличии двух проблем, детали ещё не переданы. Вернуться после завершения рефакторинга; не угадывать причину/содержание и не смешивать bugfix с переносом кода. |
+| «Умное» обновление не срабатывает в начале главы; аудит зависимостей от структуры | in progress | Общий путь использует TOC/chapterSelection → chapter_page → paintTurn. Сохраняется порог 10 turns since flash и forward-only. Добавлен FB2 chapter/refresh contract-test; нужен исходный FB2/глава для воспроизведения. Проверить также header/footer, chapter progress/ticks/graph, chapter navigation, leading images и normalization markers. |
+| Наложение строк при «Убирать интервалы между абзацами» | blocked | Получены два скриншота, сохранены в test & diagnostic/fb2-post-refactor. Нужен исходный FB2 «Виртуальный свет», настройки шрифта/интервала/вертикального распределения и место. Причина не доказана; draw offsets/footnote gap не менять наугад. |
+| Nickel не обновляет последнюю книгу/процент FB2 | in progress | В allowsUnmappedPosition после beta.8 разрешён только plain EPUB. Добавлен raw FB2 к существующему activity-only пути; точная позиция остаётся локальной, фиктивный Nickel bookmark не создаётся. Исправлен identity в старом FB2 test и включён session.reading-book в CI. CI pending, устройство pending. |
 
 ## Открытая диагностика
 

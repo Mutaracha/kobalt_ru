@@ -8,6 +8,7 @@
 #include <QCryptographicHash>
 #include <QtEndian>
 #include "publication/fb2.h"
+#include "render/screen_refresh.h"
 #include "publication/publication.h"
 #include "support/qt_compat.h"
 
@@ -165,6 +166,17 @@ void renderFictionBook() {
     require(std::any_of(chapters.begin(), chapters.end(),
                         [](const ChapterLink &chapter) { return chapter.title.contains("Chapter One"); }),
             "FB2 chapter title missing from contents");
+    for (const auto &chapter : chapters) {
+        if (chapter.page < 0 || !chapter.title.contains("Chapter"))
+            continue;
+        model.go(chapter.page);
+        require(model.chapterProgress().page == 1,
+                "FB2 chapter start does not reach the shared refresh/progress contract");
+        require(refreshOnTurn(ScreenRefresh::Smart, smartRefreshTurns,
+                              model.chapterProgress().page == 1),
+                "Smart refresh missed an eligible FB2 chapter boundary");
+    }
+    model.go(0);
     const auto firstPage = model.pageExcerpt(0);
     require(!firstPage.contains("science_fiction"), "Raw FB2 genre metadata leaked onto the page");
     require(!firstPage.contains("test-document-id"), "document-info leaked onto the page");

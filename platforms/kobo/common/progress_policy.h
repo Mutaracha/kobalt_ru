@@ -23,12 +23,14 @@ inline bool acceptsPositionNormalization(const ReadingProgress &saved,
     return incoming.location == span || incoming.location == span + QLatin1String(":0");
 }
 
-// Plain sideloaded EPUB positions can be unmappable. Nickel can still record
-// their time, status and percentage without requesting a cloud bookmark sync.
+// Plain sideloaded EPUB and raw FB2 positions can be unmappable. Nickel can
+// still record time, status and percentage without a cloud bookmark sync.
 inline bool allowsUnmappedPosition(const QString &identity)
 {
-    return identity.startsWith("file://") && identity.endsWith(".epub", Qt::CaseInsensitive)
-            && !identity.endsWith(".kepub.epub", Qt::CaseInsensitive);
+    return identity.startsWith("file://")
+            && (identity.endsWith(".fb2", Qt::CaseInsensitive)
+                || (identity.endsWith(".epub", Qt::CaseInsensitive)
+                    && !identity.endsWith(".kepub.epub", Qt::CaseInsensitive)));
 }
 
 inline NativeSyncPolicy nativeSyncPolicy(const QString &identity, bool koboCloud = false)

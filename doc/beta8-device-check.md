@@ -95,3 +95,11 @@ offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен.
 [Пакет Qt5 для совместной проверки этапов 3+4](https://github.com/Mutaracha/kobalt_ru/actions/runs/44102979954/artifacts/14336659474).
 [Native results](https://github.com/Mutaracha/kobalt_ru/actions/runs/44102979954/artifacts/14338460061).
 Устройство, отдельный RTL и all-variant не проверены; два FB2-недочёта не исправлялись.
+
+### Пользовательская приёмка финального рефакторинга
+
+Пользователь подтвердил runtime `0e3e9f98bddc9e1ac219b04fe76d895c30e11f4b`
+по совместному checklist 3+4: FB2/EPUB открытие, comics/ориентация, восстановление
+полей, progress top/bottom и панель чтения. Рефакторинг принят и закрыт.
+Новые сообщения FB2 (smart chapter refresh, наложение при paragraph normalization,
+Nickel status/percent) — отдельные ошибки, а не отмена приёмки выноса модулей.

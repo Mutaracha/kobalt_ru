@@ -173,6 +173,14 @@ private:
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
+    for (const auto *identity : { "file:///mnt/onboard/book.fb2", "file:///mnt/sd/Book.FB2",
+                                  "file:///mnt/onboard/book.epub" })
+        require(nickel::allowsUnmappedPosition(QString::fromLatin1(identity)),
+                "A supported local publication lost status/percentage-only writeback");
+    for (const auto *identity : { "store-id", "file:///mnt/onboard/book.kepub.epub",
+                                  "file:///mnt/onboard/book.fb2.zip", "https://host/book.fb2" })
+        require(!nickel::allowsUnmappedPosition(QString::fromLatin1(identity)),
+                "Unmapped writeback escaped the supported local formats");
     {
         // Replay the Clara BW report: 307 seconds of reading included 223
         // seconds of kernel standby that CLOCK_MONOTONIC did not count.
@@ -1764,6 +1772,8 @@ int main(int argc, char **argv)
         // An FB2 identity has no Nickel chapter mapping. Its mapping failure must
         // still reach KoboReader.sqlite as a time-only status/percentage write.
         Calls calls;
+        calls.current.book = "file:///mnt/onboard/Books/test.fb2";
+        calls.current.location.clear();
         calls.changed = false;
         auto session = open();
         const auto hash = session->sourceHash();
