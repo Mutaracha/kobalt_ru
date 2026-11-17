@@ -250,7 +250,7 @@ is not Boolean; the legacy key is then removed. An explicit canonical choice
 wins. Global preferences and saved opening/engine input normalize this legacy
 field. The old custom note-number rewriting and duplicated EPUB note implementation
 are retired; upstream owns classification and page-note layout. FB2 parsed cache
-identity has format marker `:fb2-v7:`; note appearance follows canonical render
+identity has format marker `:fb2-v8:`; note appearance follows canonical render
 settings. Existing cache files and canonical source positions are not deleted.
 
 `disable_dark_mode` is an optional global Boolean, default false, in settings
