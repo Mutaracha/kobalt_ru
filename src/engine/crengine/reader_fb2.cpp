@@ -55,7 +55,7 @@ void fb2::bindLanguage(ldomNode *root, const QString &language)
         if (!node->isElement() || !node->isNodeName("FictionBook")) continue;
         const auto attribute = root->getDocument()->getAttrNameIndex("lang");
         if (node->getAttributeValue(0, attribute).empty())
-            node->setAttributeValue(0, attribute, cre(language));
+            node->setAttributeValue(0, attribute, cre(language).c_str());
     }
 }
 

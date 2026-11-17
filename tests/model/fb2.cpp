@@ -319,10 +319,14 @@ void reportedFictionBook(const QString &path)
                 { "hide_nonlinear_fragments", true }, { "normalize_page_margins", true },
                 { "reduce_chapter_spacing", true }, { "margin_pixels", 16 },
                 { "top_margin_pixels", 0 }, { "bottom_margin_pixels", 0 } };
+        for (const auto &language : {QByteArray("ru"), QByteArray("en")}) {
+        auto localized = bytes;
+        localized.replace("<lang>ru</lang>", QByteArray("<lang>") + language + "</lang>");
+        const auto previewLanguage = language == "ru" ? QByteArray("en") : QByteArray("ru");
         for (const bool normalize : {false, true}) {
             configured["beautifier_spacing"] = normalize;
             EngineDocument replay(fonts);
-            require(replay.open(bytes, QSize(1264, 1608), configured, &error), qPrintable(error));
+            require(replay.open(localized, QSize(1264, 1608), configured, &error), qPrintable(error));
             require(replay.state().value("font_face") == "Fira Sans", "Fira Sans replay fell back");
             require(!replay.image(replay.page()).isNull(), "Reported FB2 first paint failed");
             auto drift = ReaderSourceIndexProbe::paragraphFormatDrift(replay);
@@ -334,8 +338,8 @@ void reportedFictionBook(const QString &path)
             EngineDocument preview(fonts);
             require(preview.open(
                     QByteArray("<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
-                               "<description><title-info><lang>en</lang></title-info></description>"
-                               "<body><section><p>English appearance sample text.</p></section></body></FictionBook>"),
+                               "<description><title-info><lang>") + previewLanguage + "</lang></title-info></description>"
+                               "<body><section><p>Appearance sample text.</p></section></body></FictionBook>",
                     QSize(800, 600), configured, &error), qPrintable(error));
             drift = ReaderSourceIndexProbe::paragraphFormatDrift(replay);
             require(drift.isEmpty(), qPrintable(QString("FB2 geometry changed before repaint after English preview:\n%1")
@@ -345,6 +349,7 @@ void reportedFictionBook(const QString &path)
             require(drift.isEmpty(), qPrintable(QString("FB2 pagination/paint mismatch after English preview (spacing=%1):\n%2")
                     .arg(normalize).arg(drift.join('\n'))));
         }
+    }
     }
     EngineDocument book(test::readerFonts());
     const QJsonObject saved{ { "font_pixels", 48 }, { "line_spacing", 130 },
