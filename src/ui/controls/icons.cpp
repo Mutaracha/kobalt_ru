@@ -522,14 +522,14 @@ Geometry geometry(ControlIcon icon, bool sideButtons)
         // Speech bubble, using the same canvas and stroke as regular action icons.
         result.canvas = 256;
         result.stroke = 16;
-        path.moveTo(80, 201);
-        path.cubicTo(47, 190, 24, 162, 24, 126);
-        path.cubicTo(24, 73, 70, 32, 128, 32);
-        path.cubicTo(186, 32, 232, 73, 232, 126);
-        path.cubicTo(232, 179, 186, 216, 128, 216);
-        path.lineTo(100, 212);
-        path.lineTo(56, 236);
-        path.lineTo(80, 201);
+        // A flattened oval and swept, curved tail follow the user's reference.
+        path.moveTo(112, 184);
+        path.cubicTo(61, 184, 24, 157, 24, 118);
+        path.cubicTo(24, 79, 70, 48, 128, 48);
+        path.cubicTo(186, 48, 232, 79, 232, 118);
+        path.cubicTo(232, 153, 201, 178, 158, 184);
+        path.cubicTo(142, 208, 108, 222, 70, 228);
+        path.cubicTo(96, 213, 112, 200, 112, 184);
         path.closeSubpath();
     } else if (icon == ControlIcon::DarkTheme) {
         // The Fluent dark-theme asset ships beside the checked Phosphor set

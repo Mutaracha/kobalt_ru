@@ -8,10 +8,11 @@
 ## База и состояние
 
 - Upstream beta.8 интегрирована; этап runtime merge **done**, не «подготовка».
-- Последний проверенный runtime: **build164 / `9fa0d952`**.
-  [CI43968831087](https://github.com/Mutaracha/kobalt_ru/actions/runs/43968831087):
-  focused native (включая icon stroke/scale regression) и Kobo Qt5 package **PASS**.
-  [Kobalt-qt5-device](https://github.com/Mutaracha/kobalt_ru/actions/runs/43968831087/artifacts/14277809212).
+- Последний проверенный runtime: **`549149b5`**.
+  [CI44061301252](https://github.com/Mutaracha/kobalt_ru/actions/runs/44061301252):
+  focused native (включая FB2 и component.ui) и Kobo Qt5 package **PASS**.
+  Новый shape-only delta: более плоский овал и длинный загнутый хвостик;
+  CI и визуальная приёмка на Libra2 пока не выполнены.
 - Пользователь подтвердил полный preview comics при переключении режима.
   Иконка quick-кнопки приведена к общей толщине/масштабу; ждёт сравнения на устройстве.
 - Сноски **не приняты**. Эксперимент положения отменён, базовое поведение
@@ -23,8 +24,8 @@
 | Задача | Статус | Следующее действие / проверка |
 |---|---|---|
 | Разделить инструкции, план и решения | done | English AGENTS, отдельный реестр решений, компактная очередь; история сохранена, локальные ссылки проверены. |
-| FB2 номер и текст сноски разнесены | in progress | Numeric run-in title + inline superscript p; regression одной строки, затем native/Qt5/device. EPUB не менять. |
-| Бабл comics / state ink без мигания / скрытая функция | in progress | Согласованы строки; отключение только на busy убрано, state-only shared presentation. Тесты и native/Qt5 впереди. |
+| FB2 номер и текст сноски разнесены | in progress | Numeric run-in title + inline superscript p; regression одной строки и native/Qt5 PASS (`549149b5`); далее device. EPUB не менять. |
+| Бабл comics / state ink без мигания / скрытая функция | in progress | Согласованы строки; отключение только на busy убрано, state-only shared presentation. State/background native и Qt5 PASS (`549149b5`). Новый запрос: сплющенный овал, длинный загнутый хвостик; shape-only изменение реализовано, CI/device впереди. |
 | Сноска целиком переносится после ссылки | planned | Использовать готовый English report; собрать контролируемую репродукцию, computed styles и regression reference+first fragment. Не менять renderer без отдельного задания. |
 | Зазор перед/после нижних сносок, интервалы | planned | Визуальная проверка EPUB/FB2; одна/несколько/длинная note, 1/2 колонки, cache reopen, popup/links/selection. См. D05. |
 
