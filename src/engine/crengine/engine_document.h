@@ -27,6 +27,7 @@ class ldomXPointerEx;
 
 namespace kobalt {
 class ColumnView;
+class PageDrawBuffer;
 
 namespace nickel {
 class NickelPositionCodec;
@@ -337,6 +338,11 @@ public:
     QJsonObject state() const;
 
 private:
+    enum class ComicPaint { NotHandled, Painted, Failed };
+    ComicPaint paintComicPage(int pageNumber, QImage &result, PageDrawBuffer &buffer);
+    bool beginComicImageRequests(int pageNumber);
+    void finishComicImageRequests(int pageNumber);
+    bool loadVisibleComicImages();
     // Sets the current and next entries of `links` around `position`.
     ChapterSelection chapterAround(const QVector<ChapterLink> &links,
                                    const QString &position) const;

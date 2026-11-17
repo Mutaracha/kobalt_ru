@@ -46,8 +46,9 @@ all-variant не проводился. Предыдущая
 Собранный CSS нижних сносок побайтово совпадает с предыдущим этапом; новые
 native assertions фиксируют digest трёх перенесённых фрагментов. К native CI
 добавлена `model.local-resources`, включая границы worker-only transfer.
-Проверка нового runtime на устройстве пока не выполнена; запуск предыдущего
-пакета не переносится автоматически на этот этап.
+Пользователь затем подтвердил запуск второго этапа на устройстве и проверку FB2:
+обнаружены два ещё не описанных недочёта. Это не полная функциональная приёмка;
+исправления отложены пользователем до завершения рефакторинга.
 
 Runtime второго этапа: `69c70aa357209d0ef9ffce5afc68b42d74492a5f`.
 [CI №171: native, offline checks и Qt5 package/contents PASS](https://github.com/Mutaracha/kobalt_ru/actions/runs/44096144408).
@@ -56,3 +57,12 @@ Native включает новые CSS digest и transfer-boundary assertions, R
 plural/key-mode и прежние focused regressions. Не all-variant. При проверке пакета
 сравнить запуск/EN-RU, FB2/EPUB notes и off/on, reopening/cancellation; это checklist,
 не уже выполненная физическая проверка.
+
+### Третий этап: общий draw buffer и fork comics paint
+
+`PageDrawBuffer`/EquationImage/IllustrationProbe перенесены без дублирования в
+`page_draw_buffer.*`; алгоритмы comics paint/request tracking/visible priority —
+в `engine_document_comics.cpp`. До переноса общий буфер совпадал с pinned beta.8;
+после переноса сверены тела методов и helpers. Нет изменения настроек, CSS,
+схем, cache salts и waveform. Native/Qt5 CI и устройство этого этапа пока не проверены.
+Два новых FB2-недочёта не считаются исправленными и не закрыты прохождением CI.

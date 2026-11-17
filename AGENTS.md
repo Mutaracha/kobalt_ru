@@ -98,7 +98,11 @@ fork algorithms in the owning layer's focused modules (`reader_fb2`,
 `reader_fork_styles`, `fb2_resources`, `string_locale`/`string_table`). Shared
 upstream files retain explicit API/lifecycle wiring, not copied implementations.
 Do not move these modules into a cross-layer mega-module or duplicate the
-upstream notes/standby pipeline. Update the map when an integration point moves.
+upstream notes/standby pipeline. `page_draw_buffer.*` is the relocated common
+upstream primitive, not fork policy: ordinary pages, covers and comics must keep
+one implementation. Compare it with upstream's engine_document.cpp drawing
+block on updates, including equation/illustration helpers. Update the map when
+an integration point moves.
 
 Use cohesive fork modules and minimal upstream integration points, not copied
 classes or a generic hook framework. Read `doc/fork-decisions.md` before changing

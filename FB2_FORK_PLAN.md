@@ -14,8 +14,9 @@
   [CI №171 / 44096144408](https://github.com/Mutaracha/kobalt_ru/actions/runs/44096144408):
   расширенный focused native и Kobo Qt5 package/contents **PASS**. Не all-variant.
   [Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44096144408/artifacts/14333753710).
-  Пользователь подтвердил запуск пакета первого этапа (`d9536352`) на устройстве;
-  новый runtime второго этапа на устройстве пока не проверен.
+  Пользователь подтвердил запуск пакетов первого и второго этапов на устройстве.
+  После проверки FB2 сообщил о двух недочётах: исправлять после рефакторинга;
+  содержание и воспроизведение ещё не описаны, исправления сейчас не предпринимаются.
 - Старые отчёты, снимки интерфейса и review-материалы удалены из текущего дерева;
   история Git сохранена. Диагностические архивы и исходные книги сохранены.
 
@@ -59,11 +60,34 @@ All-variant не выполнялся; пользователь затем по�
 Следующий этап: отделить оставшиеся fork-участки effective layout/paint и
 view/resource lifecycle без дублирования upstream PageDrawBuffer/Settings/notes.
 
-**Остаток полного запроса:** effective layout/paint EngineDocument,
-Publication/ResourceCache lifecycle и ReadingPage/navigation/settings wiring.
-Они не объявлены полностью вынесенными. Сокращать только через узкие
-format/locale/view helpers, не копируя upstream классы и не меняя принятый функционал.
-Закрытые продуктовые задачи beta.8 не возобновляются.
+**Третий этап in progress / CI pending:**
+- В `engine_document_comics.cpp` вынесены paint одиночного/парного artwork,
+  начало/завершение request tracking и приоритет visible-image batch. В общем
+  `image()` остаются dispatch, ordinary columns, pixel normalization и caching.
+- Общий `PageDrawBuffer` с EquationImage/IllustrationProbe перенесён в
+  `page_draw_buffer.*` одной реализацией. До переноса блок byte-identical
+  upstream beta.8 `679175046`; тела методов/помощников сохранены. Это shared
+  primitive, не fork-копия и не новый механизм инверсии.
+- Порядок рисования, fit/rotation/RTL/centering, metadata/hits, batching/лимиты,
+  cleanup при allocation failure и waveform сохранены. Настройки/схемы/salts/CSS
+  и строки не меняются; два найденных FB2-недочёта не исправляются этим изменением.
+- Добавлен прямой contract-test буфера (normalization, clipping, text/image metadata,
+  publisher ink), native CI расширен `engine.image-proportions` и `engine.mathml`.
+  Имеющиеся comics tests покрывают cold/cached spreads, neighbour pressure,
+  visible priority, letterbox/hits, rotation, RTL и сохранение базовой раскладки.
+- Локально source-checks, strings self-tests (Ninja) и проверка diff PASS;
+  Kobo syntax blocked без Qt5 SDK/Docker. Следующее действие: native/Qt5 CI.
+
+**Остаток полного запроса:** effective layout/configuration EngineDocument,
+Publication/ResourceCache state/lifecycle и ReadingPage/navigation/settings wiring.
+Не копировать upstream классы ради искусственного нулевого diff; оставлять узкие
+явные интеграционные точки. Закрытые продуктовые задачи beta.8 не возобновляются.
+
+## После завершения рефакторинга
+
+| Задача | Статус | Условие начала |
+|---|---|---|
+| Два новых недочёта при чтении FB2 | planned | Пользователь сообщил о наличии двух проблем, детали ещё не переданы. Вернуться после завершения рефакторинга; не угадывать причину/содержание и не смешивать bugfix с переносом кода. |
 
 ## Открытая диагностика
 

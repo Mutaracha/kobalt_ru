@@ -1,3 +1,4 @@
+#include "page_draw_buffer.h"
 #include "reader_fork_styles.h"
 #include "reader_comics.h"
 #include "column_view.h"
@@ -60,234 +61,6 @@ lString32 cre(const QString &s)
 {
     return Utf8ToUnicode(s.toUtf8().constData());
 }
-
-bool equationImage(const LVImageSourceRef &image)
-{
-    for (auto *node = image->GetSourceNode(); node; node = node->getParentNode()) {
-        if (!node->isElement())
-            continue;
-        if (!node->getAttributeValue("data-tex").empty()
-            || node->getAttributeValue("role") == U"math")
-            return true;
-    }
-    return false;
-}
-
-// Transform neutral ink before alpha compositing, so transparent pixels keep
-// the actual page background. Delegate vector sizing to avoid an extra raster scale.
-class EquationImage : public LVImageSource, private LVImageDecoderCallback
-{
-public:
-    explicit EquationImage(LVImageSourceRef source) : source(source) { }
-
-    ldomDocument *GetSourceDocument() override { return source->GetSourceDocument(); }
-
-    ldomNode *GetSourceNode() override { return source->GetSourceNode(); }
-
-    LVStream *GetSourceStream() override { return source->GetSourceStream(); }
-
-    void Compact() override { source->Compact(); }
-
-    int GetWidth() const override { return source->GetWidth(); }
-
-    int GetHeight() const override { return source->GetHeight(); }
-
-    bool IsScalable() const override { return source->IsScalable(); }
-
-    bool Decode(LVImageDecoderCallback *target) override
-    {
-        if (!target)
-            return source->Decode(nullptr);
-        callback = target;
-        int width = GetWidth(), height = GetHeight();
-        if (IsScalable())
-            target->GetTargetSize(width, height);
-        row.resize(width);
-        return source->Decode(this);
-    }
-
-private:
-    bool GetTargetSize(int &width, int &height) const override
-    {
-        return callback->GetTargetSize(width, height);
-    }
-
-    void OnStartDecode(LVImageSource *) override { callback->OnStartDecode(this); }
-
-    bool OnLineDecoded(LVImageSource *, int y, lUInt32 *pixels) override
-    {
-        for (size_t x = 0; x < row.size(); ++x) {
-            const auto pixel = pixels[x];
-            const bool neutral = qRed(pixel) == qGreen(pixel) && qRed(pixel) == qBlue(pixel);
-            row[x] = neutral ? pixel ^ 0x00ffffffU : pixel;
-        }
-        return callback->OnLineDecoded(this, y, row.data());
-    }
-
-    void OnEndDecode(LVImageSource *, bool errors) override { callback->OnEndDecode(this, errors); }
-
-    LVImageSourceRef source;
-    LVImageDecoderCallback *callback = nullptr;
-    std::vector<lUInt32> row;
-};
-
-// A white border and mostly white paper distinguish illustrations from dark artwork.
-// Check every visible source pixel so even a small colour accent prevents inversion.
-class IllustrationProbe : public LVImageDecoderCallback
-{
-public:
-    IllustrationProbe(int width, int height) : width(width), height(height) { }
-
-    bool eligible(LVImageSourceRef source)
-    {
-        return source->Decode(this) && !failed && lines == height && neutral && total
-                && white * 2 >= total && border && whiteBorder * 10 >= border * 8;
-    }
-
-private:
-    bool GetTargetSize(int &w, int &h) const override
-    {
-        w = width;
-        h = height;
-        return true;
-    }
-
-    void OnStartDecode(LVImageSource *) override { }
-
-    bool OnLineDecoded(LVImageSource *, int y, lUInt32 *pixels) override
-    {
-        ++lines;
-        for (int x = 0; x < width; ++x) {
-            const auto pixel = pixels[x];
-            // CREngine uses an inverted alpha channel. Invisible RGB is irrelevant.
-            const int transparency = pixel >> 24;
-            if (transparency != 255
-                && (qRed(pixel) != qGreen(pixel) || qRed(pixel) != qBlue(pixel)))
-                neutral = false;
-            const bool paper = transparency == 255
-                    || (qRed(pixel) >= 245 && qGreen(pixel) >= 245 && qBlue(pixel) >= 245);
-            ++total;
-            white += paper;
-            if (x == 0 || y == 0 || x == width - 1 || y == height - 1) {
-                ++border;
-                whiteBorder += paper;
-            }
-        }
-        return true;
-    }
-
-    void OnEndDecode(LVImageSource *, bool errors) override { failed = errors; }
-
-    int width, height, lines = 0;
-    quint64 total = 0, white = 0, border = 0, whiteBorder = 0;
-    bool neutral = true, failed = false;
-};
-
-class PageDrawBuffer : public LVColorDrawBuf
-{
-public:
-    PageDrawBuffer(QImage &image, bool dark, bool smooth, bool normalizeTextColors,
-                   QMap<std::tuple<quintptr, int, int>, bool> *inversion = nullptr)
-        : LVColorDrawBuf(image.width(), image.height(), image.bits(), 32),
-          pageSize(image.size()),
-          dark(dark),
-          normalizeTextColors(normalizeTextColors),
-          inversion(inversion)
-    {
-        setInvertColors(dark);
-        setSmoothScalingImages(smooth);
-    }
-
-    void SetTextColor(lUInt32 color) override
-    {
-        LVColorDrawBuf::SetTextColor(normalizeTextColors ? 0 : color);
-    }
-
-    bool hasImages = false, hasText = false;
-    QVector<QRect> imageRegions;
-    using LVColorDrawBuf::Draw;
-
-    void Draw(int x, int y, const lUInt8 *bitmap, int width, int height,
-              const lUInt32 *palette) override
-    {
-        lvRect clip;
-        GetClipRect(&clip);
-        if (width > 0 && height > 0 && qint64(x) + width > clip.left && x < clip.right
-            && qint64(y) + height > clip.top && y < clip.bottom)
-            hasText = true;
-        const auto color = palette ? palette[0] : GetTextColor();
-        const auto background = GetBackgroundColor();
-        const bool neutral = qRed(color) == qGreen(color) && qRed(color) == qBlue(color);
-        const bool coloredPaper =
-                qRed(background) != qGreen(background) || qRed(background) != qBlue(background);
-        const bool preserveContrast = coloredPaper && (background >> 24) != 255;
-        // CREngine pre-inverts every non-gray text color. Undo that for faint
-        // tints on neutral paper so near-black text becomes light in dark mode.
-        // On preserved colored paper, keep the publisher's original contrast.
-        const bool invertInk =
-                dark && (preserveContrast ? neutral : !neutral && !hasVisibleColor(color));
-        const lUInt32 ink = normalizeTextColors ? 0 : invertInk ? color ^ 0x00ffffffU : color;
-        LVColorDrawBuf::Draw(x, y, bitmap, width, height, &ink);
-    }
-
-    void Draw(LVImageSourceRef image, int x, int y, int width, int height, bool dither) override
-    {
-        hasImages = true;
-        lvRect clip;
-        GetClipRect(&clip);
-        const qint64 left = qMax<qint64>(0, qMax<qint64>(x, clip.left));
-        const qint64 top = qMax<qint64>(0, qMax<qint64>(y, clip.top));
-        const qint64 right =
-                qMin<qint64>(pageSize.width(), qMin<qint64>(qint64(x) + width, clip.right));
-        const qint64 bottom =
-                qMin<qint64>(pageSize.height(), qMin<qint64>(qint64(y) + height, clip.bottom));
-        if (!imageRegionsFull && right > left && bottom > top) {
-            if (imageRegions.size() < 128)
-                imageRegions.append(
-                        QRect(int(left), int(top), int(right - left), int(bottom - top)));
-            else {
-                imageRegions.clear();
-                imageRegions.append(QRect(QPoint(0, 0), pageSize));
-                imageRegionsFull = true;
-            }
-        }
-        bool invertIllustration = false;
-        if (dark && inversion && !equationImage(image)) {
-            const auto node = reinterpret_cast<quintptr>(image->GetSourceNode());
-            // Vector details can appear at a larger size. Do not reuse a smaller raster verdict.
-            const auto key = std::make_tuple(node, image->IsScalable() ? width : 0,
-                                             image->IsScalable() ? height : 0);
-            auto found = inversion->constFind(key);
-            if (node && found != inversion->constEnd()) {
-                invertIllustration = found.value();
-            } else {
-                IllustrationProbe probe(image->IsScalable() ? width : image->GetWidth(),
-                                        image->IsScalable() ? height : image->GetHeight());
-                invertIllustration = probe.eligible(image);
-                if (inversion->size() >= 1024)
-                    inversion->clear();
-                if (node)
-                    inversion->insert(key, invertIllustration);
-            }
-        }
-        if (dark && (equationImage(image) || invertIllustration))
-            image = LVImageSourceRef(new EquationImage(image));
-        // Composite images in the final page colors. CREngine's invert-images
-        // option instead blends transparency against a white background.
-        if (dark)
-            InvertRect(x, y, x + width, y + height);
-        LVColorDrawBuf::Draw(image, x, y, width, height, dither);
-        if (dark)
-            InvertRect(x, y, x + width, y + height);
-    }
-
-private:
-    QSize pageSize;
-    bool imageRegionsFull = false;
-    bool dark;
-    bool normalizeTextColors;
-    QMap<std::tuple<quintptr, int, int>, bool> *inversion;
-};
 
 QVector<QRect> colorTileRegions(const QVector<uchar> &tiles, int columns, int rows,
                                 const QSize &size)
@@ -1435,21 +1208,7 @@ bool EngineDocument::loadNextImage()
     if (!source_ || !source_->resources)
         return false;
     auto &resources = *source_->resources;
-    bool batch = false;
-    // A spread is one displayed screen. Load only its requested images, not
-    // the neighbour queue, before ReaderSession captures the next frame.
-    if (comicsMode_ && engine_ && engine_->comicPageCount(page()) == 2) {
-        const auto names = comicImageRequests_.value(page());
-        if (names.size() <= 2) {
-            for (const auto &name : names) {
-                if (!resources.prioritizePendingImage(name)) continue;
-                batch = true;
-                resources.loadNextImage();
-                if (!resources.error().isEmpty()) break;
-            }
-        }
-    }
-    if (!batch) resources.loadNextImage();
+    if (!loadVisibleComicImages()) resources.loadNextImage();
     return refreshImages();
 }
 
@@ -1582,92 +1341,34 @@ QImage EngineDocument::image(int pageNumber)
     if (result.isNull())
         return {};
     PageDrawBuffer buffer(result, darkMode_, true, normalizeTextColors_, &imageInversion_);
-    const bool trackSpread = comicsMode_ && source_ && source_->resources
-            && engine_->comicPageCount(pageNumber) == 2;
-    if (trackSpread) source_->resources->beginImageRequests();
-    if (auto *node = engine_->singleComicNode(pageNumber)) {
-        const auto source = node->getObjectImageSource();
-        const auto rect = engine_->singleComicRect(pageNumber);
-        const bool rotate = engine_->rotatedComicNode(pageNumber) != nullptr;
-        result.fill(darkMode_ ? Qt::black : Qt::white);
-        // Scale to the final viewport before the quarter-turn: no additional source-sized
-        // bitmap copy, second resampling or artwork cropping is introduced.
-        QImage layer(rotate ? rect.height() : rect.width(),
-                     rotate ? rect.width() : rect.height(), QImage::Format_RGB32);
-        if (layer.isNull()) return {};
-        layer.fill(darkMode_ ? Qt::black : Qt::white);
-        PageDrawBuffer part(layer, darkMode_, true, normalizeTextColors_, &imageInversion_);
-        part.Draw(source, 0, 0, layer.width(), layer.height(), false);
-        QPainter painter(&result);
-        painter.translate(rect.x() + (rotate ? rect.width() : 0), rect.y());
-        if (rotate) painter.rotate(90);
-        painter.drawImage(0, 0, layer);
-        buffer.hasImages = true;
-        buffer.imageRegions.append(rect);
-    } else if (columns_ == 1) {
-        if (engine_->comicPageCount(pageNumber) == 2) {
+    const bool trackSpread = beginComicImageRequests(pageNumber);
+    const auto comics = paintComicPage(pageNumber, result, buffer);
+    if (comics == ComicPaint::Failed) {
+        if (trackSpread) source_->resources->endImageRequests();
+        return {};
+    }
+    if (comics == ComicPaint::NotHandled) {
+        if (columns_ == 1) {
+            engine_->drawColumn(buffer, pageNumber, 0);
+        } else {
             result.fill(Qt::white);
-            QImage layer(size_, QImage::Format_RGB32);
-            if (layer.isNull()) {
-                if (trackSpread) source_->resources->endImageRequests();
+            QImage column(engine_->columnWidth(), size_.height(), QImage::Format_RGB32);
+            if (column.isNull())
                 return {};
-            }
             QPainter painter(&result);
-            for (int i = 0; i < 2; ++i) {
-                PageDrawBuffer part(layer, darkMode_, true, normalizeTextColors_, &imageInversion_);
+            for (int i = 0; i < columns_; ++i) {
+                PageDrawBuffer part(column, darkMode_, true, normalizeTextColors_, &imageInversion_);
                 engine_->drawColumn(part, pageNumber, i);
-                const int physical = engine_->comicRightToLeft() ? 1 - i : i;
-                const int left = physical * size_.width() / 2;
-                const int right = (physical + 1) * size_.width() / 2;
-                const int offset = (left + right - size_.width()) / 2;
-                const QRect clip(left, 0, right - left, size_.height());
-                const int vertical = part.imageRegions.size() == 1 && !part.hasText
-                        ? (size_.height() - part.imageRegions.first().height()) / 2
-                                - part.imageRegions.first().y() : 0;
-                const auto bounds = part.imageRegions.size() == 1
-                        ? part.imageRegions.first().translated(offset, vertical).intersected(clip) : QRect();
-                engine_->setComicVerticalOffset(pageNumber, i, vertical, bounds);
-                painter.setClipRect(clip);
-                painter.drawImage(offset, vertical, layer);
                 buffer.hasImages |= part.hasImages;
                 buffer.hasText |= part.hasText;
+                const int x = engine_->columnOffset(i);
+                painter.drawImage(x, 0, column);
                 for (const auto &region : part.imageRegions)
-                    buffer.imageRegions.append(region.translated(offset, vertical).intersected(clip));
-            }
-        } else engine_->drawColumn(buffer, pageNumber, 0);
-    } else {
-        result.fill(Qt::white);
-        QImage column(engine_->columnWidth(), size_.height(), QImage::Format_RGB32);
-        if (column.isNull())
-            return {};
-        QPainter painter(&result);
-        for (int i = 0; i < columns_; ++i) {
-            PageDrawBuffer part(column, darkMode_, true, normalizeTextColors_, &imageInversion_);
-            engine_->drawColumn(part, pageNumber, i);
-            buffer.hasImages |= part.hasImages;
-            buffer.hasText |= part.hasText;
-            const int x = engine_->columnOffset(i);
-            painter.drawImage(x, 0, column);
-            for (const auto &region : part.imageRegions)
-                buffer.imageRegions.append(region.translated(x, 0));
-        }
-    }
-    if (trackSpread) {
-        // Neighbour drawing must not erase the visible page's request identity.
-        // A decoded image may bypass Decode() on later draws, so retain the union
-        // until reflow/source change rather than replacing it with an empty trace.
-        if (!comicImageRequests_.contains(pageNumber) && comicImageRequests_.size() >= 8) {
-            for (const auto key : comicImageRequests_.keys()) {
-                if (key != page() && key != pageNumber && !cache_.contains(key)) {
-                    comicImageRequests_.remove(key);
-                    break;
-                }
+                    buffer.imageRegions.append(region.translated(x, 0));
             }
         }
-        auto &names = comicImageRequests_[pageNumber];
-        for (const auto &name : source_->resources->endImageRequests())
-            if (!names.contains(name)) names.append(name);
     }
+    if (trackSpread) finishComicImageRequests(pageNumber);
     // CREngine composites into 0x00RRGGBB. Qt's opaque RGB32 contract requires
     // 0xffRRGGBB, including when a painter uses this image as a source.
     bool hasColor = false;

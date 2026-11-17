@@ -2,6 +2,7 @@
 #include "reader_inputs.h"
 #include "reader_source_index_probe.h"
 #include "reading/appearance_settings.h"
+#include "engine/crengine/page_draw_buffer.h"
 #include <QBuffer>
 #include <QGuiApplication>
 #include <QTemporaryDir>
@@ -20,9 +21,29 @@ static QRect inkBounds(const QImage &image)
     return bounds;
 }
 
+// The renderer is shared, not reimplemented by the fork comics path.
+static void commonDrawBufferContract()
+{
+    QImage image(8, 8, QImage::Format_RGB32);
+    image.fill(Qt::white);
+    PageDrawBuffer normalized(image, false, true, true);
+    normalized.SetTextColor(0x123456);
+    require(normalized.GetTextColor() == 0, "Shared buffer lost text-ink normalization");
+    const lUInt8 bitmap[] = { 255, 255, 255, 255 };
+    normalized.Draw(-10, -10, bitmap, 2, 2, nullptr);
+    require(!normalized.hasText, "Clipped text was counted as visible");
+    normalized.Draw(1, 1, bitmap, 2, 2, nullptr);
+    require(normalized.hasText && !normalized.hasImages && normalized.imageRegions.isEmpty(),
+            "Shared buffer changed text/image metadata");
+    PageDrawBuffer publisher(image, false, true, false);
+    publisher.SetTextColor(0x123456);
+    require(publisher.GetTextColor() == 0x123456, "Shared buffer lost publisher text ink");
+}
+
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
+    commonDrawBufferContract();
     // Same proportions and inline/div structure as the supplied KCC page,
     // but synthetic solid art makes geometry independently measurable.
     QImage art(1160, 1680, QImage::Format_RGB32);

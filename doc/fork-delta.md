@@ -51,8 +51,14 @@
 - `engine/crengine/column_view_comics.cpp` — spread rebuild/count, standalone/rotated
   image identity, fit rect, offsets. В `column_view.h` остаются API, состояние и
   небольшие подключения к общему mapping страниц/координат.
-- `engine/crengine/engine_document_comics.cpp` — синхронизация видимых graphic
-  ресурсов перед публикацией кадра. Общий cache/paint loop не копируется.
+- `engine/crengine/engine_document_comics.cpp` — отрисовка single/spread artwork,
+  tracking/union/prioritization видимых image requests и синхронизация перед
+  публикацией кадра. Общие cache/normalization/ordinary-column loop не копируются.
+- `engine/crengine/page_draw_buffer.*` — единственная shared реализация прежнего
+  upstream буфера, EquationImage и IllustrationProbe. Вынесена из анонимного
+  namespace EngineDocument, чтобы ordinary pages, covers и fork comics использовали
+  один drawing primitive. Это не fork-only policy: при обновлении отдельно сравнивать
+  соответствующий upstream блок из engine_document.cpp, а не замораживать его.
 - `engine/crengine/reader_fb2.*` — также владеет format-specific предикатами
   upstream alignment/beautifier passes; общие passes не заморожены копиями.
 - `app/reader/window/fork_reader_actions.cpp` — действие comics с draft/busy guard
@@ -83,7 +89,7 @@ platform-specific копии не нужны.
 
 **Что намеренно остаётся в upstream-файлах:** интеграция формата в Publication и
 resource lifecycle, сохранённые optional fields/миграции, эффективные настройки
-EngineDocument, смешанная отрисовка обычных колонок/comics, mapping page/DOM/hit,
+EngineDocument, dispatch обычных колонок/comics, mapping page/DOM/hit,
 UI wiring/layout/refresh и Kobo hooks. Полностью неизменный upstream с новыми
 форматами/настройками без изменения его API не обещается. Дальнейшее сокращение
 этих участков требует отдельной проверки; эта карта не называет их уже вынесенными.
@@ -123,8 +129,25 @@ catalogue byte-identical upstream. Отдельные semantic predicates про
 **PASS**: expanded focused native, offline checks, Kobo Qt5 package/contents.
 Локально source-checks и strings self-tests (Ninja) прошли. Полный note CSS byte-identical предыдущему этапу; digests фрагментов
 проверяются новыми native assertions. `model.local-resources` добавлен в focused
-workflow для FB2 cancellation/size/error/sink boundaries. Новая device проверка
-этого этапа пока не выполнялась.
+workflow для FB2 cancellation/size/error/sink boundaries. Пользователь затем подтвердил запуск второго этапа и сообщил о двух FB2-недочётах
+без описания. Исправлять их после рефакторинга; это не новая полная приёмка FB2.
+
+## Третий этап — проверка в процессе
+
+Вынесены fork paint и visible-image resource policies; общий PageDrawBuffer перенесён
+одним экземпляром реализации. До переноса его код и helpers byte-identical pinned
+upstream beta.8; тела методов и помощников сохранены. Fork painter использует этот
+же буфер, без отдельной scaling/inversion/normalization реализации.
+`image()` сохраняет обычный upstream pipeline и маленький tri-state dispatch
+(NotHandled/Painted/Failed), включая освобождение tracking на отказе allocation.
+`loadNextImage()` делегирует приоритет visible comics batch и сохраняет fallback
+на ordinary queue. Лимиты 2 visible resources / 8 request identities не меняются.
+
+Новый contract-test буфера выполняется в engine.comics; focused native дополнен
+engine.image-proportions и engine.mathml для shared image/night/equation поведения.
+Локальные source-checks и strings self-tests прошли. Native/Qt5 CI и физическая
+проверка этого этапа пока не выполнены. Два новых FB2-недочёта — отдельная очередь
+после рефакторинга, не повод менять поведение в этом механическом переносе.
 
 ## Полный файловый инвентарь baseline
 
