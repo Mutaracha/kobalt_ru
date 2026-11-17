@@ -57,6 +57,44 @@ void languageBinding()
     }
 }
 
+void previewPosition()
+{
+    QByteArray bytes("<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
+                     "<description><title-info><lang>ru</lang></title-info></description>"
+                     "<body><section><title><p>Chapter</p></title>");
+    for (int i = 0; i < 40; ++i)
+        bytes += "<p>Earlier paragraph that must not replace the preview passage.</p>";
+    bytes += "<p>Prefix before inline <emphasis id='target'>abcdef Bookmark passage inside inline.</emphasis>"
+             " Following text after inline.</p>";
+    for (int i = 0; i < 40; ++i)
+        bytes += "<p>Following paragraph with enough text to fill the preview.</p>";
+    bytes += "</section></body></FictionBook>";
+    EngineDocument source(test::readerFonts());
+    QString error;
+    require(source.open(bytes, QSize(800, 600), {}, &error), qPrintable(error));
+    const auto position = ReaderSourceIndexProbe::textAnchor(source, "target", 7);
+    require(!position.isEmpty() && source.goTo(position), "Cannot set inline source bookmark");
+    const auto state = source.state();
+    const auto image = source.image(source.page());
+    EngineDocument preview(test::readerFonts());
+    require(preview.openPreview(source, QSize(800, 600), &error), qPrintable(error));
+    // Flattened preview text includes the rest of the paragraph after inline,
+    // so compare the source tail as a prefix, not as the complete text node.
+    const auto tail = ReaderSourceIndexProbe::anchorTail(source);
+    require(tail.startsWith("Bookmark"), "Regression bookmark offset is not nonzero");
+    const auto anchor = preview.position();
+    for (int thickness : {0, 1, 2, 0}) {
+        require(preview.setThickness(thickness), "Preview thickness edit failed");
+        require(ReaderSourceIndexProbe::anchorTail(preview).startsWith(tail),
+                "FB2 preview lost source passage or inline text offset");
+        require(preview.position() == anchor && !preview.imageFromAnchor(false).isNull(),
+                "FB2 preview thickness edit moved its bookmark");
+        require(source.position() == position && source.state() == state
+                        && source.image(source.page()) == image,
+                "FB2 preview changed main reading state");
+    }
+}
+
 void forkStyleFragments()
 {
     // Frozen pre-extraction bytes: no cascade, spacing or cache-policy change.
@@ -424,6 +462,7 @@ int main(int argc, char **argv) {
     formatBoundaries();
     forkStyleFragments();
     languageBinding();
+    previewPosition();
     inspectFictionBook();
     rejectNonFictionBook();
     renderFictionBook();

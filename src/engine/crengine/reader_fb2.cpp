@@ -95,33 +95,64 @@ bool EngineDocument::openFb2Preview(EngineDocument &source, QSize size, QString 
     };
     auto *document = source.engine_->getDocument();
     auto pointer = document->createXPointer(cre(source.position()));
-    auto *node = pointer.isNull() ? nullptr : pointer.getNode();
+    if (pointer.isNull())
+        return fail(strings::get("error.no_section_to_preview"));
+    auto *node = pointer.getNode();
     while (node && !node->isNodeName("section") && !node->isNodeName("body"))
         node = node->getParentNode();
     if (!node)
         node = document->getRootNode();
+    // Keep the containing paragraph intact (including the text before the
+    // bookmark), then map the bookmark into its flattened preview text. Merely
+    // slicing at the bookmark would change first-line indentation and shaping.
+    auto *start = pointer.isNull() ? nullptr : pointer.getNode();
+    while (start && start != node && !start->isNodeName("p") && !start->isNodeName("v"))
+        start = start->getParentNode();
+    if (!start || start == node)
+        start = node;
+    int offset = 0;
+    QVector<ldomNode *> pending{start};
+    while (!pending.isEmpty()) {
+        auto *part = pending.takeLast();
+        if (part == pointer.getNode()) {
+            if (part->isText())
+                offset += qBound(0, pointer.getOffset(), part->getText().length());
+            else
+                for (int i = 0; i < qMin(pointer.getOffset(), part->getChildCount()); ++i)
+                    offset += part->getChildNode(i)->getText().length();
+            break;
+        }
+        if (part->isText())
+            offset += part->getText().length();
+        else
+            for (int i = part->getChildCount() - 1; i >= 0; --i)
+                pending.append(part->getChildNode(i));
+    }
     QStringList paragraphs;
     int total = 0;
     constexpr int previewLimit = 8192;
-    for (int i = 0; i < node->getChildCount() && total < previewLimit; ++i) {
-        auto *child = node->getChildNode(i);
-        if (!child->isElement())
-            continue;
-        const auto name = qstring(child->getNodeName());
-        if (name.compare("p", Qt::CaseInsensitive) == 0 || name.compare("v", Qt::CaseInsensitive) == 0) {
-            const auto text = qstring(child->getText()).trimmed();
-            if (!text.isEmpty()) {
+    bool reached = false;
+    pending = {node};
+    while (!pending.isEmpty() && total < previewLimit) {
+        auto *part = pending.takeLast();
+        if (part == start) reached = true;
+        if (!part->isElement()) continue;
+        if ((part->isNodeName("p") || part->isNodeName("v")) && reached) {
+            const auto text = qstring(part->getText());
+            if (!text.trimmed().isEmpty()) {
                 paragraphs.append(text);
                 total += text.size();
             }
+        } else {
+            for (int i = part->getChildCount() - 1; i >= 0; --i)
+                pending.append(part->getChildNode(i));
         }
     }
-    if (paragraphs.isEmpty()) {
-        const auto text = qstring(node->getText()).left(previewLimit).trimmed();
-        if (text.isEmpty())
-            return fail(strings::get("error.no_section_to_preview"));
-        paragraphs.append(text);
+    if (start == node) {
+        paragraphs = QStringList{qstring(node->getText()).left(offset + previewLimit)};
     }
+    if (paragraphs.isEmpty() || paragraphs.first().trimmed().isEmpty())
+        return fail(strings::get("error.no_section_to_preview"));
     const auto language = qstring(source.engine_->getLanguage()).trimmed();
     QByteArray previewBytes;
     QXmlStreamWriter writer(&previewBytes);
@@ -136,17 +167,28 @@ bool EngineDocument::openFb2Preview(EngineDocument &source, QSize size, QString 
     writer.writeEndElement(); // description
     writer.writeStartElement("body");
     writer.writeStartElement("section");
-    for (const auto &paragraph : paragraphs)
-        writer.writeTextElement("p", paragraph);
+    for (int i = 0; i < paragraphs.size(); ++i) {
+        writer.writeStartElement("p");
+        if (!i) writer.writeAttribute("id", "kobalt-preview-anchor");
+        writer.writeCharacters(paragraphs[i]);
+        writer.writeEndElement();
+    }
     writer.writeEndElement(); // section
     writer.writeEndElement(); // body
     writer.writeEndElement(); // FictionBook
     writer.writeEndDocument();
-    // The synthetic document has its own DOM, so the original XPointer cannot
-    // be restored. open() recognizes the bytes as FB2 and skips the EPUB path.
+    // The synthetic DOM has different paths. Resolve its marked paragraph and
+    // restore the mapped text offset rather than reusing the source XPointer.
     auto settings = source.state();
     settings.remove("position");
     userStyleSheet_ = source.userStyleSheet_;
-    return open(previewBytes, size, settings, error);
+    if (!open(previewBytes, size, settings, error))
+        return false;
+    auto *anchor = engine_->getDocument()->getElementById(U"kobalt-preview-anchor");
+    while (anchor && anchor->isElement() && anchor->getChildCount())
+        anchor = anchor->getChildNode(0);
+    if (!anchor || !anchor->isText())
+        return fail(strings::get("error.no_section_to_preview"));
+    return goTo(qstring(ldomXPointer(anchor, qBound(0, offset, anchor->getText().length())).toString()));
 }
 } // namespace kobalt
