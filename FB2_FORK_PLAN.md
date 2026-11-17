@@ -10,13 +10,13 @@
 - Работа со сносками завершена: индексы работают верно, текущие отступы оставлены
   без изменений. Дальнейшая доработка зазоров и пагинации не запланирована;
   закрытие задачи не означает отдельного исправления общего алгоритма пагинации.
-- Последний CI-проверенный runtime: `69c70aa357209d0ef9ffce5afc68b42d74492a5f`.
-  [CI №171 / 44096144408](https://github.com/Mutaracha/kobalt_ru/actions/runs/44096144408):
+- Последний CI-проверенный runtime: `9e03e25d31bfc000a88048c01f102b16e57d6a8f`.
+  [CI №172 / 44100128546](https://github.com/Mutaracha/kobalt_ru/actions/runs/44100128546):
   расширенный focused native и Kobo Qt5 package/contents **PASS**. Не all-variant.
-  [Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44096144408/artifacts/14333753710).
-  Пользователь подтвердил запуск пакетов первого и второго этапов на устройстве.
-  После проверки FB2 сообщил о двух недочётах: исправлять после рефакторинга;
-  содержание и воспроизведение ещё не описаны, исправления сейчас не предпринимаются.
+  [Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44100128546/artifacts/14336795926).
+  Пользователь подтвердил запуск первого и второго этапов на устройстве.
+  Третий этап на устройстве пока не проверен. При чтении FB2 на втором этапе
+  найдены два недочёта без описания; вернуться к ним после рефакторинга.
 - Старые отчёты, снимки интерфейса и review-материалы удалены из текущего дерева;
   история Git сохранена. Диагностические архивы и исходные книги сохранены.
 
@@ -60,7 +60,7 @@ All-variant не выполнялся; пользователь затем по�
 Следующий этап: отделить оставшиеся fork-участки effective layout/paint и
 view/resource lifecycle без дублирования upstream PageDrawBuffer/Settings/notes.
 
-**Третий этап in progress / CI pending:**
+**Третий этап done / CI verified:**
 - В `engine_document_comics.cpp` вынесены paint одиночного/парного artwork,
   начало/завершение request tracking и приоритет visible-image batch. В общем
   `image()` остаются dispatch, ordinary columns, pixel normalization и caching.
@@ -74,9 +74,15 @@ view/resource lifecycle без дублирования upstream PageDrawBuffer/
 - Добавлен прямой contract-test буфера (normalization, clipping, text/image metadata,
   publisher ink), native CI расширен `engine.image-proportions` и `engine.mathml`.
   Имеющиеся comics tests покрывают cold/cached spreads, neighbour pressure,
-  visible priority, letterbox/hits, rotation, RTL и сохранение базовой раскладки.
+  visible priority, letterbox/hits, rotation и сохранение базовой раскладки.
 - Локально source-checks, strings self-tests (Ninja) и проверка diff PASS;
-  Kobo syntax blocked без Qt5 SDK/Docker. Следующее действие: native/Qt5 CI.
+  Kobo syntax blocked без Qt5 SDK/Docker.
+- [CI44100128546](https://github.com/Mutaracha/kobalt_ru/actions/runs/44100128546)
+  **PASS**: прежний focused native набор плюс image-proportions/mathml и новый
+  buffer contract в comics; Qt5 build/package/contents, offline checks.
+  Физическая проверка нового runtime, отдельный RTL-сценарий и all-variant
+  не выполнялись. Следующий этап — завершающий проход по effective layout,
+  UI wiring и оставшимся format/resource lifecycle участкам по карте дельты.
 
 **Остаток полного запроса:** effective layout/configuration EngineDocument,
 Publication/ResourceCache state/lifecycle и ReadingPage/navigation/settings wiring.

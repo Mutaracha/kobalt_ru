@@ -64,5 +64,16 @@ plural/key-mode и прежние focused regressions. Не all-variant. При 
 `page_draw_buffer.*`; алгоритмы comics paint/request tracking/visible priority —
 в `engine_document_comics.cpp`. До переноса общий буфер совпадал с pinned beta.8;
 после переноса сверены тела методов и helpers. Нет изменения настроек, CSS,
-схем, cache salts и waveform. Native/Qt5 CI и устройство этого этапа пока не проверены.
+схем, cache salts и waveform. Native/Qt5 CI этого этапа прошёл; устройство
+пока не проверено.
 Два новых FB2-недочёта не считаются исправленными и не закрыты прохождением CI.
+
+Runtime третьего этапа: `9e03e25d31bfc000a88048c01f102b16e57d6a8f`.
+[CI №172 / 44100128546](https://github.com/Mutaracha/kobalt_ru/actions/runs/44100128546)
+**PASS**: expanded focused native (включая image-proportions, mathml и buffer
+contract в comics), offline checks, Qt5 package/contents.
+[Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44100128546/artifacts/14336795926).
+Отдельный RTL-сценарий, all-variant и физическая проверка этого runtime не проводились.
+Проверять обычную EPUB/FB2 страницу и обложку, светлую/тёмную тему, comics
+single/pair/center и image-viewer hits; это невыполненный device checklist,
+не расширение предыдущего подтверждения запуска.

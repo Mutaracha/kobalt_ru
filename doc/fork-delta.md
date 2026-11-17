@@ -132,7 +132,7 @@ catalogue byte-identical upstream. Отдельные semantic predicates про
 workflow для FB2 cancellation/size/error/sink boundaries. Пользователь затем подтвердил запуск второго этапа и сообщил о двух FB2-недочётах
 без описания. Исправлять их после рефакторинга; это не новая полная приёмка FB2.
 
-## Третий этап — проверка в процессе
+## Третий этап — CI verified
 
 Вынесены fork paint и visible-image resource policies; общий PageDrawBuffer перенесён
 одним экземпляром реализации. До переноса его код и helpers byte-identical pinned
@@ -145,8 +145,11 @@ upstream beta.8; тела методов и помощников сохране�
 
 Новый contract-test буфера выполняется в engine.comics; focused native дополнен
 engine.image-proportions и engine.mathml для shared image/night/equation поведения.
-Локальные source-checks и strings self-tests прошли. Native/Qt5 CI и физическая
-проверка этого этапа пока не выполнены. Два новых FB2-недочёта — отдельная очередь
+Локальные source-checks и strings self-tests прошли.
+Runtime `9e03e25d31bfc000a88048c01f102b16e57d6a8f`,
+[CI №172 / 44100128546](https://github.com/Mutaracha/kobalt_ru/actions/runs/44100128546)
+**PASS**: expanded focused native, offline checks, Kobo Qt5 package/contents.
+Физическая проверка этого этапа, отдельный RTL-сценарий и all-variant не выполнялись. Два новых FB2-недочёта — отдельная очередь
 после рефакторинга, не повод менять поведение в этом механическом переносе.
 
 ## Полный файловый инвентарь baseline
