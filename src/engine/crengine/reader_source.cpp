@@ -619,6 +619,11 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
         properties->setString(PROP_TEXTLANG_MAIN_LANG, language);
         engine_->propsApply(properties);
     }
+    if (fb2Document_ && !openedFromCache_) {
+        const auto language = engine_->getLanguage().trim();
+        fb2::bindLanguage(document->getRootNode(), qstring(language.empty()
+                ? lString32(TEXTLANG_DEFAULT_MAIN_LANG) : language));
+    }
     // These optional markers can be added to older parsed caches without
     // changing source text, IDs or saved positions.
     if (fb2Document_ && !openedFromCache_)

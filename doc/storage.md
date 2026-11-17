@@ -250,8 +250,11 @@ is not Boolean; the legacy key is then removed. An explicit canonical choice
 wins. Global preferences and saved opening/engine input normalize this legacy
 field. The old custom note-number rewriting and duplicated EPUB note implementation
 are retired; upstream owns classification and page-note layout. FB2 parsed cache
-identity has format marker `:fb2-v8:`; note appearance follows canonical render
-settings. Existing cache files and canonical source positions are not deleted.
+identity has format marker `:fb2-v9:`. This reparses older FB2 caches to bind
+the metadata language to the FictionBook DOM element before pagination; explicit
+source language attributes are preserved. Paint and hit-testing then use the same
+language as pagination even after another document/preview is opened. Note
+appearance follows canonical render settings. Existing cache files and canonical source positions are not deleted.
 
 `disable_dark_mode` is an optional global Boolean, default false, in settings
 schema 1. True hides only the reading-menu dark-theme button. It does not modify

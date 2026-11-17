@@ -42,6 +42,23 @@ bool fb2::inlineElement(const QString &name)
     return name == "emphasis" || name == "strikethrough";
 }
 
+void fb2::bindLanguage(ldomNode *root, const QString &language)
+{
+    if (!root) return;
+    // The synthetic document root is not searched by TextLangMan. Attach to
+    // FictionBook so layout records its lang-node index and later formatting
+    // (paint, selection and hit-testing) resolves the same language even while
+    // an appearance preview has changed the global fallback. Explicit source
+    // language attributes, including those on descendants, remain authoritative.
+    for (int i = 0; i < root->getChildCount(); ++i) {
+        auto *node = root->getChildNode(i);
+        if (!node->isElement() || !node->isNodeName("FictionBook")) continue;
+        const auto attribute = root->getDocument()->getAttrNameIndex("lang");
+        if (node->getAttributeValue(0, attribute).empty())
+            node->setAttributeValue(0, attribute, cre(language));
+    }
+}
+
 void fb2::markNumericNoteTitles(ldomNode *root)
 {
     if (!root) return;

@@ -35,8 +35,26 @@ void formatBoundaries() {
     require(!fb2::matchesHead("<FictionBookish>"), "FB2 root delimiter");
     require(!fb2::matchesHead("<?xml?><!ENTITY x 'text'><FictionBook>"), "FB2 entity guard");
     require(fb2::cachePolicy(false).isEmpty(), "EPUB cache policy must not acquire the FB2 marker");
-    require(fb2::cachePolicy(true) == QByteArray(":fb2-v8:"), "FB2 migration cache marker");
+    require(fb2::cachePolicy(true) == QByteArray(":fb2-v9:"), "FB2 migration cache marker");
 
+}
+
+void languageBinding()
+{
+    for (const auto &explicitLanguage : {QByteArray(), QByteArray("de")}) {
+        const auto bytes = QByteArray("<FictionBook id='book' lang='") + explicitLanguage
+                + "' xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
+                  "<description><title-info><lang>ru</lang></title-info></description>"
+                  "<body><section><p id='local' lang='fr'>Texte.</p></section></body></FictionBook>";
+        EngineDocument model(test::readerFonts());
+        QString error;
+        require(model.open(bytes, QSize(800, 600), {}, &error), qPrintable(error));
+        require(ReaderSourceIndexProbe::nodeAttribute(model, "book", "lang")
+                        == (explicitLanguage.isEmpty() ? QString("ru") : QString("de")),
+                "FB2 metadata language binding replaced explicit root language");
+        require(ReaderSourceIndexProbe::nodeAttribute(model, "local", "lang") == "fr",
+                "FB2 metadata language binding replaced local language");
+    }
 }
 
 void forkStyleFragments()
@@ -319,6 +337,9 @@ void reportedFictionBook(const QString &path)
                                "<description><title-info><lang>en</lang></title-info></description>"
                                "<body><section><p>English appearance sample text.</p></section></body></FictionBook>"),
                     QSize(800, 600), configured, &error), qPrintable(error));
+            drift = ReaderSourceIndexProbe::paragraphFormatDrift(replay);
+            require(drift.isEmpty(), qPrintable(QString("FB2 geometry changed before repaint after English preview:\n%1")
+                    .arg(drift.join('\n'))));
             require(!replay.image(replay.page()).isNull(), "Reported FB2 repaint failed");
             drift = ReaderSourceIndexProbe::paragraphFormatDrift(replay);
             require(drift.isEmpty(), qPrintable(QString("FB2 pagination/paint mismatch after English preview (spacing=%1):\n%2")
@@ -397,6 +418,7 @@ int main(int argc, char **argv) {
     }
     formatBoundaries();
     forkStyleFragments();
+    languageBinding();
     inspectFictionBook();
     rejectNonFictionBook();
     renderFictionBook();
