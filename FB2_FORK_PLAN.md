@@ -10,29 +10,36 @@
 - Работа со сносками завершена: индексы работают верно, текущие отступы оставлены
   без изменений. Дальнейшая доработка зазоров и пагинации не запланирована;
   закрытие задачи не означает отдельного исправления общего алгоритма пагинации.
-- Последний runtime: `68b3ac16d592207b467f0778cf1f6742867844a1`.
-  [CI44075570386](https://github.com/Mutaracha/kobalt_ru/actions/runs/44075570386):
-  focused native и Kobo Qt5 package **PASS**. Это не all-variant проверка.
-  [Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44075570386/artifacts/14325995040).
+- Последний проверенный runtime: `d9536352eb0264127f1a53815b7533d413bb4884`.
+  [CI44089641669](https://github.com/Mutaracha/kobalt_ru/actions/runs/44089641669):
+  расширенный focused native и Kobo Qt5 package/contents **PASS**. Не all-variant.
+  [Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44089641669/artifacts/14331407822).
+  Приёмка прежней иконки/сносок не является новой физической проверкой рефакторинга.
 - Старые отчёты, снимки интерфейса и review-материалы удалены из текущего дерева;
   история Git сохранена. Диагностические архивы и исходные книги сохранены.
 
 ## Рефакторинг сопровождения (новый запрос)
 
-**in progress**: составлена [карта отличий beta.8](doc/fork-delta.md), выполнен
-вынос fork algorithms по слоям: comics/ColumnView/frame readiness, FB2 semantic
-predicates, progress painter, glyph geometry и window actions/lazy Appearance.
-Это механическое разделение без изменения defaults, CSS, waveform и storage.
-Интеграционные участки и невынесенные обязанности явно отмечены в карте.
+**in progress**, первый этап **done / CI verified**:
+составлена [карта отличий beta.8](doc/fork-delta.md), вынесены fork algorithms по
+слоям: comics/ColumnView/frame readiness, FB2 semantic predicates, progress painter,
+glyph geometry и window actions/lazy Appearance. Generated vectors совпадают с
+beta.8. Тела 13 перенесённых функций сверены без изменения токенов/выражений
+(кроме форматирования/комментариев). Defaults, CSS, waveform и storage не менялись.
 
-Проверки: source-checks PASS; strings generation/parity/self-tests PASS.
-Kobo syntax локально **blocked** (нет подготовленного Qt5 SDK/Docker).
-Offline helper suite завершилась с exit 0, но source-export под архивным checkout
-выдал ошибки отсутствующих validation-record файлов: не считать чистым PASS.
-Focused CI расширен существующими alignment/beautifier/page-layout/columns suites.
-Нужны native/Qt5 CI для новых translation units; тесты поведения используются
-существующие, это не новый all-variant или device pass.
-Следующее действие: получить результат push CI, исправить ошибки, записать runtime.
+Проверки: source-checks и strings generation/self-tests PASS. Расширенный CI
+`44089641669` PASS: прежний focused набор плюс alignment/beautifier/page-layout/columns,
+Kobo Qt5 build и package contents. Локальный Kobo syntax check не выполнен из-за
+отсутствия SDK/Docker; локальный offline helper exit 0 сопровождался source-export
+ошибками архивного checkout, поэтому чистый offline PASS берётся только из CI.
+Новые поведенческие тесты не добавлялись: перенос проверен существующими suites.
+All-variant и повторная проверка на устройстве не выполнялись.
+
+**Остаток полного запроса:** смешанные участки EngineDocument (CSS/effective layout/
+paint), Publication/ResourceCache lifecycle, inline RU policy в strings.h,
+ReadingPage/navigation/settings wiring. Они не объявлены полностью вынесенными.
+Следующий этап — сокращать эти участки через узкие format/locale/view helpers,
+не копируя upstream классы и не меняя принятый функционал; сверять по карте и CI.
 Закрытые продуктовые задачи beta.8 не возобновляются.
 
 ## Открытая диагностика

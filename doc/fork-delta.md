@@ -33,9 +33,11 @@
 | Shared UI | Settings-row presentation, compact checkbox Light/Layout, корректный общий baseline RU tabs, return-title typography, fork glyphs. | `fork_settings.*`, options/buttons, `return_title_text.h`, navigation, `fork_icon_geometry.*`. Не дублировать экраны Settings. |
 | Сон | Подгонка длинных надписей, две строки remaining в ribbon, fit оценок widgets; общая standby-логика beta.8 не заменяется. | `sleep_ribbon_text.cpp`, узкие изменения sleep_screen/sleep_designs. |
 | Lazy Appearance | Уже существовавшее отложенное построение Appearance с palette/refresh для поздних children. Lazy Settings не реализована, задача закрыта. | `fork_reader_actions.cpp`, reader window state/build/refresh/settings. Не новая оптимизация в этом рефакторинге. |
+| Направление свайпов | Отдельный глобальный `invert_page_swipes`, default false; направление учитывает RTL, не меняет зоны касаний/свет/кнопки. | `reading/page_navigation.h`, Settings и ReadingPage input wiring. |
 | Kobo Libra 2 | Только landscape polarity correction поверх positional/held модели beta.8; другие устройства — upstream. | `platforms/kobo/common/page_button_mapping.h`, Qt5 native_ui; ReaderController lifecycle hooks. |
 | Kobo/FB2 прогресс | FB2 не использует EPUB-specific native position; сохраняются собственные source positions, в Nickel время/проценты. | Kobo native_publication, ReaderController, publication/opening_job/reader_session. |
 | E-ink comics | Graphics/repair policy по submitted damage; диагностика refresh. Не принудительный whole-screen full flash. | reading_page property и `nickel-qt5/refresh.cpp`. Согласованную waveform не менять. |
+| Диагностика cache/resources | Причина отказа сохранения parsed cache, трассировка comic visible resources и приоритет pending images; без возобновления остановленной оптимизации открытия. | EngineDocument/ReaderSession и ResourceCache. Данные профиля не сбрасываются. |
 | Build/CI | Qt5-first workflow, RU generation/parity, fork name/time, FB2 CSS staging, native focused regressions, one-off Qt6 и helper очистки Actions. | `platforms`, assets manifest/CMake, `.github/workflows/kobo-qt5-device.yml`; не менять pins без причины. |
 | Проверки/данные/docs | FB2/comics/RU/regression suites, opt-in книги и diagnostics; регламент обновления и storage contract. | `tests`, `test & diagnostic`, `doc`, AGENTS/план. Это не runtime-отличия. |
 
@@ -85,6 +87,20 @@ UI wiring/layout/refresh и Kobo hooks. Полностью неизменный 
 5. Визуальная приёмка иконки/сносок относится к прежнему runtime; она не заменяет
    compile/regression проверки перенесённых translation units. Функциональные задачи
    beta.8 не открываются заново из-за рефакторинга.
+
+## Проверенный результат первого этапа
+
+Runtime после выноса: `d9536352eb0264127f1a53815b7533d413bb4884`.
+[CI44089641669](https://github.com/Mutaracha/kobalt_ru/actions/runs/44089641669) —
+расширенный focused native (в том числе alignment, beautifier, page-layout,
+columns) и Kobo Qt5 build/package/contents **PASS**.
+Source-checks и strings self-tests также прошли. Проверка устройства и all-variant
+не выполнялись. Тела 13 перенесённых функций сверены отдельно; generated vector
+catalogue byte-identical upstream. Отдельные semantic predicates проверяются
+существующими FB2/alignment/beautifier regressions.
+
+Это первый проверенный этап, не заявление о полном выносе всей дельты.
+Оставшиеся смешанные участки перечислены выше и в плане.
 
 ## Полный файловый инвентарь baseline
 
