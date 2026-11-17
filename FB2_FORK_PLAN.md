@@ -29,6 +29,7 @@ predicates, progress painter, glyph geometry и window actions/lazy Appearance.
 Kobo syntax локально **blocked** (нет подготовленного Qt5 SDK/Docker).
 Offline helper suite завершилась с exit 0, но source-export под архивным checkout
 выдал ошибки отсутствующих validation-record файлов: не считать чистым PASS.
+Focused CI расширен существующими alignment/beautifier/page-layout/columns suites.
 Нужны native/Qt5 CI для новых translation units; тесты поведения используются
 существующие, это не новый all-variant или device pass.
 Следующее действие: получить результат push CI, исправить ошибки, записать runtime.
