@@ -1,3 +1,4 @@
+#include "reader_fork_styles.h"
 #include "reader_comics.h"
 #include "column_view.h"
 #include <cmath>
@@ -1253,8 +1254,8 @@ void EngineDocument::applyStyleSheet()
     // font size of the element that sets it, and children inherit the result, so
     // each block that holds text, table cells and captions included, sets its own.
     overrides +=
-            QString("body,p,div,section,article,blockquote,li,dt,dd,h1,h2,h3,h4,h5,h6,td,th,caption,figcaption,v,title,subtitle,epigraph,cite,annotation,text-author { line-height:%1% !important; }")
-                    .arg(spacing_);
+            QString("body,p,div,section,article,blockquote,li,dt,dd,h1,h2,h3,h4,h5,h6,td,th,caption,figcaption%1 { line-height:%2% !important; }")
+                    .arg(QString::fromLatin1(forkstyles::fb2LineHeightSelectors())).arg(spacing_);
     {
         const QString prose =
                 "p[data-kobalt-beautify=\"body\"], p[data-kobalt-beautify=\"opening\"], p[data-kobalt-beautify=\"first-letter\"]";
@@ -1288,43 +1289,16 @@ void EngineDocument::applyStyleSheet()
 *[type~="endnote"]:not(a), *[type~="rearnote"]:not(a),
 *[role~="doc-note"]:not(a), *[role~="doc-footnote"]:not(a),
 *[role~="doc-endnote"]:not(a), *[role~="doc-rearnote"]:not(a),
-._idFootnotes > ._idFootnote:not(a), [data-kobalt-page-note="start"],
-body[name="notes"] section, body[name="comments"] section {
+._idFootnotes > ._idFootnote:not(a), [data-kobalt-page-note="start"])css";
+        overrides += forkstyles::fb2NoteSelectors();
+        overrides += R"css( {
     -cr-hint: footnote-inpage;
     font-size: 0.8rem;
 }
 [data-kobalt-page-note="extend"] { -cr-hint: extend-footnote-inpage; }
-/* Raise only the note's own label, never every link or inline number. */
-a.label, a._idFootnoteAnchor {
-    -cr-hint: late;
-    -cr-only-if: inside-inpage-footnote;
-    vertical-align: super !important;
-    font-size: 0.75em !important;
-}
-body[name="notes"] section > title[data-kobalt-note-number="1"],
-body[name="comments"] section > title[data-kobalt-note-number="1"] {
-    -cr-hint: late;
-    -cr-only-if: inside-inpage-footnote;
-    display: run-in !important;
-    font-size: inherit !important;
-    font-weight: normal !important;
-}
-body[name="notes"] section > title[data-kobalt-note-number="1"] p,
-body[name="comments"] section > title[data-kobalt-note-number="1"] p {
-    -cr-hint: late;
-    -cr-only-if: inside-inpage-footnote;
-    display: inline !important;
-    vertical-align: super !important;
-    font-size: 0.75em !important;
-    font-weight: normal !important;
-}
-body[name="notes"] section > title[data-kobalt-note-number="1"] p:after,
-body[name="comments"] section > title[data-kobalt-note-number="1"] p:after {
-    -cr-hint: late;
-    -cr-only-if: inside-inpage-footnote;
-    content: "\00a0";
-}
-/* Dedicated note groups must not paint their original box around moved notes. */
+)css";
+        overrides += forkstyles::noteLabelsCss();
+        overrides += R"css(/* Dedicated note groups must not paint their original box around moved notes. */
 [data-kobalt-page-note="box"], ._idFootnotes {
     -cr-hint: late;
     margin: 0 !important;

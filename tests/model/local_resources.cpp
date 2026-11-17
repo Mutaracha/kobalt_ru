@@ -1,3 +1,4 @@
+#include "publication/fb2_resources.h"
 #include "check.h"
 #include "publication/local_resources.h"
 #include "publication/publication.h"
@@ -92,6 +93,38 @@ QByteArray zip(const QMap<QString, QByteArray> &files, bool deflated = false, bo
     return bytes;
 }
 } // namespace
+
+// Directly exercise the extracted worker helper at its cancellation boundary.
+static void fb2TransferBoundaries(const QString &path, qint64 size)
+{
+    qint64 sinkNs = 0;
+    QString error;
+    auto lease = std::make_shared<SourceLease>();
+    const auto discard = [](const char *, qint64) { return true; };
+    require(!fb2::transferFile(path, size + 1, lease, discard, &error, sinkNs)
+                    && !error.isEmpty(),
+            "FB2 transfer accepted a changed source size");
+    error = QStringLiteral("existing-error");
+    require(!fb2::transferFile(path, size + 1, lease, discard, &error, sinkNs)
+                    && error == QStringLiteral("existing-error"),
+            "FB2 transfer overwrote the first error");
+    error.clear();
+    int chunks = 0;
+    const auto cancel = [&lease, &chunks](const char *, qint64 bytes) {
+        require(bytes > 0 && bytes <= ResourceCache::blockBytes, "Unbounded FB2 transfer chunk");
+        ++chunks;
+        lease->cancel();
+        return true;
+    };
+    require(!fb2::transferFile(path, size, lease, cancel, &error, sinkNs) && chunks == 1,
+            "FB2 transfer continued after cancellation from the sink");
+    lease = std::make_shared<SourceLease>();
+    const auto reject = [](const char *, qint64) { return false; };
+    require(!fb2::transferFile(path, size, lease, reject, nullptr, sinkNs),
+            "FB2 transfer ignored a rejecting sink");
+    require(!fb2::transferFile(path, size, {}, discard, nullptr, sinkNs),
+            "FB2 transfer accepted a missing source lease");
+}
 
 int main(int argc, char **argv)
 {
@@ -242,6 +275,7 @@ int main(int argc, char **argv)
             QFile file(fb2Path);
             require(file.open(QIODevice::WriteOnly) && file.write(fb2) == fb2.size(), "write FB2 fixture");
         }
+        fb2TransferBoundaries(fb2Path, fb2.size());
         auto source = native::openLocalPublication(fb2Path);
         require(source, "Local backend rejected an FB2 file");
         const auto resourceName = QString::fromLatin1(Publication::singleFb2ResourceName);

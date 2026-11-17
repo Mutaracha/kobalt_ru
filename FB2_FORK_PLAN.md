@@ -14,7 +14,8 @@
   [CI44089641669](https://github.com/Mutaracha/kobalt_ru/actions/runs/44089641669):
   расширенный focused native и Kobo Qt5 package/contents **PASS**. Не all-variant.
   [Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44089641669/artifacts/14331407822).
-  Приёмка прежней иконки/сносок не является новой физической проверкой рефакторинга.
+  Пользователь подтвердил запуск пакета первого этапа на устройстве.
+  Это startup-проверка, не полная повторная приёмка всех функций.
 - Старые отчёты, снимки интерфейса и review-материалы удалены из текущего дерева;
   история Git сохранена. Диагностические архивы и исходные книги сохранены.
 
@@ -33,13 +34,29 @@ Kobo Qt5 build и package contents. Локальный Kobo syntax check не в
 отсутствия SDK/Docker; локальный offline helper exit 0 сопровождался source-export
 ошибками архивного checkout, поэтому чистый offline PASS берётся только из CI.
 Новые поведенческие тесты не добавлялись: перенос проверен существующими suites.
-All-variant и повторная проверка на устройстве не выполнялись.
+All-variant не выполнялся; пользователь затем подтвердил запуск на устройстве.
 
-**Остаток полного запроса:** смешанные участки EngineDocument (CSS/effective layout/
-paint), Publication/ResourceCache lifecycle, inline RU policy в strings.h,
-ReadingPage/navigation/settings wiring. Они не объявлены полностью вынесенными.
-Следующий этап — сокращать эти участки через узкие format/locale/view helpers,
-не копируя upstream классы и не меняя принятый функционал; сверять по карте и CI.
+**Второй этап in progress / CI pending:**
+- RU таблица, состояние locale и plural suffix policy вынесены в `string_locale.h`,
+  структура/поиск таблицы — в `string_table.h`. Общий `strings.h` сохраняет English
+  fallback, key display и короткий plural wrapper; API и generated tables прежние.
+- FB2 selectors и принятые EPUB/FB2 labels вынесены в `reader_fork_styles.*`.
+  Полный собранный inpage CSS сверён byte-for-byte: SHA256
+  `0ebdec60d9d7c756cfdadf966e4c52c31311f5b712bb9b34e3c4bfd96abdb86a`.
+  Порядок cascade, font sizes, отступы и cache salts не меняются.
+- Worker-only single-file transfer вынесен в `publication/fb2_resources.*`;
+  lease cancellation, timeout, bounded chunks, first error и sink accounting сохранены.
+  Добавлены assertions CSS fragments в FB2 и transfer boundaries в local-resources;
+  соответствующий suite добавлен в focused CI.
+- Локально source-checks PASS, strings self-tests PASS с Ninja. Make-версия
+  self-test не заметила same-timestamp regeneration; при Ninja прошла без изменения
+  теста. Kobo syntax по-прежнему blocked без Qt5 SDK/Docker.
+Следующее действие: native/Qt5 CI второго этапа, затем запись runtime/artifact.
+
+**Остаток полного запроса:** effective layout/paint EngineDocument,
+Publication/ResourceCache lifecycle и ReadingPage/navigation/settings wiring.
+Они не объявлены полностью вынесенными. Сокращать только через узкие
+format/locale/view helpers, не копируя upstream классы и не меняя принятый функционал.
 Закрытые продуктовые задачи beta.8 не возобновляются.
 
 ## Открытая диагностика

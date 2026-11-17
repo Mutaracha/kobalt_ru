@@ -22,10 +22,10 @@
 
 | Область | Что добавлено/изменено относительно beta.8 | Владелец и необходимые точки интеграции |
 |---|---|---|
-| Нативный FB2 | Распознавание, публикация, ресурсы/обложка/метаданные, preview, FictionBook CSS; открытие из библиотеки Kobo. `.fb2.zip` исключён. | `publication/fb2.h`, `engine/crengine/reader_fb2.*`; подключения в publication/resources, reader_source, engine_document и Kobo routing. |
-| Сноски FB2 | `notes/comments`, числовой run-in title, надстрочные labels, format salt v8, миграция legacy Boolean. EPUB остаётся на общем beta.8 pipeline, labels подняты. | `reader_fb2.*`; CSS/выбор stylesheet и lifecycle cache в engine_document/reader_source, migration в appearance_settings. Индексы и текущие отступы приняты, доработка не открывается. |
+| Нативный FB2 | Распознавание, публикация, ресурсы/обложка/метаданные, preview, FictionBook CSS; открытие из библиотеки Kobo. `.fb2.zip` исключён. | `publication/fb2.h`, `publication/fb2_resources.*`, `engine/crengine/reader_fb2.*`; подключения в publication/resources, reader_source, engine_document и Kobo routing. |
+| Сноски FB2 | `notes/comments`, числовой run-in title, надстрочные labels, format salt v8, миграция legacy Boolean. EPUB остаётся на общем beta.8 pipeline, labels подняты. | `reader_fb2.*`, `reader_fork_styles.*`; выбор stylesheet и lifecycle cache в engine_document/reader_source, migration в appearance_settings. Индексы и текущие отступы приняты, доработка не открывается. |
 | Семантика FB2 | Заголовки/стихи/эпиграфы/bylines исключаются из нормализации alignment/beautifier; дополнительные inline tags и line-height selectors. | Предикаты в `reader_fb2.*`; по одному вызову в upstream passes. CSS selectors остаются на общей границе применения stylesheet. |
-| RU | Полный словарь, plural one/few/many, русский перенос с EN, English fallback. Locale при каждом принятом открытии книги, ExtraLocales/C/POSIX, debug markers. | `support/locale.*`, `debug_language.*`, `strings.h`, `assets/ru.strings`, `platforms/strings*.cmake`; platform entry points. |
+| RU | Полный словарь, plural one/few/many, русский перенос с EN, English fallback. Locale при каждом принятом открытии книги, ExtraLocales/C/POSIX, debug markers. | `support/string_locale.h`, `string_table.h`, `locale.*`, `debug_language.*`, короткие hooks в `strings.h`, `assets/ru.strings`, `platforms/strings*.cmake`; platform entry points. |
 | About/debug | Дополнительная строка fork + UTC build time; скрытый выбор языка. Stock version/commit сохранены. | `app/about/fork_about.*`, `fork_debug.*`; вызов из about_page, build_info и build definitions. |
 | Comics | Per-book/default off, эффективное подавление полей/chrome без потери значений, preview, landscape пары, отдельные wide/center страницы, центровка/поворот portrait center, hit bounds и resource readiness. | `reader_comics.*`, `column_view_comics.cpp`, `engine_document_comics.cpp`; состояние/общая отрисовка и позиционирование подключены в ColumnView/EngineDocument, publication/resources/session/UI. |
 | Меню чтения | Быстрые dark/comics кнопки; comics state-only ink, запрет действия при busy без серого мигания; скрываются только кнопки. Счётчик страниц перед батареей. | `fork_reader_actions.cpp`, toolbar wiring/refresh/navigation, features/settings. Ни режим, ни Layout control не отключаются скрытием. |
@@ -62,10 +62,24 @@
 - `ui/controls/fork_icon_geometry.*` — bubble и Fluent dark geometry. Generated
   `reader_icon_vectors.h` возвращён к beta.8 без fork-геометрии.
 
+Второй этап дополнительно выносит:
+- `support/string_locale.h` — RU table lookup, locale atomics/normalization и plural
+  suffix policy; `support/string_table.h` — общий тип Entry и бинарный поиск.
+  `strings.h` оставляет English fallback/key display и публичный plural wrapper.
+  Header-only контракт сохранён, поэтому standalone targets не получают новой
+  зависимости на linked library.
+- `engine/crengine/reader_fork_styles.*` — FB2 line-height/note selectors и общие
+  принятые superscript labels. Common notes CSS остаётся upstream, расширения
+  вставляются в прежних byte boundaries, без изменения порядка cascade.
+- `publication/fb2_resources.*` — bounded worker transfer одной FB2 virtual resource.
+  `local_resources.cpp` оставляет один форматный dispatch; lifetime/worker ownership
+  не меняется. Desktop явно включает новый `.cpp`; Kobo/Android берут его source glob.
+
 Существующие FB2, locale/debug, About и Settings модули остаются на своих местах.
 Новый generic plugin/hook framework, подмена upstream экранов, vendor snapshot
-в репозитории и второй механизм notes/standby не вводятся. Новые `.cpp` подхватывают
-существующие source globs Kobo/desktop/Android; отдельные platform-specific копии не нужны.
+в репозитории и второй механизм notes/standby не вводятся. Engine/UI `.cpp` подхватывают существующие source globs Kobo/desktop/Android;
+publication helper добавлен также в явный desktop core source list. Отдельные
+platform-specific копии не нужны.
 
 **Что намеренно остаётся в upstream-файлах:** интеграция формата в Publication и
 resource lifecycle, сохранённые optional fields/миграции, эффективные настройки
@@ -101,6 +115,14 @@ catalogue byte-identical upstream. Отдельные semantic predicates про
 
 Это первый проверенный этап, не заявление о полном выносе всей дельты.
 Оставшиеся смешанные участки перечислены выше и в плане.
+Пользователь подтвердил запуск первого этапа на устройстве; это не полный
+повторный визуальный или all-variant прогон.
+
+Второй этап пока ожидает native/Qt5 CI. Локально source-checks и strings self-tests
+(Ninja) прошли. Полный note CSS byte-identical предыдущему этапу; digests фрагментов
+проверяются новыми native assertions. `model.local-resources` добавлен в focused
+workflow для FB2 cancellation/size/error/sink boundaries. Новая device проверка
+этого этапа пока не выполнялась.
 
 ## Полный файловый инвентарь baseline
 

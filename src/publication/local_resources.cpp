@@ -1,3 +1,4 @@
+#include "fb2_resources.h"
 #include "support/diagnostics.h"
 #include "local_resources.h"
 
@@ -49,45 +50,6 @@ public:
     }
 
 private:
-    // A single-file FB2 has no ZIP members: its virtual resource is the whole
-    // book file. Read it in bounded chunks so SourceLease cancellation and the
-    // transfer timeout behave exactly like the ZIP path.
-    bool transferSingleFile(const QString &name, const ResourceCache::Sink &sink, QString *error) {
-        auto fail = [&](const char *reason) {
-            if (error && error->isEmpty()) {
-                *error = strings::get(reason);
-            }
-            return false;
-        };
-        if (cancelled()) {
-            return fail("error.reading_session_closed");
-        }
-        QFile file(path);
-        if (!file.open(QIODevice::ReadOnly) || file.size() != sizes.value(name)) {
-            return fail("error.a_book_resource_changed_during_reading");
-        }
-        QElapsedTimer deadline;
-        deadline.start();
-        while (!file.atEnd()) {
-            if (cancelled()) {
-                return fail("error.reading_session_closed");
-            }
-            if (deadline.elapsed() >= 5000) {
-                return fail("error.native_publication_transfer_timed_out");
-            }
-            const auto bytes = file.read(ResourceCache::blockBytes);
-            if (bytes.isEmpty()) {
-                return fail("error.could_not_load_a_book_resource");
-            }
-            QElapsedTimer work;
-            work.start();
-            if (!sink(bytes.constData(), bytes.size())) {
-                return false;
-            }
-            sinkNs += work.nsecsElapsed();
-        }
-        return !cancelled();
-    }
     bool transfer(const QString &name, const ResourceCache::Sink &sink, QString *error, QSize *dimensions) {
         auto fail = [&](const char *reason) {
             if (error && error->isEmpty()) {
@@ -107,7 +69,7 @@ private:
             return !cancelled() && sink(placeholder.constData(), placeholder.size());
         }
         if (name == QLatin1String(Publication::singleFb2ResourceName)) {
-            return transferSingleFile(name, sink, error);
+            return fb2::transferFile(path, sizes.value(name), lease, sink, error, sinkNs);
         }
         ZipResource stream;
         if (!stream.open(path, name, index, ResourceCache::budgetBytes)) {

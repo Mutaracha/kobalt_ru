@@ -4,6 +4,8 @@
 #include "check.h"
 #include "engine/crengine/engine_document.h"
 #include "engine/crengine/reader_fb2.h"
+#include "engine/crengine/reader_fork_styles.h"
+#include <QCryptographicHash>
 #include "publication/fb2.h"
 #include "publication/publication.h"
 #include "support/qt_compat.h"
@@ -31,6 +33,20 @@ void formatBoundaries() {
     require(fb2::cachePolicy(false).isEmpty(), "EPUB cache policy must not acquire the FB2 marker");
     require(fb2::cachePolicy(true) == QByteArray(":fb2-v8:"), "FB2 migration cache marker");
 
+}
+
+void forkStyleFragments()
+{
+    // Frozen pre-extraction bytes: no cascade, spacing or cache-policy change.
+    const auto digest = [](const char *css) {
+        return QCryptographicHash::hash(QByteArray(css), QCryptographicHash::Sha256).toHex();
+    };
+    require(digest(forkstyles::fb2LineHeightSelectors()) == QByteArray("d0069a24d19af3558e8d0eac11702b9ef7f33a8b3ad4ca35c7c3be590e6946b5"),
+            "Extracted fb2LineHeightSelectors changed pre-refactor CSS bytes");
+    require(digest(forkstyles::fb2NoteSelectors()) == QByteArray("1330b018264ccfc9625baba11c596f2a407c8dc8e49c00701ac9dd5e77332983"),
+            "Extracted fb2NoteSelectors changed pre-refactor CSS bytes");
+    require(digest(forkstyles::noteLabelsCss()) == QByteArray("eb821c290b2754a0fef5fda591964afbd56c001b4fee3e2ce06c754006932838"),
+            "Extracted noteLabelsCss changed pre-refactor CSS bytes");
 }
 
 QByteArray utf8FictionBook() {
@@ -266,6 +282,7 @@ void renderWindows1251() {
 int main(int argc, char **argv) {
     QGuiApplication app(argc, argv);
     formatBoundaries();
+    forkStyleFragments();
     inspectFictionBook();
     rejectNonFictionBook();
     renderFictionBook();

@@ -2,19 +2,10 @@
 #include <QString>
 #include <QStringList>
 #include <QRegularExpression>
-#include <algorithm>
+#include "string_locale.h"
 #include <atomic>
-#include <cstring>
 
 namespace kobalt::strings {
-// English stays the reference table and the fallback for every locale.
-enum class Locale { English, Russian };
-
-struct Entry {
-    const char *key;
-    const char *value;
-};
-
 namespace detail {
 inline const Entry *englishTable(int *count) {
     static const Entry values[] = {
@@ -22,22 +13,6 @@ inline const Entry *englishTable(int *count) {
     };
     *count = int(sizeof(values) / sizeof(values[0]));
     return values;
-}
-inline const Entry *russianTable(int *count) {
-    static const Entry values[] = {
-#include <kobalt_strings_ru.inc>
-    };
-    *count = int(sizeof(values) / sizeof(values[0]));
-    return values;
-}
-inline const Entry *find(const Entry *begin, int count, const char *name) {
-    const auto *entry = std::lower_bound(begin, begin + count, name,
-                                         [](const Entry &item, const char *key) {
-                                             return std::strcmp(item.key, key) < 0;
-                                         });
-    if (entry == begin + count || std::strcmp(entry->key, name) != 0)
-        return nullptr;
-    return entry;
 }
 } // namespace detail
 
@@ -56,33 +31,13 @@ inline void showKeys(bool enabled)
 {
     keyDisplay().store(enabled);
 }
-inline std::atomic_int &localeStore() {
-    static std::atomic_int value(int(Locale::English));
-    return value;
-}
-inline void setLocale(Locale locale) {
-    localeStore().store(int(locale));
-}
-inline Locale locale() {
-    return Locale(localeStore().load());
-}
-// Nickel stores codes such as "ru", "ru_RU" and occasionally "ru-RU". Only the
-// language prefix matters; an unknown language safely resolves to English.
-inline Locale normalizeLocaleCode(const QString &code) {
-    return code.left(2).toLower() == QLatin1String("ru") ? Locale::Russian : Locale::English;
-}
 // Mark deferred display-copy keys without translating them at the producer.
 inline constexpr const char *key(const char *value)
 {
     return value;
 }
 inline QString get(const char *key) {
-    const Entry *entry = nullptr;
-    if (locale() == Locale::Russian) {
-        int count = 0;
-        const auto *table = detail::russianTable(&count);
-        entry = detail::find(table, count, key);
-    }
+    const Entry *entry = detail::localizedEntry(key);
     if (!entry) {
         int count = 0;
         const auto *table = detail::englishTable(&count);
@@ -107,23 +62,11 @@ inline QString get(const char *key) {
         result += " [" + seen.join(", ") + "]";
     return result;
 }
-// Russian plurals follow CLDR: one (1 книга), few (2 книги), many (5 книг).
-// English keeps its existing one/base split. The base key holds the many form.
-inline QString plural(int count, const char *baseKey) {
-    QByteArray suffix;
-    if (locale() == Locale::Russian) {
-        const int ten = count % 10, hundred = count % 100;
-        if (ten == 1 && hundred != 11)
-            suffix = "_one";
-        else if (ten >= 2 && ten <= 4 && !(hundred >= 12 && hundred <= 14))
-            suffix = "_few";
-        else
-            suffix = "_many";
-    } else if (count == 1) {
-        suffix = "_one";
-    }
+// Locale-specific inflection is owned by string_locale.h.
+inline QString plural(int count, const char *baseKey)
+{
     QByteArray key = baseKey;
-    key += suffix;
+    key += pluralSuffix(count);
     return get(key.constData()).arg(count);
 }
 } // namespace kobalt::strings
