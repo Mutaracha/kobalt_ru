@@ -1300,18 +1300,28 @@ a.label, a._idFootnoteAnchor {
     vertical-align: super !important;
     font-size: 0.75em !important;
 }
-body[name="notes"] section > title, body[name="comments"] section > title {
+body[name="notes"] section > title[data-kobalt-note-number="1"],
+body[name="comments"] section > title[data-kobalt-note-number="1"] {
+    -cr-hint: late;
+    -cr-only-if: inside-inpage-footnote;
+    display: run-in !important;
+    font-size: inherit !important;
+    font-weight: normal !important;
+}
+body[name="notes"] section > title[data-kobalt-note-number="1"] p,
+body[name="comments"] section > title[data-kobalt-note-number="1"] p {
     -cr-hint: late;
     -cr-only-if: inside-inpage-footnote;
     display: inline !important;
     vertical-align: super !important;
     font-size: 0.75em !important;
+    font-weight: normal !important;
 }
-body[name="notes"] section > title > p, body[name="comments"] section > title > p {
+body[name="notes"] section > title[data-kobalt-note-number="1"] p:after,
+body[name="comments"] section > title[data-kobalt-note-number="1"] p:after {
     -cr-hint: late;
     -cr-only-if: inside-inpage-footnote;
-    display: inline !important;
-    font-size: inherit !important;
+    content: "\00a0";
 }
 /* Dedicated note groups must not paint their original box around moved notes. */
 [data-kobalt-page-note="box"], ._idFootnotes {

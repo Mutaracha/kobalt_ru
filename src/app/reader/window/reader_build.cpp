@@ -803,6 +803,8 @@ void Reader::buildToolbar()
     static_cast<kobalt::ui::Button *>(toolbarComposition.darkTheme)->setHighlightChecked(false);
     toolbarComposition.comics = iconButton(topControls, top, "rrComicsToggle",
             strings::get("reader.comics_reading_mode"), ControlIcon::Comics, [this] {
+                auto *source = appearanceEdit.preview() ? appearanceEdit.preview() : session;
+                if (source->busy()) { refresh(); return; }
                 if (appearanceEdit.panelOpen()) {
                     if (auto *option = findChild<QCheckBox *>("rrComicsReadingMode"))
                         option->click();
@@ -821,6 +823,11 @@ void Reader::buildToolbar()
                 refresh();
             });
     toolbarComposition.comics->setCheckable(true);
+    auto *comicsButton = static_cast<ui::Button *>(toolbarComposition.comics);
+    comicsButton->setHighlightChecked(false);
+    ui::ButtonIcon comicsIcon{ ControlIcon::Comics, ui::IconRendition::Action };
+    comicsIcon.stateInkOnly = true;
+    comicsButton->setIconConfiguration(comicsIcon);
     toolbarComposition.search =
             iconButton(topControls, top, "rrSearchOpen", strings::get("reader.search_book"),
                        ControlIcon::Search,

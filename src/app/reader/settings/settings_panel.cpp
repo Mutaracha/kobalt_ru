@@ -2483,7 +2483,7 @@ void SettingsPanel::showDictionaries(bool visible)
 
 void SettingsPanel::updateFeatureOptions()
 {
-    const char *names[] = { "navigate", "stats", "annotations", "bookmarks", "kosync", "words", "dark_mode" };
+    const char *names[] = { "navigate", "stats", "annotations", "bookmarks", "kosync", "words", "dark_mode", "comics" };
     static_assert(sizeof(names) == sizeof(features::keys), "A feature without a name");
     QStringList hidden;
     for (int i = 0; i < int(sizeof(names) / sizeof(*names)); ++i)
@@ -2521,7 +2521,7 @@ void SettingsPanel::showDisabledFeatures()
     card->heading(strings::get("settings.disable_features"),
                   strings::get("settings.disable_features_description"));
     auto draft = std::make_shared<QJsonObject>(featurePreferences);
-    const char *names[] = { "navigate", "stats", "annotations", "bookmarks", "kosync", "words", "dark_mode" };
+    const char *names[] = { "navigate", "stats", "annotations", "bookmarks", "kosync", "words", "dark_mode", "comics" };
     QVector<ui::DescribedOption *> options;
     for (int i = 0; i < int(sizeof(names) / sizeof(*names)); ++i) {
         const auto *key = features::keys[i];

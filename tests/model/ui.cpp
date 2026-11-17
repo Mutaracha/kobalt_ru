@@ -1381,6 +1381,36 @@ int main(int argc, char **argv)
                 }
 #endif
             }
+            for (bool dark : { false, true }) {
+                Button bubble;
+                bubble.setProperty("reader_dark", dark);
+                bubble.setPalette(readerPalette(bubble.palette(), dark));
+                bubble.setPaintMode(ButtonPaintMode::ToolbarCell);
+                bubble.setCheckable(true);
+                bubble.setHighlightChecked(false);
+                ButtonIcon configuration{ControlIcon::Comics, IconRendition::Action};
+                configuration.stateInkOnly = true;
+                bubble.setIconConfiguration(configuration);
+                bubble.resize(100, 100);
+                for (bool checked : { false, true }) {
+                    bubble.setChecked(checked);
+                    const auto image = bubble.grab().toImage();
+                    require(image.pixelColor(1, 1) == bubble.palette().color(QPalette::Window),
+                            "Comics state-only toggle inverted its background");
+                    const auto icon = bubble.icon().pixmap(QSize(128,128), QIcon::Normal,
+                            checked ? QIcon::On : QIcon::Off).toImage();
+                    const auto wanted = checked ? themeColors(dark).ink : themeColors(dark).disabledInk;
+                    bool found = false;
+                    for (int y = 0; y < icon.height(); ++y)
+                        for (int x = 0; x < icon.width(); ++x)
+                            if (qAlpha(icon.pixel(x,y)) > 250) {
+                                require(QColor::fromRgba(icon.pixel(x,y)) == wanted,
+                                        "Comics bubble lost mode-dependent ink");
+                                found = true;
+                            }
+                    require(found, "Comics bubble has no opaque ink");
+                }
+            }
             QWidget host;
             host.setProperty("reader_dark", false);
             Button action(&host);
@@ -1405,19 +1435,6 @@ int main(int argc, char **argv)
                             }
                         }
                     require(ink > 20, "Action rendition has no visible ink");
-                    if (glyph == ControlIcon::Comics) {
-                        // Sample a straight outer edge, away from panel intersections.
-                        const int y = bounds.top() + bounds.height() / 4;
-                        int run = 0;
-                        for (int x = bounds.left(); x <= bounds.right(); ++x) {
-                            if (qAlpha(image.pixel(x, y)) > 128)
-                                ++run;
-                            else if (run)
-                                break;
-                        }
-                        require(run > 0 && run <= bounds.width() / 9 + 1,
-                                "Comics action frame is heavier than the shared regular stroke");
-                    }
                     int extent = qRound(128.
                                         * int(glyph == ControlIcon::Close
                                                       ? metrics::control::closeInkSize

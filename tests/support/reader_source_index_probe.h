@@ -46,6 +46,14 @@ struct ReaderSourceIndexProbe {
         }
         return {};
     }
+    static QRect firstTextBounds(const EngineDocument &model, const char *id) {
+        auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
+        while (node && node->isElement() && node->getChildCount()) node = node->getChildNode(0);
+        if (!node || !node->isText()) return {};
+        lvRect rect;
+        ldomXPointer(node, 0).getRect(rect);
+        return QRect(rect.left, rect.top, rect.width(), rect.height());
+    }
     static int nodeFontPixels(const EngineDocument &model, const char *id) {
         auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
         return node ? node->getFont()->getSize() : 0;

@@ -101,7 +101,7 @@ void Button::paintEvent(QPaintEvent *)
                                  iconSize().height());
                 icon().paint(&painter, area, Qt::AlignCenter,
                              isEnabled() ? QIcon::Normal : QIcon::Disabled,
-                             active ? QIcon::On : QIcon::Off);
+                             (iconShowsStateWithoutFill() ? isChecked() : active) ? QIcon::On : QIcon::Off);
                 drawOpticalText(painter, QRect(0, area.bottom() + 1 + gap, width(), capital),
                                 text(), true);
                 return;
@@ -115,7 +115,7 @@ void Button::paintEvent(QPaintEvent *)
                     &painter,
                     QRect(left, (height() - glyph.height()) / 2, glyph.width(), glyph.height()),
                     Qt::AlignCenter, isEnabled() ? QIcon::Normal : QIcon::Disabled,
-                    active ? QIcon::On : QIcon::Off);
+                    (iconShowsStateWithoutFill() ? isChecked() : active) ? QIcon::On : QIcon::Off);
             drawOpticalText(painter, QRect(left + glyph.width() + gap, 0, labelWidth, height()),
                             text(), true);
             return;
@@ -147,7 +147,8 @@ void Button::paintEvent(QPaintEvent *)
         return;
     }
     QPainter painter(this);
-    const bool active = isEnabled() && ((highlightChecked && isChecked()) || isDown());
+    const bool active = !iconShowsStateWithoutFill() && isEnabled()
+            && ((highlightChecked && isChecked()) || isDown());
     const auto ink = palette().color(isEnabled() ? QPalette::WindowText : QPalette::Mid);
     const auto paper = fill == QPalette::Midlight ? sectionColor(this) : palette().color(fill);
     const bool toolbar =
@@ -182,7 +183,7 @@ void Button::paintEvent(QPaintEvent *)
         icon().paint(&painter,
                      QRect((width() - glyph.width()) / 2, (height() - glyph.height()) / 2,
                            glyph.width(), glyph.height()),
-                     Qt::AlignCenter, QIcon::Normal, active ? QIcon::On : QIcon::Off);
+                     Qt::AlignCenter, QIcon::Normal, (iconShowsStateWithoutFill() ? isChecked() : active) ? QIcon::On : QIcon::Off);
     }
 }
 

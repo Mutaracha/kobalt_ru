@@ -16,6 +16,35 @@ lString32 cre(const QString &s) {
 }
 } // namespace
 
+void fb2::markNumericNoteTitles(ldomNode *root)
+{
+    if (!root) return;
+    const auto marker = root->getDocument()->getAttrNameIndex("data-kobalt-note-number");
+    QVector<QPair<ldomNode *, bool>> pending{ { root, false } };
+    while (!pending.isEmpty()) {
+        const auto entry = pending.takeLast();
+        auto *node = entry.first;
+        if (!node || !node->isElement()) continue;
+        bool notes = entry.second;
+        if (node->isNodeName("body")) {
+            const auto name = node->getAttributeValue("name");
+            notes = name == U"notes" || name == U"comments";
+        }
+        auto *parent = node->getUnboxedParent();
+        if (notes && node->isNodeName("title") && parent && parent->isNodeName("section")) {
+            auto number = qstring(node->getText()).trimmed();
+            if (number.size() >= 3 && ((number.startsWith('[') && number.endsWith(']'))
+                    || (number.startsWith('(') && number.endsWith(')'))))
+                number = number.mid(1, number.size() - 2).trimmed();
+            const bool numeric = !number.isEmpty() && number.size() <= 16
+                    && std::all_of(number.cbegin(), number.cend(), [](QChar c) { return c.isDigit(); });
+            node->setAttributeValue(0, marker, numeric ? U"1" : U"");
+        }
+        for (int i = node->getChildCount() - 1; i >= 0; --i)
+            pending.append({ node->getChildNode(i), notes });
+    }
+}
+
 bool EngineDocument::openFb2Preview(EngineDocument &source, QSize size, QString *error) {
     auto fail = [error](const QString &message) {
         *error = message;

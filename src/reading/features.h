@@ -4,9 +4,9 @@
 namespace kobalt::features {
 inline constexpr const char *keys[] = { "disable_navigate",    "disable_stats",
                                         "disable_annotations", "disable_bookmarks",
-                                        "disable_kosync",      "disable_words", "disable_dark_mode" };
+                                        "disable_kosync",      "disable_words", "disable_dark_mode", "disable_comics" };
 
-enum Feature { Navigate, Stats, Annotations, Bookmarks, Kosync, Words, DarkMode };
+enum Feature { Navigate, Stats, Annotations, Bookmarks, Kosync, Words, DarkMode, Comics };
 
 inline bool enabled(const QJsonObject &preferences, Feature feature)
 {

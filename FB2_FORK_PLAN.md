@@ -23,7 +23,8 @@
 | Задача | Статус | Следующее действие / проверка |
 |---|---|---|
 | Разделить инструкции, план и решения | done | English AGENTS, отдельный реестр решений, компактная очередь; история сохранена, локальные ссылки проверены. |
-| Облегчить иконку quick comics | in progress | Код и native/Qt5 проверены в build164; осталось визуальное сравнение на Libra2. Поведение кнопки не изменено. |
+| FB2 номер и текст сноски разнесены | in progress | Numeric run-in title + inline superscript p; regression одной строки, затем native/Qt5/device. EPUB не менять. |
+| Бабл comics / state ink без мигания / скрытая функция | in progress | Согласованы строки; отключение только на busy убрано, state-only shared presentation. Тесты и native/Qt5 впереди. |
 | Сноска целиком переносится после ссылки | planned | Использовать готовый English report; собрать контролируемую репродукцию, computed styles и regression reference+first fragment. Не менять renderer без отдельного задания. |
 | Зазор перед/после нижних сносок, интервалы | planned | Визуальная проверка EPUB/FB2; одна/несколько/длинная note, 1/2 колонки, cache reopen, popup/links/selection. См. D05. |
 

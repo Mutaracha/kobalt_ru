@@ -685,10 +685,12 @@ void Reader::syncReadingControls()
     if (toolbarComposition.comics) {
         auto *source = appearanceEdit.edited() && appearanceEdit.ready()
                 ? appearanceEdit.preview() : session;
-        toolbarComposition.comics->setChecked(source->requestedAppearance().fields()
-                .value(appearance::comicsModeKey).toBool(false));
-        toolbarComposition.comics->setVisible(!settingsOpen && !zen);
-        toolbarComposition.comics->setEnabled(!source->busy());
+        // Keep mode ink stable while a preview session is being prepared/reflowed.
+        if (!appearanceEdit.edited() || appearanceEdit.ready())
+            toolbarComposition.comics->setChecked(source->requestedAppearance().fields()
+                    .value(appearance::comicsModeKey).toBool(false));
+        toolbarComposition.comics->setVisible(!settingsOpen && !zen
+                && features::enabled(preferences, features::Comics));
     }
     const bool bookmarksShown = features::enabled(preferences, features::Bookmarks);
     const bool annotationsShown = features::enabled(preferences, features::Annotations);

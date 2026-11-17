@@ -207,6 +207,21 @@ void renderFictionBook() {
     const auto nestedPixels = ReaderSourceIndexProbe::nodeFontPixels(nestedNotes, "n1");
     require(nestedPixels >= 25 && nestedPixels <= 26,
             "Nested FB2 footnote must use upstream 0.8rem without compounding");
+    auto runInBytes = bytes;
+    runInBytes.replace("<title><p>1</p></title>", "<title id='note-title'><p id='note-label'>1</p></title>");
+    runInBytes.replace("<p>First <strong>note</strong>", "<p><strong id='note-first-word'>First</strong> <strong>note</strong>");
+    EngineDocument runIn(test::readerFonts());
+    require(runIn.open(runInBytes, QSize(1072, 1300),
+            qt::object({{"font_pixels", 32}, {"inpage_footnotes", true}}), &error), qPrintable(error));
+    require(goToNoteReference(runIn), "Cannot locate run-in FB2 note reference");
+    const auto labelRect = ReaderSourceIndexProbe::firstTextBounds(runIn, "note-label");
+    const auto textRect = ReaderSourceIndexProbe::firstTextBounds(runIn, "note-first-word");
+    require(!labelRect.isEmpty() && !textRect.isEmpty()
+                && labelRect.top() < textRect.bottom() && textRect.top() < labelRect.bottom(),
+            "Numeric FB2 note title and its first word occupy separate lines");
+    require(ReaderSourceIndexProbe::nodeFontPixels(runIn, "note-label")
+                < ReaderSourceIndexProbe::nodeFontPixels(runIn, "note-first-word"),
+            "FB2 note number is not reduced for superscript");
     EngineDocument preview(test::readerFonts());
     require(preview.openPreview(model, QSize(800, 600), &error), qPrintable(error));
     require(preview.pages() > 0, "FB2 font preview rendered no pages");

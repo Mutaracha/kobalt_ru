@@ -57,6 +57,9 @@ public:
     }
 
     void refreshIcon();
+    bool iconShowsStateWithoutFill() const {
+        return hasConfiguredIcon && configuredIcon.stateInkOnly;
+    }
 
     void setIconLabelGap(int pixels)
     {

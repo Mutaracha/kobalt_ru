@@ -178,11 +178,14 @@ struct ButtonIcon
     ControlIcon glyph;
     IconRendition rendition = IconRendition::OriginalAsset;
     bool rotationSideButtons = false;
+    // State is shown by ink only, never an inverted checked/pressed background.
+    bool stateInkOnly = false;
 
     bool operator==(const ButtonIcon &other) const
     {
         return glyph == other.glyph && rendition == other.rendition
-                && rotationSideButtons == other.rotationSideButtons;
+                && rotationSideButtons == other.rotationSideButtons
+                && stateInkOnly == other.stateInkOnly;
     }
 };
 

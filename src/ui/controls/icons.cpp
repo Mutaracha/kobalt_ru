@@ -519,14 +519,18 @@ Geometry geometry(ControlIcon icon, bool sideButtons)
         transform.translate(-12, -12);
         path = transform.map(path);
     } else if (icon == ControlIcon::Comics) {
-        // Match the regular action assets: 256-unit canvas, 16-unit stroke.
-        // Explicit units avoid scaling a 24-unit path with the default 64-unit pen.
+        // Speech bubble, using the same canvas and stroke as regular action icons.
         result.canvas = 256;
         result.stroke = 16;
-        path.addRoundedRect(QRectF(32, 32, 192, 192), 8, 8);
-        path.moveTo(32, 112); path.lineTo(224, 112);
-        path.moveTo(112, 32); path.lineTo(112, 112);
-        path.moveTo(160, 112); path.lineTo(160, 224);
+        path.moveTo(80, 201);
+        path.cubicTo(47, 190, 24, 162, 24, 126);
+        path.cubicTo(24, 73, 70, 32, 128, 32);
+        path.cubicTo(186, 32, 232, 73, 232, 126);
+        path.cubicTo(232, 179, 186, 216, 128, 216);
+        path.lineTo(100, 212);
+        path.lineTo(56, 236);
+        path.lineTo(80, 201);
+        path.closeSubpath();
     } else if (icon == ControlIcon::DarkTheme) {
         // The Fluent dark-theme asset ships beside the checked Phosphor set
         // but uses its own snapshot instead of the Phosphor name table.
@@ -814,9 +818,10 @@ void Button::refreshIcon()
         return;
     const auto &configuration = configuredIcon;
     const auto &colors = themeColors(dark);
-    setIcon(QIcon(new VectorIconEngine(configuration.glyph, colors.ink,
+    setIcon(QIcon(new VectorIconEngine(configuration.glyph,
+                                       configuration.stateInkOnly ? colors.disabledInk : colors.ink,
                                        configuration.rotationSideButtons, configuration.rendition,
-                                       colors.paper)));
+                                       configuration.stateInkOnly ? colors.ink : colors.paper)));
     iconDark = dark;
     hasIconTheme = true;
 }

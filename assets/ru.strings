@@ -1688,3 +1688,6 @@
 "search_panel.search_stopped" = "Поиск остановлен";
 "search_panel.result_pages" = "Страница %1 из %2";
 "search_panel.result_pages_so_far" = "Страница %1 из как минимум %2";
+
+"features.comics" = "Переключатель режима комиксов";
+"features.comics_description" = "Скрывает переключатель режима комиксов в меню чтения. Текущий режим чтения сохраняется.";

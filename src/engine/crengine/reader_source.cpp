@@ -620,6 +620,8 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
     }
     // These optional markers can be added to older parsed caches without
     // changing source text, IDs or saved positions.
+    if (fb2Document_ && !openedFromCache_)
+        fb2::markNumericNoteTitles(engine_->getDocument()->getRootNode());
     markPageNotes();
     // A cached book was saved with these markers and its styles. Marking it
     // again would discard the cached pages.

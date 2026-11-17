@@ -1634,3 +1634,6 @@
 "search_panel.search_stopped" = "Search stopped";
 "search_panel.result_pages" = "Page %1 of %2";
 "search_panel.result_pages_so_far" = "Page %1 of at least %2";
+
+"features.comics" = "Comics mode toggle";
+"features.comics_description" = "Hides the comics mode toggle in the reading menu. The current reading mode is preserved.";

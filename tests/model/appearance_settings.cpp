@@ -218,6 +218,14 @@ int main()
                     && hiddenFeatures.value("future_option").toInt() == 42,
             "Hidden features retained incompatible options or lost unrelated preferences");
     // My Words shares the bookmarks' sort order, so it keeps the order alone.
+    for (bool comics : { false, true }) {
+        const auto hidden = appearance::cleanPreferences(
+                {{"disable_comics", true}, {"comics_mode", comics}});
+        require(!features::enabled(hidden, features::Comics),
+                "Comics quick toggle cannot be hidden");
+        require(hidden.value("comics_mode").toBool() == comics,
+                "Hiding the comics quick toggle changed reading mode");
+    }
     const auto wordsShown = appearance::cleanPreferences({ { "disable_annotations", true },
                                                            { "disable_bookmarks", true },
                                                            { "marks_sort", "newest" } });

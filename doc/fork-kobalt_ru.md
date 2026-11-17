@@ -421,3 +421,11 @@ from stock beta.8 show the body-to-note gap is still excessive even with a small
 font; keep that defect open independently of notes migration. Supplied images and
 checksums: test & diagnostic/beta8-baseline/. General opening optimization remains
 stopped. All deferred items are grouped in FB2_FORK_PLAN.md, not separate queues.
+
+### Быстрое переключение комиксов
+
+Кнопка-бабл в меню чтения включает тот же режим, что и опция в «Раскладке».
+Серый контур означает выключенный режим, чёрный — включённый; в тёмной теме
+цвета инвертируются, фон кнопки не становится выделенной плашкой.
+В скрытых функциях «Переключатель режима комиксов» скрывает только эту кнопку;
+режим книги и сама настройка в «Раскладке» сохраняются.
