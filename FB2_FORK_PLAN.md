@@ -22,7 +22,7 @@
 
 ## Рефакторинг сопровождения (новый запрос)
 
-**in progress**, первый этап **done / CI verified**:
+**done / CI verified**, устройство этапов 3+4 pending. Первый этап **done / CI verified**:
 составлена [карта отличий beta.8](doc/fork-delta.md), вынесены fork algorithms по
 слоям: comics/ColumnView/frame readiness, FB2 semantic predicates, progress painter,
 glyph geometry и window actions/lazy Appearance. Generated vectors совпадают с
@@ -84,7 +84,7 @@ view/resource lifecycle без дублирования upstream PageDrawBuffer/
   не выполнялись. Следующий этап — завершающий проход по effective layout,
   UI wiring и оставшимся format/resource lifecycle участкам по карте дельты.
 
-**Четвёртый, завершающий этап: implementation done / CI pending.**
+**Четвёртый, завершающий этап: done / CI verified.**
 - `reader_comics.*`: effective columns/margins overlay, одинаковый для открытия и
   applyAppearance; базовые сохранённые значения не перезаписываются.
 - `publication_fb2.cpp`: распознавание raw FB2, прежний fingerprint и virtual metadata.
@@ -97,6 +97,15 @@ view/resource lifecycle без дублирования upstream PageDrawBuffer/
   остаются в общих классах намеренно: это интеграционные API, не копии fork алгоритмов.
   Нулевой diff с upstream не является целью. Runtime/CSS/strings/storage/waveform
   намеренно не меняются. Проверка этапов 3+4 на устройстве — совместно пользователем.
+
+
+Runtime финального этапа: `0e3e9f98bddc9e1ac219b04fe76d895c30e11f4b`.
+[CI №173 / 44102979954](https://github.com/Mutaracha/kobalt_ru/actions/runs/44102979954)
+**PASS**: focused native EPUB/FB2 regressions, включая новые assertions layout/hash/trace,
+offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен.
+[Пакет Qt5 для совместной проверки этапов 3+4](https://github.com/Mutaracha/kobalt_ru/actions/runs/44102979954/artifacts/14336659474).
+[Native results](https://github.com/Mutaracha/kobalt_ru/actions/runs/44102979954/artifacts/14338460061).
+Устройство, отдельный RTL и all-variant не проверены; два FB2-недочёта не исправлялись.
 
 ## После завершения рефакторинга
 

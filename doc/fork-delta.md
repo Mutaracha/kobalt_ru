@@ -165,8 +165,17 @@ FB2 inspection/hash/metadata с tri-state dispatch из Publication. `ImageReque
 Это завершение структурного прохода, не обещание неизменного upstream API.
 Storage/defaults/strings/hash/CSS/waveform не меняются. Новые native assertions:
 effective overlay и неизменность base, прежний FB2 length-prefix SHA256, trace end/reset.
-Локально source-checks/strings self-tests/diff check PASS; CI и устройство pending.
+Локально source-checks/strings self-tests/diff check PASS; CI PASS, устройство pending.
 Пользователь проверяет этапы 3+4 вместе. Два FB2-замечания не исправлялись.
+
+
+Runtime финального этапа: `0e3e9f98bddc9e1ac219b04fe76d895c30e11f4b`.
+[CI №173 / 44102979954](https://github.com/Mutaracha/kobalt_ru/actions/runs/44102979954)
+**PASS**: focused native EPUB/FB2 regressions, включая новые assertions layout/hash/trace,
+offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен.
+[Пакет Qt5 для совместной проверки этапов 3+4](https://github.com/Mutaracha/kobalt_ru/actions/runs/44102979954/artifacts/14336659474).
+[Native results](https://github.com/Mutaracha/kobalt_ru/actions/runs/44102979954/artifacts/14338460061).
+Устройство, отдельный RTL и all-variant не проверены; два FB2-недочёта не исправлялись.
 
 ## Полный файловый инвентарь baseline
 

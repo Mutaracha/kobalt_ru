@@ -81,9 +81,17 @@ single/pair/center и image-viewer hits; это невыполненный devic
 ### Совместная проверка этапов 3+4
 
 Четвёртый этап завершает вынос effective layout, raw FB2 inspection, request trace,
-progress geometry и fork toolbar presentation. CI pending. Проверка на устройстве
+progress geometry и fork toolbar presentation. CI PASS. Проверка на устройстве
 pending: пользователь согласовал совместный прогон этапов 3+4.
 Проверить FB2/EPUB открытие/повторное открытие, обычный рендер/обложку/изображения,
 comics single/pair/center и image-viewer hits, смену ориентации, on/off с изменением
 полей/колонок, top/bottom/off progress, EN/RU вкладки и toolbar/theme/hide toggle.
 Отдельные RTL/all-variant не выполнены. Два недочёта FB2 не считаются исправленными.
+
+Runtime финального этапа: `0e3e9f98bddc9e1ac219b04fe76d895c30e11f4b`.
+[CI №173 / 44102979954](https://github.com/Mutaracha/kobalt_ru/actions/runs/44102979954)
+**PASS**: focused native EPUB/FB2 regressions, включая новые assertions layout/hash/trace,
+offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен.
+[Пакет Qt5 для совместной проверки этапов 3+4](https://github.com/Mutaracha/kobalt_ru/actions/runs/44102979954/artifacts/14336659474).
+[Native results](https://github.com/Mutaracha/kobalt_ru/actions/runs/44102979954/artifacts/14338460061).
+Устройство, отдельный RTL и all-variant не проверены; два FB2-недочёта не исправлялись.
