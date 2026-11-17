@@ -1,66 +1,34 @@
-# kobalt_ru — актуальный план работ
+# kobalt_ru — актуальное состояние
 
-Единая очередь задач и статус для продолжения работы. Принятые решения:
-[doc/fork-decisions.md](doc/fork-decisions.md). Инструкции агентам:
-[AGENTS.md](AGENTS.md). История до разделения документов:
-[архив](doc/archive/fork-notes-before-consolidation.md).
+Принятые решения: [doc/fork-decisions.md](doc/fork-decisions.md).
+Инструкции агентам: [AGENTS.md](AGENTS.md).
 
-## База и состояние
+## Завершено
 
-- Upstream beta.8 интегрирована; этап runtime merge **done**, не «подготовка».
-- Последний проверенный runtime: **`549149b5`**.
-  [CI44061301252](https://github.com/Mutaracha/kobalt_ru/actions/runs/44061301252):
-  focused native (включая FB2 и component.ui) и Kobo Qt5 package **PASS**.
-  Новый shape-only delta: более плоский овал и длинный загнутый хвостик;
-  CI и визуальная приёмка на Libra2 пока не выполнены.
-- Пользователь подтвердил полный preview comics при переключении режима.
-  Иконка quick-кнопки приведена к общей толщине/масштабу; ждёт сравнения на устройстве.
-- Сноски **не приняты**. Эксперимент положения отменён, базовое поведение
-  восстановлено, надстрочные labels добавлены. Pagination defect не исправлен.
-- Полная all-variant/платформенная матрица и устройство не подменяются focused CI.
+- Переход на upstream beta.8 и задачи после интеграции — **done** по решению пользователя.
+- Comics: иконка со сплющенным овалом и длинным загнутым хвостиком принята пользователем.
+- Работа со сносками завершена: индексы работают верно, текущие отступы оставлены
+  без изменений. Дальнейшая доработка зазоров и пагинации не запланирована;
+  закрытие задачи не означает отдельного исправления общего алгоритма пагинации.
+- Последний runtime: `68b3ac16d592207b467f0778cf1f6742867844a1`.
+  [CI44075570386](https://github.com/Mutaracha/kobalt_ru/actions/runs/44075570386):
+  focused native и Kobo Qt5 package **PASS**. Это не all-variant проверка.
+  [Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44075570386/artifacts/14325995040).
+- Старые отчёты, снимки интерфейса и review-материалы удалены из текущего дерева;
+  история Git сохранена. Диагностические архивы и исходные книги сохранены.
 
-## Активные задачи
+## Единственная открытая задача
 
-| Задача | Статус | Следующее действие / проверка |
+| Задача | Статус | Следующее действие |
 |---|---|---|
-| Разделить инструкции, план и решения | done | English AGENTS, отдельный реестр решений, компактная очередь; история сохранена, локальные ссылки проверены. |
-| FB2 номер и текст сноски разнесены | in progress | Numeric run-in title + inline superscript p; regression одной строки и native/Qt5 PASS (`549149b5`); далее device. EPUB не менять. |
-| Бабл comics / state ink без мигания / скрытая функция | in progress | Согласованы строки; отключение только на busy убрано, state-only shared presentation. State/background native и Qt5 PASS (`549149b5`). Новый запрос: сплющенный овал, длинный загнутый хвостик; shape-only изменение реализовано, CI/device впереди. |
-| Сноска целиком переносится после ссылки | planned | Использовать готовый English report; собрать контролируемую репродукцию, computed styles и regression reference+first fragment. Не менять renderer без отдельного задания. |
-| Зазор перед/после нижних сносок, интервалы | planned | Визуальная проверка EPUB/FB2; одна/несколько/длинная note, 1/2 колонки, cache reopen, popup/links/selection. См. D05. |
+| Причина старого зависания после завершённого frame load | blocked | Данных для отладки нет. При повторе нужны system/kernel logs или stack. Сохранённые diagnostics — в `test & diagnostic/`. Не объявлять исправленной standby-патчем. |
 
-## Выполненные текущие изменения (done)
+## Закрыто без реализации дальнейших работ
 
-| Область | Результат / граница проверки |
-|---|---|
-| beta.8 integration | build153: native/Qt5 PASS; upstream notes/standby/positional buttons + согласованные отличия. |
-| Sleep text fitting / «Капсула» | build157 и последующие; screenshots017–020 сохранены как контрольный результат. |
-| Полный comics preview / shared Light checkbox | build159; пользователь подтвердил chrome/progress/body preview. |
-| Menu page counter / superscript note labels | build162 native/Qt5 PASS; общий статус notes остаётся открытым. |
-| Comics quick toggle / English note report | build163 native/Qt5 PASS; новый запрос касается толщины иконки. |
-| Предыдущие comics landscape, progress, Appearance, Libra2 | Реализованы; действующие ограничения и отдельные device confirmations в decision register и device evidence. |
+По указанию пользователя все прежние отложенные задачи закрыты, а не перенесены
+на следующую beta: оптимизация открытия и lazy Settings, очистка пользовательского
+кэша, ориентационная схема физических кнопок в Settings, удаление старых
+Actions runs/artifacts. Автоматически не возобновлять. Закрытие задач не означает,
+что эти функции реализованы или удалённые Actions-артефакты очищены.
 
-## Отложено / blocked
-
-| Задача | Статус / условие |
-|---|---|
-| Общая оптимизация открытия, lazy Settings | deferred — остановлена пользователем; без нового запроса не продолжать. |
-| Очистка пользовательского кэша | deferred — после beta, не возвращать автоматически. |
-| Ориентационная схема физических кнопок в Settings | deferred — предложение, реализации нет. |
-| Удаление старых Actions runs/artifacts | blocked — DELETE403 / нужны права Actions; не удалять рабочую evidence. |
-| Причина старого зависания после завершённого frame load | blocked — не установлена; при повторе нужны system/kernel logs или stack. Не объявлять исправленной standby-патчем. |
-
-## Gate перед следующим device handoff
-
-1. Проверить explicit diff относительно актуальной remote branch; не включить
-   посторонние восстановленные файлы/старые версии SDK/workflow.
-2. Offline checks, relevant native regression и Qt5 package/contents validation.
-   Отдельно записать недоступные/непройденные проверки.
-3. Зафиксировать runtime source, CI/build/artifact и область проверки в
-   [device-check](doc/beta8-device-check.md), не добавлять новый журнал в AGENTS.
-4. Сравнить comics иконку с search/light/night на Libra2, включая checked/unchecked
-   и обе темы. Не менять размер hit target, раскладку или waveform.
-5. Сноски остаются отдельной открытой приёмкой; успех icon/preview не закрывает их.
-
-Перед установкой/откатом beta.8 соблюдать backup/schema contract из
-[storage](doc/storage.md) и [device-check](doc/beta8-device-check.md).
+Для будущих установок/откатов сохраняется [backup/schema contract](doc/storage.md).

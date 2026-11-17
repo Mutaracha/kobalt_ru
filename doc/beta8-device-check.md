@@ -1,9 +1,13 @@
-# beta.8 — билд 153 для проверки Libra2 (Qt5)
+# beta.8 — завершение проверки
 
-- Исходники: `dcc9ead5d25dc60e8ffa1923ccf1c82bef5cd1fa`.
-- [Успешная сборка и нативные проверки](https://github.com/Mutaracha/kobalt_ru/actions/runs/43755468526).
-- [Скачать Kobalt-qt5-device](https://github.com/Mutaracha/kobalt_ru/actions/runs/43755468526/artifacts/14178457535).
-- Пакет собран и проверен CI; физическая проверка этой версии ещё не выполнена.
+Переход и задачи beta.8 завершены по решению пользователя. Иконка comics принята;
+индексы сносок работают верно, текущие отступы оставлены без изменений.
+
+Runtime: `68b3ac16d592207b467f0778cf1f6742867844a1`.
+[Focused native и Kobo Qt5 package PASS](https://github.com/Mutaracha/kobalt_ru/actions/runs/44075570386).
+Это не свидетельство all-variant прогона. Старые build-checklists удалены, а не
+объявлены задним числом выполненными. Единственная открытая диагностика —
+зависание после frame load; см. [план](../FB2_FORK_PLAN.md).
 
 ## Перед установкой
 
@@ -22,121 +26,3 @@ Beta.8 переводит базу в schema 4. Старые сборки не �
 2. По USB скопировать `.adds` в корень диска Kobo, затем `.kobo`, с объединением
    папок и без удаления других модификаций.
 3. Безопасно извлечь Kobo и дождаться установки `KoboRoot.tgz`.
-
-## Проверка на устройстве
-
-- Открытие EPUB и FB2, сохранение позиции после выхода в систему и повторного открытия.
-- Кнопки Libra2 во всех четырёх ориентациях: стандартные назначения, обе «вперёд»,
-  отключённая кнопка. Используется позиционная модель upstream; отдельного
-  повторного преобразования действий нет.
-- Сноски: новая настройка upstream, включение/выключение, примечания 4/5
-  в издательском EPUB. Большой зазор отдельно оценить по скриншотам.
-- Комиксы: пара портретных страниц в альбомной ориентации; широкая картинка
-  отдельно; поворот только портретного bitmap для center-разворота;
-  вертикальное центрирование, без обрезки и растяжения.
-- Прогресс сверху над колонтитулом, снизу под ним, корректные деления глав;
-  подавление полей/колонтитулов/прогресса комиксами без потери настроек.
-- «Переключатель тёмной темы» в скрытых функциях: кнопка исчезает,
-  текущая тема сохраняется; после возврата кнопки тема та же.
-- Сон и пробуждение, защита открытия от standby, отсутствие новых артефактов экрана.
-
-Диагностику и скриншоты сохранять в `test & diagnostic/`.
-
-### Следующая правка (не проверена)
-
-Проверить все sleep-дизайны EN/RU, включая узкую ленту и виджеты; название
-«Капсула». В Layout переключение comics должно сразу менять размер тела
-и видимость chrome в preview в обе стороны. Сохранить полный hit target строки.
-У сносок сравнить зазор с соседними строками, проверить длинные продолжения,
-ссылки и выделение, одну/две колонки и повторное открытие cache.
-
-Пакет для проверки: **build157**, runtime `5edbf197`, native + Qt5 CI SUCCESS:
-https://github.com/Mutaracha/kobalt_ru/actions/runs/43765998650/artifacts/14182328674
-Физическая/визуальная приёмка пока не выполнена.
-
-### Отзыв build157 / открытые дефекты
-
-- Сноски: пользователь подтвердил проблемы; задача **не завершена**, нужна
-  доработка. Прохождение CI не означает визуальную приёмку.
-- Comics preview: при выключении из активного режима пустые места вместо
-  chrome; после повторного открытия правильно. Причина: preview использовал
-  headerPixels/footerPixels применённой страницы. Генерировать полосы заново
-  из draft-состояния, включая верхний progress без header; проверить остальные
-  настройки chrome (header/footer enabled, положение/видимость progress, размер).
-- Строка comics: большой квадратный checkbox слева, общий размер settings,
-  границы/отступы как в Light через общий stylePanelCheckbox; полный hit target.
-
-### Проверочная сборка159 — preview chrome
-
-Runtime `3633da452b02b9cdfdcd0811e9ed427d2265d765`. Native (включая
-`desktop.appearanceChromeDraft`) и Kobo Qt5 SUCCESS:
-https://github.com/Mutaracha/kobalt_ru/actions/runs/43870347038
-Пакет: https://github.com/Mutaracha/kobalt_ru/actions/runs/43870347038/artifacts/14227993687
-Исправлен stale chrome cache preview, включая top progress без header;
-Light и comics используют общий stylePanelCheckbox. Физическая приёмка не
-выполнена. **Сноски остаются проблемными, в этой сборке не дорабатывались.**
-
-### Отзыв screenshots008–020 после build159
-
-Карточки сна017–020 зафиксированы как контрольный результат. EPUB notes вернуть
-к upstream beta8: убрать общий adjacent-footnotes patch и восстановить noteTop
-и тестовые координаты. Эксперимент затрагивал оба формата, его отмена тоже общая.
-FB2 использует общий CREngine pagination/notes, а не отдельный самописный layout;
-fork добавляет native FB2 input, preview и selector для notes/comments.
-Сноски не считать визуально принятыми. Предложение page indicator в меню чтения
-«22 из 997» отдельно от времени — ждёт согласования, пока не реализовывать.
-Скриншоты и подробности: test & diagnostic/build159-review/README.md.
-
-### Согласованные page counter и raised note labels
-
-Пользователь подтвердил контрольные sleep screenshots и отдельный счётчик
-«22 из 997» в верхней строке меню перед батареей, без изменения фразы времени.
-Счётчик доступен и при comics/скрытых колонтитулах; в Zen сохраняем скрытие status.
-Номер перед нижней сноской надстрочный: targeted note-label CSS только внутри
-inpage notes, FB2 title и EPUB a.label/_idFootnoteAnchor. Позиционирование блока
-сносок остаётся upstream после отмены adjacent-footnotes. Нужна проверка на устройстве.
-
-### Build162 для устройства
-
-Runtime `ba309f791508a926f036dfc66040d2cdfd8f2eb6`: native regressions и Qt5
-SUCCESS, включая проверку заполнения rrMenuPage при открытии меню.
-CI: https://github.com/Mutaracha/kobalt_ru/actions/runs/43905062782
-Пакет: https://github.com/Mutaracha/kobalt_ru/actions/runs/43905062782/artifacts/14244978065
-Проверить: счётчик перед батареей при comics/без колонтитулов, отсутствие
-наложения на время чтения, надстрочные номера внизу EPUB/FB2. Позиционирование
-сносок upstream; физическая приёмка открыта.
-
-### Build162 device feedback / comics shortcut / note report
-
-Пользователь подтвердил по screenshots003–004 правильный полный preview comics.
-Добавлена отдельная quick toolbar кнопка comics (панели страницы), тот же
-per-book comics_mode; при открытой раскладке менять draft через canonical checkbox.
-Новых строк нет, используется согласованное название режима.
-Сноски остаются открытыми: сравнение CREngine lvpagesplitter.cpp из beta7 и
-текущей зависимости даёт идентичный исходник. addLinesFootnotesToPage() явно
-откладывает note при нехватке первой строки, не откатывая reference-bearing body
-line. Стилевые различия могут менять threshold, конкретный CSS виновник не доказан.
-English report: doc/reports/epub-note-reference-pagination.md (без ссылок на
-коммиты/код форка). Не выдавать этот анализ за уже исправленную pagination.
-
-### Build163: comics quick toggle
-
-Runtime `5b6c8afe622b26c85244ef48230f2d4705c7e790`: native including
-`desktop.comicsQuickToggle` and Qt5 package SUCCESS. Physical acceptance pending.
-CI https://github.com/Mutaracha/kobalt_ru/actions/runs/43948942647
-Package https://github.com/Mutaracha/kobalt_ru/actions/runs/43948942647/artifacts/14266591934
-Footnote pagination was analysed, not modified or declared fixed.
-
-### Build164 — comics icon stroke/scale
-
-Runtime `9fa0d952adad6554a41d30237692c94a586b3793`.
-CI https://github.com/Mutaracha/kobalt_ru/actions/runs/43968831087 — SUCCESS:
-focused native including component.ui icon scale/stroke checks at multiple
-densities and active states; Kobo Qt5 build/package/contents validation.
-Artifact: https://github.com/Mutaracha/kobalt_ru/actions/runs/43968831087/artifacts/14277809212
-
-Icon canvas/stroke now matches regular action artwork (256/16); hit target,
-button behavior and waveform unchanged. Compare against search/light/dark toggle
-on Libra2 in both themes and checked states. Hardware visual acceptance unrun;
-footnote pagination remains unresolved. Documentation ownership is defined in
-AGENTS.md; accepted decisions are in doc/fork-decisions.md, tasks in FB2_FORK_PLAN.md.

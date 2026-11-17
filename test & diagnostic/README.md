@@ -8,10 +8,14 @@
 - `diagnostics 61dbfaa.zip` — upload 64930c0, runtime из startup `61dbfaa`;
   содержит историю до принудительной перезагрузки и новый запуск после неё.
   Не путать с более ранним одноимённым архивом из bc07d8b.
-- `61dbfaa/` — upload a9a7660: уменьшенный пользовательский EPUB и screen_001 /
-  screen_004. EPUB spine явно помечает вторую страницу `rendition:page-spread-center`.
-  Bitmap orientation сама по себе этого не отражает. Synthetic regression в
-  `tests/model/comics.cpp`; copyrighted art не включается в сборку/CI fixtures.
+- `61dbfaa/` — исходный уменьшенный EPUB; сохранён для воспроизведения comics.
+  Пользовательская книга не включается в сборку/portable CI fixtures.
+- `1a56b68/diagnostics 1a56b68.zip` — исходный диагностический архив.
+
+Старые интерфейсные снимки, reference images и review-отчёты удалены по указанию
+пользователя после завершения beta.8. При необходимости доступны в Git history.
+Архивы диагностики сохранены: причина старого зависания после завершённого
+frame load остаётся единственной открытой задачей. Данных для её отладки пока нет.
 
 Автоматические переносимые fixtures — `tests/fixtures/`; существующие curated
 manual materials и checksums остаются в `tests/manual/`. В текущем `doc/` сырых
@@ -21,4 +25,4 @@ manual materials и checksums остаются в `tests/manual/`. В текущ
 
 - `diagnostics a170389.zip` — upload853ba8c; содержит a170389 и более старые
   61dbfaa sessions. Для landscape analysis брать startup a17038919:30:21 и
-  orientation request19:35:41.269 UTC. Итог — в корневом плане форка.
+  orientation request19:35:41.269 UTC. Прежний разбор доступен в истории Git.
