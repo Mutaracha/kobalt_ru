@@ -110,7 +110,7 @@ offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен.
 | Задача | Статус | Следующее действие |
 |---|---|---|
 | «Умное» обновление | done / device accepted | Пользователь пролистал всю главу 8 → 9 (>10 страниц), flash в начале 9 выполнен. Изменения refresh policy не нужны. |
-| Наложение строк FB2 | in progress | Получены скриншоты главы 8 и events.zip (8407bdb). Fira Sans 13.5 pt, weight +1, line 130%, word 80%, justify, widows allow, vertical normal, paragraph controls publisher. В 16:37 source 116024c, document_cache_hit=false; spacing уже выключен. Проверяется согласованность initial pagination/full paint, а не только p-box adjacency. |
+| Наложение строк FB2 | in progress | Получены скриншоты главы 8 и events.zip (8407bdb). Fira Sans 13.5 pt, weight +1, line 130%, word 80%, justify, widows allow, vertical normal, paragraph controls publisher. В 16:37 source 116024c, document_cache_hit=false; spacing уже выключен. CI 44132499310 на 73fd8369: Qt5 package PASS; native regression FAIL после английского preview — повторное форматирование русских абзацев даёт высоты на 94 px меньше сохранённых (658→564, 564→470, 5264→5170, 1128→1034). До preview, включая paint с weight +1, probe проходит. Подтверждено междокументное рассогласование геометрии; соответствие конкретному наложению главы 8 ещё не доказано. Следующий шаг: изолировать глобальное состояние языка/переносов и проверить восстановление контекста для pagination, paint и hit-testing; production fix пока отсутствует. |
 | Nickel не обновляет последнюю книгу/процент FB2 | done / device accepted | Пользователь подтвердил исправление runtime 116024c. Activity-only запись принята; точная позиция остаётся локальной. |
 
 
