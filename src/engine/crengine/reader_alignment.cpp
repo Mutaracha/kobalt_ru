@@ -1,3 +1,4 @@
+#include "reader_fb2.h"
 #include "support/qt_compat.h"
 #include "reader_alignment.h"
 #include <lvtinydom.h>
@@ -13,19 +14,13 @@ QString text(const lString32 &value)
     return QString::fromUtf8(UnicodeToUtf8(value).c_str());
 }
 bool preserve(ldomNode *node, const QString &name) {
-    if (name == "body") {
-        const auto kind = text(node->getAttributeValue("name"));
-        if (kind == "notes" || kind == "comments")
-            return true;
-    }
-    static const QSet<QString> elements{"h1",      "h2",         "h3",      "h4",    "h5",     "h6",     "header",
-                                        "figure",  "figcaption", "caption", "table", "img",    "image",  "svg",
-                                        "picture", "object",     "video",   "audio", "canvas", "iframe", "pre",
-                                        "code",    "head",       "style",   "script",
-                                        // FictionBook 2 semantic blocks: titles, verses,
-                                        // epigraphs and bylines keep their publisher alignment.
-                                        "title", "subtitle", "epigraph", "poem", "stanza", "v", "text-author",
-                                        "date"};
+    if (fb2::preserveAlignment(node))
+        return true;
+    static const QSet<QString> elements{ "h1",     "h2",     "h3",     "h4",         "h5",
+                                         "h6",     "header", "figure", "figcaption", "caption",
+                                         "table",  "img",    "image",  "svg",        "picture",
+                                         "object", "video",  "audio",  "canvas",     "iframe",
+                                         "pre",    "code",   "head",   "style",      "script" };
     // Computed publisher styles cover arbitrary class names and inherited centering.
     const auto style = node->getStyle();
     if (!style.isNull() && style->text_align == css_ta_center) {

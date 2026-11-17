@@ -5,6 +5,7 @@
 #include <lvdocview.h>
 #include <QXmlStreamWriter>
 #include <algorithm>
+#include <QSet>
 
 namespace kobalt {
 namespace {
@@ -15,6 +16,31 @@ lString32 cre(const QString &s) {
     return Utf8ToUnicode(s.toUtf8().constData());
 }
 } // namespace
+
+bool fb2::preserveAlignment(ldomNode *node)
+{
+    const auto name = qstring(node->getNodeName());
+    if (name == "body") {
+        const auto kind = qstring(node->getAttributeValue("name"));
+        if (kind == "notes" || kind == "comments")
+            return true;
+    }
+    static const QSet<QString> tags{ "title", "subtitle", "epigraph", "poem", "stanza", "v",
+                                     "text-author", "date" };
+    return tags.contains(name);
+}
+
+bool fb2::preserveBeautifier(ldomNode *node)
+{
+    static const QSet<QString> tags{ "title", "subtitle", "epigraph", "poem", "stanza", "v",
+                                     "text-author", "cite", "annotation", "date" };
+    return tags.contains(qstring(node->getNodeName()));
+}
+
+bool fb2::inlineElement(const QString &name)
+{
+    return name == "emphasis" || name == "strikethrough";
+}
 
 void fb2::markNumericNoteTitles(ldomNode *root)
 {

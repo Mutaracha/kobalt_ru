@@ -330,6 +330,7 @@ private:
     void buildOverlays();
     void buildAppearance(const kobalt::reader::AppearanceLayout &layout);
     void ensureAppearance();
+    void toggleComicsMode();
     kobalt::reader::AppearanceLayout appearanceLayout;
     bool appearanceBuilt = false;
     void buildSettings();

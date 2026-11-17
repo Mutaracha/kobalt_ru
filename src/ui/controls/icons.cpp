@@ -1,4 +1,5 @@
 #include "icons.h"
+#include "fork_icon_geometry.h"
 #include "buttons.h"
 #include "ui/style/metrics.h"
 #include "ui/style/theme.h"
@@ -522,21 +523,13 @@ Geometry geometry(ControlIcon icon, bool sideButtons)
         // Speech bubble, using the same canvas and stroke as regular action icons.
         result.canvas = 256;
         result.stroke = 16;
-        // A flattened oval and swept, curved tail follow the user's reference.
-        path.moveTo(112, 184);
-        path.cubicTo(61, 184, 24, 157, 24, 118);
-        path.cubicTo(24, 79, 70, 48, 128, 48);
-        path.cubicTo(186, 48, 232, 79, 232, 118);
-        path.cubicTo(232, 153, 201, 178, 158, 184);
-        path.cubicTo(142, 208, 108, 222, 70, 228);
-        path.cubicTo(96, 213, 112, 200, 112, 184);
-        path.closeSubpath();
+        forkicons::comicsGeometry(path);
     } else if (icon == ControlIcon::DarkTheme) {
         // The Fluent dark-theme asset ships beside the checked Phosphor set
         // but uses its own snapshot instead of the Phosphor name table.
         result.canvas = 256;
         result.filled = true;
-        darkThemeGeometry(path);
+        forkicons::darkThemeGeometry(path);
     } else {
         static const char *const names[] = { "magnifying-glass",
                                              "sun",

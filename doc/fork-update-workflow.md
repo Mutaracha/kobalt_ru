@@ -2,8 +2,7 @@
 
 Это регламент каждого обновления upstream, не отчёт о завершённой работе.
 Канонические состояние, решения, согласования и результаты — в
-[`FB2_FORK_PLAN.md`](../FB2_FORK_PLAN.md). Завершённые подготовка и согласование beta7 —
-[в архиве плана](../FB2_FORK_PLAN.md#beta7-approved-integration-archive).
+[`FB2_FORK_PLAN.md`](../FB2_FORK_PLAN.md). Карта исходной дельты и владельцев модулей — [fork-delta](fork-delta.md).
 
 ## 1. Зафиксировать исходную точку
 
@@ -20,7 +19,7 @@
 
 - Получить конкретный release commit, прочитать release notes и **полный source diff**
   от предыдущей upstream-базы. Инвентаризировать также автоматически сливаемые файлы.
-- Сверить все обязанности форка с картой интеграции в плане: FB2/publication,
+- Сверить все обязанности форка с [картой интеграции](fork-delta.md): FB2/publication,
   preprocessing/cache/notes, shared EPUB formatting/settings/progress, RU/locale/debug,
   About, UI styling/fonts/icons, sleep captions, платформенные assets/build/tests.
 - Проверить изменения зависимостей, storage/defaults, lifecycle, shared UI и тестов.

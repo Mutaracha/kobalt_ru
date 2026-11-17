@@ -1,3 +1,4 @@
+#include "reader_comics.h"
 #include "support/qt_compat.h"
 #include "support/strings.h"
 #include "engine_document.h"

@@ -91,6 +91,14 @@ newer overloads such as the two-argument `QScopedValueRollback` constructor.
 
 ## Shared-code and compatibility rules
 
+Use `doc/fork-delta.md` as the pinned beta.8 ownership/integration map. Keep
+fork algorithms in the owning layer's focused modules (`reader_fb2`,
+`reader_comics`, `column_view_comics`, `engine_document_comics`,
+`fork_reader_actions`, `reading_page_progress`, `fork_icon_geometry`). Shared
+upstream files retain explicit API/lifecycle wiring, not copied implementations.
+Do not move these modules into a cross-layer mega-module or duplicate the
+upstream notes/standby pipeline. Update the map when an integration point moves.
+
 Use cohesive fork modules and minimal upstream integration points, not copied
 classes or a generic hook framework. Read `doc/fork-decisions.md` before changing
 protected behavior. Use shared row/action/icon presentation; fix the common

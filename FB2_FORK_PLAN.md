@@ -17,7 +17,24 @@
 - Старые отчёты, снимки интерфейса и review-материалы удалены из текущего дерева;
   история Git сохранена. Диагностические архивы и исходные книги сохранены.
 
-## Единственная открытая задача
+## Рефакторинг сопровождения (новый запрос)
+
+**in progress**: составлена [карта отличий beta.8](doc/fork-delta.md), выполнен
+вынос fork algorithms по слоям: comics/ColumnView/frame readiness, FB2 semantic
+predicates, progress painter, glyph geometry и window actions/lazy Appearance.
+Это механическое разделение без изменения defaults, CSS, waveform и storage.
+Интеграционные участки и невынесенные обязанности явно отмечены в карте.
+
+Проверки: source-checks PASS; strings generation/parity/self-tests PASS.
+Kobo syntax локально **blocked** (нет подготовленного Qt5 SDK/Docker).
+Offline helper suite завершилась с exit 0, но source-export под архивным checkout
+выдал ошибки отсутствующих validation-record файлов: не считать чистым PASS.
+Нужны native/Qt5 CI для новых translation units; тесты поведения используются
+существующие, это не новый all-variant или device pass.
+Следующее действие: получить результат push CI, исправить ошибки, записать runtime.
+Закрытые продуктовые задачи beta.8 не возобновляются.
+
+## Открытая диагностика
 
 | Задача | Статус | Следующее действие |
 |---|---|---|

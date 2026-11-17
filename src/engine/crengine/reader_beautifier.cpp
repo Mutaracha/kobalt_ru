@@ -1,3 +1,4 @@
+#include "reader_fb2.h"
 #include "reader_beautifier.h"
 #include <lvtinydom.h>
 #include <QRegularExpression>
@@ -19,9 +20,8 @@ bool special(ldomNode *node)
                                      "table",      "ul",    "ol",      "dl",     "pre",
                                      "code",       "math",  "ruby",    "nav",    "header",
                                      "footer",     "h1",    "h2",      "h3",     "h4",
-                                     "h5",         "h6", "title", "subtitle", "epigraph", "poem", "stanza",
-                                     "v", "text-author", "cite", "annotation", "date" };
-    if (tags.contains(text(node->getNodeName())))
+                                     "h5",         "h6" };
+    if (fb2::preserveBeautifier(node) || tags.contains(text(node->getNodeName())))
         return true;
     static const QRegularExpression names(
             "(?:^|[\\s_-])(?:quote|quotation|blockquote|letter|signature|verse|poem|poetry|stanza|caption|epigraph|dedication|footnote|endnote|noteref|title|subtitle|heading|scene|break|separator|copyright|toc)(?:$|[\\s_-])",
@@ -143,12 +143,12 @@ void markBeautifierContent(ldomDocument *document)
                 continue;
             const auto name = text(child->getNodeName());
             static const QSet<QString> inlineTags{ "span", "i",   "em",  "b",    "strong",
-                                                   "a",    "sup", "sub", "small", "emphasis", "strikethrough" };
+                                                   "a",    "sup", "sub", "small" };
             // CREngine boxes floats during parsing. Keep those internal nodes;
             // reflow updates their rendering when the source float is disabled.
             const bool leadingBox =
                     !precedingText && (name == "floatBox" || (firstLetter && name == "pseudoElem"));
-            if ((!inlineTags.contains(name) && !leadingBox) || special(child)) {
+            if ((!(inlineTags.contains(name) || fb2::inlineElement(name)) && !leadingBox) || special(child)) {
                 safe = false;
                 break;
             }
