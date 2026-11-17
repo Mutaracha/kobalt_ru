@@ -10,12 +10,12 @@
 - Работа со сносками завершена: индексы работают верно, текущие отступы оставлены
   без изменений. Дальнейшая доработка зазоров и пагинации не запланирована;
   закрытие задачи не означает отдельного исправления общего алгоритма пагинации.
-- Последний проверенный runtime: `d9536352eb0264127f1a53815b7533d413bb4884`.
-  [CI44089641669](https://github.com/Mutaracha/kobalt_ru/actions/runs/44089641669):
+- Последний CI-проверенный runtime: `69c70aa357209d0ef9ffce5afc68b42d74492a5f`.
+  [CI №171 / 44096144408](https://github.com/Mutaracha/kobalt_ru/actions/runs/44096144408):
   расширенный focused native и Kobo Qt5 package/contents **PASS**. Не all-variant.
-  [Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44089641669/artifacts/14331407822).
-  Пользователь подтвердил запуск пакета первого этапа на устройстве.
-  Это startup-проверка, не полная повторная приёмка всех функций.
+  [Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44096144408/artifacts/14333753710).
+  Пользователь подтвердил запуск пакета первого этапа (`d9536352`) на устройстве;
+  новый runtime второго этапа на устройстве пока не проверен.
 - Старые отчёты, снимки интерфейса и review-материалы удалены из текущего дерева;
   история Git сохранена. Диагностические архивы и исходные книги сохранены.
 
@@ -36,7 +36,7 @@ Kobo Qt5 build и package contents. Локальный Kobo syntax check не в
 Новые поведенческие тесты не добавлялись: перенос проверен существующими suites.
 All-variant не выполнялся; пользователь затем подтвердил запуск на устройстве.
 
-**Второй этап in progress / CI pending:**
+**Второй этап done / CI verified:**
 - RU таблица, состояние locale и plural suffix policy вынесены в `string_locale.h`,
   структура/поиск таблицы — в `string_table.h`. Общий `strings.h` сохраняет English
   fallback, key display и короткий plural wrapper; API и generated tables прежние.
@@ -49,9 +49,15 @@ All-variant не выполнялся; пользователь затем по�
   Добавлены assertions CSS fragments в FB2 и transfer boundaries в local-resources;
   соответствующий suite добавлен в focused CI.
 - Локально source-checks PASS, strings self-tests PASS с Ninja. Make-версия
-  self-test не заметила same-timestamp regeneration; при Ninja прошла без изменения
-  теста. Kobo syntax по-прежнему blocked без Qt5 SDK/Docker.
-Следующее действие: native/Qt5 CI второго этапа, затем запись runtime/artifact.
+  self-test не заметила regeneration; причина локального сбоя не установлена.
+  При Ninja прошла без изменения теста. Kobo syntax по-прежнему blocked без Qt5 SDK/Docker.
+- [CI44096144408](https://github.com/Mutaracha/kobalt_ru/actions/runs/44096144408)
+  **PASS**: весь focused набор, `engine.fb2` с CSS digest assertions,
+  `model.strings-locale` (обе таблицы/fallback/plurals/key mode),
+  `model.local-resources` с transfer boundaries; Qt5 package/contents и offline checks.
+  All-variant и повторная проверка устройства не выполнялись.
+Следующий этап: отделить оставшиеся fork-участки effective layout/paint и
+view/resource lifecycle без дублирования upstream PageDrawBuffer/Settings/notes.
 
 **Остаток полного запроса:** effective layout/paint EngineDocument,
 Publication/ResourceCache lifecycle и ReadingPage/navigation/settings wiring.

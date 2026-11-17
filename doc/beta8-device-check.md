@@ -39,7 +39,7 @@ all-variant не проводился. Предыдущая
 пользовательская приёмка иконки и сносок сохранена, но не переименована в новую.
 Карта модулей и оставшихся интеграционных участков: [fork-delta](fork-delta.md).
 
-### Следующий этап: RU-policy, CSS и single-file FB2
+### Второй этап: RU-policy, CSS и single-file FB2
 
 Вынесены `string_locale.h` / `string_table.h`, `reader_fork_styles.*`,
 `publication/fb2_resources.*`. Схемы, salts, настройки и ресурсы EN/RU не меняются.
@@ -48,3 +48,11 @@ native assertions фиксируют digest трёх перенесённых ф
 добавлена `model.local-resources`, включая границы worker-only transfer.
 Проверка нового runtime на устройстве пока не выполнена; запуск предыдущего
 пакета не переносится автоматически на этот этап.
+
+Runtime второго этапа: `69c70aa357209d0ef9ffce5afc68b42d74492a5f`.
+[CI №171: native, offline checks и Qt5 package/contents PASS](https://github.com/Mutaracha/kobalt_ru/actions/runs/44096144408).
+[Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44096144408/artifacts/14333753710).
+Native включает новые CSS digest и transfer-boundary assertions, RU table/fallback/
+plural/key-mode и прежние focused regressions. Не all-variant. При проверке пакета
+сравнить запуск/EN-RU, FB2/EPUB notes и off/on, reopening/cancellation; это checklist,
+не уже выполненная физическая проверка.

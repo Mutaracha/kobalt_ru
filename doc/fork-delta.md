@@ -118,8 +118,10 @@ catalogue byte-identical upstream. Отдельные semantic predicates про
 Пользователь подтвердил запуск первого этапа на устройстве; это не полный
 повторный визуальный или all-variant прогон.
 
-Второй этап пока ожидает native/Qt5 CI. Локально source-checks и strings self-tests
-(Ninja) прошли. Полный note CSS byte-identical предыдущему этапу; digests фрагментов
+Второй этап проверен: runtime `69c70aa357209d0ef9ffce5afc68b42d74492a5f`,
+[CI №171 / 44096144408](https://github.com/Mutaracha/kobalt_ru/actions/runs/44096144408)
+**PASS**: expanded focused native, offline checks, Kobo Qt5 package/contents.
+Локально source-checks и strings self-tests (Ninja) прошли. Полный note CSS byte-identical предыдущему этапу; digests фрагментов
 проверяются новыми native assertions. `model.local-resources` добавлен в focused
 workflow для FB2 cancellation/size/error/sink boundaries. Новая device проверка
 этого этапа пока не выполнялась.
