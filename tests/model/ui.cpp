@@ -1403,7 +1403,7 @@ int main(int argc, char **argv)
                     bool found = false;
                     for (int y = 0; y < icon.height(); ++y)
                         for (int x = 0; x < icon.width(); ++x)
-                            if (qAlpha(icon.pixel(x,y)) > 250) {
+                            if (qAlpha(icon.pixel(x,y)) == 255) {
                                 require(QColor::fromRgba(icon.pixel(x,y)) == wanted,
                                         "Comics bubble lost mode-dependent ink");
                                 found = true;

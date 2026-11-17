@@ -29,7 +29,7 @@ void formatBoundaries() {
     require(!fb2::matchesHead("<FictionBookish>"), "FB2 root delimiter");
     require(!fb2::matchesHead("<?xml?><!ENTITY x 'text'><FictionBook>"), "FB2 entity guard");
     require(fb2::cachePolicy(false).isEmpty(), "EPUB cache policy must not acquire the FB2 marker");
-    require(fb2::cachePolicy(true) == QByteArray(":fb2-v7:"), "FB2 migration cache marker");
+    require(fb2::cachePolicy(true) == QByteArray(":fb2-v8:"), "FB2 migration cache marker");
 
 }
 
