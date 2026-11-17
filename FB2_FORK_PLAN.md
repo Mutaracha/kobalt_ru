@@ -109,8 +109,8 @@ offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен.
 
 | Задача | Статус | Следующее действие |
 |---|---|---|
-| «Умное» обновление не срабатывает в начале главы; аудит зависимостей от структуры | in progress | Общий путь использует TOC/chapterSelection → chapter_page → paintTurn. Сохраняется порог 10 turns since flash и forward-only. Добавлен FB2 chapter/refresh contract-test; нужен исходный FB2/глава для воспроизведения. Проверить также header/footer, chapter progress/ticks/graph, chapter navigation, leading images и normalization markers. |
-| Наложение строк при «Убирать интервалы между абзацами» | blocked | Получены два скриншота, сохранены в test & diagnostic/fb2-post-refactor. Нужен исходный FB2 «Виртуальный свет», настройки шрифта/интервала/вертикального распределения и место. Причина не доказана; draw offsets/footnote gap не менять наугад. |
+| «Умное» обновление не срабатывает в начале главы; аудит зависимостей от структуры | in progress | Общий путь использует TOC/chapterSelection → chapter_page → paintTurn. Сохраняется порог 10 turns since flash и forward-only. Добавлен FB2 chapter/refresh contract-test; Пользователь добавил исходный FB2; добавлен CI-прогон его нумерованных глав прошёл (№176); ошибка пока не воспроизведена. Проверить также header/footer, chapter progress/ticks/graph, chapter navigation, leading images и normalization markers. |
+| Наложение строк при «Убирать интервалы между абзацами» | in progress | Получены два скриншота, сохранены в test & diagnostic/fb2-post-refactor. Исходный FB2 получен коммитом пользователя d8cbfab5; место найдено в главе 9 «Когда дипломатия бессильна». Тест paragraph geometry/toggle на этом отрывке прошёл (№176, 48px/130%); точные настройки шрифта/интервала/вертикального распределения ещё неизвестны. Причина не доказана; draw offsets/footnote gap не менять наугад. |
 | Nickel не обновляет последнюю книгу/процент FB2 | done / CI verified; device pending | В allowsUnmappedPosition после beta.8 разрешён только plain EPUB. Добавлен raw FB2 к существующему activity-only пути; точная позиция остаётся локальной, фиктивный Nickel bookmark не создаётся. Исправлен identity в старом FB2 test и включён session.reading-book в CI. CI №175 PASS, устройство pending. |
 
 
@@ -127,6 +127,11 @@ Device-проверка исправления Nickel pending. Исходный 
 воспроизведён на книге пользователя; синтетический тест не закрывает эти пункты.
 Предыдущий CI №174 остановился на старом bool assertion теста NativeSaveResult;
 он исправлен, №175 полностью прошёл. Новых production rendering изменений нет.
+
+Актуальный пакет с исправлением Nickel: runtime `116024cd`,
+[CI №176 PASS](https://github.com/Mutaracha/kobalt_ru/actions/runs/44114141676),
+[Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44114141676/artifacts/14343185395).
+Проверка исходной книги и ограничения: [разбор FB2](doc/reports/fb2-post-refactor.md).
 
 ## Открытая диагностика
 

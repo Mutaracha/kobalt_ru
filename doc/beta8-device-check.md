@@ -117,3 +117,21 @@ Device-проверка исправления Nickel pending. Исходный 
 воспроизведён на книге пользователя; синтетический тест не закрывает эти пункты.
 Предыдущий CI №174 остановился на старом bool assertion теста NativeSaveResult;
 он исправлен, №175 полностью прошёл. Новых production rendering изменений нет.
+
+### Проверка исходной книги пользователя
+
+Пользователь добавил `test & diagnostic/1. Виртуальный свет.fb2` коммитом
+`d8cbfab5`, который сохранён в истории без перезаписи. Проверка runtime
+`116024cd86de9c9085d18d9c53ddf4014fd3079a`:
+[CI №176 / 44114141676](https://github.com/Mutaracha/kobalt_ru/actions/runs/44114141676)
+**PASS**, focused native + Qt5 package/contents. Дополнительный `--reported-fb2`
+прогон проверяет нумерованные главы исходной книги (chapter page 1) и соседние
+параграфы screenshot passage главы 9: непересечение DOM boxes и одинаковые
+пагинация/paint при удалении уже нулевых gaps в нескольких высотах, font 48px,
+line spacing 130%, viewport width 1180. Это ограниченный regression, не проверка
+всех настроек и не доказательство отсутствия аппаратного/отрисовочного дефекта.
+[Актуальный Qt5 пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44114141676/artifacts/14343185395).
+[Native results](https://github.com/Mutaracha/kobalt_ru/actions/runs/44114141676/artifacts/14342472260).
+Наложение и пропуск Smart на этих параметрах не воспроизведены; нужны точные
+параметры пользователя/диагностика после повторения и конкретный переход главы.
+Production-исправление этого пакета относится только к Nickel activity-only FB2.
