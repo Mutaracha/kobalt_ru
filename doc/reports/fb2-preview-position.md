@@ -4,9 +4,9 @@
 
 Runtime inspected: `1b091187878695080a8dd8ebf42f6d7a84bc9d19` (build 180).
 Device evidence: user commit `9b7748d`, `test & diagnostic/1b09118/`.
-This is a source/history and source-fixture check, not a new native/runtime run.
-No local CMake, Qt SDK or Docker is available. No new binary was built and no
-production code was changed for this investigation.
+The initial investigation below is a source/history and source-fixture check.
+No local CMake, Qt SDK or Docker is available. The subsequent implementation and
+CI-built binary are described separately at the end.
 
 ## Finding
 
@@ -74,10 +74,40 @@ not mutate its input document; it does not check bookmark mapping from a reading
 FB2 into the newly created preview. The ru/en height-drift test addresses a
 separate cross-document language problem, not this mapping.
 
-Next implementation should retain/map the source text node and its offset into
+The initial implementation recommendation was to retain/map the source text node and its offset into
 the preview and use the same starting passage before and after the first edit.
 Do not hide the jump by always showing a section beginning or by draw-only
 cropping. A regression must start part-way through a multi-paragraph section,
 including an inline element and nonzero text offset, and assert the selected
-passage across thickness 0→1→2→0, while preserving main reading state. Native
-and UI checks are still required before calling such a fix verified.
+passage across thickness 0→1→2→0, while preserving main reading state. Native and UI checks were still pending at the time of that recommendation.
+
+
+## Implementation and validation — build 181
+
+Runtime: `c0ff0115eae5557b4f093176b1ca9c100d4416d4`.
+[CI 44154435468](https://github.com/Mutaracha/kobalt_ru/actions/runs/44154435468)
+**PASS**: focused native EPUB/FB2 regressions, offline checks and Qt5
+build/package/contents. Qt6 skipped; physical device validation is pending.
+
+`openFb2Preview()` now collects paragraphs starting at the containing source
+paragraph, not at the section beginning. It retains the entire first paragraph
+and computes the source text-node offset including preceding inline text in
+CREngine codepoints. After opening the synthetic DOM, it resolves the marked
+first paragraph and maps that offset into the preview bookmark. This is not
+pixel cropping and does not move the main book. Subsequent paragraphs are
+collected through nested containers with the existing soft text budget. The
+pre-existing flattening of selected paragraph markup is not redesigned here.
+No storage/cache policy, strings, main-book layout or refresh waveforms changed.
+
+New `previewPosition()` in `tests/model/fb2.cpp` opens a multi-paragraph FB2,
+positions the source at nonzero offset inside emphasis after 40 earlier
+paragraphs, creates the preview and changes thickness 0→1→2→0. It asserts the
+source text suffix is retained, the mapped bookmark stays unchanged, anchored
+painting succeeds and the main source position/state/image remain unchanged.
+The old section-start implementation would select the earlier paragraph and
+fail this assertion; a separate pre-fix CI run of the new test was not made.
+
+This is engine-level regression coverage, not a new end-to-end UI interaction
+test. The existing focused UI/lifecycle checks also pass in this run. On the
+reader, compare the visible passage before the first thickness edit, at +1/+2,
+and after returning to 0, with the book open in the middle of a section.
