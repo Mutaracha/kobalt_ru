@@ -4,6 +4,44 @@
 namespace kobalt {
 namespace metrics = ui::metrics;
 
+int ReadingPage::topHeight() const
+{
+    return (showHeader() ? metrics::reading::stripHeight(chrome.headerSize) : 0)
+            + (showProgress() && chrome.progressTop ? int(metrics::reading::progressHeight) : 0);
+}
+
+int ReadingPage::bottomHeight() const
+{
+    return (showFooter() ? metrics::reading::stripHeight(chrome.footerSize) : 0)
+            + (showProgress() && !chrome.progressTop ? ui::metrics::reading::progressHeight : 0);
+}
+
+// Keep the old edge alignment through Large. Larger sizes grow the text
+// band as well as the reserved strip so glyphs are not clipped.
+QRect ReadingPage::headerTextRect() const
+{
+    if (!showHeader())
+        return {};
+    return { 0, showProgress() && chrome.progressTop ? int(metrics::reading::progressHeight) : 0,
+             width(), metrics::reading::textBandHeight(chrome.headerSize) };
+}
+
+QRect ReadingPage::footerTextRect() const
+{
+    if (!showFooter())
+        return {};
+    // Keep the same edge gap above the progress fill as below the top
+    // of the header. The progress strip adds space below the text.
+    const int offset = showProgress() && !chrome.progressTop
+            ? int(metrics::reading::progressHeight) - int(metrics::reading::progressBottom)
+                    - int(metrics::reading::progressFillHeight)
+            : 0;
+    const int band = metrics::reading::textBandHeight(chrome.footerSize);
+    const int bottom =
+            height() - bottomHeight() + offset + metrics::reading::stripHeight(chrome.footerSize);
+    return { 0, bottom - band, width(), band };
+}
+
 void ReadingPage::paintProgress(QPainter &painter, int baseline, bool down) const
 {
     painter.save();

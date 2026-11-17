@@ -799,18 +799,11 @@ void Reader::buildToolbar()
             strings::get("reader.dark_mode"), ControlIcon::DarkTheme, [this] {
                 applyDarkMode(!preferences.value("dark_mode").toBool(false));
             });
-    toolbarComposition.darkTheme->setCheckable(true);
-    static_cast<kobalt::ui::Button *>(toolbarComposition.darkTheme)->setHighlightChecked(false);
     toolbarComposition.comics = iconButton(topControls, top, "rrComicsToggle",
             strings::get("reader.comics_reading_mode"), ControlIcon::Comics, [this] {
                 toggleComicsMode();
             });
-    toolbarComposition.comics->setCheckable(true);
-    auto *comicsButton = static_cast<ui::Button *>(toolbarComposition.comics);
-    comicsButton->setHighlightChecked(false);
-    ui::ButtonIcon comicsIcon{ ControlIcon::Comics, ui::IconRendition::Action };
-    comicsIcon.stateInkOnly = true;
-    comicsButton->setIconConfiguration(comicsIcon);
+    styleForkToolbarActions();
     toolbarComposition.search =
             iconButton(topControls, top, "rrSearchOpen", strings::get("reader.search_book"),
                        ControlIcon::Search,

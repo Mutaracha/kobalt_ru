@@ -66,8 +66,7 @@ QSize ResourceCache::deferredImageSize(const QString &name)
 
 bool ResourceCache::imageReady(const QString &name)
 {
-    if (trackingImages_ && !imageRequests_.contains(name))
-        imageRequests_.append(name);
+    imageRequests_.record(name);
     if (cancelled_ && cancelled_())
         return false;
     if (readyImages_.contains(name) || failedImages_.contains(name)
@@ -110,7 +109,6 @@ void ResourceCache::releaseBytes()
     entries_.clear();
     recent_.clear();
     imageRequests_.clear();
-    trackingImages_ = false;
     allocated_ = 0;
     readyImages_.clear();
     pendingImages_.clear();

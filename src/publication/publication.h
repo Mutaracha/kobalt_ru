@@ -44,6 +44,8 @@ public:
     static constexpr auto singleFb2ResourceName = "__kobalt_document__.fb2";
 
 private:
+    enum class Fb2Inspection { NotMatched, Accepted, Failed };
+    Fb2Inspection inspectFb2(QIODevice &source, qint64 length, QString *error, OpeningResult *result);
     bool protected_ = false;
     PublicationFormat format_ = PublicationFormat::Epub;
     QStringList names_;

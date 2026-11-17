@@ -331,6 +331,9 @@ private:
     void buildAppearance(const kobalt::reader::AppearanceLayout &layout);
     void ensureAppearance();
     void toggleComicsMode();
+    void styleForkToolbarActions();
+    void refreshForkToolbarActions(bool settingsOpen, bool zen);
+    void updateForkMenuPage();
     kobalt::reader::AppearanceLayout appearanceLayout;
     bool appearanceBuilt = false;
     void buildSettings();

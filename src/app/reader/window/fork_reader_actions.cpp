@@ -1,4 +1,5 @@
 #include "reader_p.h"
+#include "support/strings.h"
 #include "ui/controls/icons.h"
 #include "platform/api/kobo_refresh.h"
 #include "support/qt_compat.h"
@@ -6,6 +7,49 @@
 #include <QScopedValueRollback>
 
 namespace kobalt::reader {
+void Reader::styleForkToolbarActions()
+{
+    toolbarComposition.darkTheme->setCheckable(true);
+    static_cast<kobalt::ui::Button *>(toolbarComposition.darkTheme)->setHighlightChecked(false);
+    toolbarComposition.comics->setCheckable(true);
+    auto *comicsButton = static_cast<ui::Button *>(toolbarComposition.comics);
+    comicsButton->setHighlightChecked(false);
+    ui::ButtonIcon comicsIcon{ ui::ControlIcon::Comics, ui::IconRendition::Action };
+    comicsIcon.stateInkOnly = true;
+    comicsButton->setIconConfiguration(comicsIcon);
+}
+
+void Reader::refreshForkToolbarActions(bool settingsOpen, bool zen)
+{
+    if (toolbarComposition.darkTheme) {
+        toolbarComposition.darkTheme->setChecked(session->state().value("dark_mode").toBool(false));
+        toolbarComposition.darkTheme->setVisible(
+                !settingsOpen && !zen && features::enabled(preferences, features::DarkMode));
+    }
+    if (toolbarComposition.comics) {
+        auto *source = appearanceEdit.edited() && appearanceEdit.ready() ? appearanceEdit.preview()
+                                                                         : session;
+        // Keep mode ink stable while a preview session is being prepared/reflowed.
+        if (!appearanceEdit.edited() || appearanceEdit.ready())
+            toolbarComposition.comics->setChecked(source->requestedAppearance()
+                                                          .fields()
+                                                          .value(appearance::comicsModeKey)
+                                                          .toBool(false));
+        toolbarComposition.comics->setVisible(!settingsOpen && !zen
+                                              && features::enabled(preferences, features::Comics));
+    }
+}
+
+void Reader::updateForkMenuPage()
+{
+    const bool showPage = !hideNativeStatus() && !zenMode() && session->pages() > 0;
+    menuPage->setText(showPage ? strings::get("navigation.page_count")
+                                         .arg(session->page() + 1)
+                                         .arg(session->pages())
+                               : QString());
+    menuPage->setVisible(showPage);
+}
+
 void Reader::toggleComicsMode()
 {
     auto *source = appearanceEdit.preview() ? appearanceEdit.preview() : session;

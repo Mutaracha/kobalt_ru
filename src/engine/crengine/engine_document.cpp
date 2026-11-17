@@ -416,7 +416,9 @@ void EngineDocument::configure(QSize size, const QJsonObject &settings)
     columns_ = twoColumnsLandscape_ ? (size.width() > size.height() ? 2 : 1)
                                     : qBound(1, saved.value("columns").toInt(1), 2);
     baseColumns_ = columns_;
-    if (comicsMode_) columns_ = 1;
+    const auto effectiveLayout = comicPageLayout(
+            comicsMode_, baseColumns_, lvRect(margin_, topMargin_, margin_, bottomMargin_));
+    columns_ = effectiveLayout.columns;
     columnSpacing_ = qBound(0, saved.value("column_spacing").toInt(readingPixels(60)),
                             maximumMarginPixels());
     columnSpacingPercent_ = saved.value("column_spacing_percent").toInt(0);
@@ -493,8 +495,7 @@ void EngineDocument::configure(QSize size, const QJsonObject &settings)
     engine_->setFontSize(pixels_);
     // CSS sets the line height; the engine must not multiply it again.
     engine_->setDefaultInterlineSpace(100);
-    engine_->setPageMargins(comicsMode_ ? lvRect(0, 0, 0, 0)
-                                      : lvRect(margin_, topMargin_, margin_, bottomMargin_));
+    engine_->setPageMargins(effectiveLayout.margins);
     engine_->setPageHeaderInfo(0);
     engine_->setShowCover(false);
     engine_->setBackgroundColor(0xffffff);
@@ -747,7 +748,9 @@ bool EngineDocument::applyAppearance(const appearance::Patch &patch, QSize size,
     const int baseColumns = landscapeColumns
             ? (size.width() > size.height() ? 2 : 1)
             : settings.value("columns").toInt(twoColumnsLandscape_ ? 1 : baseColumns_);
-    const int columns = comics ? 1 : baseColumns;
+    const auto effectiveLayout = comicPageLayout(
+            comics, baseColumns, lvRect(margin, topMargin, margin, bottomMargin));
+    const int columns = effectiveLayout.columns;
     const int gapPercent = settings.value("column_spacing_percent").toInt(columnSpacingPercent_);
     const int columnSpacing = gapPercent ? qRound(pixels * gapPercent / 100.0)
                                          : settings.value("column_spacing").toInt(columnSpacing_);
@@ -871,8 +874,7 @@ bool EngineDocument::applyAppearance(const appearance::Patch &patch, QSize size,
         engine_->propsApply(properties);
         engine_->requestRender();
         applyPublisherFontFallbacks();
-        engine_->setPageMargins(comicsMode_ ? lvRect(0, 0, 0, 0)
-                                          : lvRect(margin, topMargin, margin, bottomMargin));
+        engine_->setPageMargins(effectiveLayout.margins);
         engine_->setFontSize(pixels);
         engine_->setDefaultInterlineSpace(100);
         applyStyleSheet();

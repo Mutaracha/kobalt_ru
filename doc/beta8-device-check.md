@@ -77,3 +77,13 @@ contract в comics), offline checks, Qt5 package/contents.
 Проверять обычную EPUB/FB2 страницу и обложку, светлую/тёмную тему, comics
 single/pair/center и image-viewer hits; это невыполненный device checklist,
 не расширение предыдущего подтверждения запуска.
+
+### Совместная проверка этапов 3+4
+
+Четвёртый этап завершает вынос effective layout, raw FB2 inspection, request trace,
+progress geometry и fork toolbar presentation. CI pending. Проверка на устройстве
+pending: пользователь согласовал совместный прогон этапов 3+4.
+Проверить FB2/EPUB открытие/повторное открытие, обычный рендер/обложку/изображения,
+comics single/pair/center и image-viewer hits, смену ориентации, on/off с изменением
+полей/колонок, top/bottom/off progress, EN/RU вкладки и toolbar/theme/hide toggle.
+Отдельные RTL/all-variant не выполнены. Два недочёта FB2 не считаются исправленными.

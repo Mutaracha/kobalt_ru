@@ -1,3 +1,4 @@
+#include "fork_navigation.h"
 #include "ui/controls/buttons.h"
 #include "ui/controls/icons.h"
 #include "ui/controls/panels.h"
@@ -21,18 +22,8 @@ namespace kobalt::reader {
 namespace chrome = ui::metrics::chrome;
 
 namespace {
-// Use one shared ink height for all translated labels. Latin H alone is
-// shorter than Cyrillic Д (in НАВИГАЦИЯ/РАСКЛАДКА); the private text painter
-// clips to this area after centering, otherwise cutting both edges of Д.
-QRect tabInkBounds(int pixels) {
-    QString sample = QStringLiteral("H");
-    for (const auto *key : {"navigation.chapters", "navigation.seek", "navigation.text",
-                            "navigation.layout", "navigation.light", "navigation.stats"})
-        sample += QLatin1Char(' ') + strings::get(key);
-    return ui::interfaceInkBounds(sample, ui::interfaceFont(pixels));
-}
 int tabCapital(int pixels) {
-    return tabInkBounds(pixels).height();
+    return forkui::tabInkBounds(pixels).height();
 }
 
 constexpr ui::Px toolbarBorder = chrome::heavyRule;
@@ -501,7 +492,7 @@ protected:
         painter.setFont(label);
         // Optical centering each word in the shared box raises labels with
         // descenders. Position each ink box relative to one common baseline.
-        const auto commonInk = tabInkBounds(chrome::tabText);
+        const auto commonInk = forkui::tabInkBounds(chrome::tabText);
         const auto labelInk = ui::interfaceInkBounds(text(), label);
         const int labelTop = icon.bottom() + 1 + chrome::tabGap;
         ui::drawOpticalText(painter,
@@ -888,24 +879,7 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
             button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
         }
     }
-    if (darkTheme) {
-        darkThemeStyle = darkTheme->styleSheet();
-        ui::readerStyle(darkTheme, "QPushButton{border:none;padding:0;}");
-        darkTheme->setFixedSize(chrome::cellWidth, chrome::actionHeight);
-        if (auto *button = dynamic_cast<ui::Button *>(darkTheme)) {
-            darkThemePaint = button->paintMode();
-            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
-        }
-    }
-    if (comics) {
-        comicsStyle = comics->styleSheet();
-        ui::readerStyle(comics, "QPushButton{border:none;padding:0;}");
-        comics->setFixedSize(chrome::cellWidth, chrome::actionHeight);
-        if (auto *button = dynamic_cast<ui::Button *>(comics)) {
-            comicsPaint = button->paintMode();
-            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
-        }
-    }
+    styleForkToolbarActions();
     if (sync) {
         syncStyle = sync->styleSheet();
         ui::readerStyle(sync, "QPushButton{border:none;padding:0;}");
@@ -985,20 +959,7 @@ Navigation::~Navigation()
             button->setPaintMode(searchPaint);
         }
     }
-    if (darkTheme) {
-        darkTheme->setStyleSheet(darkThemeStyle);
-        darkTheme->setFixedSize(ui::metrics::control::toolbarButtonSize, ui::metrics::control::toolbarButtonSize);
-        if (auto *button = dynamic_cast<ui::Button *>(darkTheme)) {
-            button->setPaintMode(darkThemePaint);
-        }
-    }
-    if (comics) {
-        comics->setStyleSheet(comicsStyle);
-        comics->setFixedSize(ui::metrics::control::toolbarButtonSize, ui::metrics::control::toolbarButtonSize);
-        if (auto *button = dynamic_cast<ui::Button *>(comics)) {
-            button->setPaintMode(comicsPaint);
-        }
-    }
+    restoreForkToolbarActions();
     session->setStyleSheet(sessionStyle);
     if (sync) {
         sync->setStyleSheet(syncStyle);

@@ -199,6 +199,8 @@ public:
     bool contains(QPoint global) const;
 
 private:
+    void styleForkToolbarActions();
+    void restoreForkToolbarActions();
     void placeToolbar(QSize size, const QVector<QWidget *> &actions, bool zen);
     void placeZenToolbar(QSize size, const QVector<QWidget *> &actions,
                          const NavigationState &state);

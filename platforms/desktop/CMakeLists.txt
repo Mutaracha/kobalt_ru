@@ -82,7 +82,7 @@ add_library(kobalt-core OBJECT ${shared} display.cpp ../standalone/native_image.
     "${source}/support/locale.cpp" "${source}/support/debug_language.cpp"
     "${source}/publication/publication.cpp" "${source}/publication/zip_resource.cpp"
     "${source}/publication/resource_cache.cpp" "${source}/publication/local_resources.cpp"
-    "${source}/publication/fb2_resources.cpp"
+    "${source}/publication/fb2_resources.cpp" "${source}/publication/publication_fb2.cpp"
     "${source}/publication/image_policy.cpp" "${source}/publication/layout_compatibility.cpp"
     "${source}/publication/native_resources.cpp" "${source}/publication/resource_server.cpp")
 target_include_directories(kobalt-core PUBLIC "${KOBALT_ROOT}" "${source}" "${CMAKE_CURRENT_BINARY_DIR}")

@@ -677,21 +677,7 @@ void Reader::syncReadingControls()
         if (action)
             action->setVisible(!settingsOpen);
     toolbarComposition.search->setVisible(!settingsOpen && !zen);
-    if (toolbarComposition.darkTheme) {
-        toolbarComposition.darkTheme->setChecked(session->state().value("dark_mode").toBool(false));
-        toolbarComposition.darkTheme->setVisible(!settingsOpen && !zen
-                && features::enabled(preferences, features::DarkMode));
-    }
-    if (toolbarComposition.comics) {
-        auto *source = appearanceEdit.edited() && appearanceEdit.ready()
-                ? appearanceEdit.preview() : session;
-        // Keep mode ink stable while a preview session is being prepared/reflowed.
-        if (!appearanceEdit.edited() || appearanceEdit.ready())
-            toolbarComposition.comics->setChecked(source->requestedAppearance().fields()
-                    .value(appearance::comicsModeKey).toBool(false));
-        toolbarComposition.comics->setVisible(!settingsOpen && !zen
-                && features::enabled(preferences, features::Comics));
-    }
+    refreshForkToolbarActions(settingsOpen, zen);
     const bool bookmarksShown = features::enabled(preferences, features::Bookmarks);
     const bool annotationsShown = features::enabled(preferences, features::Annotations);
     const bool wordsShown = savedWords && features::enabled(preferences, features::Words);
@@ -825,10 +811,7 @@ void Reader::updateMenuStatus()
         menuClock->setText(time);
     const auto battery = services.battery();
     menuBattery->setStatus(battery.percent, battery.charging);
-    const bool showPage = !hideNativeStatus() && !zenMode() && session->pages() > 0;
-    menuPage->setText(showPage ? strings::get("navigation.page_count")
-            .arg(session->page() + 1).arg(session->pages()) : QString());
-    menuPage->setVisible(showPage);
+    updateForkMenuPage();
     const auto reading = book->sessionReadingMilliseconds();
     const auto session = reading > 300000
             ? strings::get("reader.session_minutes").arg(reading / 60000)

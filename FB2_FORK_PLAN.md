@@ -84,10 +84,19 @@ view/resource lifecycle без дублирования upstream PageDrawBuffer/
   не выполнялись. Следующий этап — завершающий проход по effective layout,
   UI wiring и оставшимся format/resource lifecycle участкам по карте дельты.
 
-**Остаток полного запроса:** effective layout/configuration EngineDocument,
-Publication/ResourceCache state/lifecycle и ReadingPage/navigation/settings wiring.
-Не копировать upstream классы ради искусственного нулевого diff; оставлять узкие
-явные интеграционные точки. Закрытые продуктовые задачи beta.8 не возобновляются.
+**Четвёртый, завершающий этап: implementation done / CI pending.**
+- `reader_comics.*`: effective columns/margins overlay, одинаковый для открытия и
+  applyAppearance; базовые сохранённые значения не перезаписываются.
+- `publication_fb2.cpp`: распознавание raw FB2, прежний fingerprint и virtual metadata.
+- `image_request_trace.h`: worker-only trace; общий ResourceCache lifecycle сохранён.
+- `fork_navigation.*` и `fork_reader_actions.cpp`: tab ink/toolbar presentation,
+  refresh и отдельный счётчик страниц; ReadingPage geometry рядом с progress painter.
+- Добавлены assertions overlay/base immutability, FB2 hash compatibility и trace reset.
+  Локально source-checks, strings self-tests (Ninja), diff check PASS.
+- Узкие format dispatch, persisted fields, worker ownership, mapping/hit и UI wiring
+  остаются в общих классах намеренно: это интеграционные API, не копии fork алгоритмов.
+  Нулевой diff с upstream не является целью. Runtime/CSS/strings/storage/waveform
+  намеренно не меняются. Проверка этапов 3+4 на устройстве — совместно пользователем.
 
 ## После завершения рефакторинга
 

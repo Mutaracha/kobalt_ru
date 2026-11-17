@@ -64,7 +64,7 @@
 - `app/reader/window/fork_reader_actions.cpp` — действие comics с draft/busy guard
   и существующий lazy Appearance lifecycle. `reader_build.cpp` только подключает действие.
 - `app/reader/views/reading_page_progress.cpp` — painter top/bottom/chapter progress;
-  резервирование места остаётся частью общей ReadingPage geometry.
+  резервирование места и header/footer geometry перенесены туда же в этапе 4.
 - `ui/controls/fork_icon_geometry.*` — bubble и Fluent dark geometry. Generated
   `reader_icon_vectors.h` возвращён к beta.8 без fork-геометрии.
 
@@ -151,6 +151,22 @@ Runtime `9e03e25d31bfc000a88048c01f102b16e57d6a8f`,
 **PASS**: expanded focused native, offline checks, Kobo Qt5 package/contents.
 Физическая проверка этого этапа, отдельный RTL-сценарий и all-variant не выполнялись. Два новых FB2-недочёта — отдельная очередь
 после рефакторинга, не повод менять поведение в этом механическом переносе.
+
+## Четвёртый этап — завершающая граница модулей
+
+`reader_comics.*` содержит effective layout overlay; `EngineDocument` применяет
+результат, сохраняя исходные margins/columns. `publication_fb2.cpp` содержит raw
+FB2 inspection/hash/metadata с tri-state dispatch из Publication. `ImageRequestTrace`
+инкапсулирует worker screen trace, не меняя cancellation/rebind/queue lifecycle.
+`fork_navigation.*` содержит translated ink bounds и toolbar style/restore;
+`fork_reader_actions.cpp` — presentation/refresh/page counter Reader. Общая ReadingPage
+оставляет вызовы geometry, реализация находится рядом с progress painter.
+
+Это завершение структурного прохода, не обещание неизменного upstream API.
+Storage/defaults/strings/hash/CSS/waveform не меняются. Новые native assertions:
+effective overlay и неизменность base, прежний FB2 length-prefix SHA256, trace end/reset.
+Локально source-checks/strings self-tests/diff check PASS; CI и устройство pending.
+Пользователь проверяет этапы 3+4 вместе. Два FB2-замечания не исправлялись.
 
 ## Полный файловый инвентарь baseline
 

@@ -3,6 +3,7 @@
 #include "reader_source_index_probe.h"
 #include "reading/appearance_settings.h"
 #include "engine/crengine/page_draw_buffer.h"
+#include "engine/crengine/reader_comics.h"
 #include <QBuffer>
 #include <QGuiApplication>
 #include <QTemporaryDir>
@@ -40,10 +41,28 @@ static void commonDrawBufferContract()
     require(publisher.GetTextColor() == 0x123456, "Shared buffer lost publisher text ink");
 }
 
+static void effectiveComicLayoutContract()
+{
+    const lvRect base(11, 22, 11, 33);
+    for (int columns : { 0, 1, 2, 3 }) {
+        const auto off = comicPageLayout(false, columns, base);
+        require(off.columns == columns && off.margins.left == 11 && off.margins.top == 22
+                        && off.margins.right == 11 && off.margins.bottom == 33,
+                "Disabled comics overlay changed base layout or validation policy");
+        const auto on = comicPageLayout(true, columns, base);
+        require(on.columns == 1 && on.margins.left == 0 && on.margins.top == 0
+                        && on.margins.right == 0 && on.margins.bottom == 0,
+                "Enabled comics overlay did not suppress effective margins/columns");
+    }
+    require(base.left == 11 && base.top == 22 && base.right == 11 && base.bottom == 33,
+            "Effective overlay mutated its base input");
+}
+
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
     commonDrawBufferContract();
+    effectiveComicLayoutContract();
     // Same proportions and inline/div structure as the supplied KCC page,
     // but synthetic solid art makes geometry independently measurable.
     QImage art(1160, 1680, QImage::Format_RGB32);

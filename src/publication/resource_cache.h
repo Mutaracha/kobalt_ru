@@ -1,4 +1,5 @@
 #pragma once
+#include "image_request_trace.h"
 #include <QJsonObject>
 #include <QMap>
 #include <QStringList>
@@ -43,8 +44,8 @@ public:
     bool imageReady(const QString &name);
     bool loadNextImage();
     // Worker-only: collect resources actually requested by one rendered screen.
-    void beginImageRequests() { imageRequests_.clear(); trackingImages_ = true; }
-    QStringList endImageRequests() { trackingImages_ = false; return imageRequests_; }
+    void beginImageRequests() { imageRequests_.begin(); }
+    QStringList endImageRequests() { return imageRequests_.end(); }
     bool prioritizePendingImage(const QString &name);
     bool pendingImage(const QString &name) const { return pendingImages_.contains(name); }
     // Keep dimensions and integrity checks, but no encoded resource bytes.
@@ -85,8 +86,7 @@ private:
     QSet<QString> readyImages_;
     QStringList pendingImages_;
     quint64 imageRevision_ = 0;
-    bool trackingImages_ = false;
-    QStringList imageRequests_;
+    ImageRequestTrace imageRequests_;
     std::function<bool()> cancelled_;
     std::map<QString, Entry> entries_;
     std::map<QString, QByteArray> fingerprints_;

@@ -11,6 +11,11 @@
 #include <vector>
 
 namespace kobalt {
+ComicPageLayout comicPageLayout(bool enabled, int baseColumns, lvRect baseMargins)
+{
+    return { enabled ? 1 : baseColumns, enabled ? lvRect(0, 0, 0, 0) : baseMargins };
+}
+
 const char *comicPageCss()
 {
     return "\nhtml,body,DocFragment,div,p,section { margin:0 !important; padding:0 !important; "

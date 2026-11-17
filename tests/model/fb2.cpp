@@ -6,6 +6,7 @@
 #include "engine/crengine/reader_fb2.h"
 #include "engine/crengine/reader_fork_styles.h"
 #include <QCryptographicHash>
+#include <QtEndian>
 #include "publication/fb2.h"
 #include "publication/publication.h"
 #include "support/qt_compat.h"
@@ -102,6 +103,12 @@ void inspectFictionBook() {
     require(publication.inspect(bytes, &error), qPrintable(error));
     require(publication.format() == Publication::PublicationFormat::Fb2, "FB2 format classification");
     require(!publication.fingerprint().isEmpty(), "FB2 fingerprint is empty");
+    const quint64 length = qToLittleEndian(quint64(bytes.size()));
+    QByteArray originalKey(reinterpret_cast<const char *>(&length), 8);
+    originalKey += bytes;
+    require(publication.fingerprint()
+                    == QCryptographicHash::hash(originalKey, QCryptographicHash::Sha256).toHex(),
+            "FB2 inspection changed the existing length-prefix/content cache fingerprint");
     require(publication.names() ==
                 QStringList{QString::fromLatin1(Publication::singleFb2ResourceName)},
             "FB2 exposes one virtual resource name");

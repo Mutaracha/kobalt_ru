@@ -190,6 +190,9 @@ int main(int argc, char **argv)
         images.imageReady("left");
         require(images.endImageRequests() == QStringList({ "left", "right" }),
                 "Visible requests were duplicated or included previous neighbours");
+        images.imageReady("neighbour");
+        require(images.endImageRequests() == QStringList({ "left", "right" }),
+                "A completed image trace kept recording new requests");
         require(images.prioritizePendingImage("right") && images.loadNextImage()
                     && loaded == QStringList({ "right" }), "Visible image priority did not preserve queue identity");
         require(!images.prioritizePendingImage("right") && !images.prioritizePendingImage("missing"),
@@ -197,6 +200,8 @@ int main(int argc, char **argv)
         require(images.loadNextImage() && loaded.last() == "neighbour",
                 "Visible priority discarded the neighbour queue");
         images.releaseBytes();
+        images.imageReady("left");
+        require(images.endImageRequests().isEmpty(), "Release did not stop/clear image tracing");
         images.beginImageRequests();
         require(images.endImageRequests().isEmpty(), "Release kept image request tracing");
     }
