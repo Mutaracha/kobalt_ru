@@ -111,7 +111,22 @@ offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен.
 |---|---|---|
 | «Умное» обновление не срабатывает в начале главы; аудит зависимостей от структуры | in progress | Общий путь использует TOC/chapterSelection → chapter_page → paintTurn. Сохраняется порог 10 turns since flash и forward-only. Добавлен FB2 chapter/refresh contract-test; нужен исходный FB2/глава для воспроизведения. Проверить также header/footer, chapter progress/ticks/graph, chapter navigation, leading images и normalization markers. |
 | Наложение строк при «Убирать интервалы между абзацами» | blocked | Получены два скриншота, сохранены в test & diagnostic/fb2-post-refactor. Нужен исходный FB2 «Виртуальный свет», настройки шрифта/интервала/вертикального распределения и место. Причина не доказана; draw offsets/footnote gap не менять наугад. |
-| Nickel не обновляет последнюю книгу/процент FB2 | in progress | В allowsUnmappedPosition после beta.8 разрешён только plain EPUB. Добавлен raw FB2 к существующему activity-only пути; точная позиция остаётся локальной, фиктивный Nickel bookmark не создаётся. Исправлен identity в старом FB2 test и включён session.reading-book в CI. CI pending, устройство pending. |
+| Nickel не обновляет последнюю книгу/процент FB2 | done / CI verified; device pending | В allowsUnmappedPosition после beta.8 разрешён только plain EPUB. Добавлен raw FB2 к существующему activity-only пути; точная позиция остаётся локальной, фиктивный Nickel bookmark не создаётся. Исправлен identity в старом FB2 test и включён session.reading-book в CI. CI №175 PASS, устройство pending. |
+
+
+### Проверка исправления Nickel FB2
+
+Runtime `5eb8a600f71b5f46794a8c469783577f2ca01eed`.
+[CI №175 / 44111989597](https://github.com/Mutaracha/kobalt_ru/actions/runs/44111989597)
+**PASS**: focused native, включая session.reading-book с FB2 identity и activity-only
+writeback, model.screen-refresh, engine.fb2 с новым chapter/eligible Smart contract;
+offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен, all-variant не выполнен.
+[Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44111989597/artifacts/14340793511).
+[Native results](https://github.com/Mutaracha/kobalt_ru/actions/runs/44111989597/artifacts/14342042111).
+Device-проверка исправления Nickel pending. Исходный баг Smart/normalization не
+воспроизведён на книге пользователя; синтетический тест не закрывает эти пункты.
+Предыдущий CI №174 остановился на старом bool assertion теста NativeSaveResult;
+он исправлен, №175 полностью прошёл. Новых production rendering изменений нет.
 
 ## Открытая диагностика
 

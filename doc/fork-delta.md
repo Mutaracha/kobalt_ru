@@ -343,3 +343,10 @@ offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен.
 - `M` `tests/reader_lifecycle.cpp`
 - `A` `tests/support/anchor_preview.h`
 - `M` `tests/support/reader_source_index_probe.h`
+
+## Приёмка завершающего рефакторинга
+
+Пользователь принял runtime `0e3e9f98` по совместному checklist этапов 3+4:
+FB2/EPUB открытие, comics/ориентация, восстановление полей, top/bottom progress
+и панель чтения. Структурный рефакторинг закрыт. Новые ошибки FB2 ведутся
+отдельно в плане и [первичном разборе](reports/fb2-post-refactor.md).

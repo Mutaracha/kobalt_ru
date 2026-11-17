@@ -103,3 +103,17 @@ offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен.
 полей, progress top/bottom и панель чтения. Рефакторинг принят и закрыт.
 Новые сообщения FB2 (smart chapter refresh, наложение при paragraph normalization,
 Nickel status/percent) — отдельные ошибки, а не отмена приёмки выноса модулей.
+
+### Проверка исправления Nickel FB2
+
+Runtime `5eb8a600f71b5f46794a8c469783577f2ca01eed`.
+[CI №175 / 44111989597](https://github.com/Mutaracha/kobalt_ru/actions/runs/44111989597)
+**PASS**: focused native, включая session.reading-book с FB2 identity и activity-only
+writeback, model.screen-refresh, engine.fb2 с новым chapter/eligible Smart contract;
+offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен, all-variant не выполнен.
+[Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44111989597/artifacts/14340793511).
+[Native results](https://github.com/Mutaracha/kobalt_ru/actions/runs/44111989597/artifacts/14342042111).
+Device-проверка исправления Nickel pending. Исходный баг Smart/normalization не
+воспроизведён на книге пользователя; синтетический тест не закрывает эти пункты.
+Предыдущий CI №174 остановился на старом bool assertion теста NativeSaveResult;
+он исправлен, №175 полностью прошёл. Новых production rendering изменений нет.
