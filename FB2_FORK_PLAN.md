@@ -109,9 +109,9 @@ offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен.
 
 | Задача | Статус | Следующее действие |
 |---|---|---|
-| «Умное» обновление не срабатывает в начале главы; аудит зависимостей от структуры | in progress | Общий путь использует TOC/chapterSelection → chapter_page → paintTurn. Сохраняется порог 10 turns since flash и forward-only. Добавлен FB2 chapter/refresh contract-test; Пользователь добавил исходный FB2; добавлен CI-прогон его нумерованных глав прошёл (№176); ошибка пока не воспроизведена. Проверить также header/footer, chapter progress/ticks/graph, chapter navigation, leading images и normalization markers. |
-| Наложение строк при «Убирать интервалы между абзацами» | in progress | Получены два скриншота, сохранены в test & diagnostic/fb2-post-refactor. Исходный FB2 получен коммитом пользователя d8cbfab5; место найдено в главе 9 «Когда дипломатия бессильна». Тест paragraph geometry/toggle на этом отрывке прошёл (№176, 48px/130%); точные настройки шрифта/интервала/вертикального распределения ещё неизвестны. Причина не доказана; draw offsets/footnote gap не менять наугад. |
-| Nickel не обновляет последнюю книгу/процент FB2 | done / CI verified; device pending | В allowsUnmappedPosition после beta.8 разрешён только plain EPUB. Добавлен raw FB2 к существующему activity-only пути; точная позиция остаётся локальной, фиктивный Nickel bookmark не создаётся. Исправлен identity в старом FB2 test и включён session.reading-book в CI. CI №175 PASS, устройство pending. |
+| «Умное» обновление | done / device accepted | Пользователь пролистал всю главу 8 → 9 (>10 страниц), flash в начале 9 выполнен. Изменения refresh policy не нужны. |
+| Наложение строк FB2 | in progress | Получены скриншоты главы 8 и events.zip (8407bdb). Fira Sans 13.5 pt, weight +1, line 130%, word 80%, justify, widows allow, vertical normal, paragraph controls publisher. В 16:37 source 116024c, document_cache_hit=false; spacing уже выключен. Проверяется согласованность initial pagination/full paint, а не только p-box adjacency. |
+| Nickel не обновляет последнюю книгу/процент FB2 | done / device accepted | Пользователь подтвердил исправление runtime 116024c. Activity-only запись принята; точная позиция остаётся локальной. |
 
 
 ### Проверка исправления Nickel FB2

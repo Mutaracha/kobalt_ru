@@ -46,6 +46,34 @@ struct ReaderSourceIndexProbe {
         }
         return {};
     }
+    // Compare initial pagination (light formatting) with the full formatting
+    // used for paint. A paragraph cannot grow into its following sibling.
+    static QStringList paragraphFormatDrift(const EngineDocument &model) {
+        auto *doc = model.engine_->getDocument();
+        doc->clearRendBlockCache();
+        QStringList drift;
+        std::vector<ldomNode *> pending{doc->getRootNode()};
+        while (!pending.empty()) {
+            auto *node = pending.back(); pending.pop_back();
+            if (!node || !node->isElement()) continue;
+            for (int i = node->getChildCount()-1; i >= 0; --i)
+                pending.push_back(node->getChildNode(i));
+            if (!node->isNodeName("p") || node->getRendMethod() != erm_final
+                    || node->getAttributeValue("data-kobalt-beautify") != U"body") continue;
+            RenderRectAccessor fmt(node);
+            const int height = fmt.getHeight();
+            const int width = fmt.getInnerWidth();
+            if (width <= 0) continue;
+            LFormattedTextRef text;
+            const int painted = node->renderFinalBlock(text, &fmt, width);
+            if (painted != height)
+                drift.append(QString("height=%1 painted=%2 width=%3 text=%4")
+                        .arg(height).arg(painted).arg(width)
+                        .arg(QString::fromUtf8(UnicodeToUtf8(node->getText()).c_str()).left(60)));
+            if (drift.size() >= 10) break;
+        }
+        return drift;
+    }
     static QRect firstTextBounds(const EngineDocument &model, const char *id) {
         auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
         while (node && node->isElement() && node->getChildCount()) node = node->getChildNode(0);

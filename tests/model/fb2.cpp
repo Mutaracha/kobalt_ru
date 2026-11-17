@@ -290,8 +290,28 @@ void reportedFictionBook(const QString &path)
     QFile input(path);
     require(input.open(QIODevice::ReadOnly), "Cannot read the reported FB2 fixture");
     const auto bytes = input.readAll();
-    EngineDocument book(test::readerFonts());
     QString error;
+    auto fonts = test::readerFonts();
+    fonts.sources.sideloadDirectory = QStringLiteral(KOBALT_TEST_FIRA_DIRECTORY);
+    {
+        auto configured = QJsonObject{ { "font_face", "Fira Sans" }, { "font_pixels", 56 },
+                { "weight_steps", 1 }, { "line_spacing", 130 }, { "word_spacing", 80 },
+                { "text_alignment", "justify" }, { "widows_orphans", "allow" },
+                { "vertical_justification", "off" }, { "inpage_footnotes", true },
+                { "hide_nonlinear_fragments", true }, { "normalize_page_margins", true },
+                { "reduce_chapter_spacing", true }, { "margin_pixels", 16 },
+                { "top_margin_pixels", 0 }, { "bottom_margin_pixels", 0 } };
+        for (const bool normalize : {false, true}) {
+            configured["beautifier_spacing"] = normalize;
+            EngineDocument replay(fonts);
+            require(replay.open(bytes, QSize(1264, 1608), configured, &error), qPrintable(error));
+            require(replay.state().value("font_face") == "Fira Sans", "Fira Sans replay fell back");
+            const auto drift = ReaderSourceIndexProbe::paragraphFormatDrift(replay);
+            require(drift.isEmpty(), qPrintable(QString("FB2 pagination/paint mismatch (spacing=%1):\n%2")
+                    .arg(normalize).arg(drift.join('\n'))));
+        }
+    }
+    EngineDocument book(test::readerFonts());
     const QJsonObject saved{ { "font_pixels", 48 }, { "line_spacing", 130 },
                              { "normalize_page_margins", true },
                              { "reduce_chapter_spacing", true } };
