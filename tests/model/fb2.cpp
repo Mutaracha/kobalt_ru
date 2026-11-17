@@ -13,6 +13,8 @@
 #include "support/qt_compat.h"
 
 #include <QGuiApplication>
+#include <QFile>
+#include <QRegularExpression>
 #include <QString>
 #include <algorithm>
 
@@ -282,6 +284,61 @@ void sharedNormalization() {
                 "FB2 normalization flattened a semantic block");
 }
 
+// Optional user-supplied fixture; CI passes its canonical diagnostic path.
+void reportedFictionBook(const QString &path)
+{
+    QFile input(path);
+    require(input.open(QIODevice::ReadOnly), "Cannot read the reported FB2 fixture");
+    const auto bytes = input.readAll();
+    EngineDocument book(test::readerFonts());
+    QString error;
+    const QJsonObject saved{ { "font_pixels", 48 }, { "line_spacing", 130 },
+                             { "normalize_page_margins", true },
+                             { "reduce_chapter_spacing", true } };
+    require(book.open(bytes, QSize(1180, 1490), saved, &error), qPrintable(error));
+    const auto chapters = book.chapters();
+    int checked = 0;
+    const QRegularExpression numbered(QStringLiteral("^[0-9]+[.]"));
+    for (const auto &chapter : chapters) {
+        if (chapter.page < 0 || !numbered.match(chapter.title).hasMatch())
+            continue;
+        book.go(chapter.page);
+        require(book.chapterProgress().page == 1,
+                qPrintable(QString("Reported FB2 chapter start is not page one: %1 -> %2")
+                                   .arg(chapter.title).arg(book.chapterProgress().page)));
+        ++checked;
+    }
+    require(checked > 0, "No numbered chapters tested in the reported FB2");
+    // Reproduce the screenshot's ordinary paragraphs, without storing a second
+    // copy of the user's prose in this test. The source has no publisher CSS.
+    const auto target = bytes.indexOf(QString::fromUtf8("Молчать дальше было").toUtf8());
+    require(target > 0, "Reported FB2 lost the screenshot passage");
+    const int previous = bytes.lastIndexOf("<p>", bytes.lastIndexOf("<p>", target) - 1);
+    const int end = bytes.indexOf("</p>", target);
+    auto passage = bytes.mid(previous, end + 4 - previous);
+    passage.replace("<p>", "<p id='previous'>");
+    const int last = passage.lastIndexOf("id='previous'");
+    passage.replace(last, int(sizeof("id='previous'") - 1), "id='following'");
+    const auto excerpt = QByteArray("<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'><body><section>")
+            + passage + "</section></body></FictionBook>";
+    for (int height : { 600, 1000, 1490 }) {
+        EngineDocument page(test::readerFonts());
+        require(page.open(excerpt, QSize(1180, height), saved, &error), qPrintable(error));
+        const auto beforePages = page.pages();
+        const auto before = page.image(0);
+        require(page.applyAppearance(appearance::Patch({ { "beautifier_spacing", true } })),
+                "Reported FB2 spacing toggle failed");
+        const auto first = ReaderSourceIndexProbe::nodeBounds(page, "previous");
+        const auto following = ReaderSourceIndexProbe::nodeBounds(page, "following");
+        require(!first.isEmpty() && !following.isEmpty()
+                        && following.top() >= first.bottom(),
+                "Reported FB2 spacing normalization overlaps adjacent paragraph boxes");
+        require(page.pages() == beforePages && page.image(0) == before,
+                "Zero-margin FB2 paragraphs changed layout/paint when removing zero gaps");
+    }
+    std::puts("PASS: reported FB2 numbered chapter starts and screenshot paragraph geometry");
+}
+
 void renderWindows1251() {
     const auto bytes = windows1251FictionBook();
     Publication publication;
@@ -300,6 +357,10 @@ void renderWindows1251() {
 
 int main(int argc, char **argv) {
     QGuiApplication app(argc, argv);
+    if (argc == 3 && QString::fromLocal8Bit(argv[1]) == "--reported-fb2") {
+        reportedFictionBook(QString::fromLocal8Bit(argv[2]));
+        return 0;
+    }
     formatBoundaries();
     forkStyleFragments();
     inspectFictionBook();
