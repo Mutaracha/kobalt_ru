@@ -306,8 +306,22 @@ void reportedFictionBook(const QString &path)
             EngineDocument replay(fonts);
             require(replay.open(bytes, QSize(1264, 1608), configured, &error), qPrintable(error));
             require(replay.state().value("font_face") == "Fira Sans", "Fira Sans replay fell back");
-            const auto drift = ReaderSourceIndexProbe::paragraphFormatDrift(replay);
-            require(drift.isEmpty(), qPrintable(QString("FB2 pagination/paint mismatch (spacing=%1):\n%2")
+            require(!replay.image(replay.page()).isNull(), "Reported FB2 first paint failed");
+            auto drift = ReaderSourceIndexProbe::paragraphFormatDrift(replay);
+            require(drift.isEmpty(), qPrintable(QString("FB2 pagination/paint mismatch after thickness (spacing=%1):\n%2")
+                    .arg(normalize).arg(drift.join('\n'))));
+            // Appearance samples are English and share CREngine's process-wide
+            // language manager with the Russian book. They must not change the
+            // line breaks of paragraphs reformatted later for paint or hits.
+            EngineDocument preview(fonts);
+            require(preview.open(
+                    QByteArray("<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
+                               "<description><title-info><lang>en</lang></title-info></description>"
+                               "<body><section><p>English appearance sample text.</p></section></body></FictionBook>"),
+                    QSize(800, 600), configured, &error), qPrintable(error));
+            require(!replay.image(replay.page()).isNull(), "Reported FB2 repaint failed");
+            drift = ReaderSourceIndexProbe::paragraphFormatDrift(replay);
+            require(drift.isEmpty(), qPrintable(QString("FB2 pagination/paint mismatch after English preview (spacing=%1):\n%2")
                     .arg(normalize).arg(drift.join('\n'))));
         }
     }
