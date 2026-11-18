@@ -157,16 +157,22 @@ focused native EPUB/FB2 и Qt5 build/package/contents.
 
 ## Сохранение оформления FB2 в предпросмотре
 
-**in progress**. После №182 пользователь сообщил: в начале главы при первой правке
-заголовок сохраняет позицию, но теряет жирность/отступы. Причина — flatten в synthetic
-preview. Вместо извлечения строк реализовано ограниченное копирование semantic
-поддерева с контекстом title/poem/cite/section, без generated boxing/маркеров движка.
-Source bookmark отображается по codepoint offset внутри блока; основной DOM не меняется.
+**implemented / CI PASS / device pending**. После №182 пользователь сообщил:
+в начале главы при первой правке заголовок сохраняет позицию, но теряет
+жирность/отступы. Причина — flatten в synthetic preview. Вместо извлечения строк
+реализовано ограниченное копирование semantic поддерева с контекстом
+title/poem/cite/section, без generated boxing/маркеров движка. Source bookmark
+отображается по codepoint offset внутри блока; основной DOM не меняется.
 Добавлены assertions заголовка на исходной книге («На другое утро») и synthetic
-strong/title/margins при толщине 0→1→2→0. Первый CI 44355759805: Qt5 package compile/contents PASS, native engine.fb2 FAIL;
-деталь assertion не попала в доступные annotations. Добавлен прямой запуск FB2
-перед CTest для доступности диагностики; продолжается отладка. Device-приёмка
-нового изменения ожидается. EPUB, сноски и refresh не менялись.
+strong/title/margins при толщине 0→1→2→0. Начальный native FAIL оказался ошибкой
+нового probe: getFont() вызывался на text node (CREngine возвращает null), а не
+на родительском element. Probe исправлен; временный прямой запуск/gdb удалён.
+
+Runtime `06cd5e129b2799a0a11cd90a9270f6fb8086b785`:
+[CI 44362073516](https://github.com/Mutaracha/kobalt_ru/actions/runs/44362073516)
+**PASS** — focused native matrix, reported FB2 fixture, Qt5 compile/package/contents.
+[Qt5 device package](https://github.com/Mutaracha/kobalt_ru/actions/runs/44362073516/artifacts/14454752686).
+Device-приёмка ожидается. EPUB, сноски и refresh не менялись.
 
 ## Открытая диагностика
 

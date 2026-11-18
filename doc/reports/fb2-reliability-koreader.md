@@ -36,7 +36,7 @@ to two characters and discarded an explicit FictionBook root language override.
 The synthetic preview now retains both the complete metadata tag and root lang.
 An unresolvable/out-of-range mapped offset fails with the existing error rather
 than silently clamping to a different reading position. This changes only the
-FB2 synthetic preview; it does not redesign its existing flattened markup.
+FB2 synthetic preview. The subsequent heading fix below replaces its flattened markup.
 
 New Cyrillic cases cover prose, nested cite/section, poem verse and subtitle
 fallback; a supplementary Unicode character before the inline bookmark checks
@@ -68,3 +68,27 @@ notes, cache, positions and shared EPUB regressions remain enabled.
 
 Earlier device acceptance of build 181 remains evidence for that binary, not
 acceptance of these new changes. Device validation of this pass is separate.
+
+
+## Follow-up: semantic heading preview
+
+The supplied FB2 exposed a separate preview defect: flattening a chapter-title
+paragraph removed its title ancestors and inline bold markup on the first edit.
+The FB2 fragment now retains semantic ancestors and inline descendants, unwrapping
+engine-generated boxes and omitting generated pseudo content. The source DOM is
+not modified. Fragment size/depth/node limits remain bounded; the original anchor
+is mapped by codepoint offset through the retained text descendants.
+
+Tests cover a synthetic strong/title/margins fixture and «На другое утро» in the
+reported book, preserving heading font/margins, text/anchor, repaint and source
+state across thickness 0→1→2→0. Existing Cyrillic inline/verse/cite cases remain.
+The initial test crash was a null font in the new probe (text nodes have no
+getFont()); the probe now resolves the parent element before reading the font.
+
+Runtime `06cd5e129b2799a0a11cd90a9270f6fb8086b785`:
+[CI 44362073516](https://github.com/Mutaracha/kobalt_ru/actions/runs/44362073516)
+**PASS** for the focused native matrix, reported-book integration and Qt5 package
+build/contents. [Device package](https://github.com/Mutaracha/kobalt_ru/actions/runs/44362073516/artifacts/14454752686).
+Physical-device verification is pending; EPUB implementation and refresh were
+not changed. Temporary direct/gdb CI diagnostics were removed; the short native
+failure-tail annotation remains for environments unable to download redirected logs.
