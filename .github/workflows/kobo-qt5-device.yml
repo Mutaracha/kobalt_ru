@@ -57,11 +57,16 @@ jobs:
             docker pull "$image"
             cache=$(cmake -P dependencies/cache.cmake)
             mkdir -p "$cache"
-            docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            docker run --rm --user 0:0 --cap-add=SYS_PTRACE -e HOME=/tmp \
               --volume "$PWD:/work" --volume "$cache:/dependency-cache" \
               --workdir /work/platforms/desktop "$image" bash -euc '
+                apt-get update -qq && apt-get install -y -qq gdb
                 cmake --preset linux -DKOBALT_FORK_NAME=kobalt_ru -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
                 cmake --build ../../build/desktop-linux --parallel 4 --target kobalt-desktop-tests kobalt-links-tests kobalt-fb2-tests kobalt-comics-tests kobalt-alignment-tests kobalt-beautifier-tests kobalt-page-layout-tests kobalt-columns-tests kobalt-image-proportions-tests kobalt-mathml-tests kobalt-resource-cache-tests kobalt-local-resources-tests kobalt-chapter-progress-tests kobalt-header-footer-tests kobalt-document-cache-tests kobalt-appearance-settings-tests kobalt-ui-tests kobalt-strings-locale-tests kobalt-reader-lifecycle-tests kobalt-shutdown-tests kobalt-reading-book-tests kobalt-screen-refresh-tests -- -k 0
+                mkdir -p /work/build/desktop-linux/test-tmp
+                cd /work/build/desktop-linux/test-tmp
+                QT_QPA_PLATFORM=offscreen gdb --batch -ex run -ex "bt 8" --args /work/build/desktop-linux/kobalt-fb2-tests
+                cd /work/platforms/desktop
                 # Run FB2 directly too: keep its exact assertion in the outer log
                 # when the CTest LastTest.log is unavailable through artifact redirects.
                 QT_QPA_PLATFORM=offscreen cmake \
