@@ -93,6 +93,7 @@ jobs:
           fi
           tail -40 "$log"
           if [ "$status" -ne 0 ]; then
+            tail -100 "$log" | awk '{ gsub(/%/, "%25"); gsub(/\r/, "%0D"); report = report $0 "%0A" } END { print "::error::Native diagnostic tail%0A" report }'
             # QtTest uses FAIL!, not FAIL<space>. Emit each failure with its
             # comparison/source context; do not lose later failures behind the
             # first launcher's generic exit code or a pipefail/SIGPIPE from head.
