@@ -182,11 +182,14 @@ focused native EPUB/FB2 и Qt5 build/package/contents PASS, затем device-п
 
 User revised the decision on 2026-10-26: left caption shows time left in the
 **book**, without the field-name prefix; right caption keeps book page count.
-Both captions use the italic brand font, like the session-time caption. This
+Both captions use italic interfaceFont (IBM Plex Sans), replacing the decorative
+brand face after the user reported poor rendering; their background is transparent
+so the header shading stays continuous. This
 supersedes the earlier chapter-estimate/field-label rule. Reuse header/footer
 BookTimeLeft formatting (including exact/approximate preference); capitalize
 the first letter and leave the caption empty without an estimate.
 The strip must disappear with the reading menu even if Preview never covered it.
 No forced full-screen refresh or pagination reservation. Estimate preparation
 must not depend on toolbar visibility: normal opening prepares status before show.
-Runtime 76485448, CI 44383356110 native/Qt5 PASS; device acceptance pending.
+Runtime ef5424cf, CI 44397464051 native/Qt5 PASS; device acceptance pending.
+The strip starts explicitly hidden, before its first menu placement.

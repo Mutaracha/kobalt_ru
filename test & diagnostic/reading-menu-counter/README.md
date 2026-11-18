@@ -14,3 +14,8 @@ without a preview covering it. Report evidence, not acceptance of the fix.
 2026-10-26. Reading footer shows an estimate while opening the ordinary reading
 menu leaves its left caption empty. User changed the strip requirement to book
 time left and italic captions. These are pre-fix reports, not acceptance.
+
+`screen_001-18.png` and `screen_002-13.png`: original rendering report supplied
+2026-10-26. Show caption background rectangles/decorative-font issues and a small
+counter fragment at the screen origin before the first menu opening. Pre-fix
+report evidence; not physical-device acceptance of the replacement.

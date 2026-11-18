@@ -242,11 +242,18 @@ Device-приёмка ожидается; автоматическая fixture �
 
 ## Полоса меню: фон, шрифт и первый показ
 
-**in progress / CI pending / device pending**. Пользователь сообщил белые прямоугольники
+**done / CI verified / device pending**. Пользователь сообщил белые прямоугольники
 под подписями, неудачный brand italic и фрагмент счётчика в (0,0) при открытии книги.
 Полоса создавалась sibling-виджетом без initial hide; до первого Navigation::update
 могла показываться с default geometry. Добавлен initial hide. Подписи переведены
 на interfaceFont italic с явным transparent background вместо brand stylesheet,
 который наследовал общий фон QLabel. Регрессии: полоса скрыта до первого меню,
 семейство interfaceFont, italic и transparent background, прежние dismiss/reopen.
-Новых строк, refresh policy и изменений пагинации нет. Native/Qt5 CI ожидаются.
+Новых строк, refresh policy и изменений пагинации нет.
+Runtime `ef5424cf8067bad322ef97190baa02ca56f68544`:
+[CI 44397464051](https://github.com/Mutaracha/kobalt_ru/actions/runs/44397464051)
+PASS — focused native matrix (включая initial hidden, italic/interface family,
+transparent stylesheet, dismiss/reopen light/dark), offline checks, Qt5 package/contents.
+[Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44397464051/artifacts/14472252031).
+Первый CI потребовал явный int cast TextPx для Qt6 QString::arg; исправлено.
+Физическая device-проверка фона/шрифта и отсутствия артефакта ожидается.
