@@ -712,12 +712,20 @@ void Reader::buildToolbar()
     auto *pageStrip = new ui::ListHeader(this);
     pageStrip->setObjectName("rrMenuPageStrip");
     pageStrip->setShaded(true);
+    pageStrip->hide(); // A sibling overlay must not appear before the first menu open.
     menuPage = pageStrip->rightLabel();
     menuPage->setObjectName("rrMenuPage");
     pageStrip->leftLabel()->setObjectName("rrMenuTimeLeft");
     for (auto *caption : {pageStrip->leftLabel(), pageStrip->rightLabel()}) {
-        caption->setFont(ui::brandFont(metrics::panel::sessionText, true));
-        readerStyle(caption, styles::brand(metrics::panel::sessionText, true));
+        auto font = ui::interfaceFont(metrics::panel::sessionText);
+        font.setItalic(true);
+        caption->setFont(font);
+        // Keep the header shading continuous: the inherited reader QLabel
+        // background must not turn each caption into a separate white box.
+        readerStyle(caption, QString("font-family:'@ui-font-family@';font-size:%1px;"
+                                     "font-style:italic;font-weight:400;background:transparent;"
+                                     "border:none;padding:0;color:palette(window-text);")
+                                     .arg(metrics::panel::sessionText));
     }
     toolbarComposition.pageStrip = pageStrip;
     menuBattery = new kobalt::ui::BatteryIndicator(topControls);

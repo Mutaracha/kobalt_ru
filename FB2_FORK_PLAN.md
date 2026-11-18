@@ -239,3 +239,14 @@ PASS: focused native matrix, offline checks, Kobo Qt5 build/package/contents.
 [Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44383356110/artifacts/14464463554).
 Device-приёмка ожидается; автоматическая fixture без reading history не доказывает
 наличие ненулевой оценки на реальном устройстве, поэтому нужна пользовательская сверка.
+
+## Полоса меню: фон, шрифт и первый показ
+
+**in progress / CI pending / device pending**. Пользователь сообщил белые прямоугольники
+под подписями, неудачный brand italic и фрагмент счётчика в (0,0) при открытии книги.
+Полоса создавалась sibling-виджетом без initial hide; до первого Navigation::update
+могла показываться с default geometry. Добавлен initial hide. Подписи переведены
+на interfaceFont italic с явным transparent background вместо brand stylesheet,
+который наследовал общий фон QLabel. Регрессии: полоса скрыта до первого меню,
+семейство interfaceFont, italic и transparent background, прежние dismiss/reopen.
+Новых строк, refresh policy и изменений пагинации нет. Native/Qt5 CI ожидаются.

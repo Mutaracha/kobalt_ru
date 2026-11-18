@@ -4647,6 +4647,9 @@ private slots:
         QVERIFY(!fixture.state().value("appearance_controls_built").toBool());
         QVERIFY(!fixture.widget("rrComicsReadingMode"));
         QVERIFY(!fixture.widget("rrHeaderFooterSlot0"));
+        auto *initialStrip = fixture.widget("rrMenuPageStrip");
+        QVERIFY(initialStrip);
+        QVERIFY(!initialStrip->isVisible());
         QVERIFY(fixture.press("rrPage"));
         auto *pageCount = qobject_cast<QLabel *>(fixture.widget("rrMenuPage"));
         QVERIFY(pageCount);
@@ -4659,6 +4662,10 @@ private slots:
         QVERIFY(timeLeft);
         QVERIFY(timeLeft->font().italic());
         QVERIFY(pageCount->font().italic());
+        QCOMPARE(timeLeft->font().family(), ui::interfaceFont().family());
+        QCOMPARE(pageCount->font().family(), ui::interfaceFont().family());
+        QVERIFY(timeLeft->styleSheet().contains("background:transparent"));
+        QVERIFY(pageCount->styleSheet().contains("background:transparent"));
         const auto timeCaption = timeLeft->text();
         // Dismiss the plain menu without ever covering the counter with Preview.
         QVERIFY(fixture.press("rrPage"));
