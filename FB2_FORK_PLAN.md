@@ -192,11 +192,16 @@ Actions runs/artifacts. Автоматически не возобновлять
 
 ## Полоса счётчика в меню чтения
 
-**in progress / CI pending / device pending**. По уточнению пользователя счётчик
+**done / CI verified / device pending**. По уточнению пользователя счётчик
 страниц убран из строки часов/батареи в отдельную серую полосу под верхней панелью
 обычного меню чтения. Полоса не резервирует место в пагинации; предпросмотр и
 заголовки других полноэкранных панелей замещают её. Подпись времени чтения снова
 центрируется относительно экрана независимо от ширины индикаторов справа.
 Используются существующие ListHeader и строка navigation.page_count, новых строк
 и настроек нет. Расширен lazyAppearance test: положение/видимость полосы,
-отдельный parent счётчика и центрирование session label. Native/Qt5 CI ожидаются.
+отдельный parent счётчика и центрирование session label.
+Runtime `cb3fe8dad2e1db50d1b4c2cf96fdb60d0760126c`:
+[CI 44373349020](https://github.com/Mutaracha/kobalt_ru/actions/runs/44373349020)
+PASS — focused native matrix (включая lazyAppearance light/dark), offline checks,
+Kobo Qt5 package/contents. [Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44373349020/artifacts/14460611469).
+Device-проверка ожидается; waveform и пагинация не менялись.

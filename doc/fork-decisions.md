@@ -175,4 +175,4 @@ focused native EPUB/FB2 и Qt5 build/package/contents PASS, затем device-п
   отдельной серой полосой под верхней панелью. Предпросмотр или другая панель,
   занимающая это место, замещает полосу. Это заменяет прежнее размещение страниц
   перед батареей. Время чтения центрируется по экрану, строки часов/батареи не меняются.
-- Validation: implementation + automated coverage added; CI/device pending.
+- Validation: runtime cb3fe8da, CI 44373349020 native/Qt5 PASS; device pending.
