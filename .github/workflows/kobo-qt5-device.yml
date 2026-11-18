@@ -62,6 +62,12 @@ jobs:
               --workdir /work/platforms/desktop "$image" bash -euc '
                 cmake --preset linux -DKOBALT_FORK_NAME=kobalt_ru -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
                 cmake --build ../../build/desktop-linux --parallel 4 --target kobalt-desktop-tests kobalt-links-tests kobalt-fb2-tests kobalt-comics-tests kobalt-alignment-tests kobalt-beautifier-tests kobalt-page-layout-tests kobalt-columns-tests kobalt-image-proportions-tests kobalt-mathml-tests kobalt-resource-cache-tests kobalt-local-resources-tests kobalt-chapter-progress-tests kobalt-header-footer-tests kobalt-document-cache-tests kobalt-appearance-settings-tests kobalt-ui-tests kobalt-strings-locale-tests kobalt-reader-lifecycle-tests kobalt-shutdown-tests kobalt-reading-book-tests kobalt-screen-refresh-tests -- -k 0
+                # Run FB2 directly too: keep its exact assertion in the outer log
+                # when CTest's LastTest.log is unavailable through artifact redirects.
+                QT_QPA_PLATFORM=offscreen cmake \
+                  -DTEST_EXECUTABLE=/work/build/desktop-linux/kobalt-fb2-tests \
+                  -DTEST_TIMEOUT=180 -DTEST_TMP_ROOT=/work/build/desktop-linux/test-tmp \
+                  -P /work/platforms/desktop/run-test.cmake
                 ctest --preset linux --output-on-failure -R "^(session\.reading-book|platform\.shutdown|engine\.(links|fb2|comics|alignment|beautifier|page-layout|columns|image-proportions|mathml|document-cache)|model\.(screen-refresh|resource-cache|local-resources|appearance-settings|header-footer|chapter-progress|strings-locale)|component\.ui|desktop\.(comicsQuickToggle|appearanceChromeDraft|lazyAppearance|settings.*|libraryAbout|chapterGroups|buttonMapping.*|headerFooterSizes|progressStripMirrors|advancedText|globalLayout)|lifecycle\.(readerStandbySetting|appearance.*|uneditedPanelTransitions|overflowClosesCurrentPanel))$"
                 QT_QPA_PLATFORM=offscreen cmake \
                   -DTEST_EXECUTABLE=/work/build/desktop-linux/kobalt-fb2-tests \

@@ -170,12 +170,12 @@ bool EngineDocument::openFb2Preview(EngineDocument &source, QSize size, QString 
     bool reached = false, valid = true;
     std::function<void(ldomNode *, int, bool)> write = [&](ldomNode *part, int depth, bool firstBlock) {
         if (!valid) return;
+        if (part == start) reached = firstBlock = true;
+        if ((!reached || (characters >= 8192 && !firstBlock)) && !ancestors.contains(part)) return;
         if (++visited > 20000 || depth > 128 || previewBytes.size() > 2 * 1024 * 1024) {
             valid = false;
             return;
         }
-        if (part == start) reached = firstBlock = true;
-        if ((!reached || (characters >= 8192 && !firstBlock)) && !ancestors.contains(part)) return;
         if (part->isText()) {
             const auto text = part->getText();
             characters += text.length();

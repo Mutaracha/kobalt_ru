@@ -163,7 +163,9 @@ preview. Вместо извлечения строк реализовано о�
 поддерева с контекстом title/poem/cite/section, без generated boxing/маркеров движка.
 Source bookmark отображается по codepoint offset внутри блока; основной DOM не меняется.
 Добавлены assertions заголовка на исходной книге («На другое утро») и synthetic
-strong/title/margins при толщине 0→1→2→0. Native и Qt5 CI ожидаются, device-приёмка
+strong/title/margins при толщине 0→1→2→0. Первый CI 44355759805: Qt5 package compile/contents PASS, native engine.fb2 FAIL;
+деталь assertion не попала в доступные annotations. Добавлен прямой запуск FB2
+перед CTest для доступности диагностики; продолжается отладка. Device-приёмка
 нового изменения ожидается. EPUB, сноски и refresh не менялись.
 
 ## Открытая диагностика
