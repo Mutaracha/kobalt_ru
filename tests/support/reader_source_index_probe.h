@@ -143,7 +143,11 @@ struct ReaderSourceIndexProbe {
     static QString headingSignature(const EngineDocument &model) {
         const auto point = model.engine_->getDocument()->createXPointer(cre(model.position()));
         if (point.isNull()) return {};
-        const auto font = point.getNode()->getFont();
+        auto *element = point.getNode();
+        if (element->isText()) element = element->getParentNode();
+        if (!element) return {};
+        const auto font = element->getFont();
+        if (font.isNull()) return {};
         QString result = QString("font=%1/%2").arg(font->getSize()).arg(font->getWeight());
         bool title = false;
         for (auto *node = point.getNode(); node && !node->isRoot(); node = node->getParentNode()) {
