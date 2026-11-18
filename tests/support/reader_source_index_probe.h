@@ -126,6 +126,19 @@ struct ReaderSourceIndexProbe {
         const auto *title = noteHeading(model, id);
         return title && title->getAttributeValue("data-kobalt-note-number") == U"1";
     }
+    static QString documentLanguage(const EngineDocument &model) {
+        return QString::fromUtf8(UnicodeToUtf8(model.engine_->getLanguage()).c_str());
+    }
+    static QString anchorLanguage(const EngineDocument &model) {
+        const auto pointer = model.engine_->getDocument()->createXPointer(cre(model.position()));
+        for (auto *node = pointer.isNull() ? nullptr : pointer.getNode(); node && !node->isRoot();
+             node = node->getParentNode()) {
+            if (!node->isElement()) continue;
+            const auto value = node->getAttributeValue("lang");
+            if (!value.empty()) return QString::fromUtf8(UnicodeToUtf8(value).c_str());
+        }
+        return {};
+    }
     static QString textAnchor(const EngineDocument &model, const char *id, int offset) {
         auto *node = model.engine_->getDocument()->getElementById(cre(QString::fromLatin1(id)).c_str());
         while (node && node->isElement() && node->getChildCount()) node = node->getChildNode(0);

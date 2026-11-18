@@ -111,10 +111,12 @@ bool EngineDocument::openFb2Preview(EngineDocument &source, QSize size, QString 
     if (!start || start == node)
         start = node;
     int offset = 0;
+    bool mapped = false;
     QVector<ldomNode *> pending{start};
     while (!pending.isEmpty()) {
         auto *part = pending.takeLast();
         if (part == pointer.getNode()) {
+            mapped = true;
             if (part->isText())
                 offset += qBound(0, pointer.getOffset(), part->getText().length());
             else
@@ -128,6 +130,8 @@ bool EngineDocument::openFb2Preview(EngineDocument &source, QSize size, QString 
             for (int i = part->getChildCount() - 1; i >= 0; --i)
                 pending.append(part->getChildNode(i));
     }
+    if (!mapped)
+        return fail(strings::get("error.no_section_to_preview"));
     QStringList paragraphs;
     int total = 0;
     constexpr int previewLimit = 8192;
@@ -159,10 +163,21 @@ bool EngineDocument::openFb2Preview(EngineDocument &source, QSize size, QString 
     writer.writeStartDocument("1.0", true);
     writer.writeDefaultNamespace("http://www.gribuser.ru/xml/fictionbook/2.0");
     writer.writeStartElement("FictionBook");
+    // Match the book's effective root language, including an explicit override
+    // of metadata. Never truncate regional/script subtags to two characters.
+    auto *root = document->getRootNode();
+    for (int i = 0; i < root->getChildCount(); ++i) {
+        auto *child = root->getChildNode(i);
+        if (child->isElement() && child->isNodeName("FictionBook")) {
+            const auto lang = qstring(child->getAttributeValue("lang"));
+            if (!lang.isEmpty()) writer.writeAttribute("lang", lang);
+            break;
+        }
+    }
     writer.writeStartElement("description");
     writer.writeStartElement("title-info");
     if (!language.isEmpty())
-        writer.writeTextElement("lang", language.left(2));
+        writer.writeTextElement("lang", language);
     writer.writeEndElement(); // title-info
     writer.writeEndElement(); // description
     writer.writeStartElement("body");
@@ -187,8 +202,10 @@ bool EngineDocument::openFb2Preview(EngineDocument &source, QSize size, QString 
     auto *anchor = engine_->getDocument()->getElementById(U"kobalt-preview-anchor");
     while (anchor && anchor->isElement() && anchor->getChildCount())
         anchor = anchor->getChildNode(0);
-    if (!anchor || !anchor->isText())
+    if (!anchor || !anchor->isText() || offset < 0 || offset > anchor->getText().length())
         return fail(strings::get("error.no_section_to_preview"));
-    return goTo(qstring(ldomXPointer(anchor, qBound(0, offset, anchor->getText().length())).toString()));
+    if (!goTo(qstring(ldomXPointer(anchor, offset).toString())))
+        return fail(strings::get("error.no_section_to_preview"));
+    return true;
 }
 } // namespace kobalt

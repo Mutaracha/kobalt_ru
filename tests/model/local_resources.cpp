@@ -124,6 +124,31 @@ static void fb2TransferBoundaries(const QString &path, qint64 size)
             "FB2 transfer ignored a rejecting sink");
     require(!fb2::transferFile(path, size, {}, discard, nullptr, sinkNs),
             "FB2 transfer accepted a missing source lease");
+    // A sink callback can expose a concurrent edit after the initial stat.
+    // Neither extra bytes nor a truncated stream may be accepted as the book.
+    for (bool grow : {false, true}) {
+        const QString changed = path + ".changed";
+        QFile file(changed);
+        const QByteArray payload(int(ResourceCache::blockBytes) * 2 + 17, 'x');
+        require(file.open(QIODevice::WriteOnly) && file.write(payload) == payload.size(),
+                "Cannot write changing FB2 fixture");
+        file.close();
+        qint64 delivered = 0;
+        auto stableLease = std::make_shared<SourceLease>();
+        const auto mutate = [&](const char *, qint64 bytes) {
+            delivered += bytes;
+            QFile writer(changed);
+            require(writer.open(QIODevice::ReadWrite)
+                            && writer.resize(grow ? payload.size() + 10 : 0),
+                    "Cannot mutate FB2 during transfer");
+            return true;
+        };
+        error.clear();
+        require(!fb2::transferFile(changed, payload.size(), stableLease, mutate, &error, sinkNs)
+                        && !error.isEmpty() && delivered <= payload.size(),
+                "FB2 transfer accepted a mid-stream size change");
+    }
+
 }
 
 int main(int argc, char **argv)

@@ -140,6 +140,17 @@ Nickel и Smart на runtime 116024c, а затем все поставленн�
 [Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44114141676/artifacts/14343185395).
 Проверка исходной книги и ограничения: [разбор FB2](doc/reports/fb2-post-refactor.md).
 
+## Надёжность FB2 — дополнительный аудит по запросу пользователя
+
+**in progress**. Это отдельное усиление интеграции, не отмена приёмки сборки №181.
+Сравнение с KOReader и границы: [отчёт](doc/reports/fb2-reliability-koreader.md).
+Исправлены root-probe (не принимать FictionBook из комментария чужого XML),
+полный language tag/root override и строгий mapped offset в FB2 preview,
+точная граница размера при transfer файла. Добавлены русские nested/verse/subtitle
+preview/reflow cases и проверки grow/truncate из sink. EPUB, принятые сноски,
+refresh, schema/cache format и строки не менялись. Native/Qt5 CI ожидается;
+новой device-приёмки нет.
+
 ## Открытая диагностика
 
 | Задача | Статус | Следующее действие |

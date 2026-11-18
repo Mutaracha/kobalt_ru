@@ -34,6 +34,17 @@ void formatBoundaries() {
     require(!fb2::matchesHead("<?xml version=\"1.0\"?><rss>"), "Other XML is not FB2");
     require(!fb2::matchesHead("<FictionBookish>"), "FB2 root delimiter");
     require(!fb2::matchesHead("<?xml?><!ENTITY x 'text'><FictionBook>"), "FB2 entity guard");
+    require(fb2::matchesHead("<!-- before root --><?book test?><FictionBook >"),
+            "FB2 comments and processing instructions before root");
+    require(fb2::matchesHead("<?xml version='1.0'?><!DOCTYPE FictionBook SYSTEM 'unused>name'><FictionBook>"),
+            "FB2 doctype quoted delimiter");
+    for (const auto &invalid : {QByteArray("<?xml?><rss><!-- <FictionBook> --></rss>"),
+                               QByteArray("<?xml?><!-- <FictionBook> -->"),
+                               QByteArray("<?book <FictionBook> ?>"),
+                               QByteArray("<!-- unfinished <FictionBook>"),
+                               QByteArray("<!DOCTYPE FictionBook [<!ENTITY x 'test'>]><FictionBook>"),
+                               QByteArray("<FictionBookish>"), QByteArray("<FictionBook")})
+        require(!fb2::matchesHead(invalid), "FB2 probe accepted a decoy/incomplete root");
     require(fb2::cachePolicy(false).isEmpty(), "EPUB cache policy must not acquire the FB2 marker");
     require(fb2::cachePolicy(true) == QByteArray(":fb2-v9:"), "FB2 migration cache marker");
 
@@ -93,6 +104,51 @@ void previewPosition()
                         && source.image(source.page()) == image,
                 "FB2 preview changed main reading state");
     }
+}
+
+void previewReliability()
+{
+    for (const auto &wrapper : {QPair<QByteArray, QByteArray>{"<p>", "</p>"},
+                                {"<section><cite><p>", "</p></cite></section>"},
+                                {"<poem><stanza><v>", "</v></stanza></poem>"},
+                                {"<subtitle>", "</subtitle>"}}) {
+        const auto bytes = QByteArray("<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
+                          "<description><title-info><lang>ru-RU</lang></title-info></description>"
+                          "<body><section><p>Earlier source paragraph.</p>")
+                + wrapper.first
+                + "До вставки 🦉 <emphasis id='target'>абвгде Контроль позиции.</emphasis> После вставки."
+                + wrapper.second + "<p>Following paragraph.</p></section></body></FictionBook>";
+        EngineDocument source(test::readerFonts()), preview(test::readerFonts());
+        QString error;
+        require(source.open(bytes, QSize(800, 600), {}, &error), qPrintable(error));
+        const auto position = ReaderSourceIndexProbe::textAnchor(source, "target", 7);
+        require(source.goTo(position), "Cannot set Russian FB2 preview bookmark");
+        const auto state = source.state();
+        require(preview.openPreview(source, QSize(800, 600), &error), qPrintable(error));
+        const auto tail = ReaderSourceIndexProbe::anchorTail(source);
+        const auto bookmark = preview.position();
+        require(tail.startsWith(QString::fromUtf8("Контроль")), "Russian preview fixture offset");
+        require(ReaderSourceIndexProbe::documentLanguage(preview) == "ru-RU",
+                "FB2 preview truncated a language subtag");
+        for (int size : {40, 56, 40}) {
+            require(preview.style(size, 130), "FB2 preview reflow failed");
+            require(preview.position() == bookmark
+                            && ReaderSourceIndexProbe::anchorTail(preview).startsWith(tail)
+                            && !preview.imageFromAnchor(false).isNull(),
+                    "Russian FB2 preview reflow lost a codepoint bookmark");
+            require(source.state() == state && source.position() == position,
+                    "Russian FB2 preview reflow changed reading state");
+        }
+    }
+    EngineDocument source(test::readerFonts()), preview(test::readerFonts());
+    QString error;
+    require(source.open(QByteArray("<FictionBook lang='ru-RU' xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
+                        "<description><title-info><lang>en-US</lang></title-info></description>"
+                        "<body><section><p>Текст с явным языком корня.</p></section></body></FictionBook>"),
+                        QSize(800, 600), {}, &error), qPrintable(error));
+    require(preview.openPreview(source, QSize(800, 600), &error), qPrintable(error));
+    require(ReaderSourceIndexProbe::anchorLanguage(preview) == "ru-RU",
+            "FB2 preview discarded explicit root language");
 }
 
 void forkStyleFragments()
@@ -463,6 +519,7 @@ int main(int argc, char **argv) {
     forkStyleFragments();
     languageBinding();
     previewPosition();
+    previewReliability();
     inspectFictionBook();
     rejectNonFictionBook();
     renderFictionBook();

@@ -11,18 +11,45 @@ inline bool matchesHead(const QByteArray &head) {
     int at = 0;
     if (head.startsWith("\xEF\xBB\xBF"))
         at = 3;
-    while (at < head.size() &&
-           (head[at] == '\t' || head[at] == '\r' || head[at] == '\n' || head[at] == ' '))
-        ++at;
-    const auto prefix = head.mid(at);
-    if (!prefix.startsWith("<?xml") && !prefix.startsWith("<FictionBook"))
-        return false;
-    // XML entity expansion (billion laughs) guard, mirroring cleanXml for EPUB.
+    // Do not mistake a tag mentioned in a comment, PI or another XML root
+    // for the document element. Keep this byte-based for legacy encodings.
     if (head.contains("<!ENTITY"))
         return false;
-    const int tag = head.indexOf("<FictionBook");
-    if (tag < 0)
+    for (;;) {
+        while (at < head.size() &&
+               (head[at] == '\t' || head[at] == '\r' || head[at] == '\n' || head[at] == ' '))
+            ++at;
+        if (head.mid(at, 4) == "<!--") {
+            const int end = head.indexOf("-->", at + 4);
+            if (end < 0) return false;
+            at = end + 3;
+        } else if (head.mid(at, 2) == "<?") {
+            const int end = head.indexOf("?>", at + 2);
+            if (end < 0) return false;
+            at = end + 2;
+        } else if (head.mid(at, 9) == "<!DOCTYPE") {
+            // A declaration may contain quoted '>' or an internal subset.
+            // Entity declarations remain disallowed by the guard above.
+            int depth = 0;
+            char quote = 0;
+            int end = at + 9;
+            for (; end < head.size(); ++end) {
+                const char ch = head[end];
+                if (quote) {
+                    if (ch == quote) quote = 0;
+                } else if (ch == '\'' || ch == '"') quote = ch;
+                else if (ch == '[') ++depth;
+                else if (ch == ']') --depth;
+                else if (ch == '>' && !depth) break;
+                if (depth < 0) return false;
+            }
+            if (end == head.size()) return false;
+            at = end + 1;
+        } else break;
+    }
+    if (head.mid(at, 12) != "<FictionBook")
         return false;
+    const int tag = at;
     const int after = tag + int(std::strlen("<FictionBook"));
     if (after >= head.size())
         return false;

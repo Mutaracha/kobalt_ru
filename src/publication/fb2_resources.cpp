@@ -24,14 +24,15 @@ bool transferFile(const QString &path, qint64 expectedSize,
     }
     QElapsedTimer deadline;
     deadline.start();
-    while (!file.atEnd()) {
+    qint64 transferred = 0;
+    while (transferred < expectedSize) {
         if (cancelled()) {
             return fail("error.reading_session_closed");
         }
         if (deadline.elapsed() >= 5000) {
             return fail("error.native_publication_transfer_timed_out");
         }
-        const auto bytes = file.read(ResourceCache::blockBytes);
+        const auto bytes = file.read(qMin(qint64(ResourceCache::blockBytes), expectedSize - transferred));
         if (bytes.isEmpty()) {
             return fail("error.could_not_load_a_book_resource");
         }
@@ -41,7 +42,14 @@ bool transferFile(const QString &path, qint64 expectedSize,
             return false;
         }
         sinkNs += work.nsecsElapsed();
+        transferred += bytes.size();
+        if (file.size() != expectedSize)
+            return fail("error.a_book_resource_changed_during_reading");
     }
-    return !cancelled();
+    if (cancelled())
+        return fail("error.reading_session_closed");
+    if (file.error() != QFile::NoError || file.size() != expectedSize || !file.atEnd())
+        return fail("error.a_book_resource_changed_during_reading");
+    return true;
 }
 } // namespace kobalt::fb2
