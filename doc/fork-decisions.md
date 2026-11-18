@@ -178,11 +178,15 @@ focused native EPUB/FB2 и Qt5 build/package/contents PASS, затем device-п
 - Validation: runtime cb3fe8da, CI 44373349020 native/Qt5 PASS; device pending.
 
 
-### Reading-menu strip: chapter estimate and dismissal
+### Reading-menu strip: book estimate, italic captions and dismissal
 
-User approved on 2026-10-26: left caption shows time left in the chapter;
-right caption keeps book page count. Reuse the header/footer chapter estimate,
-formatting and existing field label; leave the left caption empty without an
-estimate. The strip must disappear with the reading menu even if Preview never
-covered it. No forced full-screen refresh or pagination reservation.
-Runtime e1fcfa8c, CI 44377438368 native/Qt5 PASS; physical-device acceptance pending.
+User revised the decision on 2026-10-26: left caption shows time left in the
+**book**, without the field-name prefix; right caption keeps book page count.
+Both captions use the italic brand font, like the session-time caption. This
+supersedes the earlier chapter-estimate/field-label rule. Reuse header/footer
+BookTimeLeft formatting (including exact/approximate preference); capitalize
+the first letter and leave the caption empty without an estimate.
+The strip must disappear with the reading menu even if Preview never covered it.
+No forced full-screen refresh or pagination reservation. Estimate preparation
+must not depend on toolbar visibility: normal opening prepares status before show.
+Runtime 76485448, CI 44383356110 native/Qt5 PASS; device acceptance pending.

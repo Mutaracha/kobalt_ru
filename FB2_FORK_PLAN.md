@@ -225,7 +225,7 @@ offline checks, Kobo Qt5 package/contents.
 
 ## Полоса меню: оценка книги и курсив
 
-**in progress / CI pending / device pending**. Пользователь сообщил о пустой
+**done / CI verified / device pending**. Пользователь сообщил о пустой
 левой подписи при открытии меню и изменил требование: остаток времени книги,
 не главы; без названия поля; обе подписи курсивом. Причина пустой подписи:
 updateMenuStatus выполняется до topControls->show(), а formatter был gated
@@ -233,4 +233,9 @@ updateMenuStatus выполняется до topControls->show(), а formatter �
 без изменения общего расчёта/настройки точного или приблизительного формата.
 Первая буква подписи заглавная. Подписи используют brandFont italic, не caption
 с разрядкой. Дополнены проверки italic и сохранения подписи при reopen.
-Native/Qt5 CI ожидаются; device-приёмка ожидается.
+Runtime `76485448e023bc7c72a6b79baa78a38ce657f502`:
+[CI 44383356110](https://github.com/Mutaracha/kobalt_ru/actions/runs/44383356110)
+PASS: focused native matrix, offline checks, Kobo Qt5 build/package/contents.
+[Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44383356110/artifacts/14464463554).
+Device-приёмка ожидается; автоматическая fixture без reading history не доказывает
+наличие ненулевой оценки на реальном устройстве, поэтому нужна пользовательская сверка.
