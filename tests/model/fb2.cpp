@@ -151,6 +151,44 @@ void previewReliability()
             "FB2 preview discarded explicit root language");
 }
 
+void previewHeading(EngineDocument &source, const QString &title)
+{
+    const auto bookmark = ReaderSourceIndexProbe::titleBookmark(source, title);
+    require(!bookmark.isEmpty() && source.goTo(bookmark), "Cannot locate FB2 title bookmark");
+    const auto signature = ReaderSourceIndexProbe::headingSignature(source);
+    const auto tail = ReaderSourceIndexProbe::anchorTail(source);
+    const auto state = source.state();
+    const auto image = source.image(source.page());
+    EngineDocument preview(test::readerFonts());
+    QString error;
+    require(preview.openPreview(source, source.image(source.page()).size(), &error), qPrintable(error));
+    const auto anchor = preview.position();
+    for (int thickness : {0, 1, 2, 0}) {
+        require(preview.setThickness(thickness), "Cannot change FB2 title preview thickness");
+        require(!signature.isEmpty() && ReaderSourceIndexProbe::headingSignature(preview) == signature,
+                qPrintable(QString("FB2 title preview lost heading weight/margins: source=%1 preview=%2")
+                           .arg(signature, ReaderSourceIndexProbe::headingSignature(preview))));
+        require(ReaderSourceIndexProbe::anchorTail(preview) == tail && preview.position() == anchor
+                        && !preview.imageFromAnchor(false).isNull(),
+                "FB2 title preview lost its original text/position");
+        require(source.state() == state && source.image(source.page()) == image,
+                "FB2 title preview mutated the reading document");
+    }
+}
+
+void semanticPreview()
+{
+    EngineDocument source(test::readerFonts());
+    QString error;
+    const auto bytes = QByteArray("<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
+                      "<description><title-info><lang>ru</lang></title-info></description>"
+                      "<body><section><title style='margin-top:2em;margin-bottom:1em'>"
+                      "<p><strong>Проверка заголовка</strong></p></title>"
+                      "<p>Обычный текст главы.</p></section></body></FictionBook>");
+    require(source.open(bytes, QSize(800, 1000), {}, &error), qPrintable(error));
+    previewHeading(source, QString::fromUtf8("Проверка заголовка"));
+}
+
 void forkStyleFragments()
 {
     // Frozen pre-extraction bytes: no cascade, spacing or cache-policy change.
@@ -450,6 +488,7 @@ void reportedFictionBook(const QString &path)
                              { "normalize_page_margins", true },
                              { "reduce_chapter_spacing", true } };
     require(book.open(bytes, QSize(1180, 1490), saved, &error), qPrintable(error));
+    previewHeading(book, QString::fromUtf8("На другое утро"));
     const auto chapters = book.chapters();
     int checked = 0;
     const QRegularExpression numbered(QStringLiteral("^[0-9]+[.]"));
@@ -520,6 +559,7 @@ int main(int argc, char **argv) {
     languageBinding();
     previewPosition();
     previewReliability();
+    semanticPreview();
     inspectFictionBook();
     rejectNonFictionBook();
     renderFictionBook();

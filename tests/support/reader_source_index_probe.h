@@ -126,6 +126,39 @@ struct ReaderSourceIndexProbe {
         const auto *title = noteHeading(model, id);
         return title && title->getAttributeValue("data-kobalt-note-number") == U"1";
     }
+    static QString titleBookmark(const EngineDocument &model, const QString &title) {
+        QVector<ldomNode *> pending{model.engine_->getDocument()->getRootNode()};
+        while (!pending.isEmpty()) {
+            auto *node = pending.takeLast();
+            if (node->isElement() && node->isNodeName("title")
+                    && QString::fromUtf8(UnicodeToUtf8(node->getText()).c_str()).contains(title)) {
+                while (node->isElement() && node->getChildCount()) node = node->getChildNode(0);
+                if (node->isText())
+                    return QString::fromUtf8(UnicodeToUtf8(ldomXPointer(node, 0).toString()).c_str());
+            }
+            for (int i = node->getChildCount()-1; i >= 0; --i) pending.append(node->getChildNode(i));
+        }
+        return {};
+    }
+    static QString headingSignature(const EngineDocument &model) {
+        const auto point = model.engine_->getDocument()->createXPointer(cre(model.position()));
+        if (point.isNull()) return {};
+        const auto font = point.getNode()->getFont();
+        QString result = QString("font=%1/%2").arg(font->getSize()).arg(font->getWeight());
+        bool title = false;
+        for (auto *node = point.getNode(); node && !node->isRoot(); node = node->getParentNode()) {
+            if (!node->isElement() || node->isBoxingNode()) continue;
+            if (!node->isNodeName("title") && !node->isNodeName("p")) continue;
+            title |= node->isNodeName("title");
+            const auto style = node->getStyle();
+            result += QString(";%1:%2/%3/%4/%5/%6")
+                    .arg(QString::fromUtf8(UnicodeToUtf8(node->getNodeName()).c_str()))
+                    .arg(style->margin[0].value).arg(style->margin[1].value)
+                    .arg(style->margin[2].value).arg(style->margin[3].value)
+                    .arg(style->text_indent.value);
+        }
+        return title ? result : QString();
+    }
     static QString documentLanguage(const EngineDocument &model) {
         return QString::fromUtf8(UnicodeToUtf8(model.engine_->getLanguage()).c_str());
     }

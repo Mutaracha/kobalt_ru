@@ -5,6 +5,7 @@
 #include <lvdocview.h>
 #include <QXmlStreamWriter>
 #include <algorithm>
+#include <functional>
 #include <QSet>
 
 namespace kobalt {
@@ -97,80 +98,65 @@ bool EngineDocument::openFb2Preview(EngineDocument &source, QSize size, QString 
     auto pointer = document->createXPointer(cre(source.position()));
     if (pointer.isNull())
         return fail(strings::get("error.no_section_to_preview"));
-    auto *node = pointer.getNode();
-    while (node && !node->isNodeName("section") && !node->isNodeName("body"))
-        node = node->getParentNode();
-    if (!node)
-        node = document->getRootNode();
-    // Keep the containing paragraph intact (including the text before the
-    // bookmark), then map the bookmark into its flattened preview text. Merely
-    // slicing at the bookmark would change first-line indentation and shaping.
-    auto *start = pointer.isNull() ? nullptr : pointer.getNode();
-    while (start && start != node && !start->isNodeName("p") && !start->isNodeName("v"))
+    auto *start = pointer.getNode();
+    while (start && !start->isNodeName("p") && !start->isNodeName("v")
+           && !start->isNodeName("subtitle") && !start->isNodeName("body"))
         start = start->getParentNode();
-    if (!start || start == node)
-        start = node;
+    if (!start) return fail(strings::get("error.no_section_to_preview"));
+    // Retain semantic ancestors (title/poem/cite/nested section), but omit
+    // preceding siblings. Never serialize CREngine's generated boxing nodes.
+    QSet<ldomNode *> ancestors;
+    auto *body = start;
+    while (body && !body->isNodeName("body")) {
+        ancestors.insert(body);
+        body = body->getParentNode();
+    }
+    if (!body) return fail(strings::get("error.no_section_to_preview"));
+    ancestors.insert(body);
     int offset = 0;
     bool mapped = false;
     QVector<ldomNode *> pending{start};
     while (!pending.isEmpty()) {
         auto *part = pending.takeLast();
+        if (part->isElement() && part->isBoxingNode(true) && !part->isBoxingNode()) continue;
         if (part == pointer.getNode()) {
             mapped = true;
             if (part->isText())
-                offset += qBound(0, pointer.getOffset(), part->getText().length());
+                offset += pointer.getOffset();
             else
                 for (int i = 0; i < qMin(pointer.getOffset(), part->getChildCount()); ++i)
                     offset += part->getChildNode(i)->getText().length();
             break;
         }
-        if (part->isText())
-            offset += part->getText().length();
-        else
-            for (int i = part->getChildCount() - 1; i >= 0; --i)
-                pending.append(part->getChildNode(i));
+        if (part->isText()) offset += part->getText().length();
+        else for (int i = part->getChildCount() - 1; i >= 0; --i)
+            pending.append(part->getChildNode(i));
     }
-    if (!mapped)
-        return fail(strings::get("error.no_section_to_preview"));
-    QStringList paragraphs;
-    int total = 0;
-    constexpr int previewLimit = 8192;
-    bool reached = false;
-    pending = {node};
-    while (!pending.isEmpty() && total < previewLimit) {
-        auto *part = pending.takeLast();
-        if (part == start) reached = true;
-        if (!part->isElement()) continue;
-        if ((part->isNodeName("p") || part->isNodeName("v")) && reached) {
-            const auto text = qstring(part->getText());
-            if (!text.trimmed().isEmpty()) {
-                paragraphs.append(text);
-                total += text.size();
-            }
-        } else {
-            for (int i = part->getChildCount() - 1; i >= 0; --i)
-                pending.append(part->getChildNode(i));
-        }
-    }
-    if (start == node) {
-        paragraphs = QStringList{qstring(node->getText()).left(offset + previewLimit)};
-    }
-    if (paragraphs.isEmpty() || paragraphs.first().trimmed().isEmpty())
-        return fail(strings::get("error.no_section_to_preview"));
+    if (!mapped || offset < 0) return fail(strings::get("error.no_section_to_preview"));
     const auto language = qstring(source.engine_->getLanguage()).trimmed();
     QByteArray previewBytes;
     QXmlStreamWriter writer(&previewBytes);
     writer.writeStartDocument("1.0", true);
     writer.writeDefaultNamespace("http://www.gribuser.ru/xml/fictionbook/2.0");
     writer.writeStartElement("FictionBook");
-    // Match the book's effective root language, including an explicit override
-    // of metadata. Never truncate regional/script subtags to two characters.
+    writer.writeNamespace("http://www.w3.org/1999/xlink", "l");
+    writer.writeNamespace("http://www.w3.org/1999/xlink", "xlink");
+    const auto attributes = [&writer](ldomNode *node) {
+        for (int i = 0; i < node->getAttrCount(); ++i) {
+            const auto *attr = node->getAttribute(i);
+            const auto name = qstring(node->getDocument()->getAttrName(attr->id));
+            const auto ns = qstring(node->getDocument()->getNsName(attr->nsid));
+            if (name == "xmlns" || (ns == "xmlns" && (name == "l" || name == "xlink"))
+                    || name.startsWith("data-kobalt-") || name == "HasFirstLetter") continue;
+            writer.writeAttribute(ns.isEmpty() ? name : ns + ':' + name,
+                                  qstring(node->getDocument()->getAttrValue(attr->index)));
+        }
+    };
     auto *root = document->getRootNode();
     for (int i = 0; i < root->getChildCount(); ++i) {
         auto *child = root->getChildNode(i);
         if (child->isElement() && child->isNodeName("FictionBook")) {
-            const auto lang = qstring(child->getAttributeValue("lang"));
-            if (!lang.isEmpty()) writer.writeAttribute("lang", lang);
+            attributes(child);
             break;
         }
     }
@@ -180,32 +166,78 @@ bool EngineDocument::openFb2Preview(EngineDocument &source, QSize size, QString 
         writer.writeTextElement("lang", language);
     writer.writeEndElement(); // title-info
     writer.writeEndElement(); // description
-    writer.writeStartElement("body");
-    writer.writeStartElement("section");
-    for (int i = 0; i < paragraphs.size(); ++i) {
-        writer.writeStartElement("p");
-        if (!i) writer.writeAttribute("id", "kobalt-preview-anchor");
-        writer.writeCharacters(paragraphs[i]);
-        writer.writeEndElement();
-    }
-    writer.writeEndElement(); // section
-    writer.writeEndElement(); // body
+    int characters = 0, visited = 0;
+    bool reached = false, valid = true;
+    std::function<void(ldomNode *, int, bool)> write = [&](ldomNode *part, int depth, bool firstBlock) {
+        if (!valid) return;
+        if (++visited > 20000 || depth > 128 || previewBytes.size() > 2 * 1024 * 1024) {
+            valid = false;
+            return;
+        }
+        if (part == start) reached = firstBlock = true;
+        if ((!reached || (characters >= 8192 && !firstBlock)) && !ancestors.contains(part)) return;
+        if (part->isText()) {
+            const auto text = part->getText();
+            characters += text.length();
+            writer.writeCharacters(qstring(text));
+            return;
+        }
+        if (!part->isElement()) return;
+        const bool boxing = part->isBoxingNode();
+        if (!boxing && part->isBoxingNode(true)) return; // generated pseudo content
+        if (!boxing) {
+            writer.writeStartElement(qstring(part->getNodeName()));
+            attributes(part);
+            if (part == start) writer.writeAttribute("data-kobalt-preview-anchor", "1");
+        }
+        for (int i = 0; i < part->getChildCount(); ++i) {
+            write(part->getChildNode(i), depth + 1, firstBlock);
+            if (!valid || (reached && characters >= 8192 && !firstBlock)) break;
+        }
+        if (!boxing) writer.writeEndElement();
+    };
+    write(body, 0, false);
     writer.writeEndElement(); // FictionBook
     writer.writeEndDocument();
-    // The synthetic DOM has different paths. Resolve its marked paragraph and
-    // restore the mapped text offset rather than reusing the source XPointer.
+    if (!valid || !reached || writer.hasError() || previewBytes.size() > 2 * 1024 * 1024)
+        return fail(strings::get("error.no_section_to_preview"));
+    // Restore a codepoint offset within the marked block, not a flattened
+    // paragraph. Inline text may be split differently after parsing/boxing.
     auto settings = source.state();
     settings.remove("position");
     userStyleSheet_ = source.userStyleSheet_;
     if (!open(previewBytes, size, settings, error))
         return false;
-    auto *anchor = engine_->getDocument()->getElementById(U"kobalt-preview-anchor");
-    while (anchor && anchor->isElement() && anchor->getChildCount())
-        anchor = anchor->getChildNode(0);
-    if (!anchor || !anchor->isText() || offset < 0 || offset > anchor->getText().length())
-        return fail(strings::get("error.no_section_to_preview"));
-    if (!goTo(qstring(ldomXPointer(anchor, offset).toString())))
-        return fail(strings::get("error.no_section_to_preview"));
-    return true;
+    ldomNode *block = nullptr;
+    pending = {engine_->getDocument()->getRootNode()};
+    while (!pending.isEmpty()) {
+        auto *part = pending.takeLast();
+        if (!part->isElement()) continue;
+        if (part->getAttributeValue("data-kobalt-preview-anchor") == U"1") {
+            block = part;
+            break;
+        }
+        for (int i = part->getChildCount() - 1; i >= 0; --i) pending.append(part->getChildNode(i));
+    }
+    if (!block) return fail(strings::get("error.no_section_to_preview"));
+    pending = {block};
+    ldomNode *boundary = nullptr;
+    while (!pending.isEmpty()) {
+        auto *part = pending.takeLast();
+        if (part->isElement() && part->isBoxingNode(true) && !part->isBoxingNode()) continue;
+        if (part->isText()) {
+            const int length = part->getText().length();
+            if (offset < length) {
+                if (goTo(qstring(ldomXPointer(part, offset).toString()))) return true;
+                break;
+            }
+            boundary = offset == length ? part : nullptr;
+            offset -= length;
+        } else for (int i = part->getChildCount() - 1; i >= 0; --i)
+            pending.append(part->getChildNode(i));
+    }
+    if (!offset && boundary && goTo(qstring(ldomXPointer(boundary, boundary->getText().length()).toString())))
+        return true;
+    return fail(strings::get("error.no_section_to_preview"));
 }
 } // namespace kobalt
