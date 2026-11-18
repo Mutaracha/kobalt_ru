@@ -1,3 +1,4 @@
+#include "ui/controls/rows.h"
 #include "reader_p.h"
 #include "support/strings.h"
 #include "ui/controls/icons.h"
@@ -42,8 +43,8 @@ void Reader::refreshForkToolbarActions(bool settingsOpen, bool zen)
 
 void Reader::updateForkMenuPage()
 {
-    const bool showPage = !hideNativeStatus() && !zenMode() && session->pages() > 0;
-    menuPage->setText(showPage ? strings::get("navigation.page_count")
+    const bool showPage = !zenMode() && session->pages() > 0;
+    static_cast<ui::ListHeader *>(menuPage->parentWidget())->setCaptions({}, showPage ? strings::get("navigation.page_count")
                                          .arg(session->page() + 1)
                                          .arg(session->pages())
                                : QString());

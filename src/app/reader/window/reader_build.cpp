@@ -1,3 +1,4 @@
+#include "ui/controls/rows.h"
 #include "render/page_content.h"
 #include <QScopedValueRollback>
 #include "ui/controls/text.h"
@@ -706,16 +707,18 @@ void Reader::buildToolbar()
     status->addWidget(menuSession, 0, 1);
     status->setColumnStretch(0, 1);
     status->setColumnStretch(2, 1);
-    menuPage = new ui::InterfaceLabel(topControls);
+    // Overlay the reading page, without reserving layout space. Other panels
+    // replace this strip with their own heading/preview at the same position.
+    auto *pageStrip = new ui::ListHeader(this);
+    pageStrip->setObjectName("rrMenuPageStrip");
+    pageStrip->setShaded(true);
+    menuPage = pageStrip->rightLabel();
     menuPage->setObjectName("rrMenuPage");
-    menuPage->setFixedHeight(metrics::panel::statusHeight);
-    menuPage->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    readerStyle(menuPage, styles::font(metrics::panel::statusText));
-    status->addWidget(menuPage, 0, 2, Qt::AlignRight);
+    toolbarComposition.pageStrip = pageStrip;
     menuBattery = new kobalt::ui::BatteryIndicator(topControls);
     menuBattery->setObjectName("rrMenuBattery");
     readerStyle(menuBattery, styles::font(metrics::panel::batteryText));
-    status->addWidget(menuBattery, 0, 3, Qt::AlignRight);
+    status->addWidget(menuBattery, 0, 2, Qt::AlignRight);
     menuBluetooth = new kobalt::ui::BluetoothIndicator(topControls);
     menuBluetooth->setObjectName("rrMenuBluetooth");
     toolbarComposition.bluetooth = menuBluetooth;

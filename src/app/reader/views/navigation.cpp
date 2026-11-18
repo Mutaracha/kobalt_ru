@@ -822,6 +822,7 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
       search(controls.search),
       sync(controls.sync), darkTheme(controls.darkTheme), comics(controls.comics)
 {
+    pageStrip = controls.pageStrip;
     zenViewBase = new ZenViewBase(parent);
     zenViewBase->setObjectName("rrZenViewBase");
     upperEdge = new ReadingRule(parent);
@@ -1123,7 +1124,7 @@ void Navigation::placeToolbar(QSize size, const QVector<QWidget *> &actions, boo
     battery->setVisible(statusVisible);
     // Zen mode hides the minutes-open count, also under Chapters and Bookmarks.
     session->setVisible(statusVisible && !zen && !session->text().isEmpty());
-    if (page) page->setVisible(statusVisible && !zen && !page->text().isEmpty());
+    // Page count belongs to the separate reading-menu strip, not the status line.
     settings->setFixedWidth(chrome::cellWidth);
     int rightActions = 0;
     for (auto *action : actions)
@@ -1275,6 +1276,13 @@ void Navigation::update(QSize size, const NavigationState &state)
         state.chapters->setGeometry(0, statusHeight(), size.width(),
                                     bar->y() + (zenView ? zenOutset() : 0) - statusHeight());
     }
+    if (pageStrip) {
+        pageStrip->setGeometry(0, toolbarHeight(), size.width(), pageStrip->sizeHint().height());
+        pageStrip->setVisible(state.visible && !state.zen && !state.chaptersOpen
+                              && !state.settings->isVisible() && !state.searchOpen
+                              && !state.appearance->isVisible() && page && !page->text().isEmpty());
+        pageStrip->stackUnder(state.appearance);
+    }
     bar->select(state.active, state.enabled, state.lightAvailable);
     int top = toolbarHeight(), bottom = bar->y();
     if (state.settings->isVisible())
@@ -1340,15 +1348,12 @@ void Navigation::updateSessionGeometry()
     if (wifi && wifi->active())
         right = qMin(right, wifi->x());
     right = qMax(0, right - int(chrome::inset));
-    if (page && !page->isHidden()) {
-        const int width = qMin(page->sizeHint().width(), right);
-        page->setGeometry(right - width, clock->y(), width, ui::metrics::panel::statusHeight);
-        right = qMax(0, right - width - int(chrome::inset));
-    }
-    const int left = qMin(right, clock->geometry().right() + 1 + int(chrome::inset));
-    // Center the session in the gap after the time text, without reserving
-    // the clock's unused width or moving the status icons.
-    session->setGeometry(left, clock->y(), right - left, ui::metrics::panel::statusHeight);
+    const int inset = qMax(clock->geometry().right() + 1 + int(chrome::inset),
+                           toolbar->width() - right);
+    // Symmetric bounds keep the session caption centered on the screen,
+    // independently of battery/connectivity widths.
+    session->setGeometry(inset, clock->y(), qMax(0, toolbar->width() - 2 * inset),
+                         ui::metrics::panel::statusHeight);
 }
 
 bool Navigation::contains(QPoint global) const

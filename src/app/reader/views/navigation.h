@@ -28,7 +28,7 @@ struct ToolbarComposition
 {
     ui::Panel *panel = nullptr;
     QLayout *rows = nullptr;
-    QWidget *exitAction = nullptr;
+    QWidget *exitAction = nullptr, *pageStrip = nullptr;
     QPushButton *settings = nullptr, *bookmarks = nullptr, *annotate = nullptr;
     QLabel *clock = nullptr, *session = nullptr, *page = nullptr;
     ui::BatteryIndicator *battery = nullptr;
@@ -215,6 +215,7 @@ private:
     BottomNavigation *bar;
     ui::Panel *toolbar;
     QLayout *toolbarRows;
+    QWidget *pageStrip = nullptr;
     QWidget *exitAction, *rules, *settings, *bookmarks, *annotate, *upperEdge, *lowerEdge;
     // Paper beside Zen mode's bottom group while Chapters or Bookmarks fills
     // the screen above it.
