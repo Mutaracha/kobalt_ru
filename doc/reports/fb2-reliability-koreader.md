@@ -56,7 +56,12 @@ race; immutable snapshots/content revalidation would be a different contract.
 
 ## Validation
 
-Pending native EPUB/FB2 regressions and Qt5 build/package CI. Local Qt/CMake/Docker
+Runtime: `09a7acdcb81713e6058309bb525947e7832d0a60`.
+[CI №182 / 44342485883](https://github.com/Mutaracha/kobalt_ru/actions/runs/44342485883)
+**PASS**: focused native EPUB/FB2 regressions, including the new probe, Cyrillic
+preview and changing-file cases, plus offline checks and Qt5 build/package/contents.
+[Qt5 package](https://github.com/Mutaracha/kobalt_ru/actions/runs/44342485883/artifacts/14443824738).
+Qt6 skipped, physical device/all-variant not run. Local Qt/CMake/Docker
 are unavailable. New tests are included in the already-selected engine.fb2 and
 model.local-resources checks. Existing reported-book language/height tests,
 notes, cache, positions and shared EPUB regressions remain enabled.

@@ -148,8 +148,12 @@ Nickel и Smart на runtime 116024c, а затем все поставленн�
 полный language tag/root override и строгий mapped offset в FB2 preview,
 точная граница размера при transfer файла. Добавлены русские nested/verse/subtitle
 preview/reflow cases и проверки grow/truncate из sink. EPUB, принятые сноски,
-refresh, schema/cache format и строки не менялись. Native/Qt5 CI ожидается;
-новой device-приёмки нет.
+refresh, schema/cache format и строки не менялись. Runtime `09a7acdc`,
+[CI №182](https://github.com/Mutaracha/kobalt_ru/actions/runs/44342485883) PASS:
+focused native EPUB/FB2 и Qt5 build/package/contents.
+[Qt5 artifact](https://github.com/Mutaracha/kobalt_ru/actions/runs/44342485883/artifacts/14443824738).
+Следующий шаг: smoke-прогон FB2/предпросмотра на ридере. Новая device-приёмка
+ожидается; приёмка №181 не переименована в приёмку №182.
 
 ## Открытая диагностика
 
