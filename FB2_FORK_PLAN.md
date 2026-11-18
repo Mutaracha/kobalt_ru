@@ -205,3 +205,14 @@ Runtime `cb3fe8dad2e1db50d1b4c2cf96fdb60d0760126c`:
 PASS — focused native matrix (включая lazyAppearance light/dark), offline checks,
 Kobo Qt5 package/contents. [Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44373349020/artifacts/14460611469).
 Device-проверка ожидается; waveform и пагинация не менялись.
+
+## Полоса меню: закрытие и время до конца главы
+
+**in progress / CI pending / device pending**. Пользователь подтвердил: при
+закрытии меню не перекрытая предпросмотром полоса оставалась поверх книги.
+Причина: sibling overlay не скрывался вместе с toolbar на путях без replay
+Navigation::update. Navigation теперь наблюдает Hide toolbar и сразу скрывает
+полосу. Добавлена регрессия открытия/закрытия обычного меню без Preview (light/dark).
+Слева добавлена согласованная оценка до конца главы: chromeValues + общий formatter
+ChapterTimeLeft и существующий fieldLabel; при отрицательной оценке слева пусто.
+Новых строк, настроек, waveform и изменений пагинации нет. Native/Qt5 CI ожидаются.

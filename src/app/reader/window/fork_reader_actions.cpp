@@ -44,10 +44,22 @@ void Reader::refreshForkToolbarActions(bool settingsOpen, bool zen)
 void Reader::updateForkMenuPage()
 {
     const bool showPage = !zenMode() && session->pages() > 0;
-    static_cast<ui::ListHeader *>(menuPage->parentWidget())->setCaptions({}, showPage ? strings::get("navigation.page_count")
-                                         .arg(session->page() + 1)
-                                         .arg(session->pages())
-                               : QString());
+    QString chapterTime;
+    if (showPage && topControls->isVisible()) {
+        const auto values = chromeValues();
+        // Do not show the learning placeholder when no estimate is available.
+        if (values.chapterMilliseconds >= 0) {
+            const auto time = headerfooter::content(headerfooter::Field::ChapterTimeLeft,
+                                                    values, false).text;
+            if (!time.isEmpty())
+                chapterTime = headerfooter::fieldLabel(headerfooter::Field::ChapterTimeLeft)
+                        + ": " + time;
+        }
+    }
+    static_cast<ui::ListHeader *>(menuPage->parentWidget())->setCaptions(
+            chapterTime, showPage ? strings::get("navigation.page_count")
+                                           .arg(session->page() + 1).arg(session->pages())
+                                 : QString());
     menuPage->setVisible(showPage);
 }
 

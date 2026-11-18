@@ -4655,6 +4655,12 @@ private slots:
         QVERIFY(strip);
         QTRY_VERIFY(strip->isVisible());
         QCOMPARE(pageCount->parentWidget(), strip);
+        // Dismiss the plain menu without ever covering the counter with Preview.
+        QVERIFY(fixture.press("rrPage"));
+        QTRY_VERIFY(!fixture.visible("rrControlsTop"));
+        QTRY_VERIFY(!strip->isVisible());
+        QVERIFY(fixture.press("rrPage"));
+        QTRY_VERIFY(strip->isVisible());
         auto *toolbar = fixture.widget("rrControlsTop");
         QVERIFY(toolbar);
         QCOMPARE(strip->y(), toolbar->geometry().bottom() + 1);

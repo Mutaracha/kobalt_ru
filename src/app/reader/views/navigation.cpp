@@ -1,3 +1,4 @@
+#include <QEvent>
 #include "fork_navigation.h"
 #include "ui/controls/buttons.h"
 #include "ui/controls/icons.h"
@@ -823,6 +824,7 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
       sync(controls.sync), darkTheme(controls.darkTheme), comics(controls.comics)
 {
     pageStrip = controls.pageStrip;
+    toolbar->installEventFilter(this);
     zenViewBase = new ZenViewBase(parent);
     zenViewBase->setObjectName("rrZenViewBase");
     upperEdge = new ReadingRule(parent);
@@ -1192,6 +1194,15 @@ void Navigation::placeToolbar(QSize size, const QVector<QWidget *> &actions, boo
         rules->setProperty("right_actions", rightActions);
         rules->update();
     }
+}
+
+bool Navigation::eventFilter(QObject *watched, QEvent *event)
+{
+    // The strip is a sibling overlay, not a child of the toolbar. Several
+    // dismissal paths hide the toolbar without replaying Navigation::update().
+    if (watched == toolbar && event->type() == QEvent::Hide && pageStrip)
+        pageStrip->hide();
+    return QObject::eventFilter(watched, event);
 }
 
 void Navigation::update(QSize size, const NavigationState &state)

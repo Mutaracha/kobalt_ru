@@ -131,7 +131,7 @@ private:
 };
 
 // Navigation arranges existing panels and reports actions. It does not own book state.
-class Navigation final
+class Navigation final : public QObject
 {
 public:
     Navigation(QWidget *parent, const ToolbarComposition &toolbar);
@@ -197,6 +197,9 @@ public:
     }
 
     bool contains(QPoint global) const;
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     void styleForkToolbarActions();
