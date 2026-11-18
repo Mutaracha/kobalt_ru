@@ -4655,12 +4655,18 @@ private slots:
         QVERIFY(strip);
         QTRY_VERIFY(strip->isVisible());
         QCOMPARE(pageCount->parentWidget(), strip);
+        auto *timeLeft = qobject_cast<QLabel *>(fixture.widget("rrMenuTimeLeft"));
+        QVERIFY(timeLeft);
+        QVERIFY(timeLeft->font().italic());
+        QVERIFY(pageCount->font().italic());
+        const auto timeCaption = timeLeft->text();
         // Dismiss the plain menu without ever covering the counter with Preview.
         QVERIFY(fixture.press("rrPage"));
         QTRY_VERIFY(!fixture.visible("rrControlsTop"));
         QTRY_VERIFY(!strip->isVisible());
         QVERIFY(fixture.press("rrPage"));
         QTRY_VERIFY(strip->isVisible());
+        QCOMPARE(timeLeft->text(), timeCaption);
         auto *toolbar = fixture.widget("rrControlsTop");
         QVERIFY(toolbar);
         QCOMPARE(strip->y(), toolbar->geometry().bottom() + 1);

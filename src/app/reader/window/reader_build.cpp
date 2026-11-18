@@ -714,6 +714,11 @@ void Reader::buildToolbar()
     pageStrip->setShaded(true);
     menuPage = pageStrip->rightLabel();
     menuPage->setObjectName("rrMenuPage");
+    pageStrip->leftLabel()->setObjectName("rrMenuTimeLeft");
+    for (auto *caption : {pageStrip->leftLabel(), pageStrip->rightLabel()}) {
+        caption->setFont(ui::brandFont(metrics::panel::sessionText, true));
+        readerStyle(caption, styles::brand(metrics::panel::sessionText, true));
+    }
     toolbarComposition.pageStrip = pageStrip;
     menuBattery = new kobalt::ui::BatteryIndicator(topControls);
     menuBattery->setObjectName("rrMenuBattery");

@@ -44,22 +44,21 @@ void Reader::refreshForkToolbarActions(bool settingsOpen, bool zen)
 void Reader::updateForkMenuPage()
 {
     const bool showPage = !zenMode() && session->pages() > 0;
-    QString chapterTime;
-    if (showPage && topControls->isVisible()) {
+    QString bookTime;
+    if (showPage) {
+        // Menu status is prepared before the toolbar is shown. Its visibility
+        // must not decide whether a valid estimate is formatted.
         const auto values = chromeValues();
-        // Do not show the learning placeholder when no estimate is available.
-        if (values.chapterMilliseconds >= 0) {
-            const auto time = headerfooter::content(headerfooter::Field::ChapterTimeLeft,
-                                                    values, false).text;
-            if (!time.isEmpty())
-                chapterTime = headerfooter::fieldLabel(headerfooter::Field::ChapterTimeLeft)
-                        + ": " + time;
+        if (values.bookMilliseconds >= 0) {
+            bookTime = headerfooter::content(headerfooter::Field::BookTimeLeft,
+                                             values, false).text;
+            if (!bookTime.isEmpty()) bookTime[0] = bookTime.at(0).toUpper();
         }
     }
     static_cast<ui::ListHeader *>(menuPage->parentWidget())->setCaptions(
-            chapterTime, showPage ? strings::get("navigation.page_count")
-                                           .arg(session->page() + 1).arg(session->pages())
-                                 : QString());
+            bookTime, showPage ? strings::get("navigation.page_count")
+                                        .arg(session->page() + 1).arg(session->pages())
+                              : QString());
     menuPage->setVisible(showPage);
 }
 

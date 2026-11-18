@@ -222,3 +222,15 @@ PASS — focused native matrix (включая plain-menu dismiss/reopen light/d
 offline checks, Kobo Qt5 package/contents.
 [Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44377438368/artifacts/14461174896).
 Физическая device-проверка ожидается.
+
+## Полоса меню: оценка книги и курсив
+
+**in progress / CI pending / device pending**. Пользователь сообщил о пустой
+левой подписи при открытии меню и изменил требование: остаток времени книги,
+не главы; без названия поля; обе подписи курсивом. Причина пустой подписи:
+updateMenuStatus выполняется до topControls->show(), а formatter был gated
+видимостью toolbar. Gate удалён, используется BookTimeLeft из chromeValues,
+без изменения общего расчёта/настройки точного или приблизительного формата.
+Первая буква подписи заглавная. Подписи используют brandFont italic, не caption
+с разрядкой. Дополнены проверки italic и сохранения подписи при reopen.
+Native/Qt5 CI ожидаются; device-приёмка ожидается.
