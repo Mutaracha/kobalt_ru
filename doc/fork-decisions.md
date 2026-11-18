@@ -176,3 +176,13 @@ focused native EPUB/FB2 и Qt5 build/package/contents PASS, затем device-п
   занимающая это место, замещает полосу. Это заменяет прежнее размещение страниц
   перед батареей. Время чтения центрируется по экрану, строки часов/батареи не меняются.
 - Validation: runtime cb3fe8da, CI 44373349020 native/Qt5 PASS; device pending.
+
+
+### Reading-menu strip: chapter estimate and dismissal
+
+User approved on 2026-10-26: left caption shows time left in the chapter;
+right caption keeps book page count. Reuse the header/footer chapter estimate,
+formatting and existing field label; leave the left caption empty without an
+estimate. The strip must disappear with the reading menu even if Preview never
+covered it. No forced full-screen refresh or pagination reservation.
+Runtime e1fcfa8c, CI 44377438368 native/Qt5 PASS; physical-device acceptance pending.

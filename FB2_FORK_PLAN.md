@@ -208,11 +208,17 @@ Device-проверка ожидается; waveform и пагинация не 
 
 ## Полоса меню: закрытие и время до конца главы
 
-**in progress / CI pending / device pending**. Пользователь подтвердил: при
+**done / CI verified / device pending**. Пользователь подтвердил: при
 закрытии меню не перекрытая предпросмотром полоса оставалась поверх книги.
 Причина: sibling overlay не скрывался вместе с toolbar на путях без replay
 Navigation::update. Navigation теперь наблюдает Hide toolbar и сразу скрывает
 полосу. Добавлена регрессия открытия/закрытия обычного меню без Preview (light/dark).
 Слева добавлена согласованная оценка до конца главы: chromeValues + общий formatter
 ChapterTimeLeft и существующий fieldLabel; при отрицательной оценке слева пусто.
-Новых строк, настроек, waveform и изменений пагинации нет. Native/Qt5 CI ожидаются.
+Новых строк, настроек, waveform и изменений пагинации нет.
+Runtime `e1fcfa8cffd5b8d1a44f4ef3d40298eb818cce44`:
+[CI 44377438368](https://github.com/Mutaracha/kobalt_ru/actions/runs/44377438368)
+PASS — focused native matrix (включая plain-menu dismiss/reopen light/dark),
+offline checks, Kobo Qt5 package/contents.
+[Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44377438368/artifacts/14461174896).
+Физическая device-проверка ожидается.
