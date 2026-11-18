@@ -725,7 +725,7 @@ void Reader::buildToolbar()
         readerStyle(caption, QString("font-family:'@ui-font-family@';font-size:%1px;"
                                      "font-style:italic;font-weight:400;background:transparent;"
                                      "border:none;padding:0;color:palette(window-text);")
-                                     .arg(metrics::panel::sessionText));
+                                     .arg(int(metrics::panel::sessionText)));
     }
     toolbarComposition.pageStrip = pageStrip;
     menuBattery = new kobalt::ui::BatteryIndicator(topControls);
