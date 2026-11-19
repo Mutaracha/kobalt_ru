@@ -1890,6 +1890,47 @@ int main(int argc, char **argv)
         require(snapshot.value("native_writeback") == QStringLiteral("time-only"),
                 "FB2 checkpoint did not record time-only writeback");
     }
+    {
+        // Exercise upstream deferred-close and forced-save completion ownership.
+        auto session = open(QSize(758, 900), {}, "checkpoint-epochs");
+        const auto hash = session->sourceHash();
+        ReadingBook reopened(std::move(session), paths.bookState("checkpoint-epochs"), paths,
+                             "checkpoint-epochs", hash, nullptr, {}, {});
+        QJsonObject snapshot;
+        // The timed-out close still owns its snapshot while the reader accepts input.
+        int closes = 0;
+        reopened.checkpointForClose([&](bool ok) {
+            require(ok, "Held close checkpoint failed");
+            ++closes;
+        });
+        reopened.setHideBookOnSleepScreen(true);
+        require(reopened.checkpoint(&snapshot, true), "Lost explicit choice during close save");
+        waitUntil([&] { return closes == 1 && !reopened.savesPending(); });
+        require(storage::readBookState(paths, "checkpoint-epochs")
+                        .object.value("hide_book_on_sleep_screen")
+                        .toBool(),
+                "Close completion lost the newer sleep-screen choice");
+        // Sleep can also require a durable checkpoint before the close replies.
+        QVector<quint64> savedEpochs;
+        reopened.onPositionSaved(
+                [&](const QString &, quint64 epoch) { savedEpochs.append(epoch); });
+        reopened.checkpointForClose([&](bool ok) {
+            require(ok, "A forced save dropped a pending close");
+            ++closes;
+        });
+        const auto currentEpoch = reopened.advancePositionSaveEpoch();
+        reopened.setHideBookOnSleepScreen(false);
+        require(reopened.checkpoint(&snapshot), "A pending close prevented the durable save");
+        waitUntil([&] { return closes == 2 && !reopened.savesPending(); });
+        require(savedEpochs == QVector<quint64>{ currentEpoch }
+                        && !storage::readBookState(paths, "checkpoint-epochs")
+                                    .object.value("hide_book_on_sleep_screen")
+                                    .toBool()
+                        && !storage::profileHasUnsyncedWrites(),
+                "An obsolete close acknowledged or replaced the forced save");
+        reopened.onPositionSaved({});
+
+    }
     bool drained = false;
     ReaderSession::drain([&] { drained = true; });
     waitUntil([&] { return drained; });

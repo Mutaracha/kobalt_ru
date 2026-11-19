@@ -308,3 +308,13 @@ upstream rendering policy version 12. Older parsed/layout entries are disposable
 reading positions, book records, preferences, bookmarks and annotations are not
 migrated or deleted by this stage. No Hybrid page-estimate records are written
 by this intermediate adapter. This is not the completed beta.9 storage contract.
+
+### beta9 checkpoint completion ownership
+
+ReadingBook uses upstream request generations and wake-cycle position-save epochs.
+Only the newest completion establishes the saved checkpoint; an older close may
+finish without acknowledging or replacing a later durable save. A choice queued
+while activity/close writes are pending is captured after those writes settle.
+The optional `native_writeback_failure` object preserves upstream diagnostic
+fields and UTC time from the last failed or unmapped native write. It is not a
+reading position or an instruction to retry. No schema or storage path changes.

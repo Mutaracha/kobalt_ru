@@ -58,6 +58,15 @@ ReadingBook использует upstream whole-book progressPercent/bookPage/bo
 fragment и проверяет whole-book checkpoint percentage. Эти изменения и прежние
 appearance exit/lifecycle проверки теперь CI verified.
 
+**implemented / CI pending — checkpoint ownership:** перенесён upstream beta9
+ReadingBook request-generation/deferred-checkpoint/position-save-epoch lifecycle,
+включая close snapshots и защиту от stale completion. Добавлен upstream-derived
+regression для close → новый выбор → forced durable save: только новый epoch
+подтверждает позицию, close не теряет completion, поздний ответ не заменяет выбор.
+Сохраняется upstream native failure diagnostic. Это не device acceptance.
+API retry host bridge, activity/calendar, sleep positions и new-book preset policy
+ещё не перенесены вместе с их consumers; не подменены локальными реализациями.
+
 **Следующий шаг:** связать host rendering-mode preference/application и выполнить
 контекстный перенос оставшегося upstream ReadingBook native/save-epoch lifecycle;
 затем UI whole-book counts/progress, navigation/bookmark indexes и полосу.
