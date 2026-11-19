@@ -4,14 +4,14 @@
 Инструкции агентам: [AGENTS.md](AGENTS.md).
 
 **Текущая работа:** переход на beta.9. Этапы 1–2 (библиотека Blaze, adapter
-paths и nullable-panel hooks) реализованы. Последний полностью проверенный runtime `5bab5b4d`, focused
-native/Qt5 CI `44597171704` PASS. Shared contracts/worker `c9b675b3`: Qt5 PASS,
-native CI `44601310965` остановился на регистрации категорий новых тестов.
-Исправление категорий и повторная CI-проверка — **in progress**. Hybrid, новый ReaderSession/UI ещё не перенесены;
-промежуточный пакет не для приёмки на устройстве. Следующий этап — интеграция нового
-upstream adapter/ReaderSession с отдельной whole-book границей FB2, не дальнейший
-перенос каталогов. При готовом пакете выдать пользователю конкретный список
-проверок из [device draft](doc/validation/beta9-device.md), заполнив runtime/CI.
+paths и nullable-panel hooks) реализованы. Shared contracts/worker и защита принятых
+сохранений выделений подключены. Последний проверенный runtime `d4389dec`, focused
+native/Qt5 CI `44604383056` PASS. Hybrid, новый Engine/ReaderSession/UI ещё не
+перенесены; промежуточный пакет не для приёмки на устройстве. Следующий этап —
+интеграция нового upstream adapter/ReaderSession с отдельной whole-book границей
+FB2, не дальнейший перенос каталогов. При готовом пакете выдать пользователю
+конкретный список проверок из [device draft](doc/validation/beta9-device.md),
+заполнив runtime/CI.
 Предыдущие аудиты ниже зафиксированы до реализации и не описывают текущий runtime.
 
 
@@ -371,11 +371,11 @@ Qt5 build/package/contents. Полный upstream suite/Hybrid/sanitizers/device
 
 ### Beta.9 — worker, shared contracts и принятые сохранения
 
-**in progress / CI pending / no device handoff**. Общие types/query/font defaults,
+**done / focused CI verified / no device handoff** (только указанная граница).
+Общие types/query/font defaults,
 worker и EngineDrain перенесены из beta.9; concrete whole-book adapter использует
 общие типы. Ошибка CMake area labels исправлена в `6d491a6a`; CI `44603115596`
-проверяет worker/contracts и прежний focused matrix. Qt5 package PASS;
-полный результат native пока не получен.
+PASS: worker/contracts и прежний focused matrix, Qt5 build/package/contents.
 
 Подключена upstream drain-граница к AnnotationDraft::prepareSave и цепочке
 HighlightSession::save (range → overlap → chapter lookup → persist). AnnotationDraft
@@ -386,3 +386,9 @@ HighlightSession::save (range → overlap → chapter lookup → persist). Annot
 highlight-session suite. Это не исправление старого зависания после frame load.
 Следующий шаг после CI — фактический Engine/adapter/ReaderSession Hybrid с whole-book
 FB2 по контрактам; G1–G9/device остаются pending.
+
+Runtime с подключёнными drains `d4389deccd4f9fba8004d305e322b29d44307b04`,
+[CI 44604383056](https://github.com/Mutaracha/kobalt_ru/actions/runs/44604383056)
+PASS: focused native (включая annotation-draft/highlight-session/native-lifecycle,
+worker/contracts, reported FB2), offline и Qt5 build/package/contents.
+Qt6 skipped; Android, полный upstream suite, sanitizers и устройство не проверялись.

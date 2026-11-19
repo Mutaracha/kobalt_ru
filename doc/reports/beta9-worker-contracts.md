@@ -24,7 +24,8 @@ Runtime `c9b675b390d4d73cd1206844252566bc79addb81`, run `44601310965`:
 Qt5 build/package/contents passed. Native configuration failed because the new
 model tests had no area labels; no native runtime result was obtained. The
 follow-up assigns layout/sleep labels and documents the test entry points.
-Rerun pending; this does not weaken the registration guard or omit tests.
+Rerun `44603115596` (`6d491a6a`) passed native and Qt5. The correction does
+not weaken the registration guard or omit tests.
 
 ## Accepted annotation saves
 
@@ -40,5 +41,10 @@ the accepted query can enter/checkpoint while paused, keeps suspend blocked duri
 its continuation, and releases its drain when the query callback is discarded.
 The beta9 native lifecycle save/suspend test is included without unrelated USB
 scan changes. The focused workflow also runs existing highlight-session tests.
-These follow-up runtime changes require their own native/Qt5 CI result. They do
-not integrate Engine/ReaderSession Hybrid or diagnose the old post-frame freeze.
+Runtime `d4389deccd4f9fba8004d305e322b29d44307b04`, CI `44604383056` passed:
+focused native (including annotation-draft, highlight-session, native-lifecycle,
+engine-activity/worker/contracts and reported FB2), offline checks and Qt5
+build/package/contents. Native job `135844038821`; Qt5 job `135844039421`.
+Qt6 skipped; full upstream suite, Android, sanitizers and device checks unrun.
+These changes do not integrate Engine/ReaderSession Hybrid or diagnose the old
+post-frame freeze. No device handoff.
