@@ -1,0 +1,194 @@
+fork_path	beta9_path	static_check
+.github/workflows/kobo-qt5-device.yml	.github/workflows/kobo-qt5-device.yml	fork-only
+AGENTS.md	AGENTS.md	text-clean
+FB2_FORK_PLAN.md	FB2_FORK_PLAN.md	fork-only
+assets/CMakeLists.txt	assets/CMakeLists.txt	no-upstream-content-change
+assets/acknowledgments.json	assets/acknowledgments.json	text-clean
+assets/en.strings	assets/en.strings	text-conflict
+assets/hyph/Russian_EnUS.pattern	assets/hyph/Russian_EnUS.pattern	fork-only
+assets/icons/phosphor/dark-theme.svg	assets/icons/phosphor/dark-theme.svg	fork-only
+assets/manifest.json	assets/manifest.json	text-clean
+assets/notices/Fluent-MIT	assets/notices/Fluent-MIT	fork-only
+assets/notices/Hyphenation-patterns	assets/notices/Hyphenation-patterns	no-upstream-content-change
+assets/ru.strings	assets/ru.strings	fork-only
+doc/acknowledgements.md	doc/acknowledgements.md	text-clean
+doc/beta8-device-check.md	doc/beta8-device-check.md	fork-only
+doc/fb2-footnotes.md	doc/fb2-footnotes.md	fork-only
+doc/fork-decisions.md	doc/fork-decisions.md	fork-only
+doc/fork-delta.md	doc/fork-delta.md	fork-only
+doc/fork-kobalt_ru.md	doc/fork-kobalt_ru.md	fork-only
+doc/fork-update-workflow.md	doc/fork-update-workflow.md	fork-only
+doc/forum-description.ru.bbcode.txt	doc/forum-description.ru.bbcode.txt	fork-only
+doc/qt6-one-off.md	doc/qt6-one-off.md	fork-only
+doc/reader/progress.md	doc/reader/progress.md	text-conflict
+doc/reports/fb2-post-refactor.md	doc/reports/fb2-post-refactor.md	fork-only
+doc/reports/fb2-preview-position.md	doc/reports/fb2-preview-position.md	fork-only
+doc/reports/fb2-reliability-koreader.md	doc/reports/fb2-reliability-koreader.md	fork-only
+doc/storage.md	doc/storage.md	text-clean
+doc/validation/links.md	doc/validation/links.md	text-conflict
+platforms/android/CMakeLists.txt	platforms/android/CMakeLists.txt	text-clean
+platforms/android/main.cpp	platforms/android/main.cpp	text-clean
+platforms/ci/cleanup-runs.sh	platforms/ci/cleanup-runs.sh	fork-only
+platforms/desktop/CMakeLists.txt	platforms/desktop/CMakeLists.txt	text-conflict
+platforms/desktop/main.cpp	platforms/desktop/main.cpp	text-clean
+platforms/kobo/CMakeLists.txt	platforms/kobo/CMakeLists.txt	text-clean
+platforms/kobo/build.sh	platforms/kobo/build.sh	no-upstream-content-change
+platforms/kobo/common/book_menu.cpp	platforms/kobo/common/book_menu.cpp	text-conflict
+platforms/kobo/common/page_button_mapping.h	platforms/kobo/common/page_button_mapping.h	fork-only
+platforms/kobo/common/progress_policy.h	platforms/kobo/common/progress_policy.h	text-conflict
+platforms/kobo/common/reader_coordinator.cpp	platforms/kobo/common/reader_coordinator.cpp	text-conflict
+platforms/kobo/nickel-qt5/native_publication.cpp	platforms/kobo/nickel-qt5/native_publication.cpp	no-upstream-content-change
+platforms/kobo/nickel-qt5/native_ui.cpp	platforms/kobo/nickel-qt5/native_ui.cpp	no-upstream-content-change
+platforms/kobo/nickel-qt5/reader_controller.cpp	platforms/kobo/nickel-qt5/reader_controller.cpp	text-conflict
+platforms/kobo/nickel-qt5/refresh.cpp	platforms/kobo/nickel-qt5/refresh.cpp	text-clean
+platforms/kobo/nickel-qt6/native_publication.cpp	platforms/kobo/nickel-qt6/native_publication.cpp	no-upstream-content-change
+platforms/kobo/nickel-qt6/reader_controller.cpp	platforms/kobo/nickel-qt6/reader_controller.cpp	text-conflict
+platforms/shared-inputs.cmake	platforms/shared-inputs.cmake	text-conflict
+platforms/strings-test.cmake	platforms/strings-test.cmake	no-upstream-content-change
+platforms/strings.cmake	platforms/strings.cmake	no-upstream-content-change
+src/app/about/about_page.cpp	src/app/about/about_page.cpp	no-upstream-content-change
+src/app/about/fork_about.cpp	src/app/about/fork_about.cpp	fork-only
+src/app/about/fork_about.h	src/app/about/fork_about.h	fork-only
+src/app/about/fork_debug.cpp	src/app/about/fork_debug.cpp	fork-only
+src/app/about/fork_debug.h	src/app/about/fork_debug.h	fork-only
+src/app/library/library_view.cpp	src/app/library/library_view.cpp	no-upstream-content-change
+src/app/reader/panels/chapter_contents.cpp	src/app/reader/panels/chapter_contents.cpp	text-clean
+src/app/reader/panels/light_panel.cpp	src/app/reader/panels/light_panel.cpp	text-clean
+src/app/reader/settings/appearance_panel.cpp	src/app/reader/settings/appearance_panel.cpp	text-clean
+src/app/reader/settings/appearance_panel.h	src/app/reader/settings/appearance_panel.h	text-conflict
+src/app/reader/settings/fork_settings.cpp	src/app/reader/settings/fork_settings.cpp	fork-only
+src/app/reader/settings/fork_settings.h	src/app/reader/settings/fork_settings.h	fork-only
+src/app/reader/settings/header_footer_panel.cpp	src/app/reader/settings/header_footer_panel.cpp	text-clean
+src/app/reader/settings/settings_panel.cpp	src/app/reader/settings/settings_panel.cpp	text-conflict
+src/app/reader/views/fork_navigation.cpp	src/app/reader/views/fork_navigation.cpp	fork-only
+src/app/reader/views/fork_navigation.h	src/app/reader/views/fork_navigation.h	fork-only
+src/app/reader/views/navigation.cpp	src/app/reader/views/navigation.cpp	text-clean
+src/app/reader/views/navigation.h	src/app/reader/views/navigation.h	text-clean
+src/app/reader/views/reading_page.cpp	src/app/reader/views/reading_page.cpp	text-clean
+src/app/reader/views/reading_page.h	src/app/reader/views/reading_page.h	text-clean
+src/app/reader/views/reading_page_progress.cpp	src/app/reader/views/reading_page_progress.cpp	fork-only
+src/app/reader/views/sleep_designs.cpp	src/app/reader/views/sleep_designs.cpp	text-clean
+src/app/reader/views/sleep_ribbon_text.cpp	src/app/reader/views/sleep_ribbon_text.cpp	fork-only
+src/app/reader/views/sleep_screen.cpp	src/app/reader/views/sleep_screen.cpp	text-clean
+src/app/reader/views/sleep_screen.h	src/app/reader/views/sleep_screen.h	text-clean
+src/app/reader/window/fork_reader_actions.cpp	src/app/reader/window/fork_reader_actions.cpp	fork-only
+src/app/reader/window/reader.cpp	src/app/reader/window/reader.cpp	text-conflict
+src/app/reader/window/reader_build.cpp	src/app/reader/window/reader_build.cpp	text-conflict
+src/app/reader/window/reader_p.h	src/app/reader/window/reader_p.h	text-conflict
+src/app/reader/window/reader_refresh.cpp	src/app/reader/window/reader_refresh.cpp	text-conflict
+src/app/reader/window/reader_settings.cpp	src/app/reader/window/reader_settings.cpp	text-clean
+src/engine/crengine/column_view.h	src/engine/blaze/adapter/column_view.h	text-conflict
+src/engine/crengine/column_view_comics.cpp	src/engine/crengine/column_view_comics.cpp	fork-only
+src/engine/crengine/engine_document.cpp	src/engine/blaze/adapter/engine_document.cpp	text-conflict
+src/engine/crengine/engine_document.h	src/engine/blaze/adapter/engine_document.h	text-conflict
+src/engine/crengine/engine_document_comics.cpp	src/engine/crengine/engine_document_comics.cpp	fork-only
+src/engine/crengine/page_draw_buffer.cpp	src/engine/crengine/page_draw_buffer.cpp	fork-only
+src/engine/crengine/page_draw_buffer.h	src/engine/crengine/page_draw_buffer.h	fork-only
+src/engine/crengine/reader_alignment.cpp	src/engine/blaze/adapter/reader_alignment.cpp	text-conflict
+src/engine/crengine/reader_beautifier.cpp	src/engine/blaze/adapter/reader_beautifier.cpp	text-clean
+src/engine/crengine/reader_comics.cpp	src/engine/crengine/reader_comics.cpp	fork-only
+src/engine/crengine/reader_comics.h	src/engine/crengine/reader_comics.h	fork-only
+src/engine/crengine/reader_fb2.cpp	src/engine/crengine/reader_fb2.cpp	fork-only
+src/engine/crengine/reader_fb2.h	src/engine/crengine/reader_fb2.h	fork-only
+src/engine/crengine/reader_fork_styles.cpp	src/engine/crengine/reader_fork_styles.cpp	fork-only
+src/engine/crengine/reader_fork_styles.h	src/engine/crengine/reader_fork_styles.h	fork-only
+src/engine/crengine/reader_links.cpp	src/engine/blaze/adapter/reader_links.cpp	text-clean
+src/engine/crengine/reader_page_layout.cpp	src/engine/blaze/adapter/reader_page_layout.cpp	text-clean
+src/engine/crengine/reader_source.cpp	src/engine/blaze/adapter/reader_source.cpp	text-conflict
+src/engine/crengine/reader_source.h	src/engine/blaze/adapter/reader_source.h	text-conflict
+src/engine/crengine/reader_styles.h.in	src/engine/blaze/adapter/reader_styles.h.in	no-upstream-content-change
+src/publication/fb2.h	src/publication/fb2.h	fork-only
+src/publication/fb2_resources.cpp	src/publication/fb2_resources.cpp	fork-only
+src/publication/fb2_resources.h	src/publication/fb2_resources.h	fork-only
+src/publication/image_request_trace.h	src/publication/image_request_trace.h	fork-only
+src/publication/local_resources.cpp	src/publication/local_resources.cpp	no-upstream-content-change
+src/publication/publication.cpp	src/publication/publication.cpp	text-clean
+src/publication/publication.h	src/publication/publication.h	no-upstream-content-change
+src/publication/publication_fb2.cpp	src/publication/publication_fb2.cpp	fork-only
+src/publication/resource_cache.cpp	src/publication/resource_cache.cpp	text-clean
+src/publication/resource_cache.h	src/publication/resource_cache.h	text-clean
+src/reading/appearance_settings.cpp	src/reading/appearance_settings.cpp	text-clean
+src/reading/appearance_settings.h	src/reading/appearance_settings.h	no-upstream-content-change
+src/reading/chapter.h	src/reading/chapter.h	text-clean
+src/reading/features.h	src/reading/features.h	text-conflict
+src/reading/header_footer.cpp	src/reading/header_footer.cpp	text-clean
+src/reading/header_footer.h	src/reading/header_footer.h	text-clean
+src/reading/opening_job.cpp	src/reading/opening_job.cpp	text-conflict
+src/reading/page_navigation.h	src/reading/page_navigation.h	no-upstream-content-change
+src/reading/reader_session.cpp	src/reading/reader_session.cpp	text-conflict
+src/support/build_info.h.in	src/support/build_info.h.in	no-upstream-content-change
+src/support/debug_language.cpp	src/support/debug_language.cpp	fork-only
+src/support/debug_language.h	src/support/debug_language.h	fork-only
+src/support/locale.cpp	src/support/locale.cpp	fork-only
+src/support/locale.h	src/support/locale.h	fork-only
+src/support/string_locale.h	src/support/string_locale.h	fork-only
+src/support/string_table.h	src/support/string_table.h	fork-only
+src/support/strings.h	src/support/strings.h	no-upstream-content-change
+src/ui/controls/buttons.cpp	src/ui/controls/buttons.cpp	text-clean
+src/ui/controls/buttons.h	src/ui/controls/buttons.h	text-clean
+src/ui/controls/fork_icon_geometry.cpp	src/ui/controls/fork_icon_geometry.cpp	fork-only
+src/ui/controls/fork_icon_geometry.h	src/ui/controls/fork_icon_geometry.h	fork-only
+src/ui/controls/icons.cpp	src/ui/controls/icons.cpp	text-clean
+src/ui/controls/icons.h	src/ui/controls/icons.h	text-clean
+src/ui/controls/options.cpp	src/ui/controls/options.cpp	text-clean
+src/ui/controls/options.h	src/ui/controls/options.h	text-clean
+src/ui/controls/return_title_text.h	src/ui/controls/return_title_text.h	fork-only
+test & diagnostic/1. Виртуальный свет.fb2	test & diagnostic/1. Виртуальный свет.fb2	fork-only
+test & diagnostic/116024c/README.md	test & diagnostic/116024c/README.md	fork-only
+test & diagnostic/116024c/events.zip	test & diagnostic/116024c/events.zip	fork-only
+test & diagnostic/116024c/screen_001.png	test & diagnostic/116024c/screen_001.png	fork-only
+test & diagnostic/116024c/screen_002.png	test & diagnostic/116024c/screen_002.png	fork-only
+test & diagnostic/116024c/screen_003.png	test & diagnostic/116024c/screen_003.png	fork-only
+test & diagnostic/116024c/screen_004.png	test & diagnostic/116024c/screen_004.png	fork-only
+test & diagnostic/116024c/screen_005.png	test & diagnostic/116024c/screen_005.png	fork-only
+test & diagnostic/116024c/screen_006.png	test & diagnostic/116024c/screen_006.png	fork-only
+test & diagnostic/116024c/screen_007.png	test & diagnostic/116024c/screen_007.png	fork-only
+test & diagnostic/116024c/screen_008.png	test & diagnostic/116024c/screen_008.png	fork-only
+test & diagnostic/116024c/screen_009.png	test & diagnostic/116024c/screen_009.png	fork-only
+test & diagnostic/1a56b68/diagnostics 1a56b68.zip	test & diagnostic/1a56b68/diagnostics 1a56b68.zip	fork-only
+test & diagnostic/1b09118/README.md	test & diagnostic/1b09118/README.md	fork-only
+test & diagnostic/1b09118/events.zip	test & diagnostic/1b09118/events.zip	fork-only
+test & diagnostic/1b09118/screen_001.png	test & diagnostic/1b09118/screen_001.png	fork-only
+test & diagnostic/1b09118/screen_002.png	test & diagnostic/1b09118/screen_002.png	fork-only
+test & diagnostic/1b09118/screen_003.png	test & diagnostic/1b09118/screen_003.png	fork-only
+test & diagnostic/1b09118/screen_004.png	test & diagnostic/1b09118/screen_004.png	fork-only
+test & diagnostic/61dbfaa/Sin City vol 4.kepub.epub	test & diagnostic/61dbfaa/Sin City vol 4.kepub.epub	fork-only
+test & diagnostic/README.md	test & diagnostic/README.md	fork-only
+test & diagnostic/SHA256SUMS	test & diagnostic/SHA256SUMS	fork-only
+test & diagnostic/diagnostics 61dbfaa.zip	test & diagnostic/diagnostics 61dbfaa.zip	fork-only
+test & diagnostic/diagnostics a170389.zip	test & diagnostic/diagnostics a170389.zip	fork-only
+test & diagnostic/fb2-post-refactor/screen_002-11.png	test & diagnostic/fb2-post-refactor/screen_002-11.png	fork-only
+test & diagnostic/fb2-post-refactor/screen_003-9.png	test & diagnostic/fb2-post-refactor/screen_003-9.png	fork-only
+test & diagnostic/reading-menu-counter/README.md	test & diagnostic/reading-menu-counter/README.md	fork-only
+test & diagnostic/reading-menu-counter/screen_001-15.png	test & diagnostic/reading-menu-counter/screen_001-15.png	fork-only
+test & diagnostic/reading-menu-counter/screen_001-16.png	test & diagnostic/reading-menu-counter/screen_001-16.png	fork-only
+test & diagnostic/reading-menu-counter/screen_001-17.png	test & diagnostic/reading-menu-counter/screen_001-17.png	fork-only
+test & diagnostic/reading-menu-counter/screen_001-18.png	test & diagnostic/reading-menu-counter/screen_001-18.png	fork-only
+test & diagnostic/reading-menu-counter/screen_001-19.png	test & diagnostic/reading-menu-counter/screen_001-19.png	fork-only
+test & diagnostic/reading-menu-counter/screen_002-12.png	test & diagnostic/reading-menu-counter/screen_002-12.png	fork-only
+test & diagnostic/reading-menu-counter/screen_002-13.png	test & diagnostic/reading-menu-counter/screen_002-13.png	fork-only
+tests/desktop.cpp	tests/desktop.cpp	text-conflict
+tests/fixtures/fonts/fira-sans/FiraSans-Regular.ttf	tests/fixtures/fonts/fira-sans/FiraSans-Regular.ttf	fork-only
+tests/fixtures/fonts/fira-sans/OFL.txt	tests/fixtures/fonts/fira-sans/OFL.txt	fork-only
+tests/fixtures/fonts/fira-sans/README.md	tests/fixtures/fonts/fira-sans/README.md	fork-only
+tests/kobo_shutdown.cpp	tests/kobo_shutdown.cpp	text-clean
+tests/manual/README.md	tests/manual/README.md	fork-only
+tests/manual/books/comics/README.md	tests/manual/books/comics/README.md	fork-only
+tests/manual/books/comics/spice-single-page.epub	tests/manual/books/comics/spice-single-page.epub	fork-only
+tests/manual/books/publisher/Кокаиновые+короли.epub	tests/manual/books/publisher/Кокаиновые+короли.epub	fork-only
+tests/manual/materials.sha256	tests/manual/materials.sha256	fork-only
+tests/model/appearance_settings.cpp	tests/model/appearance_settings.cpp	text-clean
+tests/model/chapter_progress.cpp	tests/model/chapter_progress.cpp	no-upstream-content-change
+tests/model/comics.cpp	tests/model/comics.cpp	fork-only
+tests/model/fb2.cpp	tests/model/fb2.cpp	fork-only
+tests/model/header_footer.cpp	tests/model/header_footer.cpp	text-clean
+tests/model/links.cpp	tests/model/links.cpp	text-conflict
+tests/model/local_resources.cpp	tests/model/local_resources.cpp	no-upstream-content-change
+tests/model/nickel_book_menu.cpp	tests/model/nickel_book_menu.cpp	text-clean
+tests/model/reading_book.cpp	tests/model/reading_book.cpp	text-conflict
+tests/model/resource_cache.cpp	tests/model/resource_cache.cpp	no-upstream-content-change
+tests/model/strings_locale.cpp	tests/model/strings_locale.cpp	fork-only
+tests/model/ui.cpp	tests/model/ui.cpp	text-clean
+tests/reader_lifecycle.cpp	tests/reader_lifecycle.cpp	text-clean
+tests/support/anchor_preview.h	tests/support/anchor_preview.h	fork-only
+tests/support/reader_source_index_probe.h	tests/support/reader_source_index_probe.h	text-conflict

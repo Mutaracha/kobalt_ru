@@ -276,3 +276,18 @@ PASS — focused native matrix, UI icon off/on light/dark, lazyAppearance и н�
 formatter test, offline checks, Kobo Qt5 package/contents.
 [Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44574307848/artifacts/14555672823).
 Device-проверка включённой иконки в обеих темах и полосы после переноса ожидается.
+
+## Подготовка перехода на upstream beta.9
+
+**in progress / source preflight only**. По запросу пользователя начат аудит без
+merge/переноса runtime. Точные SHA, полный diff и rename-aware static port map:
+[doc/reports/beta9-preflight.md](doc/reports/beta9-preflight.md),
+[таблица 193 fork paths](doc/reports/beta9-port-map.tsv).
+Upstream beta.9 `be47258850ffdc3295257475afdf8b8f6cb53176`: 189 commits,
+676 rename-aware entries. Static merge-file: 29 текстовых конфликтов; clean не
+означает semantic/API compatibility. Высокие риски: Blaze/Hybrid, whole-book vs
+local pages, FB2 EPUB-only boundaries, nullable lazy Settings, comics/sleep/Kobo
+lifecycle и новые RU строки. Runtime остался 23e2d023, device-приёмка последней
+иконки/переноса полосы не заявляется. Следующий шаг — детальный аудит новых
+Engine/ReaderSource contracts и выбор безопасного FB2 path, затем отдельный этап
+переноса. Native/Qt5/device beta.9 с нашими правками ещё не запускались.
