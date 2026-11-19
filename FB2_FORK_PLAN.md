@@ -437,3 +437,13 @@ upstream non-linear grouping; cache identity включает comics и layout/s
 CI дополняется upstream engine-contract/spine-window/chapter-slices и FB2 Engine
 boundary test: exact pages, отсутствие лишнего full build, mode/reflow/anchor,
 preview lifetime. Native и Qt5 обязательны; G1–G9/device ещё не закрыты.
+
+Первый CI adapter `44610120056` выявил compile dependency gaps, не runtime renderer
+failure: отсутствовал ResourceCache::fresh для независимого reload/builder и Qt5
+refresh-test double имел старую сигнатуру DiagnosticOperation. Подключён полный
+upstream ResourceCache delta с сохранением fork image request trace/priority;
+добавлены cold-state/fingerprint/revocation проверки. Mock синхронизирован с API.
+Comics target-preview использует свою bounded pair loading без навигации source;
+layout signature включает fork grouping/viewport. Добавлен реальный engine-only
+chapter → full build → prepared preview → adoption smoke (без ReaderSession).
+Повторный CI pending.

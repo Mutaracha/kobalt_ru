@@ -1736,6 +1736,10 @@ quint64 EngineDocument::layoutSignature() const
     mix(quint64(quintptr(engine_->getDocument())));
     mix(engine_->getDocumentRenderingHash(true));
     mix(columns_);
+    mix(comicsMode_);
+    mix(size_.width());
+    mix(size_.height());
+    mix(engine_->getPageCount());
     mix(columns_ > 1 && hideNonlinearFragments_);
     mix(verticalSpacing_ == "center" ? 2 : verticalSpacing_ == "expand" ? 1 : 0);
     mix(verticalSpacingScope_ == "protection");

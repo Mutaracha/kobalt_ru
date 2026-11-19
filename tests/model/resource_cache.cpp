@@ -13,6 +13,32 @@ int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
     auto cancelled = std::make_shared<std::atomic_bool>(false);
+    // A replacement layout gets cold bytes/images, not a relaxed identity check or lease.
+    {
+        QByteArray payload("abc");
+        bool revoked = false;
+        ResourceCache original({"image"}, ResourceCache::Access{
+            [&](const QString &, const ResourceCache::Sink &sink, QString *) {
+                return sink(payload.constData(), payload.size());
+            }, [&] { return revoked; }, {}, [](const QString &) { return QSize(20, 30); }
+        });
+        require(original.readBounded("image", 3) == "abc", "Cannot prime resource identity");
+        original.imageReady("image");
+        auto fresh = original.fresh();
+        require(fresh->statistics()["allocated_bytes"].toDouble() == 0
+                        && fresh->statistics()["pending_images"].toInt() == 0
+                        && fresh->deferredImageSize("image") == QSize(20, 30),
+                "Fresh resources inherited bytes/queue or lost authorized metadata access");
+        payload = "xyz";
+        require(fresh->readBounded("image", 3).isEmpty()
+                        && fresh->failure() == ResourceCache::Failure::Changed,
+                "A replacement layout accepted changed publication bytes");
+        payload = "abc";
+        fresh = original.fresh();
+        revoked = true;
+        require(fresh->readBounded("image", 3).isEmpty(), "Fresh resources bypassed revocation");
+    }
+
     {
         const int block = int(ResourceCache::blockBytes);
         for (const int size : { 0, 1, block - 1, block, block + 1, 2 * block + 17 }) {

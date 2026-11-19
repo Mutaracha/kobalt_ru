@@ -177,6 +177,28 @@ void wholeBookPages()
     require(!engine->pageInfo().bookPages.currentFor(generation),
             "A new layout must have a new generation");
 }
+// An actual chapter layout can build/adopt the full book without moving its source anchor.
+void hybridBuildAndAdopt()
+{
+    setChapterModeOverride(1);
+    const auto model = createEngine(test::readerFonts());
+    open(*model, test::engineBook(false, 3, 40));
+    require(!model->pageInfo().bookPages.exact(), "Fixture did not open in a chapter window");
+    const auto anchor = model->position();
+    require(model->prepareFullDocument([] { return false; }) == Engine::FullDocument::Stopped,
+            "Cancelled preparation did not stop");
+    require(model->prepareFullDocument({}) == Engine::FullDocument::Ready
+                    && model->fullDocumentReady(), "Cannot prepare full book from chapter window");
+    require(model->position() == anchor, "Background full layout moved the visible chapter");
+    const auto preview = model->previewTurn(0, {}, {}, {}, true);
+    require(!preview.image.isNull() && model->position() == anchor,
+            "Prepared-layout preview failed or moved the reading position");
+    require(model->setChapterMode(false, appearance::Patch(QJsonObject{}), {600, 800})
+                    && model->position() == anchor && model->pageInfo().bookPages.exact(),
+            "Full-book adoption lost exact pages or reading anchor");
+    model->releaseRetired();
+    setChapterModeOverride(-1);
+}
 } // namespace
 
 int main(int argc, char **argv)
@@ -186,6 +208,7 @@ int main(int argc, char **argv)
     wholeBookPages();
     callbacksFollowViews();
     parkedLayoutCallbacks();
+    hybridBuildAndAdopt();
     std::printf("PASS: query states and exact page values of the whole-book engine\n");
     return 0;
 }

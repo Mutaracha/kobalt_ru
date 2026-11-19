@@ -10,18 +10,23 @@
 namespace kobalt {
 QImage EngineDocument::frameImage()
 {
-    auto result = image(page());
+    return comicFrameImage(page());
+}
+
+QImage EngineDocument::comicFrameImage(int pageNumber)
+{
+    auto result = image(pageNumber);
     if (!comicsMode_ || !engine_ || !source_ || !source_->resources
-        || engine_->comicPageCount(page()) != 2)
+        || engine_->comicPageCount(pageNumber) != 2)
         return result;
-    const auto names = comicImageRequests_.value(page());
+    const auto names = comicImageRequests_.value(pageNumber);
     int pending = 0;
     for (const auto &name : names)
         pending += source_->resources->pendingImage(name);
     if (pending > 0 && names.size() <= 2) {
         engineActivity().checkpoint();
-        if (loadNextImage())
-            result = image(page());
+        if (loadComicImages(pageNumber) && refreshImages())
+            result = image(pageNumber);
         engineActivity().checkpoint();
     }
     if (diagnosticsActive()) {
@@ -29,7 +34,7 @@ QImage EngineDocument::frameImage()
         for (const auto &name : names)
             remaining += source_->resources->pendingImage(name);
         diagnostic("comic-frame-images",
-                   { { "page", page() },
+                   { { "page", pageNumber },
                      { "visible_resources", names.size() },
                      { "pending_before", pending },
                      { "pending_after", remaining } },
@@ -68,12 +73,17 @@ void EngineDocument::finishComicImageRequests(int pageNumber)
 
 bool EngineDocument::loadVisibleComicImages()
 {
+    return loadComicImages(page());
+}
+
+bool EngineDocument::loadComicImages(int pageNumber)
+{
     auto &resources = *source_->resources;
     bool batch = false;
     // A spread is one displayed screen. Load only its requested images, not
     // the neighbour queue, before ReaderSession captures the next frame.
-    if (comicsMode_ && engine_ && engine_->comicPageCount(page()) == 2) {
-        const auto names = comicImageRequests_.value(page());
+    if (comicsMode_ && engine_ && engine_->comicPageCount(pageNumber) == 2) {
+        const auto names = comicImageRequests_.value(pageNumber);
         if (names.size() <= 2) {
             for (const auto &name : names) {
                 if (!resources.prioritizePendingImage(name))
@@ -142,6 +152,7 @@ EngineDocument::ComicPaint EngineDocument::paintComicPage(int pageNumber, QImage
         painter.drawImage(offset, vertical, layer);
         buffer.hasImages |= part.hasImages;
         buffer.hasText |= part.hasText;
+        buffer.hasUnsupportedFormatting |= part.hasUnsupportedFormatting;
         for (const auto &region : part.imageRegions)
             buffer.imageRegions.append(region.translated(offset, vertical).intersected(clip));
     }

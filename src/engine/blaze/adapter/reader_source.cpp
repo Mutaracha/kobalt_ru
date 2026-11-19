@@ -2096,7 +2096,7 @@ PagePreview EngineDocument::previewTurn(int direction,
     if (spread >= 0 || ((!direction || target != page()) && !tail)) {
         auto &document = spread >= 0 ? *full_ : *this;
         PagePreview result;
-        result.image = document.image(target);
+        result.image = document.comicFrameImage(target);
         result.position = document.pageStart(target);
         result.ranges = document.pageRangeRects(target, ranges);
         result.bookmarked = !bookmarkPositions.isEmpty()
@@ -2125,7 +2125,7 @@ PagePreview EngineDocument::previewTurn(int direction,
             || !preview->turnInWindow(direction))
             return {};
         PagePreview result;
-        result.image = preview->image(preview->page());
+        result.image = preview->frameImage();
         result.position = preview->pageStart(preview->page());
         result.ranges = preview->pageRangeRects(preview->page(), ranges);
         result.bookmarked = !bookmarkPositions.isEmpty()

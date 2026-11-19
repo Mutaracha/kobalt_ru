@@ -352,6 +352,8 @@ private:
     bool beginComicImageRequests(int pageNumber);
     void finishComicImageRequests(int pageNumber);
     bool loadVisibleComicImages();
+    bool loadComicImages(int pageNumber);
+    QImage comicFrameImage(int pageNumber);
     // Sets the current and next entries of `links` around `position`.
     ChapterSelection chapterAround(const QVector<ChapterLink> &links,
                                    const QString &position) const;

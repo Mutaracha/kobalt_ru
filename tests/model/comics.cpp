@@ -338,6 +338,18 @@ int main(int argc, char **argv)
     deferredSpread.frameImage();
     require(!loads.contains("neighbor.png"), "Cached publication consumed neighbour work");
 
+    // Engine preview uses its own target's bounded image request identity too.
+    deferredSpread.releaseImages();
+    loads.clear();
+    const auto previewAnchor = deferredSpread.position();
+    deferredResources->imageReady("neighbor.png");
+    const auto spreadPreview = deferredSpread.previewTurn(0);
+    require(!spreadPreview.image.isNull()
+                && qRed(spreadPreview.image.pixel(420, 600)) > 200
+                && qBlue(spreadPreview.image.pixel(1260, 600)) > 200
+                && deferredSpread.position() == previewAnchor && !loads.contains("neighbor.png"),
+            "Engine preview exposed a half-ready spread, moved the source or consumed neighbours");
+
     // Preparing many neighbour candidates must not erase the identity of a
     // still-cached half-ready current frame (the old map-wide clear did this).
     auto manyData = deferredData;
