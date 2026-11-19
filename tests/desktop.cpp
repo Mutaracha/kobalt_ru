@@ -11398,6 +11398,8 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
                 std::atomic_bool entered{ false };
             };
 
+            // Let Hybrid finish preparing neighbouring pages before blocking its worker.
+            QTRY_VERIFY_WITH_TIMEOUT(!fixture.window.readerWindow()->busy(), 10000);
             auto gate = std::make_shared<Gate>();
             auto unblock = qScopeGuard([gate] { gate->release.release(); });
             qt::invoke(

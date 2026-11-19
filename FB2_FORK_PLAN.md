@@ -63,7 +63,13 @@ ReadingBook request-generation/deferred-checkpoint/position-save-epoch lifecycle
 включая close snapshots и защиту от stale completion. Добавлен upstream-derived
 regression для close → новый выбор → forced durable save: только новый epoch
 подтверждает позицию, close не теряет completion, поздний ответ не заменяет выбор.
-Сохраняется upstream native failure diagnostic. Это не device acceptance.
+Сохраняется upstream native failure diagnostic. CI `44635988130`: Qt5 PASS,
+reading-book/new epoch regression и остальные selected checks PASS, кроме
+advancedText(native): worker был заблокирован до завершения фоновой работы.
+Перенесено отсутствовавшее upstream ожидание idle перед установкой gate;
+строгий QVERIFY(!busy) при заблокированном worker сохранён. Source-checks PASS;
+локальный Kobo syntax blocked: нет подготовленного SDK/Docker. Это не device
+acceptance; повторный CI pending.
 API retry host bridge, activity/calendar, sleep positions и new-book preset policy
 ещё не перенесены вместе с их consumers; не подменены локальными реализациями.
 
