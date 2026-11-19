@@ -116,9 +116,24 @@ values, semantic preview source identity and the non-final-fragment finish test.
 No product rendering change or assertion relaxation was needed in that final
 infrastructure correction.
 
-Host mode preference/application, remaining ReadingBook native/save-epoch
-lifecycle consumers and UI/strip/navigation surfaces still need integration.
-Session-level tests do not establish complete UI/device adoption. G1–G9 final
-gates remain open. Full upstream suite, sanitizers, Android and physical-device
-validation have not run. The old post-frame-load freeze is not diagnosed or
-claimed fixed here.
+Latest validated extension: `8e241eedf3086dc85beff7743b586a15d3df496d`,
+[CI 44637222380](https://github.com/Mutaracha/kobalt_ru/actions/runs/44637222380):
+focused native and Kobo Qt5/package PASS. ReadingBook now carries upstream
+checkpoint request generations, deferred saves, close snapshots and position-save
+epoch callbacks. The upstream-derived close/choice/forced-save regression passes:
+a stale completion neither overwrites the newer choice nor acknowledges its epoch.
+The optional native failure diagnostic follows upstream storage semantics.
+
+The first run, 44635988130, passed the model regression and Qt5 but found a missing
+upstream test barrier: advancedText blocked the worker before pending background
+work settled. Porting upstream's pre-gate idle wait preserves the strict no-worker
+assertion and the fork's interface-Sans title assertion. The final CI above passed.
+Local source checks passed; Kobo syntax could not run without a prepared SDK image.
+
+Host mode preference/application, host native retry/lifecycle API, activity/calendar,
+sleep-position and preset consumers, plus UI/strip/navigation surfaces still need
+integration. The model exposes save epochs; the wake-cycle host consumers are not
+claimed integrated yet. Session-level tests do not establish complete UI/device
+adoption. G1–G9 final gates remain open. Full upstream suite, sanitizers, Android
+and physical-device validation have not run. The old post-frame-load freeze is not
+diagnosed or claimed fixed here.

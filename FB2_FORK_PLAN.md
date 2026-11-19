@@ -5,7 +5,7 @@
 
 **Текущая работа — in progress:** переход на beta.9. Blaze, Engine/adapter и
 реальные reading consumers подключены. Последний проверенный runtime:
-`7079c75f5903966e94b9e034fa24e7b8f036bac5`, [CI `44633797097`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44633797097)
+`8e241eedf3086dc85beff7743b586a15d3df496d`, [CI `44637222380`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44637222380)
 **PASS**: focused native EPUB/FB2 regressions, Kobo Qt5/offline/package/contents.
 Это не полный upstream/all-variant suite и не device acceptance.
 
@@ -58,7 +58,7 @@ ReadingBook использует upstream whole-book progressPercent/bookPage/bo
 fragment и проверяет whole-book checkpoint percentage. Эти изменения и прежние
 appearance exit/lifecycle проверки теперь CI verified.
 
-**implemented / CI pending — checkpoint ownership:** перенесён upstream beta9
+**done / focused CI verified — checkpoint ownership:** перенесён upstream beta9
 ReadingBook request-generation/deferred-checkpoint/position-save-epoch lifecycle,
 включая close snapshots и защиту от stale completion. Добавлен upstream-derived
 regression для close → новый выбор → forced durable save: только новый epoch
@@ -69,12 +69,14 @@ advancedText(native): worker был заблокирован до заверше
 Перенесено отсутствовавшее upstream ожидание idle перед установкой gate;
 строгий QVERIFY(!busy) при заблокированном worker сохранён. Source-checks PASS;
 локальный Kobo syntax blocked: нет подготовленного SDK/Docker. Это не device
-acceptance; повторный CI pending.
+acceptance. Итоговый CI `44637222380` (`8e241eed`): native и Qt5/package PASS,
+включая новый close/epoch regression и advancedText. Промежуточный failure
+`44635988130` superseded этим итоговым прогоном.
 API retry host bridge, activity/calendar, sleep positions и new-book preset policy
 ещё не перенесены вместе с их consumers; не подменены локальными реализациями.
 
 **Следующий шаг:** связать host rendering-mode preference/application и выполнить
-контекстный перенос оставшегося upstream ReadingBook native/save-epoch lifecycle;
+контекстный перенос оставшегося upstream host native retry/lifecycle API;
 затем UI whole-book counts/progress, navigation/bookmark indexes и полосу.
 Default Hybrid не считать готовым до этой интеграции. Не использовать chapter-local
 номера как book pages. Новые настройки/строки на этом checkpoint не добавлялись.
