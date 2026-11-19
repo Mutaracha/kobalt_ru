@@ -4,8 +4,10 @@
 Инструкции агентам: [AGENTS.md](AGENTS.md).
 
 **Текущая работа:** переход на beta.9. Этапы 1–2 (библиотека Blaze, adapter
-paths и nullable-panel hooks) реализованы. Последний runtime `5bab5b4d`, focused
-native/Qt5 CI `44597171704` PASS. Hybrid, новый ReaderSession/UI ещё не перенесены;
+paths и nullable-panel hooks) реализованы. Последний полностью проверенный runtime `5bab5b4d`, focused
+native/Qt5 CI `44597171704` PASS. Shared contracts/worker `c9b675b3`: Qt5 PASS,
+native CI `44601310965` остановился на регистрации категорий новых тестов.
+Исправление категорий и повторная CI-проверка — **in progress**. Hybrid, новый ReaderSession/UI ещё не перенесены;
 промежуточный пакет не для приёмки на устройстве. Следующий этап — интеграция нового
 upstream adapter/ReaderSession с отдельной whole-book границей FB2, не дальнейший
 перенос каталогов. При готовом пакете выдать пользователю конкретный список

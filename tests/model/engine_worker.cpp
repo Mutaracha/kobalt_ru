@@ -7,6 +7,7 @@
 
 using namespace kobalt;
 
+// Checks foreground accounting, idle scheduling, thread ownership and worker shutdown.
 int main(int argc, char **argv)
 {
     qputenv("KOBALT_KOBO_EMULATION", "1");

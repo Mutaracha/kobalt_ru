@@ -16,3 +16,11 @@ EngineDrain is available but is not yet connected to the reader save lifecycle.
 The query values do not yet feed ReaderSession or chrome. The actual Engine,
 ReaderSession, Hybrid adoption and FB2 whole-book dispatch integration remain
 pending, as do the G1–G9 final gates. This is not a device handoff.
+
+## CI follow-up
+
+Runtime `c9b675b390d4d73cd1206844252566bc79addb81`, run `44601310965`:
+Qt5 build/package/contents passed. Native configuration failed because the new
+model tests had no area labels; no native runtime result was obtained. The
+follow-up assigns layout/sleep labels and documents the test entry points.
+Rerun pending; this does not weaken the registration guard or omit tests.

@@ -6,6 +6,7 @@
 
 using namespace kobalt;
 
+// Checks query exactness, generation identity, search defaults and shared resource bounds.
 int main()
 {
     static_assert(maxEmbeddedFontBytes == LVFontManager::MaxEmbeddedFontBytes,
