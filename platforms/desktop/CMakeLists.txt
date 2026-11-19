@@ -637,7 +637,7 @@ if(BUILD_TESTING)
             if(check MATCHES "^(vertical_spacing|large_toc|links)$")
                 target_compile_definitions(kobalt-${name}-tests PRIVATE KOBALT_TEST_ZIP="${KOBALT_TEST_ZIP}")
             endif()
-            if(check STREQUAL "location_round_trip")
+            if(check MATCHES "^(location_round_trip|reader_session)$")
                 target_compile_definitions(kobalt-${name}-tests PRIVATE
                     KOBALT_TEST_FIXTURES="${KOBALT_ROOT}/tests/fixtures")
             endif()

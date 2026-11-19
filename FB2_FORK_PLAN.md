@@ -24,13 +24,27 @@ initial-fallback renderer/bookmark поведение не исправляло�
 также PASS для adapter checkpoint до factory consumers. После отвязки UI header
 явно подключены links.h + types.h; промежуточные include-ошибки закрыты финальным CI.
 
-**Следующий шаг — upstream Hybrid lifecycle ReaderSession и UI:** перенести
-background refinement/build/adoption и stepped cache-save вместе с поколениями
-frame/page queries, bookmark whole-book indexes, appearance chapter-mode dispatch,
-settled/retired ownership. Не включать chapter mode через старый scheduler и не
-подменять whole-book номера локальными. Затем связать consumers полосы/chrome,
-preview/notes/comics с новыми значениями. FB2 остаётся whole-book, EPUB сохраняет
-upstream eventual pipeline. Реализация factory сама по себе не включает Hybrid.
+**in progress / implemented, CI pending — upstream Hybrid lifecycle:**
+ReaderSession cpp/h перенесены целиком от pinned beta9; единственный поведенческий
+fork delta в capture — `frameImage()` для comics readiness. Подключены upstream
+background estimate/full build, cancellation/yield, next-turn adoption, stepped
+cache save, settled/retired ownership, layout generations и display/local page
+контракты; opening больше не выполняет старый whole-book layout inspection.
+Fork open сохраняет raw FB2 probe, legacy notes и per-book comics. Новые
+rendering_mode helpers пока без Settings UI/host preference wiring; complete UI
+потребители ещё pending, промежуточный runtime не для устройства.
+
+Для цельного upstream session API подключены его зависимости: chapter equality,
+cancellable StarDict preparation, wallpaper worker helpers и preview eviction.
+Preview store теперь использует private `.preview`; startup PNG migration/scan
+пока не включена, старые disposable tiles не удаляются. Новых UI строк/настроек
+на этом шаге нет. Добавлены в focused CI upstream session Hybrid/adoption suite,
+preview-store safety tests, dictionary-store и sleep-persistence.
+
+**Следующий шаг:** довести session CI; отдельной проверкой покрыть FB2 через
+реальный Hybrid ReaderSession. Затем связать host mode/application, UI whole-book
+counts/progress, navigation/bookmark indexes и полосу; default Hybrid не считать
+готовым до этой интеграции. Не использовать chapter-local номера как book pages.
 
 G1–G9 остаются **pending** для полной интеграции. Промежуточный пакет не для
 устройства. При итоговой выдаче заполнить runtime/CI и выдать пользователю
