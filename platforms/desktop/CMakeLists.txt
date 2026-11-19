@@ -733,6 +733,7 @@ if(BUILD_TESTING)
     # `light`, `fast` and `integration` must not appear in one because the lane
     # presets filter on them.
     set(kobalt_test_areas
+        "reading:^session\\.fb2-session$"
         "layout:^model\\.engine-contracts$"
         "sleep:^model\\.engine-worker$"
         "settings:^desktop\\.lazyAppearance$"

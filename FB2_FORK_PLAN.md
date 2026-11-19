@@ -48,7 +48,10 @@ appearance lifecycle/styling reuse, old checkpoint helper, highlight failed-comm
 sample cache исключает derived whole_book_failed с отдельной regression. Для
 highlight/markup добавлены actual values. Новый session.fb2-session проверяет
 Accurate/Hybrid, 4 turns, exact book/display pages, reflow/anchor/generation,
-zero-based bookmark mapping и preview без движения source. Recheck pending.
+zero-based bookmark mapping и preview без движения source. CI `44625553442`
+остановил native configure из-за отсутствующего area label у нового теста;
+добавлен reading label и сценарий в doc/validation/reading.md. Runtime recheck
+последних исправлений ещё не выполнен.
 
 **Следующий шаг:** довести session CI. Затем связать host mode/application, UI whole-book
 counts/progress, navigation/bookmark indexes и полосу; default Hybrid не считать

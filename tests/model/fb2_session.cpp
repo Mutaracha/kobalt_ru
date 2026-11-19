@@ -123,6 +123,7 @@ void checkMode(const QString &path, int mode)
 }
 } // namespace
 
+// Checks real Accurate/Hybrid FB2 sessions: whole-book frames, reflow, bookmark pages and preview ownership.
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
