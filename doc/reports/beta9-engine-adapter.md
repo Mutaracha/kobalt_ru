@@ -73,6 +73,14 @@ prepared preview -> adoption, raw FB2 mode/reflow/exact pages/preview lifetime,
 comics preview pair loading, reload fingerprint/revocation, and the upstream
 checkpoint byte-budget regression. The earlier source-location corpus remains.
 
+Final factory-consumer runtime: `4dad4fdf33f868081a89cbac72e16c3280d54c43`.
+[CI 44619223088](https://github.com/Mutaracha/kobalt_ru/actions/runs/44619223088)
+passed focused native regressions and Qt5/offline/package/contents checks.
+This supersedes the intermediate missing direct UI includes in 44615981873 and
+44618298018 (reading_page.cpp needs both engine/links.h and engine/types.h).
+The preceding adapter/body-passage regression checkpoint 44f57097 also passed
+native and Qt5 in CI 44615814323. No device acceptance is inferred from either.
+
 ## Still pending — not a device handoff
 
 The ReaderSession, opening job and style sample consumers now own Engine values

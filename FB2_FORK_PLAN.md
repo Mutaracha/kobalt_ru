@@ -3,33 +3,38 @@
 Принятые решения: [doc/fork-decisions.md](doc/fork-decisions.md).
 Инструкции агентам: [AGENTS.md](AGENTS.md).
 
-**Текущая работа — in progress:** переход на beta.9. Blaze и новый Engine/adapter
-подключены; whole-book FB2, семантический preview, comics hooks и upstream
-checkpoint budget реализованы. Последний полностью проверенный runtime —
-`44f57097` / CI `44615814323`: focused native и Qt5/package PASS. CI `44613839978` для `07274384`:
-Qt5/package PASS; native сборка PASS, падение только нового Engine-boundary теста
-FB2. Диагностика: initial anchor `/?xml[1].0`, mapped=2/current=0. Это XML
-processing instruction, не passage на отображаемой странице; такой initial
-bookmark уже присваивался прежним openSource. Тест теперь выбирает реальный body
-passage через публичный search/goTo до проверки one-based bookPages и повторяет
-её после reflow; проверка равенства не ослаблена. Renderer/bookmark initial-fallback
-не исправлялся и не объявляется исправленным.
+**Текущая работа — in progress:** переход на beta.9. Blaze, Engine/adapter и
+реальные reading consumers подключены. Последний проверенный runtime:
+`4dad4fdf33f868081a89cbac72e16c3280d54c43`, [CI `44619223088`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44619223088)
+**PASS**: focused native EPUB/FB2 regressions, Kobo Qt5/offline/package/contents.
+Это не полный upstream/all-variant suite и не device acceptance.
 
-ReaderSession/opening/style-sample переведены на `Engine`/`createEngine` вместо
-конкретного Blaze-типа (**implemented / CI recheck pending**). Worker-thread deleter,
-retained ownership и close barrier сохранены; cache save использует upstream
-no-arg interface. Fork hook `Engine::frameImage()` (default=image(page)) сохраняет
-публикацию готовой comics пары, adapter override проверяется через `Engine&`.
-Reading/annotation и UI search/page headers больше не включают concrete adapter.
-CI `44615981873` нашёл missing direct include в reading_page.cpp:
-PageLink/LinkKind/linkAtPoint принадлежат engine/links.h, не engine/types.h.
-Подключены узкие headers links.h + types.h (AnnotationGeometry), concrete
-adapter не возвращён. CI `44618298018` остановился на недостающем втором header,
-исправлено; следующий native/Qt5 recheck pending.
-Это переход реальных consumers, но не включение Hybrid scheduler.
-Следующий шаг — upstream Hybrid lifecycle ReaderSession и UI. G1–G9 остаются **pending** для полной
-интеграции. Промежуточный пакет не для устройства. При итоговой выдаче заполнить
-runtime/CI в [device checklist](doc/validation/beta9-device.md).
+**done / CI verified:** whole-book FB2 boundary, семантический preview, comics
+pair readiness через Engine, bounded page-estimate checkpoints; ReaderSession,
+OpeningJob и style-sample используют Engine/createEngine. Worker-thread deleter,
+retained ownership и close barrier сохранены. Reading/annotation и UI search/page
+headers больше не зависят от concrete Blaze adapter. Cache-save использует upstream
+no-arg interface. Рендеринг, настройки и waveform на этом шаге не менялись.
+
+Новый FB2 Engine-boundary тест выбирает body passage через search/goTo и строго
+проверяет exact/one-based pages до и после смены viewport/шрифта, отсутствие
+chapter/refine/full build и lifetime preview после удаления source. Initial
+bookmark `/?xml[1].0` не является passage и не использован как эталон страницы;
+initial-fallback renderer/bookmark поведение не исправлялось. CI `44615814323`
+также PASS для adapter checkpoint до factory consumers. После отвязки UI header
+явно подключены links.h + types.h; промежуточные include-ошибки закрыты финальным CI.
+
+**Следующий шаг — upstream Hybrid lifecycle ReaderSession и UI:** перенести
+background refinement/build/adoption и stepped cache-save вместе с поколениями
+frame/page queries, bookmark whole-book indexes, appearance chapter-mode dispatch,
+settled/retired ownership. Не включать chapter mode через старый scheduler и не
+подменять whole-book номера локальными. Затем связать consumers полосы/chrome,
+preview/notes/comics с новыми значениями. FB2 остаётся whole-book, EPUB сохраняет
+upstream eventual pipeline. Реализация factory сама по себе не включает Hybrid.
+
+G1–G9 остаются **pending** для полной интеграции. Промежуточный пакет не для
+устройства. При итоговой выдаче заполнить runtime/CI и выдать пользователю
+[device checklist](doc/validation/beta9-device.md).
 Подробности adapter: [отчёт](doc/reports/beta9-engine-adapter.md).
 
 
