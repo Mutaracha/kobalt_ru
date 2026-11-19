@@ -62,7 +62,7 @@ void checkMode(const QString &path, int mode)
                             && engine.bookFraction() < 0 && engine.roughPages().pages == 0
                             && !engine.fullDocumentReady() && !engine.fullDocumentStarted(),
                     "Hybrid session scheduled a partial/full replacement document for FB2");
-            ++*observed;
+            ++observed;
             return engine.position();
         },
         [](const QString &anchor) { return anchor; }
