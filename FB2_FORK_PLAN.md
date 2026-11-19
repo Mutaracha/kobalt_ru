@@ -56,7 +56,8 @@ highlight invalid font command сохраняет frame, но не сообща�
 progressPercent/bookPage/bookPages для activity/native/checkpoint/time remaining;
 canFinish учитывает book_fraction и continuesAfter, а не конец текущего фрагмента.
 Добавлен regression: последний лист не-final fragment не предлагает закончить
-книгу и сохраняет book percentage. Это возможная причина трёх exit/lifecycle
+книгу и сохраняет book percentage. Mode-forcing regression выполняется последним,
+чтобы не менять defaults остальных существующих сценариев. Это возможная причина трёх exit/lifecycle
 failures выше, не подтверждённое их исправление до CI. Native lifecycle/save epoch
 рефакторинг пока не перенесён.
 
