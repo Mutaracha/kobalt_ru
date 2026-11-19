@@ -1,5 +1,6 @@
 #pragma once
 #include "engine/types.h"
+#include "publication/location.h"
 #include "engine/font_defaults.h"
 #include "reading/appearance_settings.h"
 #include "publication/opening_result.h"
@@ -112,6 +113,12 @@ public:
                                        QString *error);
     // Negative is before the current source anchor; positive is beyond it.
     int comparePosition(const QString &position, QString *error) const;
+    // Source-XHTML positions shared by beta9 engines; never writes saved state.
+    bool locationOf(const QString &position, Location *location, bool *exact = nullptr) const;
+    QString positionOf(const Location &location, Restoration *restoration = nullptr) const;
+    QStringList spineItems() const;
+    int spineItemOf(const QString &position) const;
+
     int comparePlatformPosition(const PositionCodec &codec, const QString &location,
                                 QString *error) const;
     // The page of each position in the current layout, or -1 where a
@@ -269,6 +276,8 @@ private:
     bool ensureSearchScope(SearchScope scope, const QString &origin);
     struct SourceIndex;
     friend struct ReaderSourceIndexProbe;
+    friend struct ReaderLocationProbe;
+    mutable QStringList spineNames_;
     friend struct ReaderFootnoteProbe;
     friend struct ReaderFigureProbe;
     mutable std::shared_ptr<SourceIndex> sourceIndex_;

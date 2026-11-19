@@ -392,3 +392,19 @@ Runtime с подключёнными drains `d4389deccd4f9fba8004d305e322b29d44
 PASS: focused native (включая annotation-draft/highlight-session/native-lifecycle,
 worker/contracts, reported FB2), offline и Qt5 build/package/contents.
 Qt6 skipped; Android, полный upstream suite, sanitizers и устройство не проверялись.
+
+### Beta.9 — source locations в новом позиционном контракте
+
+**in progress / CI pending / no device handoff**. В concrete adapter подключены
+upstream Location/Restoration и XPointer ↔ source-XHTML mapping целиком из beta.9,
+включая обход layout wrappers и исключение generated content. Это реализация
+позиционной части будущего Engine API, не перенос Engine/ReaderSession целиком.
+Кэш spine names сбрасывается при configure нового документа. На FB2 shared XHTML
+location не создаётся: legacy XPointer остаётся прежним; искусственный EPUB не строится.
+Сохранённые позиции/профиль/схемы не переписываются, reader пока использует прежний API.
+
+В focused CI добавлен upstream location-round-trip corpus test с четырьмя
+существующими EPUB fixtures. Дополнительные проверки: no-document/future-version/
+unknown-href/invalid-path, неизменность reader state, round-trip после font/viewport
+reflow и EPUB → FB2 → EPUB reuse без утечки spine cache. Требуется native/Qt5 CI.
+Новый adapter Hybrid и ReaderSession остаются следующим незавершённым участком.
