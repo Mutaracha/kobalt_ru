@@ -447,3 +447,12 @@ Comics target-preview использует свою bounded pair loading без 
 layout signature включает fork grouping/viewport. Добавлен реальный engine-only
 chapter → full build → prepared preview → adoption smoke (без ReaderSession).
 Повторный CI pending.
+
+CI `44611131876`: Qt5 build/package/contents PASS; native linking выявил отсутствие
+page_estimate.cpp в явном desktop core source list (Kobo собирает рекурсивно).
+Файл добавлен без изменения списка/ослабления тестов. Так как новый state() уже
+может отдавать derived page_estimate для whole-book EPUB, перенесён целиком
+upstream persistedCheckpoint: drop display-only fields, trim read → estimate →
+image views при byte limit; добавлен исходный upstream budget regression.
+Sample cache исключает page/window/estimate transient state по upstream. Контракт
+поля зафиксирован в doc/storage.md. Следующий CI проверяет adapter и persistence.
