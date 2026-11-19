@@ -260,7 +260,7 @@ transparent stylesheet, dismiss/reopen light/dark), offline checks, Qt5 package/
 
 ## Comics fill и аудит полосы меню
 
-**in progress / CI pending / device pending**. По запросу пользователя включённое
+**done / CI verified / device pending**. По запросу пользователя включённое
 облачко comics заливается ink (белым ночью), выключенное контурное; фон кнопки,
 контур/stroke/хвост, hit area, busy guard и refresh policy прежние. Использован
 shared vector painter/state cache, geometry не дублируется. Добавлена проверка
@@ -269,4 +269,10 @@ alpha центра off/on light/dark и сохранены проверки stat
 перенесены в существующий views/fork_navigation.cpp. Общие файлы оставляют короткие
 hooks. ListHeader, chromeValues/BookTimeLeft, styles, storage и page geometry общие.
 Добавлен тест formatter с book=3h/chapter=15m до show и отрицательной оценкой.
-Карта владения doc/fork-delta.md актуализирована. Native/Qt5 CI ожидаются.
+Карта владения doc/fork-delta.md актуализирована.
+Runtime `23e2d023e1ed732878a21cd2148baaddc24d50e6`:
+[CI 44574307848](https://github.com/Mutaracha/kobalt_ru/actions/runs/44574307848)
+PASS — focused native matrix, UI icon off/on light/dark, lazyAppearance и новый
+formatter test, offline checks, Kobo Qt5 package/contents.
+[Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44574307848/artifacts/14555672823).
+Device-проверка включённой иконки в обеих темах и полосы после переноса ожидается.

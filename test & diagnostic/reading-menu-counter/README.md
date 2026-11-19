@@ -19,3 +19,8 @@ time left and italic captions. These are pre-fix reports, not acceptance.
 2026-10-26. Show caption background rectangles/decorative-font issues and a small
 counter fragment at the screen origin before the first menu opening. Pre-fix
 report evidence; not physical-device acceptance of the replacement.
+
+`screen_001-19.png`: user screenshot supplied 2026-10-26. Shows the reading menu
+in dark mode; request was to fill the active comics bubble for clearer state and
+audit the menu strip against the fork refactoring boundaries. Not acceptance of
+the subsequent icon/refactoring change.
