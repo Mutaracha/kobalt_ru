@@ -50,8 +50,10 @@ highlight/markup добавлены actual values. Новый session.fb2-sessio
 Accurate/Hybrid, 4 turns, exact book/display pages, reflow/anchor/generation,
 zero-based bookmark mapping и preview без движения source. CI `44625553442`
 остановил native configure из-за отсутствующего area label у нового теста;
-добавлен reading label и сценарий в doc/validation/reading.md. Runtime recheck
-последних исправлений ещё не выполнен.
+добавлен reading label и сценарий в doc/validation/reading.md. CI `44626402072`: Qt5 PASS; native compile остановился на новом тесте:
+PositionCodec — function pointers, capturing lambda недопустима. Исправлен test-only
+worker counter (atomic в namespace); runtime recheck последних исправлений ещё
+не выполнен.
 
 **Следующий шаг:** довести session CI. Затем связать host mode/application, UI whole-book
 counts/progress, navigation/bookmark indexes и полосу; default Hybrid не считать

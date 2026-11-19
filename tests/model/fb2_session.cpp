@@ -15,6 +15,8 @@
 using namespace kobalt;
 
 namespace {
+std::atomic_int observed{ 0 };
+
 void waitUntil(const std::function<bool()> &ready)
 {
     if (ready())
@@ -51,10 +53,10 @@ void exact(const ReaderSession &reader)
 void checkMode(const QString &path, int mode)
 {
     renderingMode::setOverride(mode);
-    auto observed = std::make_shared<std::atomic_int>(0);
+    observed.store(0);
     const PositionCodec codec{
         [](const Engine &, const QString &anchor, QString *) { return anchor; },
-        [observed](const Engine &engine, QString *) {
+        [](const Engine &engine, QString *) {
             const auto info = engine.pageInfo();
             require(info.bookPage.exact() && info.bookPages.exact()
                             && engine.bookFraction() < 0 && engine.roughPages().pages == 0
@@ -115,7 +117,7 @@ void checkMode(const QString &path, int mode)
         exact(preview);
         require(reader.state().value("position") == anchor && reader.image() == pixels,
                 "FB2 session preview moved or repainted the reading source");
-        require(observed->load() >= 6, "The test did not observe the worker's FB2 engine frames");
+        require(observed.load() >= 6, "The test did not observe the worker's FB2 engine frames");
     }
     bool drained = false;
     ReaderSession::drain([&] { drained = true; });
