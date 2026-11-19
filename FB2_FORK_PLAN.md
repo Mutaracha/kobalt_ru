@@ -5,8 +5,9 @@
 
 **Текущая работа:** переход на beta.9. Этапы 1–2 (библиотека Blaze, adapter
 paths и nullable-panel hooks) реализованы. Shared contracts/worker и защита принятых
-сохранений выделений подключены. Последний проверенный runtime `d4389dec`, focused
-native/Qt5 CI `44604383056` PASS. Hybrid, новый Engine/ReaderSession/UI ещё не
+сохранений выделений подключены. Source-XHTML mapping beta.9
+реализован в concrete adapter. Последний проверенный runtime `b0b9c916`, focused
+native/Qt5 CI `44607352261` PASS. Hybrid, новый Engine/ReaderSession/UI ещё не
 перенесены; промежуточный пакет не для приёмки на устройстве. Следующий этап —
 интеграция нового upstream adapter/ReaderSession с отдельной whole-book границей
 FB2, не дальнейший перенос каталогов. При готовом пакете выдать пользователю
@@ -395,7 +396,8 @@ Qt6 skipped; Android, полный upstream suite, sanitizers и устройс�
 
 ### Beta.9 — source locations в новом позиционном контракте
 
-**in progress / CI pending / no device handoff**. В concrete adapter подключены
+**done / focused CI verified / no device handoff** (позиционная часть).
+В concrete adapter подключены
 upstream Location/Restoration и XPointer ↔ source-XHTML mapping целиком из beta.9,
 включая обход layout wrappers и исключение generated content. Это реализация
 позиционной части будущего Engine API, не перенос Engine/ReaderSession целиком.
@@ -406,5 +408,10 @@ location не создаётся: legacy XPointer остаётся прежни�
 В focused CI добавлен upstream location-round-trip corpus test с четырьмя
 существующими EPUB fixtures. Дополнительные проверки: no-document/future-version/
 unknown-href/invalid-path, неизменность reader state, round-trip после font/viewport
-reflow и EPUB → FB2 → EPUB reuse без утечки spine cache. Требуется native/Qt5 CI.
+reflow и EPUB → FB2 → EPUB reuse без утечки spine cache.
+Runtime `b0b9c916e3369b6a0d85dc1b3e35eb74c70c22ac`,
+[CI 44607352261](https://github.com/Mutaracha/kobalt_ru/actions/runs/44607352261)
+PASS: focused native с location corpus/boundaries, reported FB2, сохранениями и
+прежними regressions; offline и Qt5 build/package/contents.
+Qt6 skipped; full upstream suite/Android/sanitizers/device не запускались.
 Новый adapter Hybrid и ReaderSession остаются следующим незавершённым участком.

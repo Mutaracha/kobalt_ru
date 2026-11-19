@@ -26,7 +26,14 @@ plus boundary checks for invalid inputs, query immutability, reflow and source
 reuse through EPUB/FB2/EPUB. The test is registered in desktop CMake's engine
 layout area and explicitly built/run by the focused native workflow. Qt5 still
 builds the new implementation for device compatibility. Local environment has
-no CMake, Qt or Kobo SDK; native and Qt5 CI results are pending.
+no CMake, Qt or Kobo SDK.
+
+Verified runtime `b0b9c916e3369b6a0d85dc1b3e35eb74c70c22ac`,
+[CI 44607352261](https://github.com/Mutaracha/kobalt_ru/actions/runs/44607352261):
+focused native PASS (job `135854486114`), including the upstream four-fixture
+location corpus, added boundaries/reflow/reuse checks, existing focused matrix
+and reported FB2 fixture. Qt5 build/package/contents and offline checks PASS
+(job `135854485476`). Qt6 skipped.
 
 The wider G1–G9 gates, full upstream suite, sanitizers, Android, Hybrid and device
 validation remain unrun. This is not a device testing handoff.
