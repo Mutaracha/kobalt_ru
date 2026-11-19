@@ -291,3 +291,18 @@ lifecycle и новые RU строки. Runtime остался 23e2d023, device
 иконки/переноса полосы не заявляется. Следующий шаг — детальный аудит новых
 Engine/ReaderSource contracts и выбор безопасного FB2 path, затем отдельный этап
 переноса. Native/Qt5/device beta.9 с нашими правками ещё не запускались.
+
+### Beta.9: разбор контрактов Blaze завершён (перенос не начат)
+
+**source audit done / integration pending**. Детали и gates G1–G9:
+[doc/reports/beta9-engine-contracts.md](doc/reports/beta9-engine-contracts.md).
+Начальная техническая граница: сохранить EPUB Hybrid upstream; FB2 — прямой
+single-document whole-book path через новый adapter без искусственного EPUB/spine
+и без глобального отключения Hybrid. Одного open guard недостаточно: смена
+appearance вызывает setChapterMode, который для FB2 должен корректно применить
+patch/size без slicing, а не вернуть false/ложный success. Preview API теперь
+Engine&, FB2 dispatch нужен до DocFragment. Уточнение preflight: полоса уже
+получает Values; переносить надо новый chromeValues целиком, не старый локальный
+page/pages fallback. G1–G9 все pending. Следующий шаг — реализация новой базы и
+адаптация publication/FB2 границ, затем compile/native/Qt5 проверки; docs-аудит
+не является runtime/device-приёмкой. Последний runtime форка не менялся.
