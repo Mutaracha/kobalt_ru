@@ -39,6 +39,8 @@ endforeach()
 
 include("${KOBALT_ROOT}/dependencies/cache.cmake")
 kobalt_dependencies()
+include("${KOBALT_ROOT}/dependencies/local-engine.cmake")
+kobalt_local_engine()
 add_subdirectory("${KOBALT_ROOT}/assets" "${CMAKE_CURRENT_BINARY_DIR}/assets")
 
 file(READ "${KOBALT_ASSETS}/manifest.json" assets)
@@ -73,6 +75,7 @@ file(GLOB_RECURSE shared CONFIGURE_DEPENDS
     "${source}/dictionaries/*.cpp" "${source}/engine/*.cpp"
     "${source}/library/*.cpp" "${source}/render/*.cpp"
     "${source}/reading/*.cpp" "${source}/storage/*.cpp" "${source}/sync/*.cpp")
+list(FILTER shared EXCLUDE REGEX "/src/engine/blaze/")
 add_library(kobalt-core OBJECT ${shared} display.cpp ../standalone/native_image.cpp
     "${source}/platform/qt/export_file.cpp"
     "${source}/platform/posix/diagnostics.cpp"
@@ -85,6 +88,7 @@ add_library(kobalt-core OBJECT ${shared} display.cpp ../standalone/native_image.
     "${source}/publication/fb2_resources.cpp" "${source}/publication/publication_fb2.cpp"
     "${source}/publication/image_policy.cpp" "${source}/publication/layout_compatibility.cpp"
     "${source}/publication/native_resources.cpp" "${source}/publication/resource_server.cpp")
+add_dependencies(kobalt-core kobalt-local-engine)
 target_include_directories(kobalt-core PUBLIC "${KOBALT_ROOT}" "${source}" "${CMAKE_CURRENT_BINARY_DIR}")
 target_include_directories(kobalt-core SYSTEM PUBLIC
     "${CRENGINE_SOURCE}/crengine/include" "${CRENGINE_BUILD}"

@@ -286,3 +286,14 @@ without overwriting it. No saved data or caches are cleared.
 Android keeps chosen dictionary, font and custom-icon document-tree URIs and display labels in private `user-folders` SharedPreferences. The optional keys are `dictionaries`, `fonts` and `custom-pins`, with a `-label` key beside each URI. Missing keys mean no selected folder. Read grants persist through Android's document provider. Grant ownership prevents clearing a resource folder from revoking a Library folder's access.
 
 `user-folders/` below app data holds disposable working copies, separate from downloaded dictionaries and saved reading data. Each resource kind has its own directory. A bounded worker scan records provider identity, relative names, sizes and dates in `.inventory`. A successful changed snapshot replaces the previous directory through `-pending` and `-previous` siblings. Failed reads retain the previous snapshot. An interrupted replacement recovers the previous directory at the next refresh if the active directory is absent. Dictionary offset indexes and `.ifo.kobalt-ready` markers are generated only in these working copies. Dictionary IDs use `folder:` plus the relative basename within the selected folder. Changing a folder retains existing saved choices; unavailable choices use the normal automatic fallback. Book, settings and database format versions are unchanged.
+
+
+## Beta.9 migration stage 1: Blaze library boundary
+
+The intermediate fork build imports the Blaze library from upstream beta.9
+be47258850ffdc3295257475afdf8b8f6cb53176, while retaining the existing whole-book
+adapter. Its document cache checksum format moves from 11 to 13 and adopts
+upstream rendering policy version 12. Older parsed/layout entries are disposable;
+reading positions, book records, preferences, bookmarks and annotations are not
+migrated or deleted by this stage. No Hybrid page-estimate records are written
+by this intermediate adapter. This is not the completed beta.9 storage contract.

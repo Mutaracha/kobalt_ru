@@ -15,6 +15,8 @@ endforeach()
 set(source "${KOBALT_ROOT}/src")
 include("${KOBALT_ROOT}/dependencies/cache.cmake")
 kobalt_dependencies()
+include("${KOBALT_ROOT}/dependencies/local-engine.cmake")
+kobalt_local_engine()
 add_subdirectory("${KOBALT_ROOT}/assets" "${CMAKE_CURRENT_BINARY_DIR}/assets")
 
 
@@ -54,6 +56,7 @@ string(TIMESTAMP KOBALT_BUILD_TIME "%Y-%m-%d %H:%M UTC" UTC)
 configure_file("${source}/support/build_info.h.in" build_info.h @ONLY)
 
 file(GLOB_RECURSE shared CONFIGURE_DEPENDS "${source}/*.cpp" "${source}/*.h")
+list(FILTER shared EXCLUDE REGEX "/src/engine/blaze/")
 # The scenario player is built only into evaluation builds.
 list(FILTER shared EXCLUDE REGEX "/src/scenario/")
 list(REMOVE_ITEM shared "${source}/assets/system_fonts.cpp")
@@ -70,7 +73,8 @@ add_custom_command(OUTPUT "${engine}"
         --redefine-sym FT_Render_Glyph=kobalt_font_render_glyph "${CRENGINE_BUILD}/libcrengine.a" "${engine}"
     DEPENDS "${CRENGINE_BUILD}/libcrengine.a" VERBATIM)
 add_custom_target(reader-engine DEPENDS "${engine}")
-add_dependencies(kobalt_android reader-engine)
+add_dependencies(reader-engine kobalt-local-engine)
+add_dependencies(kobalt_android kobalt-local-engine reader-engine)
 target_link_libraries(kobalt_android PRIVATE Qt6::Widgets Qt6::Network Qt6::Sensors Qt6::Sql "${engine}"
     "${prefix}/lib/libharfbuzz.a" "${prefix}/lib/libxxhash.a" "${prefix}/lib/libutf8proc.a"
     "${prefix}/lib/libjpeg.a" "${prefix}/lib/liblunasvg.a" "${prefix}/lib/libfreetype.a"

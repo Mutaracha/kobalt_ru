@@ -306,3 +306,20 @@ Engine&, FB2 dispatch нужен до DocFragment. Уточнение preflight:
 page/pages fallback. G1–G9 все pending. Следующий шаг — реализация новой базы и
 адаптация publication/FB2 границ, затем compile/native/Qt5 проверки; docs-аудит
 не является runtime/device-приёмкой. Последний runtime форка не менялся.
+
+### Beta.9 этап 1 — подключение библиотеки Blaze
+
+**in progress / CI pending / device not requested**. Реализация начата отдельно
+от Hybrid/session/UI: vendored library crengine/extensions/data/CMake/COPYING
+скопирована byte-for-byte из upstream be472588; adapter остаётся текущим
+whole-book в src/engine/crengine. Это промежуточный compatibility gate, **не
+завершённая beta.9 и не пакет для приёмки**. Подключена upstream local-engine
+сборка для desktop/Kobo/Android; source globs исключают vendor library из app
+objects; внешняя crengine download/patch сборка больше не вызывается. Старые
+patch files пока оставлены как неиспользуемые исторические входы до полного
+переноса. Hyphenation/CSS берутся из Blaze data, fork FB2 stylesheet сохранён.
+Parser cache identity обновлён 11→13, rendering policy — upstream version12;
+проверка cache identity обновлена, старые parsed layouts не принимаются за новые.
+ACK/provenance и source-archive external-library probe актуализированы.
+Native focused + Qt5 CI ожидаются. По результатам исправлять API/поведение
+на этой границе; затем переходить к новому adapter/ReaderSession Hybrid.

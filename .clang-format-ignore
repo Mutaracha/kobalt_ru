@@ -3,3 +3,6 @@ dependencies/**
 platforms/kobo/toolchains/**
 # Hand-kept icon geometry; keep it exactly as it is.
 src/ui/controls/reader_icon_vectors.h
+
+# Vendored Blaze library keeps upstream formatting.
+src/engine/blaze/crengine/**
