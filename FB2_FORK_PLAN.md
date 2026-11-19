@@ -5,7 +5,7 @@
 
 **Текущая работа — in progress:** переход на beta.9. Blaze, Engine/adapter и
 реальные reading consumers подключены. Последний проверенный runtime:
-`4dad4fdf33f868081a89cbac72e16c3280d54c43`, [CI `44619223088`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44619223088)
+`7079c75f5903966e94b9e034fa24e7b8f036bac5`, [CI `44633797097`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44633797097)
 **PASS**: focused native EPUB/FB2 regressions, Kobo Qt5/offline/package/contents.
 Это не полный upstream/all-variant suite и не device acceptance.
 
@@ -24,7 +24,7 @@ initial-fallback renderer/bookmark поведение не исправляло�
 также PASS для adapter checkpoint до factory consumers. После отвязки UI header
 явно подключены links.h + types.h; промежуточные include-ошибки закрыты финальным CI.
 
-**in progress / implemented, CI pending — upstream Hybrid lifecycle:**
+**done / focused CI verified — upstream Hybrid session lifecycle:**
 ReaderSession cpp/h перенесены целиком от pinned beta9; единственный поведенческий
 fork delta в capture — `frameImage()` для comics readiness. Подключены upstream
 background estimate/full build, cancellation/yield, next-turn adoption, stepped
@@ -41,30 +41,28 @@ Preview store теперь использует private `.preview`; startup PNG 
 на этом шаге нет. Добавлены в focused CI upstream session Hybrid/adoption suite,
 preview-store safety tests, dictionary-store и sleep-persistence.
 
-CI `44630442930` (`a6ad4211`): Qt5/package PASS. После переноса upstream
-ReadingBook progress/finish логики advancedText и оба exit/appearance lifecycle
-сценария больше не падают. Остаются reading-book (native activity page),
-highlight-session (invalid appearance), reader-session (markup ranges) и
-fb2-session (process exit без доступного diagnostic tail).
+**done / CI verified:** `7079c75f`, CI `44633797097`: focused native suite
+и Qt5/package PASS. Предыдущие reading-book/highlight/markup/FB2 session failures
+больше не воспроизводятся. Пропущенный `platforms/desktop/run-test.cmake` перенесён
+byte-for-byte из pinned beta9: legacy checks запускаются с Accurate по умолчанию,
+внешний env override сохранён. Assertions не менялись. Dedicated upstream
+Hybrid/adoption suite, FB2 Accurate/Hybrid и fragment-finish regression сохраняют
+явные mode overrides и также проходят. FB2 check запускается внутри app.exec,
+чтобы aboutToQuit завершал worker до Qt teardown; это test lifecycle correction,
+не изменение поведения приложения. Две test-infrastructure правки проверены
+одним итоговым CI; отдельная причина прежнего FB2 process exit не изолировалась.
 
-**implemented / CI pending:** найден пропуск upstream test infrastructure:
-`platforms/desktop/run-test.cmake` beta9 фиксирует `KOBALT_CHAPTER_MODE=0` для
-legacy whole-book checks, сохраняя внешний override. У нас оставался launcher
-beta8: после setOverride(-1) сессии могли открываться chapter-local, а старый
-highlight тест переключал Accurate → Hybrid на invalid font request. Launcher
-теперь exact upstream9; assertions не изменены. Dedicated Hybrid/adoption suite
-и FB2 Accurate/Hybrid по-прежнему используют явный setOverride, включая новый
-fragment-finish regression.
+ReadingBook использует upstream whole-book progressPercent/bookPage/bookPages
+для activity/native/checkpoint/time remaining; canFinish учитывает book_fraction
+и continuesAfter. Regression отклоняет finish на последнем листе не-final
+fragment и проверяет whole-book checkpoint percentage. Эти изменения и прежние
+appearance exit/lifecycle проверки теперь CI verified.
 
-FB2 session test теперь выполняется внутри app.exec, как upstream session checks:
-aboutToQuit завершает engine worker до разрушения Qt. Причина прежнего process
-exit не подтверждена; CI печатает отдельный annotation для каждого упавшего теста,
-чтобы его вывод не обрезался общим лимитом annotation. Native lifecycle/save epoch
-рефакторинг и complete UI integration остаются pending.
-
-**Следующий шаг:** довести session CI. Затем связать host mode/application, UI whole-book
-counts/progress, navigation/bookmark indexes и полосу; default Hybrid не считать
-готовым до этой интеграции. Не использовать chapter-local номера как book pages.
+**Следующий шаг:** связать host rendering-mode preference/application и выполнить
+контекстный перенос оставшегося upstream ReadingBook native/save-epoch lifecycle;
+затем UI whole-book counts/progress, navigation/bookmark indexes и полосу.
+Default Hybrid не считать готовым до этой интеграции. Не использовать chapter-local
+номера как book pages. Новые настройки/строки на этом checkpoint не добавлялись.
 
 G1–G9 остаются **pending** для полной интеграции. Промежуточный пакет не для
 устройства. При итоговой выдаче заполнить runtime/CI и выдать пользователю

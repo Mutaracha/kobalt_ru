@@ -91,20 +91,34 @@ job preserves only FB2 raw-resource probe and legacy-notes/per-book-comics merge
 Chapter equality, cancellable StarDict preparation, preview eviction and wallpaper
 worker helpers supply the complete session API without new UI controls/strings.
 
-CI 44623592002: Qt5/package PASS; native compilation PASS but selected runtime
-checks failed (appearance lifecycle, styling sample reuse, old checkpoint test
-sanitation, highlight failed-command and session markup identity). These are not
-device-ready results. The upstream appearance-edit owner is now ported to match
-ReaderSession's pending-preview ownership. Styling keys exclude the new
-whole_book_failed diagnostic flag; a regression covers its absence/presence.
-Checkpoint test sanitation now matches upstream transient frame fields. Remaining
-highlight/markup failures retain their assertions with richer actual values.
-A separate FB2 ReaderSession test covers Accurate/Hybrid whole-book frames,
-turns, reflow, exact display/bookmark values and semantic preview source identity.
-Those changes await the next native run.
+Latest session-integration runtime: `7079c75f5903966e94b9e034fa24e7b8f036bac5`.
+[CI 44633797097](https://github.com/Mutaracha/kobalt_ru/actions/runs/44633797097)
+passed focused native regressions and Kobo Qt5/offline/package/contents.
 
-Host mode preference/application, ReadingBook progress/native/lifecycle consumers
-and UI/strip/navigation surfaces still need integration. Session-level tests do
-not establish complete UI/device adoption. G1–G9 final gates remain open. Full
-upstream suite, sanitizers, Android and physical-device validation have not run.
-The old post-frame-load freeze is not diagnosed or claimed fixed here.
+The earlier styling/checkpoint sanitation failures are covered by transient-key
+cache tests and upstream persisted-state test sanitation. ReadingBook now uses
+upstream book-level progress/page coordinates for activity, native percentage,
+checkpoints and remaining time; its upstream fragment-aware finish criterion
+passes the new non-final-fragment regression and existing appearance-exit checks.
+
+The remaining highlight/markup/native-activity failures exposed an omitted
+upstream test-launcher change, not evidence requiring a new EPUB implementation:
+beta9 run-test.cmake pins legacy checks to Accurate unless the environment selects
+another mode. Restoring that file byte-for-byte preserves the assertions and
+leaves explicit Hybrid/Fast test overrides effective. The new FB2 session check
+also runs within app.exec, allowing aboutToQuit to stop the engine worker before
+Qt teardown. The prior FB2 process-exit cause was not independently isolated.
+Both changes were verified together by the final CI.
+
+The passing matrix includes upstream Hybrid/adoption session checks, FB2
+Accurate/Hybrid whole-book frames, four turns, reflow, exact display/bookmark
+values, semantic preview source identity and the non-final-fragment finish test.
+No product rendering change or assertion relaxation was needed in that final
+infrastructure correction.
+
+Host mode preference/application, remaining ReadingBook native/save-epoch
+lifecycle consumers and UI/strip/navigation surfaces still need integration.
+Session-level tests do not establish complete UI/device adoption. G1–G9 final
+gates remain open. Full upstream suite, sanitizers, Android and physical-device
+validation have not run. The old post-frame-load freeze is not diagnosed or
+claimed fixed here.
