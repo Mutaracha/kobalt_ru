@@ -6,6 +6,7 @@
 #include "ui/controls/icons.h"
 #include "reading_page.h"
 #include "engine/links.h"
+#include "engine/types.h"
 #include "render/bookmark_paint.h"
 #include "render/page_turn_paint.h"
 #include "ui/style/fonts.h"

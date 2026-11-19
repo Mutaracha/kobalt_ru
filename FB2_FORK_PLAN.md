@@ -23,7 +23,9 @@ no-arg interface. Fork hook `Engine::frameImage()` (default=image(page)) сох�
 Reading/annotation и UI search/page headers больше не включают concrete adapter.
 CI `44615981873` нашёл missing direct include в reading_page.cpp:
 PageLink/LinkKind/linkAtPoint принадлежат engine/links.h, не engine/types.h.
-Подключён узкий header, concrete adapter не возвращён. Native verdict ещё pending.
+Подключены узкие headers links.h + types.h (AnnotationGeometry), concrete
+adapter не возвращён. CI `44618298018` остановился на недостающем втором header,
+исправлено; следующий native/Qt5 recheck pending.
 Это переход реальных consumers, но не включение Hybrid scheduler.
 Следующий шаг — upstream Hybrid lifecycle ReaderSession и UI. G1–G9 остаются **pending** для полной
 интеграции. Промежуточный пакет не для устройства. При итоговой выдаче заполнить
