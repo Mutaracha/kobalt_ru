@@ -83,14 +83,28 @@ native and Qt5 in CI 44615814323. No device acceptance is inferred from either.
 
 ## Still pending — not a device handoff
 
-The ReaderSession, opening job and style sample consumers now own Engine values
-created by createEngine. Their previous whole-book scheduling remains; they do
-not yet implement the beta9 Hybrid reader lifecycle. Worker-affine shared deletion
-and retained-open ownership are unchanged. The fork frameImage hook has an
-image(page) default and an adapter override for complete bounded comics pairs.
-Comics readiness tests call that hook through Engine&.
-The rendering-mode preference, new ReaderSession values and UI/strip consumers
-must still be integrated together. Engine-only Hybrid tests do not establish
-reader/UI/device adoption. G1–G9 final gates remain open. Full upstream suite,
-sanitizers, Android and physical-device validation have not been run.
+The ReaderSession now implements the pinned beta9 Hybrid worker lifecycle,
+including estimate publication, interruptible full builds, next-turn adoption,
+layout-generation gates and stepped cache saves. Its source is upstream except
+for the frameImage publication hook and an explicit atomic include. The opening
+job preserves only FB2 raw-resource probe and legacy-notes/per-book-comics merges.
+Chapter equality, cancellable StarDict preparation, preview eviction and wallpaper
+worker helpers supply the complete session API without new UI controls/strings.
+
+CI 44623592002: Qt5/package PASS; native compilation PASS but selected runtime
+checks failed (appearance lifecycle, styling sample reuse, old checkpoint test
+sanitation, highlight failed-command and session markup identity). These are not
+device-ready results. The upstream appearance-edit owner is now ported to match
+ReaderSession's pending-preview ownership. Styling keys exclude the new
+whole_book_failed diagnostic flag; a regression covers its absence/presence.
+Checkpoint test sanitation now matches upstream transient frame fields. Remaining
+highlight/markup failures retain their assertions with richer actual values.
+A separate FB2 ReaderSession test covers Accurate/Hybrid whole-book frames,
+turns, reflow, exact display/bookmark values and semantic preview source identity.
+Those changes await the next native run.
+
+Host mode preference/application, ReadingBook progress/native/lifecycle consumers
+and UI/strip/navigation surfaces still need integration. Session-level tests do
+not establish complete UI/device adoption. G1–G9 final gates remain open. Full
+upstream suite, sanitizers, Android and physical-device validation have not run.
 The old post-frame-load freeze is not diagnosed or claimed fixed here.

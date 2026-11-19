@@ -41,8 +41,16 @@ Preview store теперь использует private `.preview`; startup PNG 
 на этом шаге нет. Добавлены в focused CI upstream session Hybrid/adoption suite,
 preview-store safety tests, dictionary-store и sleep-persistence.
 
-**Следующий шаг:** довести session CI; отдельной проверкой покрыть FB2 через
-реальный Hybrid ReaderSession. Затем связать host mode/application, UI whole-book
+CI `44623592002`: Qt5/package PASS, native build PASS, runtime failures в
+appearance lifecycle/styling reuse, old checkpoint helper, highlight failed-command
+и session markup. Не ослаблены assertions: port upstream AppearanceEditSession
+вместе с новой preview queue, sanitation helper теста приведён к upstream;
+sample cache исключает derived whole_book_failed с отдельной regression. Для
+highlight/markup добавлены actual values. Новый session.fb2-session проверяет
+Accurate/Hybrid, 4 turns, exact book/display pages, reflow/anchor/generation,
+zero-based bookmark mapping и preview без движения source. Recheck pending.
+
+**Следующий шаг:** довести session CI. Затем связать host mode/application, UI whole-book
 counts/progress, navigation/bookmark indexes и полосу; default Hybrid не считать
 готовым до этой интеграции. Не использовать chapter-local номера как book pages.
 

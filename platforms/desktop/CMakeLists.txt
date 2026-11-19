@@ -716,7 +716,7 @@ if(BUILD_TESTING)
     target_include_directories(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}" "${source}")
     target_link_libraries(kobalt-ui-tests PRIVATE Qt6::GuiPrivate)
     target_link_libraries(kobalt-kosync-ui-tests PRIVATE Qt6::Test)
-    kobalt_regressions(session reading_book bookmark_session highlight_session reader_session)
+    kobalt_regressions(session reading_book bookmark_session highlight_session reader_session fb2_session)
     kobalt_regressions(resource image_policy resource_provider)
     kobalt_regressions(corpus multilingual)
     target_compile_definitions(kobalt-figure-layout-tests PRIVATE

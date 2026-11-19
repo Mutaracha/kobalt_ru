@@ -1267,7 +1267,13 @@ int run(int argc, char **argv)
                             && session->markup().generation == generation
                             && session->markup().imageKey == rawImage.cacheKey()
                             && session->markup().resolvedRanges == 2,
-                    "Markup did not belong to the exact image/request or resolved ranges twice");
+                    qPrintable(QString("Markup mismatch: request=%1 generation=%2/%3 image=%4/%5 ranges=%6 position=%7 fraction=%8")
+                            .arg(session->markup().request == request)
+                            .arg(session->markup().generation).arg(generation)
+                            .arg(session->markup().imageKey).arg(rawImage.cacheKey())
+                            .arg(session->markup().resolvedRanges)
+                            .arg(session->state().value("position").toString())
+                            .arg(session->state().value("book_fraction").toDouble(-1))));
             require(!session->markup().saved.first().rectangles.isEmpty()
                             && !session->markup().draft.rectangles.isEmpty(),
                     "Current visible saved and draft markup must both be captured");

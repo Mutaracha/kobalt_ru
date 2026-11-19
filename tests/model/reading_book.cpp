@@ -38,8 +38,12 @@ QJsonObject persistedBook(QJsonObject state)
         state.remove(key);
     for (const auto *key : appearance::marginKeys)
         state.remove(key);
-    for (const auto *key : { "chapter_title", "chapter_page", "chapter_pages", "page", "pages",
-                             "next_page", "text_font_face", "embedded_font_count", "cached_pages" })
+    for (const auto *key :
+         { "chapter_title", "chapter_page", "chapter_pages", "page", "pages", "next_page",
+           "text_font_face", "embedded_font_count", "cached_pages", "continues_before",
+           "continues_after", "book_fraction", "rough_page", "rough_pages", "rough_item_page",
+           "rough_item_pages", "rough_pages_estimated", "rough_item_pages_estimated",
+           "chapter_load_ms" })
         state.remove(key);
     return state;
 }

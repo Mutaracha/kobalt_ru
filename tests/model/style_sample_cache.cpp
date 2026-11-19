@@ -80,6 +80,15 @@ int main(int argc, char **argv)
     turned["chapter_title"] = "Two";
     turned["chapter_page"] = 1;
     turned["chapter_pages"] = 4;
+    turned["whole_book_failed"] = false;
+    turned["book_fraction"] = .5;
+    turned["slice_start"] = "/body/DocFragment[2]";
+    turned["continues_before"] = true;
+    turned["continues_after"] = true;
+    turned["rough_page"] = 5;
+    turned["rough_pages"] = 10;
+    turned["page_estimate"] = QJsonObject();
+    turned["chapter_load_ms"] = 12;
     require(styleSampleSettings(turned) == styleSampleSettings(frame),
             "The displayed frame changed the sample settings");
     auto otherFonts = fonts;

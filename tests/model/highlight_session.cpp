@@ -193,7 +193,10 @@ int main(int argc, char **argv)
             waitUntil([&] { return !model.busy(); });
             require(!model.error().isEmpty() && !model.image().isNull() && model.pages() > 0
                             && model.page() == page,
-                    "Failed command did not retain the usable page fixture");
+                    qPrintable(QString("Failed command frame: appearance=%1 error=%2 null=%3 pages=%4 page=%5/%6 position=%7")
+                            .arg(appearanceFailure).arg(model.error()).arg(model.image().isNull())
+                            .arg(model.pages()).arg(model.page()).arg(page)
+                            .arg(model.state().value("position").toString())));
             require(appearanceFailure ? model.layoutRevision() != revision
                                       : model.layoutRevision() == revision,
                     "Failed command changed the wrong layout generation");
