@@ -20,3 +20,9 @@ are zero-based. No device result follows from this check.
 Build `kobalt-fb2-session-tests` and run `ctest --preset linux -R
 '^session.fb2-session$' --output-on-failure` from platforms/desktop in the pinned
 native SDK. The focused Kobo workflow also builds/runs it.
+
+`session.reading-book` also forces a chapter-local EPUB session, visits its last
+local page before the final book fragment, and rejects an early finish offer.
+The saved library percentage must equal ReaderSession's whole-book percentage,
+not the local chapter percentage. This is independent of a device finish-dialog
+check and does not verify the native save-epoch lifecycle.

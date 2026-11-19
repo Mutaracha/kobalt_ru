@@ -271,8 +271,8 @@ ReadingActivity ReadingBook::readingActivity() const
     return { session_->state().value("position").toString(),
              // Kobalt's page progress, kept below 100 like every native write of
              // an unfinished book, so the last page never reports a finished read.
-             qMin(99.0, double(pageProgressPercent(session_->page(), session_->pages()))),
-             session_->page(), session_->pages(), session_->turnDirection(), session_->totalWords(),
+             qMin(99.0, double(session_->progressPercent())), session_->bookPage(),
+             session_->bookPages(), session_->turnDirection(), session_->totalWords(),
              session_->chapterGraph(), session_->graphSelection(),
              error.isEmpty() ? nativePosition : QString() };
 }
@@ -291,8 +291,10 @@ ReadingEstimates ReadingBook::estimates() const
     const int chapterLeft = session_->chapterPages() > 0
             ? session_->chapterPages() - session_->chapterPage() + 1
             : -1;
-    return { pace_.estimate(chapterLeft, reading),
-             pace_.estimate(session_->pages() - session_->page(), reading),
+    const int bookLeft = session_->bookPages() > 0 && session_->bookPage() >= 0
+            ? session_->bookPages() - session_->bookPage()
+            : -1;
+    return { pace_.estimate(chapterLeft, reading), pace_.estimate(bookLeft, reading),
              pace_.estimate(0, reading) < 0 };
 }
 
@@ -643,6 +645,10 @@ bool ReadingBook::canFinish() const
         return false;
     // Nickel asks on exit at 90%. Include the final page of very short books,
     // and the last page of the text before trailing non-linear sections.
+    // A chapter-local final page is not necessarily the end of the book.
+    if (session_->state().contains("book_fraction"))
+        return session_->progressFraction() >= 0.9
+                || (!session_->continuesAfter() && session_->nextPage() == session_->page());
     return session_->page() * 10 >= session_->pages() * 9
             || session_->nextPage() == session_->page();
 }
@@ -748,7 +754,7 @@ NativeSaveResult ReadingBook::writeNative(const QString &location, const QString
         if (reconciliation.mayWrite(current)) {
             // The same whole percentage as Kobalt's own views. The firmware 4
             // bridge keeps an unfinished book below 100, as Nickel's reader does.
-            const double percent = pageProgressPercent(session_->page(), session_->pages());
+            const double percent = session_->progressPercent();
             const bool preserveFinished = finishedHere();
             diagnostic("native-save-start");
             nativeWriteback = bridge->write(current, timeOnly ? QString() : location, percent,
@@ -863,7 +869,7 @@ QJsonObject ReadingBook::checkpointState() const
     // For the Android and desktop library, which shows progress without
     // opening the book.
     if (session_->pages() > 0)
-        state["percent"] = pageProgressPercent(session_->page(), session_->pages());
+        state["percent"] = session_->progressPercent();
     state["native_writeback"] = QString::fromLatin1(nativeWriteback.diagnosticName());
     state["sync_pending"] = reconciliation.pending();
     state["native_writeback_error"] = nativeWriteback.message();

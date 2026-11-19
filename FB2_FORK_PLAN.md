@@ -41,19 +41,24 @@ Preview store теперь использует private `.preview`; startup PNG 
 на этом шаге нет. Добавлены в focused CI upstream session Hybrid/adoption suite,
 preview-store safety tests, dictionary-store и sleep-persistence.
 
-CI `44623592002`: Qt5/package PASS, native build PASS, runtime failures в
-appearance lifecycle/styling reuse, old checkpoint helper, highlight failed-command
-и session markup. Не ослаблены assertions: port upstream AppearanceEditSession
-вместе с новой preview queue, sanitation helper теста приведён к upstream;
-sample cache исключает derived whole_book_failed с отдельной regression. Для
-highlight/markup добавлены actual values. Новый session.fb2-session проверяет
-Accurate/Hybrid, 4 turns, exact book/display pages, reflow/anchor/generation,
-zero-based bookmark mapping и preview без движения source. CI `44625553442`
-остановил native configure из-за отсутствующего area label у нового теста;
-добавлен reading label и сценарий в doc/validation/reading.md. CI `44626402072`: Qt5 PASS; native compile остановился на новом тесте:
-PositionCodec — function pointers, capturing lambda недопустима. Исправлен test-only
-worker counter (atomic в namespace); runtime recheck последних исправлений ещё
-не выполнен.
+CI `44627847298` (`f1672e5e`): Qt5/package PASS, native build PASS;
+style-sample-cache/styling reuse и reading-book sanitation проходят. Остались
+6 runtime failures: advancedText, appearanceWriteFailureRetainsDraft,
+appearanceCloseDuringPreview, highlight-session, reader-session и fb2-session.
+Диагностика markup: generation/request/image совпадают, resolvedRanges=0;
+highlight invalid font command сохраняет frame, но не сообщает error. Причины
+этих двух ошибок пока не установлены, assertions не ослаблены. Деталь FB2 failure
+не попала в первые 100 строк annotation; CI теперь публикует хвост каждого
+падающего теста, включая failures без FAIL-префикса. Внешние artifact/log redirects
+в текущем окружении недоступны.
+
+**implemented / CI pending:** ReadingBook использует upstream whole-book
+progressPercent/bookPage/bookPages для activity/native/checkpoint/time remaining;
+canFinish учитывает book_fraction и continuesAfter, а не конец текущего фрагмента.
+Добавлен regression: последний лист не-final fragment не предлагает закончить
+книгу и сохраняет book percentage. Это возможная причина трёх exit/lifecycle
+failures выше, не подтверждённое их исправление до CI. Native lifecycle/save epoch
+рефакторинг пока не перенесён.
 
 **Следующий шаг:** довести session CI. Затем связать host mode/application, UI whole-book
 counts/progress, navigation/bookmark indexes и полосу; default Hybrid не считать

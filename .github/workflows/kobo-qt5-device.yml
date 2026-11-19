@@ -94,7 +94,7 @@ jobs:
             # One multiline annotation also avoids GitHub's ten-errors-per-step cap.
             awk '
               /error:|Error|FAILED|FAIL|FATAL|not found|No rule|ninja:/ { context = 5 }
-              context > 0 && count < 100 {
+              context > 0 && count < 200 {
                 gsub(/%/, "%25"); gsub(/\r/, "%0D")
                 report = report $0 "%0A"
                 context--; count++
@@ -106,14 +106,15 @@ jobs:
             # Surface runtime output through the checks API as well as artifacts.
             # Some clients cannot follow the external artifact/log redirects.
             awk '
-              /Testing: / { test = $0 }
-              /FAIL |FAIL!|SIGSEGV|SIGABRT|ASSERT|FATAL|error while loading|Could not/ {
-                gsub(/%/, "%25"); gsub(/\r/, "%0D")
-                report = report test "%0A" $0 "%0A"; context = 3
-                next
+              { lines[NR % 35] = $0 }
+              /Test Failed\./ {
+                for (i = (NR > 34 ? NR - 34 : 1); i <= NR; i++) {
+                  line = lines[i % 35]
+                  gsub(/%/, "%25", line); gsub(/\r/, "%0D", line)
+                  report = report line "%0A"
+                }
               }
-              context > 0 { gsub(/%/, "%25"); report = report $0 "%0A"; context-- }
-              END { if (length(report)) print "::error::" report }
+              END { if (length(report)) print "::error::Failed test tails%0A" report }
             ' build/desktop-linux/Testing/Temporary/LastTest.log
           fi
           exit "$status"
@@ -255,7 +256,7 @@ jobs:
             { echo '### One-off Qt6 failure'; echo '```'; tail -150 "$log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
             awk '
               /error:|Error|FAILED|FAIL|FATAL|not found|No rule|ninja:/ { context = 5 }
-              context > 0 && count < 100 {
+              context > 0 && count < 200 {
                 gsub(/%/, "%25"); gsub(/\r/, "%0D")
                 report = report $0 "%0A"; context--; count++
               }

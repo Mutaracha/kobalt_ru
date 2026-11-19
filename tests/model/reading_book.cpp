@@ -4,6 +4,7 @@
 #include "reading/reading_book.h"
 #include "reading/appearance_settings.h"
 #include "reading/session_timeout.h"
+#include "reading/rendering_mode.h"
 #include "app/messages/opening_message.h"
 #include "reading/reader_session.h"
 #include "storage/reader_storage.h"
@@ -252,6 +253,27 @@ int main(int argc, char **argv)
         waitUntil([&] { return ready; });
         return session;
     };
+    {
+        // A fragment's final page must not offer to finish an unfinished book.
+        // Fast keeps the fixture chapter-local without a background adoption race.
+        renderingMode::setOverride(1);
+        auto session = open(QSize(758, 900), {}, "fragment-finish");
+        waitUntil([&] { return !session->busy(); });
+        require(session->state().contains("book_fraction") && session->continuesAfter(),
+                "Finish regression requires a non-final chapter fragment");
+        require(session->go(session->pages() - 1), "Cannot reach the fragment's final page");
+        waitUntil([&] { return !session->busy(); });
+        require(session->continuesAfter() && session->progressFraction() < 0.9,
+                "Finish regression unexpectedly reached the end of the book");
+        const auto hash = session->sourceHash();
+        ReadingBook book(std::move(session), paths.bookState("fragment-finish"), paths,
+                         "fragment-finish", hash, nullptr, {}, {});
+        require(!book.offerFinish(), "A chapter-local final page offered to finish the book");
+        require(book.checkpointState().value("percent").toInt()
+                        == book.session()->progressPercent(),
+                "Library checkpoint used the fragment's percentage as book progress");
+        renderingMode::setOverride(-1);
+    }
     {
         Calls calls;
         const PositionCodec positions{
