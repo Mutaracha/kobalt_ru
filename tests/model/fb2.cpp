@@ -541,6 +541,12 @@ void engineBoundary()
     const auto bytes = utf8FictionBook();
     require(model->open(bytes, {600, 800}, {{"koblaze_first_spine_item", 2},
                                          {"koblaze_last_spine_item", 3}}, &error), qPrintable(error));
+    // The initial raw FB2 bookmark can name the XML declaration, not a
+    // rendered text position. Test the page contract with a real source
+    // passage, as saved bookmarks and search results do.
+    const auto found = model->searchText("Filler paragraph 0", {}, 10);
+    require(!found.hits.isEmpty() && model->goTo(found.hits.first().start),
+            "Cannot select a body passage through the Engine API");
     const auto whole = [&] {
         const auto info = model->pageInfo();
         require(info.bookPages.exact() && info.bookPages.value() == model->pages()

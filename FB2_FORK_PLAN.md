@@ -3,17 +3,23 @@
 Принятые решения: [doc/fork-decisions.md](doc/fork-decisions.md).
 Инструкции агентам: [AGENTS.md](AGENTS.md).
 
-**Текущая работа:** переход на beta.9. Этапы 1–2 (библиотека Blaze, adapter
-paths и nullable-panel hooks) реализованы. Shared contracts/worker и защита принятых
-сохранений выделений подключены. Source-XHTML mapping beta.9
-реализован в concrete adapter. Последний проверенный runtime `b0b9c916`, focused
-native/Qt5 CI `44607352261` PASS. Hybrid, новый Engine/ReaderSession/UI ещё не
-перенесены; промежуточный пакет не для приёмки на устройстве. Следующий этап —
-интеграция нового upstream adapter/ReaderSession с отдельной whole-book границей
-FB2, не дальнейший перенос каталогов. При готовом пакете выдать пользователю
-конкретный список проверок из [device draft](doc/validation/beta9-device.md),
-заполнив runtime/CI.
-Предыдущие аудиты ниже зафиксированы до реализации и не описывают текущий runtime.
+**Текущая работа — in progress:** переход на beta.9. Blaze и новый Engine/adapter
+подключены; whole-book FB2, семантический preview, comics hooks и upstream
+checkpoint budget реализованы. Последний полностью проверенный runtime остаётся
+`b0b9c916` / CI `44607352261` PASS. CI `44613839978` для `07274384`:
+Qt5/package PASS; native сборка PASS, падение только нового Engine-boundary теста
+FB2. Диагностика: initial anchor `/?xml[1].0`, mapped=2/current=0. Это XML
+processing instruction, не passage на отображаемой странице; такой initial
+bookmark уже присваивался прежним openSource. Тест теперь выбирает реальный body
+passage через публичный search/goTo до проверки one-based bookPages и повторяет
+её после reflow; проверка равенства не ослаблена. Renderer/bookmark initial-fallback
+не исправлялся и не объявляется исправленным.
+
+Следующий шаг — перевести ReaderSession/opening/sample consumers на Engine factory,
+затем upstream Hybrid lifecycle и UI. G1–G9 остаются **pending** для полной
+интеграции. Промежуточный пакет не для устройства. При итоговой выдаче заполнить
+runtime/CI в [device checklist](doc/validation/beta9-device.md).
+Подробности adapter: [отчёт](doc/reports/beta9-engine-adapter.md).
 
 
 ## Завершено
