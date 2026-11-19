@@ -5,8 +5,8 @@
 
 **Текущая работа — in progress:** переход на beta.9. Blaze и новый Engine/adapter
 подключены; whole-book FB2, семантический preview, comics hooks и upstream
-checkpoint budget реализованы. Последний полностью проверенный runtime остаётся
-`b0b9c916` / CI `44607352261` PASS. CI `44613839978` для `07274384`:
+checkpoint budget реализованы. Последний полностью проверенный runtime —
+`44f57097` / CI `44615814323`: focused native и Qt5/package PASS. CI `44613839978` для `07274384`:
 Qt5/package PASS; native сборка PASS, падение только нового Engine-boundary теста
 FB2. Диагностика: initial anchor `/?xml[1].0`, mapped=2/current=0. Это XML
 processing instruction, не passage на отображаемой странице; такой initial
@@ -16,11 +16,14 @@ passage через публичный search/goTo до проверки one-base
 не исправлялся и не объявляется исправленным.
 
 ReaderSession/opening/style-sample переведены на `Engine`/`createEngine` вместо
-конкретного Blaze-типа (**implemented / CI pending**). Worker-thread deleter,
+конкретного Blaze-типа (**implemented / CI recheck pending**). Worker-thread deleter,
 retained ownership и close barrier сохранены; cache save использует upstream
 no-arg interface. Fork hook `Engine::frameImage()` (default=image(page)) сохраняет
 публикацию готовой comics пары, adapter override проверяется через `Engine&`.
 Reading/annotation и UI search/page headers больше не включают concrete adapter.
+CI `44615981873` нашёл missing direct include в reading_page.cpp:
+PageLink/LinkKind/linkAtPoint принадлежат engine/links.h, не engine/types.h.
+Подключён узкий header, concrete adapter не возвращён. Native verdict ещё pending.
 Это переход реальных consumers, но не включение Hybrid scheduler.
 Следующий шаг — upstream Hybrid lifecycle ReaderSession и UI. G1–G9 остаются **pending** для полной
 интеграции. Промежуточный пакет не для устройства. При итоговой выдаче заполнить
