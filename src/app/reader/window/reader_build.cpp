@@ -1,4 +1,5 @@
 #include "ui/controls/rows.h"
+#include "app/reader/views/fork_navigation.h"
 #include "render/page_content.h"
 #include <QScopedValueRollback>
 #include "ui/controls/text.h"
@@ -707,26 +708,8 @@ void Reader::buildToolbar()
     status->addWidget(menuSession, 0, 1);
     status->setColumnStretch(0, 1);
     status->setColumnStretch(2, 1);
-    // Overlay the reading page, without reserving layout space. Other panels
-    // replace this strip with their own heading/preview at the same position.
-    auto *pageStrip = new ui::ListHeader(this);
-    pageStrip->setObjectName("rrMenuPageStrip");
-    pageStrip->setShaded(true);
-    pageStrip->hide(); // A sibling overlay must not appear before the first menu open.
+    auto *pageStrip = forkui::makeMenuPageStrip(this);
     menuPage = pageStrip->rightLabel();
-    menuPage->setObjectName("rrMenuPage");
-    pageStrip->leftLabel()->setObjectName("rrMenuTimeLeft");
-    for (auto *caption : {pageStrip->leftLabel(), pageStrip->rightLabel()}) {
-        auto font = ui::interfaceFont(metrics::panel::sessionText);
-        font.setItalic(true);
-        caption->setFont(font);
-        // Keep the header shading continuous: the inherited reader QLabel
-        // background must not turn each caption into a separate white box.
-        readerStyle(caption, QString("font-family:'@ui-font-family@';font-size:%1px;"
-                                     "font-style:italic;font-weight:400;background:transparent;"
-                                     "border:none;padding:0;color:palette(window-text);")
-                                     .arg(int(metrics::panel::sessionText)));
-    }
     toolbarComposition.pageStrip = pageStrip;
     menuBattery = new kobalt::ui::BatteryIndicator(topControls);
     menuBattery->setObjectName("rrMenuBattery");

@@ -1,3 +1,5 @@
+#include "app/reader/views/fork_navigation.h"
+#include "ui/controls/rows.h"
 #include "support/host_presentation.h"
 #include "platform/posix/diagnostics.h"
 #include "app/reader/views/annotation_exporter.h"
@@ -4647,6 +4649,24 @@ private slots:
         QVERIFY(!fixture.state().value("appearance_controls_built").toBool());
         QVERIFY(!fixture.widget("rrComicsReadingMode"));
         QVERIFY(!fixture.widget("rrHeaderFooterSlot0"));
+        // Formatting is independent of a visible menu, and uses book not chapter time.
+        QWidget stripHost;
+        auto *probeStrip = reader::forkui::makeMenuPageStrip(&stripHost);
+        headerfooter::Values estimate;
+        estimate.bookMilliseconds = 3 * 3600000;
+        estimate.chapterMilliseconds = 15 * 60000;
+        estimate.page = 10;
+        estimate.pages = 230;
+        reader::forkui::updateMenuPageStrip(probeStrip, estimate, true);
+        auto expectedTime = headerfooter::content(headerfooter::Field::BookTimeLeft,
+                                                  estimate, false).text;
+        expectedTime[0] = expectedTime.at(0).toUpper();
+        QCOMPARE(probeStrip->leftLabel()->text(), expectedTime);
+        QCOMPARE(probeStrip->rightLabel()->text(), strings::get("navigation.page_count").arg(10).arg(230));
+        QVERIFY(!probeStrip->isVisible());
+        estimate.bookMilliseconds = -1;
+        reader::forkui::updateMenuPageStrip(probeStrip, estimate, true);
+        QVERIFY(probeStrip->leftLabel()->text().isEmpty());
         auto *initialStrip = fixture.widget("rrMenuPageStrip");
         QVERIFY(initialStrip);
         QVERIFY(!initialStrip->isVisible());

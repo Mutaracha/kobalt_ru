@@ -257,3 +257,16 @@ transparent stylesheet, dismiss/reopen light/dark), offline checks, Qt5 package/
 [Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44397464051/artifacts/14472252031).
 Первый CI потребовал явный int cast TextPx для Qt6 QString::arg; исправлено.
 Физическая device-проверка фона/шрифта и отсутствия артефакта ожидается.
+
+## Comics fill и аудит полосы меню
+
+**in progress / CI pending / device pending**. По запросу пользователя включённое
+облачко comics заливается ink (белым ночью), выключенное контурное; фон кнопки,
+контур/stroke/хвост, hit area, busy guard и refresh policy прежние. Использован
+shared vector painter/state cache, geometry не дублируется. Добавлена проверка
+alpha центра off/on light/dark и сохранены проверки state ink/фона.
+Аудит выявил presentation блоки полосы в общих reader_build/navigation; они
+перенесены в существующий views/fork_navigation.cpp. Общие файлы оставляют короткие
+hooks. ListHeader, chromeValues/BookTimeLeft, styles, storage и page geometry общие.
+Добавлен тест formatter с book=3h/chapter=15m до show и отрицательной оценкой.
+Карта владения doc/fork-delta.md актуализирована. Native/Qt5 CI ожидаются.

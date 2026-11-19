@@ -1,4 +1,3 @@
-#include <QEvent>
 #include "fork_navigation.h"
 #include "ui/controls/buttons.h"
 #include "ui/controls/icons.h"
@@ -1196,15 +1195,6 @@ void Navigation::placeToolbar(QSize size, const QVector<QWidget *> &actions, boo
     }
 }
 
-bool Navigation::eventFilter(QObject *watched, QEvent *event)
-{
-    // The strip is a sibling overlay, not a child of the toolbar. Several
-    // dismissal paths hide the toolbar without replaying Navigation::update().
-    if (watched == toolbar && event->type() == QEvent::Hide && pageStrip)
-        pageStrip->hide();
-    return QObject::eventFilter(watched, event);
-}
-
 void Navigation::update(QSize size, const NavigationState &state)
 {
     // Zen mode's top group belongs to the reading menu alone. Chapters,
@@ -1287,13 +1277,7 @@ void Navigation::update(QSize size, const NavigationState &state)
         state.chapters->setGeometry(0, statusHeight(), size.width(),
                                     bar->y() + (zenView ? zenOutset() : 0) - statusHeight());
     }
-    if (pageStrip) {
-        pageStrip->setGeometry(0, toolbarHeight(), size.width(), pageStrip->sizeHint().height());
-        pageStrip->setVisible(state.visible && !state.zen && !state.chaptersOpen
-                              && !state.settings->isVisible() && !state.searchOpen
-                              && !state.appearance->isVisible() && page && !page->text().isEmpty());
-        pageStrip->stackUnder(state.appearance);
-    }
+    updateForkPageStrip(size, state);
     bar->select(state.active, state.enabled, state.lightAvailable);
     int top = toolbarHeight(), bottom = bar->y();
     if (state.settings->isVisible())

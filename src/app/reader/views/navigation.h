@@ -202,6 +202,7 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
+    void updateForkPageStrip(QSize size, const NavigationState &state);
     void styleForkToolbarActions();
     void restoreForkToolbarActions();
     void placeToolbar(QSize size, const QVector<QWidget *> &actions, bool zen);

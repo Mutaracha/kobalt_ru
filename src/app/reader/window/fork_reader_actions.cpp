@@ -1,3 +1,4 @@
+#include "app/reader/views/fork_navigation.h"
 #include "ui/controls/rows.h"
 #include "reader_p.h"
 #include "support/strings.h"
@@ -43,23 +44,8 @@ void Reader::refreshForkToolbarActions(bool settingsOpen, bool zen)
 
 void Reader::updateForkMenuPage()
 {
-    const bool showPage = !zenMode() && session->pages() > 0;
-    QString bookTime;
-    if (showPage) {
-        // Menu status is prepared before the toolbar is shown. Its visibility
-        // must not decide whether a valid estimate is formatted.
-        const auto values = chromeValues();
-        if (values.bookMilliseconds >= 0) {
-            bookTime = headerfooter::content(headerfooter::Field::BookTimeLeft,
-                                             values, false).text;
-            if (!bookTime.isEmpty()) bookTime[0] = bookTime.at(0).toUpper();
-        }
-    }
-    static_cast<ui::ListHeader *>(menuPage->parentWidget())->setCaptions(
-            bookTime, showPage ? strings::get("navigation.page_count")
-                                        .arg(session->page() + 1).arg(session->pages())
-                              : QString());
-    menuPage->setVisible(showPage);
+    forkui::updateMenuPageStrip(static_cast<ui::ListHeader *>(menuPage->parentWidget()),
+                                chromeValues(), !zenMode() && session->pages() > 0);
 }
 
 void Reader::toggleComicsMode()

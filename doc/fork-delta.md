@@ -28,7 +28,7 @@
 | RU | Полный словарь, plural one/few/many, русский перенос с EN, English fallback. Locale при каждом принятом открытии книги, ExtraLocales/C/POSIX, debug markers. | `support/string_locale.h`, `string_table.h`, `locale.*`, `debug_language.*`, короткие hooks в `strings.h`, `assets/ru.strings`, `platforms/strings*.cmake`; platform entry points. |
 | About/debug | Дополнительная строка fork + UTC build time; скрытый выбор языка. Stock version/commit сохранены. | `app/about/fork_about.*`, `fork_debug.*`; вызов из about_page, build_info и build definitions. |
 | Comics | Per-book/default off, эффективное подавление полей/chrome без потери значений, preview, landscape пары, отдельные wide/center страницы, центровка/поворот portrait center, hit bounds и resource readiness. | `reader_comics.*`, `column_view_comics.cpp`, `engine_document_comics.cpp`; состояние/общая отрисовка и позиционирование подключены в ColumnView/EngineDocument, publication/resources/session/UI. |
-| Меню чтения | Быстрые dark/comics кнопки; comics state-only ink, запрет действия при busy без серого мигания; скрываются только кнопки. Счётчик страниц перед батареей. | `fork_reader_actions.cpp`, toolbar wiring/refresh/navigation, features/settings. Ни режим, ни Layout control не отключаются скрытием. |
+| Меню чтения | Быстрые dark/comics кнопки; comics state ink + filled checked bubble, запрет действия при busy без серого мигания; скрываются только кнопки. Отдельная замещаемая полоса book-time/page-count под toolbar. | `fork_reader_actions.cpp`, `views/fork_navigation.*`, короткие toolbar wiring/refresh/navigation hooks, features/settings. Ни режим, ни Layout control не отключаются скрытием. |
 | Прогресс | Выключено/Внизу/Вверху, top выше header, зеркальные chapter ticks, legacy enabled→Bottom. | `reading_page_progress.cpp`, reading_page geometry, header_footer model/panel, chapter fractions и session/navigation refresh. |
 | Shared UI | Settings-row presentation, compact checkbox Light/Layout, корректный общий baseline RU tabs, return-title typography, fork glyphs. | `fork_settings.*`, options/buttons, `return_title_text.h`, navigation, `fork_icon_geometry.*`. Не дублировать экраны Settings. |
 | Сон | Подгонка длинных надписей, две строки remaining в ribbon, fit оценок widgets; общая standby-логика beta.8 не заменяется. | `sleep_ribbon_text.cpp`, узкие изменения sleep_screen/sleep_designs. |
@@ -350,3 +350,18 @@ offline checks и Kobo Qt5 build/package/contents. Qt6 пропущен.
 FB2/EPUB открытие, comics/ориентация, восстановление полей, top/bottom progress
 и панель чтения. Структурный рефакторинг закрыт. Новые ошибки FB2 ведутся
 отдельно в плане и [первичном разборе](reports/fb2-post-refactor.md).
+
+
+## Проверка границы полосы меню (2026-10-26)
+
+Полоса переиспользует ListHeader, interfaceFont, readerStyle и единый formatter
+headerfooter::BookTimeLeft/Values; не имеет собственного расчёта скорости, хранения,
+строк, screen-refresh policy или места в пагинации. Presentation construction,
+formatting, placement/visibility и toolbar-Hide observer сосредоточены в существующем
+views/fork_navigation.cpp. В reader_build остаётся создание через factory, в
+Navigation::update — один dispatch, в fork_reader_actions — передача chromeValues.
+Navigation не получает ReadingBook/ReaderSession: используются готовые Values.
+Это устраняет разросшиеся fork-only блоки в upstream build/navigation, не копируя
+общую реализацию ListHeader или header/footer. Checked comics fill использует общий
+icon engine/cache/state и прежнюю fork geometry, не отдельную кнопку/bitmap.
+CI/device для последнего изменения — см. FB2_FORK_PLAN.md.

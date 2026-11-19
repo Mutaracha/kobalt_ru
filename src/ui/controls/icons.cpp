@@ -582,7 +582,7 @@ Geometry geometry(ControlIcon icon, bool sideButtons)
 }
 
 void paintGeometry(QPainter &painter, const Geometry &shape, ControlIcon glyph, const QRectF &rect,
-                   QColor color, IconRendition rendition)
+                   QColor color, IconRendition rendition, bool fill = false)
 {
     if (rect.isEmpty() || shape.path.isEmpty())
         return;
@@ -620,7 +620,7 @@ void paintGeometry(QPainter &painter, const Geometry &shape, ControlIcon glyph, 
         painter.scale(side / shape.canvas, side / shape.canvas);
     painter.setPen(shape.filled ? QPen(Qt::NoPen)
                                 : QPen(color, shape.stroke, Qt::SolidLine, shape.cap, shape.join));
-    painter.setBrush(shape.filled ? QBrush(color) : QBrush(Qt::NoBrush));
+    painter.setBrush(shape.filled || fill ? QBrush(color) : QBrush(Qt::NoBrush));
     painter.drawPath(shape.path);
     painter.restore();
 }
@@ -729,7 +729,8 @@ private:
         painter->save();
         if (mode == QIcon::Disabled)
             painter->setOpacity(painter->opacity() * .4);
-        paintGeometry(*painter, shape, glyph, rect, state == QIcon::On ? active : color, rendition);
+        paintGeometry(*painter, shape, glyph, rect, state == QIcon::On ? active : color, rendition,
+                      glyph == ControlIcon::Comics && state == QIcon::On);
         painter->restore();
     }
 

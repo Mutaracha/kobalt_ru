@@ -1409,6 +1409,8 @@ int main(int argc, char **argv)
                                 found = true;
                             }
                     require(found, "Comics bubble has no opaque ink");
+                    require((qAlpha(icon.pixel(icon.width()/2, icon.height()/2)) > 240) == checked,
+                            "Comics bubble center must be filled only when checked");
                 }
             }
             QWidget host;
