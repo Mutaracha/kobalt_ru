@@ -554,7 +554,9 @@ void engineBoundary()
                         && !model->fullDocumentReady() && !model->fullDocumentStarted(),
                 "Whole-book FB2 scheduled a redundant background document");
         require(model->bookPages({model->position()}).value(0) == model->page() + 1,
-                "FB2 bookPages lost its one-based contract");
+                qPrintable(QString("FB2 bookPages lost its one-based contract: mapped=%1 current=%2 position=%3")
+                        .arg(model->bookPages({model->position()}).value(0))
+                        .arg(model->page()).arg(model->position())));
     };
     whole();
     require(model->go(qMin(1, model->pages() - 1)), "Cannot select FB2 page");

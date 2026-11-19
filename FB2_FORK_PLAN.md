@@ -456,3 +456,9 @@ upstream persistedCheckpoint: drop display-only fields, trim read → estimate �
 image views при byte limit; добавлен исходный upstream budget regression.
 Sample cache исключает page/window/estimate transient state по upstream. Контракт
 поля зафиксирован в doc/storage.md. Следующий CI проверяет adapter и persistence.
+
+CI `44612383960`: Qt5 PASS; native compilation/linking PASS, CTest failure only
+in new engine.fb2 boundary bookPages/current-page assertion. Другие выбранные
+проверки прошли. Добавлены фактические mapped/current/source значения к ошибке;
+причина пока не установлена, speculative mapping fix не вносился. Подробности
+adapter boundary: doc/reports/beta9-engine-adapter.md. Device handoff нет.
