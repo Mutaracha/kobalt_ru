@@ -227,6 +227,10 @@ public:
     virtual void setDarkMode(bool enabled) = 0;
     virtual void resize(QSize size) = 0;
     virtual QImage image(int page) = 0;
+    // Publish a complete current frame. Graphic adapters may finish the bounded
+    // visible image pair here; neighbour image() calls must stay speculative.
+    virtual QImage frameImage() { return image(page()); }
+
     // The current page or one normal turn beside it, without moving the
     // reading document. An empty image means no preview is available.
     virtual PagePreview previewTurn(int direction,

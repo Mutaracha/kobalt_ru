@@ -15,8 +15,14 @@ passage через публичный search/goTo до проверки one-base
 её после reflow; проверка равенства не ослаблена. Renderer/bookmark initial-fallback
 не исправлялся и не объявляется исправленным.
 
-Следующий шаг — перевести ReaderSession/opening/sample consumers на Engine factory,
-затем upstream Hybrid lifecycle и UI. G1–G9 остаются **pending** для полной
+ReaderSession/opening/style-sample переведены на `Engine`/`createEngine` вместо
+конкретного Blaze-типа (**implemented / CI pending**). Worker-thread deleter,
+retained ownership и close barrier сохранены; cache save использует upstream
+no-arg interface. Fork hook `Engine::frameImage()` (default=image(page)) сохраняет
+публикацию готовой comics пары, adapter override проверяется через `Engine&`.
+Reading/annotation и UI search/page headers больше не включают concrete adapter.
+Это переход реальных consumers, но не включение Hybrid scheduler.
+Следующий шаг — upstream Hybrid lifecycle ReaderSession и UI. G1–G9 остаются **pending** для полной
 интеграции. Промежуточный пакет не для устройства. При итоговой выдаче заполнить
 runtime/CI в [device checklist](doc/validation/beta9-device.md).
 Подробности adapter: [отчёт](doc/reports/beta9-engine-adapter.md).

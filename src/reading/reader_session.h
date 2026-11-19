@@ -1,6 +1,7 @@
 #pragma once
-#include "engine/blaze/adapter/engine_document.h"
+#include "engine/engine.h"
 #include "open_request.h"
+#include "reading_density.h"
 #include "highlight_geometry.h"
 #include "storage/custom_pins.h"
 #include <QElapsedTimer>
@@ -418,10 +419,10 @@ private:
     bool formattingWarning_ = false;
     storage::CustomPins customPins_;
     QJsonObject formattingDetails_;
-    ReaderSession(std::shared_ptr<EngineDocument> retainedEngine, QString placeholderFamily);
+    ReaderSession(std::shared_ptr<Engine> retainedEngine, QString placeholderFamily);
     EngineFontInputs fonts_;
     QString placeholderFamily_;
-    std::shared_ptr<EngineDocument> engine_;
+    std::shared_ptr<Engine> engine_;
     ReaderFrame frame;
     void completeFrameMarkup(ReaderFrame result, quint64 job,
                              const std::shared_ptr<SourceLease> &lease,

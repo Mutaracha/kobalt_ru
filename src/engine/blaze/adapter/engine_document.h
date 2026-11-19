@@ -271,7 +271,7 @@ public:
                             const std::function<bool()> &current = {},
                             const QStringList &bookmarkPositions = {},
                             bool adoptingFullDocument = false) override;
-    QImage frameImage();
+    QImage frameImage() override;
     // One screen that starts at the reading position instead of a page break. With
     // stayInChapter, it starts earlier near a chapter's end, so that a full screen stays in
     // the chapter. Without it, the text continues past the chapter to fill the screen.

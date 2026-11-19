@@ -60,7 +60,11 @@ CI `44612383960`: Qt5/package PASS; native runs reached CTest and failed
 the new FB2 Engine-boundary page mapping assertion. All other selected checks
 passed. The assertion now reports mapped page, current page and source anchor
 to distinguish a mapping regression from a page-boundary test assumption.
-No acceptance check has been removed; investigation continues.
+The reported anchor was /?xml[1].0, an XML processing instruction rather than
+a rendered body passage (mapped=2/current=0). The test now selects a real body
+passage through Engine search/goTo before asserting the page/one-based mapping
+and repeating after reflow. The equality assertion remains strict. This is a
+fixture correction, not an initial-bookmark renderer fix.
 
 The focused workflow includes upstream engine-contract, spine-window and
 chapter-slices tests in addition to the previous FB2/comics/links/layout/session
@@ -71,8 +75,12 @@ checkpoint byte-budget regression. The earlier source-location corpus remains.
 
 ## Still pending — not a device handoff
 
-The current ReaderSession still owns a concrete adapter and uses its previous
-whole-book scheduling; it does not implement the beta9 Hybrid reader lifecycle.
+The ReaderSession, opening job and style sample consumers now own Engine values
+created by createEngine. Their previous whole-book scheduling remains; they do
+not yet implement the beta9 Hybrid reader lifecycle. Worker-affine shared deletion
+and retained-open ownership are unchanged. The fork frameImage hook has an
+image(page) default and an adapter override for complete bounded comics pairs.
+Comics readiness tests call that hook through Engine&.
 The rendering-mode preference, new ReaderSession values and UI/strip consumers
 must still be integrated together. Engine-only Hybrid tests do not establish
 reader/UI/device adoption. G1–G9 final gates remain open. Full upstream suite,

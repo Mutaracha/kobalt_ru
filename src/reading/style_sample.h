@@ -1,5 +1,5 @@
 #pragma once
-#include "engine/blaze/adapter/engine_document.h"
+#include "engine/engine.h"
 #include <QImage>
 #include <QJsonObject>
 #include <QJsonValue>

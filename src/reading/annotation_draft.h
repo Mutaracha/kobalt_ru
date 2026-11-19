@@ -1,5 +1,5 @@
 #pragma once
-#include "engine/blaze/adapter/engine_document.h"
+#include "engine/types.h"
 #include <QObject>
 #include <functional>
 

@@ -321,7 +321,8 @@ int main(int argc, char **argv)
     deferredResources->imageReady("art.png");
     require(deferredResources->loadNextImage(), "Prime one ready portrait");
     deferredResources->imageReady("neighbor.png");
-    const auto mixedReadyFrame = deferredSpread.frameImage();
+    Engine &frameEngine = deferredSpread;
+    const auto mixedReadyFrame = frameEngine.frameImage();
     require(qRed(mixedReadyFrame.pixel(420, 600)) > 200
                 && qBlue(mixedReadyFrame.pixel(1260, 600)) > 200
                 && loads.value("blue.png") == 1 && !loads.contains("neighbor.png"),
@@ -331,7 +332,7 @@ int main(int argc, char **argv)
     deferredSpread.releaseImages();
     loads.clear();
     deferredResources->imageReady("neighbor.png");
-    const auto coldFrame = deferredSpread.frameImage();
+    const auto coldFrame = frameEngine.frameImage();
     require(qRed(coldFrame.pixel(420, 600)) > 200 && qBlue(coldFrame.pixel(1260, 600)) > 200
                 && loads.value("art.png") == 1 && loads.value("blue.png") == 1
                 && !loads.contains("neighbor.png"), "Cold published frame is not a complete visible pair");

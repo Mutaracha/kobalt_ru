@@ -29,7 +29,7 @@ namespace kobalt {
 namespace {
 struct DocumentDeleter
 {
-    void operator()(EngineDocument *value) const
+    void operator()(Engine *value) const
     {
         EngineJob job;
         delete value;
@@ -38,7 +38,7 @@ struct DocumentDeleter
 
 } // namespace
 
-void captureChapters(ReaderFrame &result, EngineDocument &engine)
+void captureChapters(ReaderFrame &result, Engine &engine)
 {
     const auto chapter = engine.chapterProgress();
     result.state["chapter_title"] = chapter.title;
@@ -74,7 +74,7 @@ private:
 // the cache. `direction` is the turn that led here; the page further that way
 // is the likelier next one and goes first. Stops when `current` reports a newer
 // request, because that request's page matters more than a page nobody asked for.
-void prepareNeighbours(EngineDocument &engine, int direction, const std::function<bool()> &current)
+void prepareNeighbours(Engine &engine, int direction, const std::function<bool()> &current)
 {
     for (const int step : { direction < 0 ? -1 : 1, direction < 0 ? 1 : -1 }) {
         if (current && !current())
@@ -88,7 +88,7 @@ void prepareNeighbours(EngineDocument &engine, int direction, const std::functio
     }
 }
 
-ReaderMarkupFrame captureFrameMarkup(EngineDocument &engine, const ReaderMarkupRequest &request,
+ReaderMarkupFrame captureFrameMarkup(Engine &engine, const ReaderMarkupRequest &request,
                                      quint64 generation, qint64 imageKey)
 {
     ReaderMarkupFrame result;
@@ -140,7 +140,7 @@ ReaderMarkupFrame captureFrameMarkup(EngineDocument &engine, const ReaderMarkupR
 
 // `neighbours` is false when the caller hands the frame to the screen first
 // and prepares the neighbour pages afterwards.
-ReaderFrame capture(EngineDocument &engine, const PositionCodec &positions, bool neighbours,
+ReaderFrame capture(Engine &engine, const PositionCodec &positions, bool neighbours,
                     const ReaderMarkupRequest &markup, quint64 markupGeneration)
 {
     engineActivity().checkpoint();
@@ -174,8 +174,8 @@ ReaderSession::ReaderSession(EngineFontInputs fonts, QString placeholderFamily)
     : fonts_(std::move(fonts)), placeholderFamily_(std::move(placeholderFamily))
 {
     const auto worker = engineWorkerState();
-    engine_ = std::shared_ptr<EngineDocument>(
-            new EngineDocument(fonts_), [worker](EngineDocument *value) {
+    engine_ = std::shared_ptr<Engine>(
+            createEngine(fonts_).release(), [worker](Engine *value) {
                 // Session owners live on the GUI thread; queued jobs own the other
                 // references. After the GUI has joined the worker, it can destroy a
                 // retained document directly without touching either deleted Qt object.
@@ -186,13 +186,13 @@ ReaderSession::ReaderSession(EngineFontInputs fonts, QString placeholderFamily)
                     return;
                 }
                 auto release =
-                        std::make_shared<std::unique_ptr<EngineDocument, DocumentDeleter>>(value);
+                        std::make_shared<std::unique_ptr<Engine, DocumentDeleter>>(value);
                 kobalt::qt::invoke(
                         worker->object, [release] { release->reset(); }, Qt::QueuedConnection);
             });
 }
 
-ReaderSession::ReaderSession(std::shared_ptr<EngineDocument> retainedEngine,
+ReaderSession::ReaderSession(std::shared_ptr<Engine> retainedEngine,
                              QString placeholderFamily)
     : fonts_(retainedEngine->fontInputs()),
       placeholderFamily_(std::move(placeholderFamily)),
@@ -250,10 +250,9 @@ std::unique_ptr<ReaderSession> ReaderSession::retained()
                 // has closed, so this write delays no page.
                 QElapsedTimer timer;
                 timer.start();
-                QString reason;
-                const bool saved = engine->saveDocumentCache(&reason);
+                const bool saved = engine->saveDocumentCache();
                 diagnostic("document-cache-save",
-                           { { "saved", saved }, { "reason", reason }, { "elapsed_ms", double(timer.elapsed()) } });
+                           { { "saved", saved }, { "elapsed_ms", double(timer.elapsed()) } });
             },
             Qt::QueuedConnection);
     return retained;
