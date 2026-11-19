@@ -141,6 +141,13 @@ Kobo and Android builds use prepared `kobuild` images. Use native ARM64 Android 
 
 The Mac app uses an existing native Qt SDK. A Kobo cross SDK cannot replace the native Mac SDK. Application-specific dependencies such as CREngine remain application inputs, separate from Qt SDK production.
 
+Blaze library sources live in `src/engine/blaze/{crengine,extensions,data}` and
+are built by `dependencies/local-engine.cmake` into each platform output. Do not
+compile vendor sources again through application source globs or apply the retired
+external CREngine patch series to this directory. Preserve inherited formatting
+and license headers. The shared dependency cache supplies only external libraries,
+not Blaze objects. See `doc/building.md` for the current engine build boundary.
+
 Compiled third-party dependencies and their downloads live in the shared dependency cache, `build/dependency-cache/` in the main checkout, keyed by their content. It belongs to no worktree and is the only build state that worktrees share; using it is not dependence on another worktree. Application objects and all other outputs stay under each worktree's `build/`. Never edit, move or partly delete a published cache entry: change a pin, recipe or patch to get a new key. Release evaluation exports use their own cache. See [Dependency cache](doc/building.md#dependency-cache).
 
 The macOS and Linux desktop clients are tools for development and testing on desktop. They are not release versions of the app. Keep desktop builds and screenshot galleries local. CI runs the full native suite on Linux in the pinned kobuild Linux image (`platforms/ci/native-tests.sh`), and the Kobo and Android builds wait for it. Branch CI uses representative variants; tagged CI requires all variants. Release approval requires an all-variant pass (`KOBALT_TEST_ALL_VARIANTS=1`), recorded separately from representative coverage. Do not add desktop release packages or other desktop CI jobs unless the user explicitly requests them.

@@ -180,7 +180,11 @@ First-party C and C++ code uses the Qt project style in `.clang-format`. Format 
 
 ## Dependencies and validation
 
-CREngine and its text/image libraries use the versions and patches recorded in this worktree. Android also builds OpenSSL and downloads the pinned BOOX compatibility JAR. These application dependencies are separate from Qt SDK production. A change to their recipes, patches or source pins selects a new dependency set; application-only changes reuse it.
+Blaze is compiled from `src/engine/blaze` by `dependencies/local-engine.cmake`
+into each platform's `build/.../blaze/libcrengine.a`. Text/image libraries use the
+versions and patches recorded in `dependencies/`. Application source globs exclude
+the vendor directory so engine objects are not built twice. The old external
+CREngine patch list is not applied to the imported library. Android also builds OpenSSL and downloads the pinned BOOX compatibility JAR. These application dependencies are separate from Qt SDK production. A change to their recipes, patches or source pins selects a new dependency set; application-only changes reuse it.
 
 ### Dependency cache
 
@@ -189,7 +193,7 @@ All worktrees of a repository share compiled dependencies. The cache is `build/d
 | Path | Contents |
 | --- | --- |
 | `downloads/<name>-<SHA-256>.tar` | Verified source archives, shared by all platforms. |
-| `<key>/` | One dependency set: patched sources, library build trees, the installed libraries in `install/` and the CREngine archive in `crengine/`. |
+| `<key>/` | One dependency set: patched sources, library build trees, the installed libraries in `install/` (Blaze itself is built in the platform output, not this cache). |
 | `<key>/complete` | The publication marker. A set without it is unfinished and is never used. |
 | `<key>.lock` | The lock held while the set builds. |
 | `sdk-headers/<sdk>-<key>/` | The Kobo SDK headers of the [syntax check](#kobo-syntax-check). The key is a hash of the pinned image digest and the copy recipe. |

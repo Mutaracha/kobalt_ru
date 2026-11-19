@@ -3,6 +3,14 @@
 Принятые решения: [doc/fork-decisions.md](doc/fork-decisions.md).
 Инструкции агентам: [AGENTS.md](AGENTS.md).
 
+**Текущая работа:** переход на beta.9. Этап 1 (библиотека Blaze под текущим
+whole-book адаптером) реализован, focused native/Qt5 CI PASS на 866f5b05.
+Hybrid, новый ReaderSession/UI ещё не перенесены; промежуточный пакет не для
+приёмки на устройстве. Следующий этап — адаптация нового upstream adapter и
+ReaderSession с отдельной whole-book границей FB2. Предыдущие аудиты ниже
+зафиксированы до начала реализации и не описывают текущий runtime.
+
+
 ## Завершено
 
 - Переход на upstream beta.8 и задачи после интеграции — **done** по решению пользователя.
@@ -309,7 +317,7 @@ page/pages fallback. G1–G9 все pending. Следующий шаг — ре�
 
 ### Beta.9 этап 1 — подключение библиотеки Blaze
 
-**in progress / CI pending / device not requested**. Реализация начата отдельно
+**done / focused CI verified / device not requested**. Реализация начата отдельно
 от Hybrid/session/UI: vendored library crengine/extensions/data/CMake/COPYING
 скопирована byte-for-byte из upstream be472588; adapter остаётся текущим
 whole-book в src/engine/crengine. Это промежуточный compatibility gate, **не
@@ -321,11 +329,15 @@ patch files пока оставлены как неиспользуемые ис
 Parser cache identity обновлён 11→13, rendering policy — upstream version12;
 проверка cache identity обновлена, старые parsed layouts не принимаются за новые.
 ACK/provenance и source-archive external-library probe актуализированы.
-Native focused + Qt5 CI ожидаются. По результатам исправлять API/поведение
-на этой границе; затем переходить к новому adapter/ReaderSession Hybrid.
+Native focused + Qt5 CI PASS; следующий этап — новый adapter/ReaderSession Hybrid.
 
 Первый CI этапа 1 `44593194056`: Qt5 compile/package/contents и offline checks PASS;
 native compile PASS, матрица остановилась на engine.page-layout: kept-block
 chapter boundary дал пустую страницу. В Blaze drop-empty-pages — explicit adapter
 policy; добавлен upstream setKoblazeDropEmptyPages(true) перед Render без правки
-библиотеки/теста. Повторный native+Qt5 прогон ожидается; ранний package не для device.
+библиотеки/теста. Повторный прогон:
+`866f5b05feb647a3a0c6e492ada774a665efb9c5`,
+[CI 44594490713](https://github.com/Mutaracha/kobalt_ru/actions/runs/44594490713)
+PASS — focused native matrix, reported FB2 fixture, offline checks, Qt5 build/package/contents.
+Это не upstream beta.9 full-suite/Hybrid validation и не device-приёмка.
+Подробности: [doc/reports/beta9-stage1-blaze.md](doc/reports/beta9-stage1-blaze.md).
