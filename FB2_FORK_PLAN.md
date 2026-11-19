@@ -3,12 +3,14 @@
 Принятые решения: [doc/fork-decisions.md](doc/fork-decisions.md).
 Инструкции агентам: [AGENTS.md](AGENTS.md).
 
-**Текущая работа:** переход на beta.9. Этап 1 (библиотека Blaze под текущим
-whole-book адаптером) реализован, focused native/Qt5 CI PASS на 866f5b05.
-Hybrid, новый ReaderSession/UI ещё не перенесены; промежуточный пакет не для
-приёмки на устройстве. Следующий этап — адаптация нового upstream adapter и
-ReaderSession с отдельной whole-book границей FB2. Предыдущие аудиты ниже
-зафиксированы до начала реализации и не описывают текущий runtime.
+**Текущая работа:** переход на beta.9. Этапы 1–2 (библиотека Blaze, adapter
+paths и nullable-panel hooks) реализованы. Последний runtime `5bab5b4d`, focused
+native/Qt5 CI `44597171704` PASS. Hybrid, новый ReaderSession/UI ещё не перенесены;
+промежуточный пакет не для приёмки на устройстве. Следующий этап — интеграция нового
+upstream adapter/ReaderSession с отдельной whole-book границей FB2, не дальнейший
+перенос каталогов. При готовом пакете выдать пользователю конкретный список
+проверок из [device draft](doc/validation/beta9-device.md), заполнив runtime/CI.
+Предыдущие аудиты ниже зафиксированы до реализации и не описывают текущий runtime.
 
 
 ## Завершено
@@ -344,7 +346,7 @@ PASS — focused native matrix, reported FB2 fixture, offline checks, Qt5 build/
 
 ### Beta.9 этап 2 — подготовка adapter/API boundaries
 
-**in progress / CI pending / no device package**. Текущий whole-book adapter и
+**done / focused CI verified / no device handoff**. Текущий whole-book adapter и
 fork FB2/comics модули перемещены в src/engine/blaze/adapter; worker/activity/links/
 word_counts — в engine root по структуре beta.9. Для всех перемещённых файлов
 проверено отсутствие изменений тела вне #include. Includes, CMake configure,
@@ -357,4 +359,10 @@ Appearance ради проверки и не разыменовывает отс
 По просьбе пользователя подготовлен draft device checklist:
 [doc/validation/beta9-device.md](doc/validation/beta9-device.md). Выдавать его вместе
 с конкретным финальным тестовым пакетом и заполненным CI/runtime, а не просить
-проверять промежуточные этапы 1/2. Native/Qt5 CI ожидаются.
+проверять промежуточные этапы 1/2.
+Runtime `5bab5b4d0dc64150a9845ba06ae5c785cf0c1d95`,
+[CI 44597171704](https://github.com/Mutaracha/kobalt_ru/actions/runs/44597171704)
+PASS: offline, focused native matrix с reported FB2 fixture/null-panel predicate,
+Qt5 build/package/contents. Полный upstream suite/Hybrid/sanitizers/device не запускались.
+Следующий шаг — новый upstream Engine API/adapter/ReaderSession, не ещё один этап
+перемещения файлов. Реализация/CI evidence: doc/reports/beta9-stage2-adapter.md.

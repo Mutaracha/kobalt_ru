@@ -365,3 +365,16 @@ Navigation не получает ReadingBook/ReaderSession: используют
 общую реализацию ListHeader или header/footer. Checked comics fill использует общий
 icon engine/cache/state и прежнюю fork geometry, не отдельную кнопку/bitmap.
 CI/device для последнего изменения — см. FB2_FORK_PLAN.md.
+
+
+## Beta.9 migration: adapter path boundary
+
+Этап 2 использует src/engine/blaze/adapter для прежнего full-book adapter и наших
+reader_fb2/reader_comics/fork_styles/render модулей. Engine worker/activity и общие
+links/word_counts contracts размещены в src/engine по границе upstream beta.9.
+39 переносов проверены на неизменность тел вне include directives; это ещё не
+новые реализации Engine API/ReaderSession/Hybrid. Сборочные globs исключают только
+vendor crengine/extensions, не adapter. Nullable Settings/Appearance predicate
+полосы вынесен и проверен отдельно. Следующий перенос обязан заменить реализации
+общего adapter/session на beta.9, сохранив узкие format-specific hooks, а не
+заморозить старый whole-book EPUB pipeline. Текущий статус — в FB2_FORK_PLAN.md.

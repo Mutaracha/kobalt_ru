@@ -146,7 +146,11 @@ are built by `dependencies/local-engine.cmake` into each platform output. Do not
 compile vendor sources again through application source globs or apply the retired
 external CREngine patch series to this directory. Preserve inherited formatting
 and license headers. The shared dependency cache supplies only external libraries,
-not Blaze objects. See `doc/building.md` for the current engine build boundary.
+not Blaze objects. The application adapter and fork FB2/comics modules live under
+`src/engine/blaze/adapter`; the worker, activity, links and word-count contracts
+live directly under `src/engine`. Application globs must exclude only the library
+subtrees (`blaze/crengine` and `blaze/extensions`), not the adapter. See
+`doc/building.md` for the current engine build boundary.
 
 Compiled third-party dependencies and their downloads live in the shared dependency cache, `build/dependency-cache/` in the main checkout, keyed by their content. It belongs to no worktree and is the only build state that worktrees share; using it is not dependence on another worktree. Application objects and all other outputs stay under each worktree's `build/`. Never edit, move or partly delete a published cache entry: change a pin, recipe or patch to get a new key. Release evaluation exports use their own cache. See [Dependency cache](doc/building.md#dependency-cache).
 
