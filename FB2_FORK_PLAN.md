@@ -368,3 +368,21 @@ PASS: offline, focused native matrix с reported FB2 fixture/null-panel predicat
 Qt5 build/package/contents. Полный upstream suite/Hybrid/sanitizers/device не запускались.
 Следующий шаг — новый upstream Engine API/adapter/ReaderSession, не ещё один этап
 перемещения файлов. Реализация/CI evidence: doc/reports/beta9-stage2-adapter.md.
+
+### Beta.9 — worker, shared contracts и принятые сохранения
+
+**in progress / CI pending / no device handoff**. Общие types/query/font defaults,
+worker и EngineDrain перенесены из beta.9; concrete whole-book adapter использует
+общие типы. Ошибка CMake area labels исправлена в `6d491a6a`; CI `44603115596`
+проверяет worker/contracts и прежний focused matrix. Qt5 package PASS;
+полный результат native пока не получен.
+
+Подключена upstream drain-граница к AnnotationDraft::prepareSave и цепочке
+HighlightSession::save (range → overlap → chapter lookup → persist). AnnotationDraft
+взят целиком из upstream; в HighlightSession перенесён только связанный drain-блок,
+поскольку остальной API зависит от ещё не перенесённого Engine/ReaderSession.
+Новые проверки: release на Ready/Rejected/Stale/dead owner и запрет hardware suspend
+до завершения принятого сохранения. Они добавлены в focused CI вместе с существующим
+highlight-session suite. Это не исправление старого зависания после frame load.
+Следующий шаг после CI — фактический Engine/adapter/ReaderSession Hybrid с whole-book
+FB2 по контрактам; G1–G9/device остаются pending.

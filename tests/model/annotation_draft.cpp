@@ -1,4 +1,5 @@
 #include "reading/annotation_draft.h"
+#include "engine/engine_activity.h"
 #include "storage/highlight_store.h"
 #include "check.h"
 #include <QCoreApplication>
@@ -213,6 +214,35 @@ int main(int argc, char **argv)
         draft.reset();
         queries.ranges[1](range());
         require(called == 0, "A save response must not call a destroyed draft's observer");
+    }
+    // Accepted save queries defer the engine pause, including rejected/stale/dead owners.
+    for (int outcome = 0; outcome < 4; ++outcome) {
+        Queries queries;
+        auto draft = std::make_unique<AnnotationDraft>(queries.callbacks(), [] { return true; });
+        draft->edit(highlight());
+        auto &activity = engineActivity();
+        activity.pause(true);
+        require(activity.quiescent(), "Previous save retained an engine drain");
+        int called = 0;
+        draft->prepareSave([&](AnnotationDraft::Prepared, quint64) {
+            require(!activity.quiescent(), "Drain ended before save continuation");
+            ++called;
+        });
+        require(!activity.quiescent(), "Accepted save did not defer engine pause");
+        // The accepted job must run even though sleep has already requested a pause.
+        activity.enter();
+        activity.checkpoint();
+        activity.leave();
+        if (outcome == 2)
+            draft->clear();
+        if (outcome == 3)
+            draft.reset();
+        auto complete = queries.ranges.takeLast();
+        complete(outcome == 1 ? TextRange{} : range());
+        complete = {};
+        require(activity.quiescent(), "Completed or abandoned save retained an engine drain");
+        require(called == (outcome == 3 ? 0 : 1), "Save continuation count is wrong");
+        activity.pause(false);
     }
     return 0;
 }
