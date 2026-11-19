@@ -2,6 +2,7 @@
 #include "reader_fork_styles.h"
 #include "reader_comics.h"
 #include "column_view.h"
+#include "assets/bundled_fonts.h"
 #include <cmath>
 #include "render/image_damage.h"
 #include "support/qt_compat.h"
@@ -9,6 +10,8 @@
 #include "support/diagnostics.h"
 #include "engine_document.h"
 #include "reader_fb2.h"
+#include <QDir>
+#include "engine/engine_worker.h"
 #include "reader_source.h"
 #include "publication/image_policy.h"
 #include "publication/resource_cache.h"
@@ -24,6 +27,7 @@
 #include "render/page_content.h"
 #include "page_pixels.h"
 #include <QCryptographicHash>
+#include <QFile>
 #include <QFileInfo>
 #include <QElapsedTimer>
 #include <QJsonArray>
@@ -34,6 +38,9 @@
 #include <QSet>
 #include <QtMath>
 #include <lvdocview.h>
+#if __has_include(<koblaze.h>)
+#  include <koblaze.h>
+#endif
 #include <lvfntman.h>
 #include <lvrend.h>
 #include <hyphman.h>
@@ -47,6 +54,7 @@ namespace {
 std::atomic<unsigned> liveDocuments{ 0 };
 bool fontsReady = false;
 EngineFontInputs activeFonts;
+QString registeredFontDigest;
 QVector<ReadingFont> readingFonts;
 QStringList readingFontFaces;
 QVector<ReadingFont> readingFontCatalog;
@@ -96,7 +104,41 @@ bool validAlignment(const QString &value)
     return value == "publisher" || value == "left" || value == "justify" || value == "center"
             || value == "right";
 }
+
+// Loads hyphenation patterns as the engine does, except files that failed the
+// asset check. A pattern that does not load leaves its language without
+// hyphenation.
+class CheckedHyphenationLoader final : public HyphDataLoader
+{
+public:
+    explicit CheckedHyphenationLoader(QStringList excluded) : excluded(std::move(excluded)) { }
+
+    LVStreamRef loadData(lString32 id) override
+    {
+        auto *dictionary = HyphMan::getDictList() ? HyphMan::getDictList()->find(id) : nullptr;
+        if (!dictionary
+            || (dictionary->getType() != HDT_DICT_ALAN && dictionary->getType() != HDT_DICT_TEX))
+            return LVStreamRef();
+        const auto filename = dictionary->getFilename();
+        if (excluded.contains(
+                    QFileInfo(QString::fromUtf8(UnicodeToUtf8(filename).c_str())).fileName()))
+            return LVStreamRef();
+        return LVOpenFileStream(filename.c_str(), LVOM_READ);
+    }
+
+private:
+    QStringList excluded;
+};
+
 } // namespace
+
+// The publication checks embedded fonts against the limit that CREngine enforces.
+static_assert(maxEmbeddedFontBytes == LVFontManager::MaxEmbeddedFontBytes);
+
+std::unique_ptr<Engine> createEngine(EngineFontInputs fonts)
+{
+    return std::make_unique<EngineDocument>(std::move(fonts));
+}
 
 EngineDocument::EngineDocument(EngineFontInputs fonts) : fonts_(std::move(fonts))
 {
@@ -121,6 +163,7 @@ EngineDocument::~EngineDocument()
         readingFontFaces.clear();
         readingFontCatalog.clear();
         fontFacesReady = fontCatalogReady = false;
+        registeredFontDigest.clear();
         activeFonts = {};
     }
 }
@@ -153,15 +196,29 @@ bool EngineDocument::initializeFonts()
     // The generic monospace family for code, also under a chosen reading font,
     // and fallback faces for characters that a reading font lacks. The picker
     // offers script fallbacks when they match the document language.
-    for (const auto &file : fonts_.fallbackFiles)
-        if (!fontMan->RegisterFont(lString8(file.toUtf8().constData()))) {
+    for (const auto &file : fonts_.fallbackFiles) {
+        bool registered = true;
+        if (QFileInfo(file).fileName() == "NotoSerifCJK-Regular.ttc") {
+            // This pinned collection contains static regular faces. Their
+            // metadata is enough for the catalogue and font selector. Opening
+            // the large collection waits until text actually requests a face.
+            for (size_t index = 0; index < cjkFallbackFontFaces.size(); ++index)
+                registered &= fontMan->RegisterStaticFontFace(
+                        lString8(file.toUtf8().constData()), int(index),
+                        lString8(cjkFallbackFontFaces[index]), 400, false);
+        } else {
+            registered = fontMan->RegisterFont(lString8(file.toUtf8().constData()));
+        }
+        if (!registered) {
             readingFonts.clear();
             ShutdownFontManager();
             return false;
         }
+    }
     // Bundled dictionaries hyphenate by language. A language whose dictionary
     // is not bundled keeps the engine's algorithmic hyphenation.
     HyphMan::initDictionaries(cre(fonts_.hyphenationDirectory + '/'));
+    HyphMan::setDataLoader(new CheckedHyphenationLoader(fonts_.excludedHyphenation));
     for (const auto *name : engineHyphenationPatterns) {
         if (QFileInfo::exists(fonts_.hyphenationDirectory + '/' + name))
             continue;
@@ -174,6 +231,30 @@ bool EngineDocument::initializeFonts()
     fontsReady = true;
     activeFonts = fonts_;
     return true;
+}
+
+// The font manager and its registered files are shared by every live document.
+QString EngineDocument::layoutFontDigest() const
+{
+    if (!fontsReady || !registeredFontDigest.isEmpty())
+        return registeredFontDigest;
+    QCryptographicHash catalog(QCryptographicHash::Sha256);
+    QStringList files;
+    for (const auto &font : readingFonts)
+        files.append(font.files);
+    files.append(activeFonts.fallbackFiles);
+    for (const auto &path : files) {
+        auto digest = activeFonts.verifiedFontDigests.value(path);
+        if (digest.isEmpty()) {
+            QFile file(path);
+            QCryptographicHash hash(QCryptographicHash::Sha256);
+            if (file.open(QIODevice::ReadOnly) && hash.addData(&file))
+                digest = hash.result().toHex();
+        }
+        catalog.addData(digest + '\n');
+    }
+    registeredFontDigest = QString::fromLatin1(catalog.result().toHex());
+    return registeredFontDigest;
 }
 
 QStringList EngineDocument::fontFaces()
@@ -254,8 +335,19 @@ QByteArray EngineDocument::documentCachePolicy() const
     if (userStyleSheet_.isEmpty()) {
         return cachePolicy_ + (comicsMode_ ? ":comics-v5:on" : "");
     }
-    return cachePolicy_ + (comicsMode_ ? ":comics-v5:on" : "") + ":user-css-v1:"
+    if (!policy_.isEmpty() && policySheet_.isSharedWith(userStyleSheet_)
+        && policyBase_ == cachePolicy_ + (comicsMode_ ? ":comics-v5:on" : ""))
+        return policy_;
+    policySheet_ = userStyleSheet_;
+    policyBase_ = cachePolicy_ + (comicsMode_ ? ":comics-v5:on" : "");
+    policy_ = policyBase_ + ":user-css-v1:"
             + QCryptographicHash::hash(userStyleSheet_, QCryptographicHash::Sha256).toHex();
+    return policy_;
+}
+
+bool EngineDocument::saveDocumentCache()
+{
+    return saveDocumentCache(nullptr);
 }
 
 bool EngineDocument::saveDocumentCache(QString *reason)
@@ -293,6 +385,74 @@ bool EngineDocument::saveDocumentCache(QString *reason)
     return true;
 }
 
+bool EngineDocument::saveDocumentCacheStep(int milliseconds)
+{
+    // The same book and key as saveDocumentCache(); a step that cannot write
+    // leaves the rest to it.
+    if (!engine_ || cacheDirectory_.isEmpty() || cacheFingerprint_.isEmpty()
+        || !resourceError().isEmpty() || !pages())
+        return true;
+    const auto name = engine_->getDocProps()->getStringDef(DOC_PROP_FILE_NAME, "");
+    if (QString::fromUtf8(UnicodeToUtf8(name).c_str()) != documentCacheName(cacheFingerprint_))
+        return true;
+    auto *document = engine_->getDocument();
+    if (document->koblazeCacheMapped() && !document->isCacheFileStale())
+        return true;
+    DocumentCacheScope cache(cacheDirectory_);
+    if (!cache.enabled())
+        return true;
+    // The engine saves in stages and goes on where the last step ended. The
+    // first step only creates and maps the file; the next ones write it.
+    CRTimerUtil limit(milliseconds);
+    if (!document->koblazeCacheMapped()) {
+        const auto mapped = engine_->swapToCache(limit);
+        if (mapped != CR_TIMEOUT)
+            return true;
+        document->setCacheFileStale(true);
+        return false;
+    }
+    const auto result = engine_->updateCache(limit);
+    if (result == CR_TIMEOUT)
+        return false;
+    if (result != CR_DONE)
+        return true;
+    if (document->hasCacheFile()) {
+        if (!document->updateCacheFileName())
+            return true;
+        ldomDocCache::removeObsolete(name, document->getCacheFilePath());
+    }
+    return true;
+}
+
+bool EngineDocument::removeDocumentCache(bool allBooks)
+{
+    const auto directory = cacheDirectory_;
+    const auto name = documentCacheName(cacheFingerprint_);
+    if (directory.isEmpty() || (!allBooks && name.isEmpty()))
+        return false;
+    // A mapped document keeps its cache file open and writes to it. Every
+    // document of the book goes first, the parked whole-book build too.
+    building_.reset();
+    dropSideDocuments();
+    full_.reset();
+    retired_.clear();
+    cache_.clear();
+    searchText_.reset();
+    sourceIndex_.reset();
+    engine_.reset();
+    if (allBooks)
+        return QDir(directory).removeRecursively();
+    // Not DocumentCacheScope: eviction also works when free space is low.
+    const auto path = directory.toUtf8();
+    if (!ldomDocCache::init(Utf8ToUnicode(lString8(path.constData())),
+                            DocumentCacheScope::maxBytes))
+        return false;
+    const bool removed =
+            ldomDocCache::koblazeRemove(Utf8ToUnicode(lString8(name.toUtf8().constData())));
+    ldomDocCache::close();
+    return removed;
+}
+
 FontWeightAxis EngineDocument::weightAxis() const
 {
     return fontWeightAxis(readingFonts, face_);
@@ -303,8 +463,25 @@ FontOpticalSizeAxis EngineDocument::opticalSizeAxis() const
     return fontOpticalSizeAxis(readingFonts, face_);
 }
 
+bool EngineDocument::fastShaping() const
+{
+    if (shapingOverride_ >= 0)
+        return shapingOverride_ != 0;
+    return shapingText_ >= fastShapingMinimum && (!slices() || sliceSize() >= fastShapingMinimum);
+}
+
+void EngineDocument::activateFastShaping() const
+{
+    const bool fast = fastShaping();
+    koblazeSetPairKerning(fast);
+    koblazeSetWordWidths(fast);
+    koblazeSetWordPairs(fast);
+    koblazeSetPlainJoiner(fast);
+}
+
 void EngineDocument::activateFontParameters() const
 {
+    activateFastShaping();
     const auto axis = weightAxis();
     // CREngine shares font parameters across documents. Restore this document's
     // values before layout or drawing so previews cannot change another book.
@@ -323,6 +500,7 @@ void EngineDocument::configure(QSize size, const QJsonObject &settings)
     setExtraFontWeight(0);
     searchText_.reset();
     sourceIndex_.reset();
+    nativePositions_.reset();
     contentsIndex_ = {};
     graphIndex_ = {};
     engine_.reset();
@@ -332,6 +510,7 @@ void EngineDocument::configure(QSize size, const QJsonObject &settings)
     anchor_.clear();
     contents_.clear();
     graph_.clear();
+    externalChapters_ = false;
     totalWords_ = -1;
     nativeLocation_ = saved.value("imported_native_location").toString();
     cache_.clear();
@@ -512,6 +691,8 @@ int EngineDocument::page() const
 
 int EngineDocument::pages() const
 {
+    if (sliceLookAheadHidden_ && visiblePages_ > 0)
+        return visiblePages_;
     return engine_ ? engine_->getPageCount() : 0;
 }
 
@@ -633,10 +814,37 @@ int EngineDocument::turnTarget(int from, int delta) const
 
 bool EngineDocument::goTo(const QString &position)
 {
-    if (!engine_)
+    const int item = spineItemIndex(position);
+    if (engine_ && windowFirst_ >= 0 && slicePages_ > 0 && item >= 0
+        && (item < windowFirst_ || item > windowLast_)) {
+        // A saved position may refer to text that has changed. Resolve it in
+        // the spare chapter before replacing the page on screen.
+        const auto unit = unitFrom(item);
+        auto *next = openAhead(unit.first, {}, unit.second);
+        if (!next || item < next->windowFirst_ || item > next->windowLast_ || !next->goTo(position))
+            return false;
+        const qint64 loadMs = next->windowLoadMs_;
+        if (!adoptAhead(unit.first, unit.second))
+            return false;
+        windowLoadMs_ = loadMs;
+        return true;
+    }
+    if (!engine_ || !showSpineItemOf(position))
         return false;
-    auto pointer = engine_->getDocument()->createXPointer(cre(position));
+    auto *document = engine_->getDocument();
+    ldomXPointerEx pointer(document->createXPointer(cre(position)));
     if (pointer.isNull())
+        return false;
+#ifdef KOBLAZE_SOURCE_TEXT
+    if (slices()) {
+        // Check the publisher's style before moving the current slice.
+        // A visible passage may still be outside the part laid out on screen.
+        const KoblazeSourceText sourceText(document);
+        if (!pointer.isVisible())
+            return false;
+    }
+#endif
+    if (!showSliceOf(position) || pointer.toPoint().y < 0)
         return false;
     engine_->goToBookmark(pointer);
     anchor_ = position;
@@ -669,6 +877,14 @@ bool EngineDocument::applyAppearance(const appearance::Patch &patch, QSize size,
                                      OpeningProgress progress)
 {
     const auto &settings = patch.fields();
+    if (windowFirst_ >= 0 && !inpageFootnotes_ && settings.value("inpage_footnotes").toBool()) {
+        const auto layout = pageNoteLayout();
+        if (layout == PageNoteLayout::Interrupted)
+            return false;
+        if (layout == PageNoteLayout::WholeBook)
+            return setChapterMode(false, patch, size, std::move(progress),
+                                  [this] { return !interrupt_ || !interrupt_(); });
+    }
     const int pixels = settings.value("font_pixels").toInt(pixels_);
     const int spacing = settings.value("line_spacing").toInt(spacing_);
     const int paragraphSpacing = settings.contains("paragraph_spacing")
@@ -699,6 +915,24 @@ bool EngineDocument::applyAppearance(const appearance::Patch &patch, QSize size,
     const int weight = settings.value("weight_steps").toInt(weight_);
     const auto bionic = settings.value("bold_reading").toString(bionic_);
     const auto face = settings.value("font_face").toString(face_);
+    // A part of a book is loaded without what the settings of that moment
+    // did not need: the publisher's fonts while a reading font replaces
+    // them, and the beautifier's marks while every beautifier setting is
+    // off. Load the part again when a new setting needs one of them.
+    const bool needsFonts = fontsSkipped_ && face.isEmpty();
+    const bool needsBeautifier =
+            beautifierSkipped_ && (beautifierInitials || beautifierSpacing || beautifierIndent);
+    if ((needsFonts || needsBeautifier) && source_ && windowFirst_ >= 0) {
+        auto saved = windowSettings(windowFirst_, windowLast_);
+        saved["font_face"] = face;
+        saved["beautifier_initials"] = beautifierInitials;
+        saved["beautifier_spacing"] = beautifierSpacing;
+        saved["beautifier_indent"] = beautifierIndent;
+        dropSideDocuments();
+        QString error;
+        if (!openSource(source_, size_, saved, &error))
+            return false;
+    }
     const auto defaultFace = settings.value("default_font_face").toString(defaultFace_);
     auto fallbackFaces = fallbackFaces_;
     for (size_t index = 0; index < fallbackFaces.size(); ++index) {
@@ -783,6 +1017,7 @@ bool EngineDocument::applyAppearance(const appearance::Patch &patch, QSize size,
             || paragraphIndent != paragraphIndent_ || face != face_ || defaultFace != defaultFace_
             || margin != margin_ || topMargin != topMargin_ || bottomMargin != bottomMargin_
             || alignment != alignment_ || hyphenation != hyphenation_;
+    const bool regroup = columns > 1 && hideNonlinear != hideNonlinearFragments_;
     const bool resized = size != size_ || columns != columns_ || columnSpacing != columnSpacing_;
     baseColumns_ = baseColumns;
     comicsMode_ = comics;
@@ -822,7 +1057,7 @@ bool EngineDocument::applyAppearance(const appearance::Patch &patch, QSize size,
             alternateViewport_ = {};
         }
     }
-    OpeningCallback callback(engine_, std::move(progress));
+    OpeningCallback callback(engine_, std::move(progress), interrupt_);
     pixels_ = pixels;
     spacing_ = spacing;
     paragraphSpacing_ = paragraphSpacing;
@@ -907,8 +1142,17 @@ bool EngineDocument::applyAppearance(const appearance::Patch &patch, QSize size,
         // Rebuild drawn paragraphs without repaginating or changing anchors.
         engine_->getDocument()->clearRendBlockCache();
     }
-    if (!styled && !resized)
+    if (!styled && !resized && !(regroup && slices())) {
+        if (regroup) {
+            engine_->groupColumns(hideNonlinearFragments_);
+            forgetObservedPages();
+            observeLayout();
+            return goTo(anchor);
+        }
         return true;
+    }
+    // The pages that the old settings gave are not the pages of the new ones.
+    forgetObservedPages();
     // Applying a panel can change typography, hyphenation and the viewport together.
     // Set all three before paginating so the book is laid out only once.
     if (reuseLayout) {
@@ -921,8 +1165,60 @@ bool EngineDocument::applyAppearance(const appearance::Patch &patch, QSize size,
         }
     }
     if (comicsMode_ && resized) applyStyleSheet();
+    if (slices()) {
+        // Slice starts belong to the old pagination. Rebuild them from the
+        // chapter start before locating the reading position in the new layout.
+        sliceFirst_ = sliceForcedEnd_ = sliceExtra_ = 0;
+        sliceHistory_.clear();
+        relayout();
+    }
+    if (!renderLayout() || !extendSlice())
+        return false;
+    observeLayout();
+    if (!goTo(anchor))
+        return false;
+    // Keep the layout beyond the cut so the last visible page paints a
+    // partial publisher box with its actual border and padding.
+    sliceLookAheadHidden_ = slices() && visiblePages_ > 0;
+    return true;
+}
+
+bool EngineDocument::renderLayout()
+{
+    activateFastShaping();
+    applySlice();
+#if __has_include(<koblaze.h>)
+    try {
+        engine_->Render();
+    } catch (const KoblazeRenderCancelled &) {
+        // The reading position stays in anchor_ for resumeLayout().
+        layoutInterrupted_ = true;
+        cache_.clear();
+        damage_.clear();
+        return false;
+    }
+    layoutInterrupted_ = false;
+#else
     engine_->Render();
+#endif
+    engine_->groupColumns(hideNonlinearFragments_);
     engine_->rebuildComicSpreads();
+    cutSlice();
+    return true;
+}
+
+bool EngineDocument::resumeLayout()
+{
+    if (!engine_)
+        return false;
+    if (!layoutInterrupted_)
+        return true;
+    const auto anchor = anchor_;
+    OpeningCallback callback(engine_, {}, interrupt_);
+    engine_->requestRender();
+    if (!renderLayout() || !extendSlice())
+        return false;
+    observeLayout();
     return goTo(anchor);
 }
 
@@ -993,9 +1289,11 @@ void EngineDocument::applyStyleSheet()
     }
     // Normalize ink in PageDrawBuffer so SVG currentColor keeps its publisher
     // value. Clear CSS backgrounds outside SVG so theme ink stays readable.
+    // An unconditional ::first-letter rule splits joining scripts into separate glyph runs.
+    // Style only first letters that another rule has generated.
     if (normalizeTextColors_)
         overrides +=
-                "*:not(svg, svg *), *:not(svg, svg *)::before, *:not(svg, svg *)::after, *:not(svg, svg *)::first-letter { background-color:transparent !important; }\n";
+                "*:not(svg, svg *), *:not(svg, svg *)::before, *:not(svg, svg *)::after, *:not(svg, svg *)::-cr-existing-first-letter { background-color:transparent !important; }\n";
     overrides +=
             "svg[data-kobalt-fullpage=\"1\"] { width:100% !important; height:100vh !important; }\n";
     // A one-screen-pixel boundary stops a leading illustration's margin from
@@ -1364,6 +1662,7 @@ QImage EngineDocument::image(int pageNumber)
                 engine_->drawColumn(part, pageNumber, i);
                 buffer.hasImages |= part.hasImages;
                 buffer.hasText |= part.hasText;
+                buffer.hasUnsupportedFormatting |= part.hasUnsupportedFormatting;
                 const int x = engine_->columnOffset(i);
                 painter.drawImage(x, 0, column);
                 for (const auto &region : part.imageRegions)
@@ -1393,6 +1692,7 @@ QImage EngineDocument::image(int pageNumber)
                             : QVector<QRect>{ QRect(QPoint(0, 0), result.size()) })
             : QVector<QRect>{};
     content.textOnly = !buffer.hasImages && !hasColor;
+    content.formattingWarning = buffer.hasUnsupportedFormatting;
     setPageContent(result, content);
     // A turn can skip several physical pages of non-linear text.
     const int current = page();
@@ -1410,6 +1710,20 @@ QVector<ChapterLink> EngineDocument::chapters() const
     return chapterIndex(contentsIndex_, contents_, contents_.isEmpty()).links;
 }
 
+bool EngineDocument::goToChapter(int index, const QString &position)
+{
+    if (!goTo(position))
+        return false;
+    // In chapter mode an entry with an id in a spine item without its text
+    // points to the start of that spine item. With the text loaded, the
+    // entry has the place of its id.
+    const auto list = chapters();
+    if (index < 0 || index >= list.size() || list[index].position.isEmpty()
+        || list[index].position == position)
+        return true;
+    return goTo(list[index].position);
+}
+
 quint64 EngineDocument::layoutSignature() const
 {
     if (!engine_)
@@ -1422,6 +1736,7 @@ quint64 EngineDocument::layoutSignature() const
     mix(quint64(quintptr(engine_->getDocument())));
     mix(engine_->getDocumentRenderingHash(true));
     mix(columns_);
+    mix(columns_ > 1 && hideNonlinearFragments_);
     mix(verticalSpacing_ == "center" ? 2 : verticalSpacing_ == "expand" ? 1 : 0);
     mix(verticalSpacingScope_ == "protection");
     return hash ? hash : 1;
@@ -1519,6 +1834,7 @@ void EngineDocument::setChapters(QVector<ChapterLink> contents, QVector<ChapterL
                      [](const ChapterLink &chapter) { return !chapter.position.isEmpty(); })) {
         contents.clear();
     }
+    externalChapters_ = !contents.isEmpty() || !graph.isEmpty();
     contents_ = std::move(contents);
     graph_ = std::move(graph);
 }
@@ -1552,7 +1868,10 @@ int EngineDocument::chapterEndPage(const ChapterLink &next) const
     const int column = pointer.isNull() ? -1 : engine_->getBookmarkPage(pointer, true);
     // A chapter starting in the second column shares this screen with the
     // preceding chapter. Round its exclusive end up before counting screens.
-    return column < 0 ? next.page : (column + columns_ - 1) / columns_;
+    if (column < 0)
+        return next.page;
+    const int screen = engine_->screenOfColumn(column);
+    return screen + (engine_->firstColumn(screen) != column);
 }
 
 ChapterSelection EngineDocument::chapterSelection(const QVector<ChapterLink> &links) const
@@ -1564,6 +1883,7 @@ ChapterSelection EngineDocument::chapterSelection(const QVector<ChapterLink> &li
                 result.next < 0 ? pages() - 1 : qMax(first, chapterEndPage(links[result.next]) - 1);
         result.page = qBound(1, page() - first + 1, last - first + 1);
         result.pages = last - first + 1;
+        estimateChapterPages(links, result);
     }
     return result;
 }
@@ -1647,14 +1967,49 @@ ChapterSelection EngineDocument::chapterAround(const QVector<ChapterLink> &links
     return result;
 }
 
+PageInfo EngineDocument::pageInfo() const
+{
+    PageInfo info;
+    const int total = pages();
+    if (!engine_ || total <= 0)
+        return info;
+    const LayoutGeneration generation{ 0, layoutSignature() };
+    if (windowFirst_ >= 0) {
+        // The window can start or end inside a contents entry. Its page
+        // indexes describe neither the entire chapter nor the entire book.
+        info.bookPage = info.bookPages = Query<int>::pending(generation);
+        info.chapterPage = info.chapterPages = Query<int>::pending(generation);
+        info.bookProgress = Query<double>::pending(generation);
+        return info;
+    }
+    info.bookPage = Query<int>::exact(page(), generation);
+    info.bookPages = Query<int>::exact(total, generation);
+    info.bookProgress = Query<double>::exact(double(page()) / total, generation);
+    const auto chapter = chapterProgress();
+    if (chapter.pages > 0) {
+        info.chapterPage = Query<int>::exact(chapter.page - 1, generation);
+        info.chapterPages = Query<int>::exact(chapter.pages, generation);
+    } else {
+        // A book without contents has no chapter to count pages in.
+        info.chapterPage = info.chapterPages = Query<int>::unsupported({});
+    }
+    return info;
+}
+
+qint64 EngineDocument::chapterLoadMilliseconds() const
+{
+    return windowLoadMs_ >= 0 ? windowLoadMs_ * engineSlowdown() : -1;
+}
+
 ChapterProgress EngineDocument::chapterProgress() const
 {
     const auto links = chapters();
     const auto selected = chapterSelection(links);
     if (selected.current >= 0) {
-        const auto title = links[selected.current].title.trimmed();
-        return { title.isEmpty() ? strings::get("reader.untitled_chapter") : title, selected.page,
-                 selected.pages };
+        auto title = links[selected.current].title.trimmed();
+        if (title.isEmpty())
+            title = strings::get("reader.untitled_chapter");
+        return { title, selected.page, selected.pages };
     }
     if (selected.next >= 0)
         return { strings::get("reader.front_matter"), page() + 1,
@@ -1694,13 +2049,24 @@ int EngineDocument::embeddedFontCount() const
     auto &fonts = document->getEmbeddedFontList();
     for (int i = 0; i < fonts.length(); ++i) {
         const auto *font = fonts[i];
-        if (!font->getIsLocal() && registered.contains(Utf8ToUnicode(font->getFace())))
+        // Fonts that were not read are listed, not registered.
+        if (!font->getIsLocal()
+            && (fontsSkipped_ || registered.contains(Utf8ToUnicode(font->getFace()))))
             families.insert(QString::fromUtf8(font->getFace().c_str()));
     }
     return families.size();
 }
 
 QJsonObject EngineDocument::state() const
+{
+    auto result = settingsState();
+    const auto estimate = pageEstimateRecord(result);
+    if (!estimate.isEmpty())
+        result["page_estimate"] = estimate;
+    return result;
+}
+
+QJsonObject EngineDocument::settingsState() const
 {
     return kobalt::qt::object(
             { { "language", engine_ ? qstring(engine_->getLanguage()) : QString() },

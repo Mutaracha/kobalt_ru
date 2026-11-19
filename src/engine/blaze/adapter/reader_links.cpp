@@ -1,13 +1,17 @@
 #include "column_view.h"
+#include "stop_point.h"
 #include "support/qt_compat.h"
 #include "support/strings.h"
 #include "engine_document.h"
+#include "reader_source.h"
 #include "engine/engine_activity.h"
 #include <lvdocview.h>
+#include <algorithm>
 #include <QRegularExpression>
 #include <QSet>
 #include <QHash>
 #include <QUrl>
+#include <QXmlStreamReader>
 
 namespace kobalt {
 void EngineDocument::markKoboLinkDecorations()
@@ -16,6 +20,7 @@ void EngineDocument::markKoboLinkDecorations()
     const auto attribute = document->getAttrNameIndex("data-kobalt-kobo-link");
     QVector<ldomNode *> pending{ document->getRootNode() };
     while (!pending.isEmpty()) {
+        stopPoint();
         auto *node = pending.takeLast();
         if (!node || !node->isElement())
             continue;
@@ -67,25 +72,111 @@ lString32 domText(const QString &value)
     return Utf8ToUnicode(value.toUtf8().constData());
 }
 
-bool token(ldomNode *node, const char *name, const char *value, bool anyNamespace = false)
+bool pageNoteMarker(const QXmlStreamAttribute &attribute);
+
+// An interrupted or unavailable source leaves the target unknown.
+// Read only the linked chapter, and stop as soon as its id is found. Chunked
+// reads keep cancellation checks between storage reads, also for a long note.
+ReaderSource::LinkTarget linkTargetKind(ReaderSource &source, const QString &path,
+                                        const QString &id, const QString &target,
+                                        const std::function<bool()> &interrupted)
 {
-    const auto attribute = anyNamespace
+    using Target = ReaderSource::LinkTarget;
+    const auto known = source.linkTargets.constFind(target);
+    if (known != source.linkTargets.cend())
+        return known.value();
+    if (source.container.isNull() || path.isEmpty())
+        return Target::Unknown;
+    auto stream = source.container->OpenStream(domText(path).c_str(), LVOM_READ);
+    if (stream.isNull())
+        return Target::Unknown;
+    QXmlStreamReader xml;
+    QVector<bool> noteParents;
+    const auto remember = [&](Target kind) {
+        if (source.linkTargets.size() >= 4096)
+            source.linkTargets.clear();
+        source.linkTargets.insert(target, kind);
+        return kind;
+    };
+    const lvsize_t total = stream->GetSize();
+    lvsize_t received = 0;
+    while (received < total) {
+        engineActivity().checkpoint();
+        stopPoint();
+        if (interrupted && interrupted())
+            return Target::Unknown;
+        QByteArray chunk;
+        chunk.resize(int(qMin<lvsize_t>(16384, total - received)));
+        lvsize_t count = 0;
+        if (stream->Read(chunk.data(), chunk.size(), &count) != LVERR_OK || !count)
+            return Target::Unknown;
+        received += count;
+        chunk.resize(int(count));
+        xml.addData(chunk);
+        while (!xml.atEnd()) {
+            stopPoint();
+            xml.readNext();
+            if (xml.isEndElement() && !noteParents.isEmpty())
+                noteParents.removeLast();
+            if (!xml.isStartElement())
+                continue;
+            const auto attributes = xml.attributes();
+            noteParents.append(
+                    (!noteParents.isEmpty() && noteParents.last())
+                    || std::any_of(attributes.cbegin(), attributes.cend(), pageNoteMarker));
+            for (const auto &attribute : attributes)
+                if ((attribute.name() == QLatin1String("id")
+                     || (xml.name() == QLatin1String("a")
+                         && attribute.name() == QLatin1String("name")))
+                    && attribute.value() == id)
+                    return remember(noteParents.last() ? Target::Footnote : Target::Passage);
+        }
+        if (xml.hasError() && xml.error() != QXmlStreamReader::PrematureEndOfDocumentError)
+            return Target::Unknown;
+    }
+    return xml.hasError() ? Target::Unknown : remember(Target::Missing);
+}
+
+lString32 attributeOf(ldomNode *node, const char *name, bool anyNamespace = false)
+{
+    return anyNamespace
             ? node->getAttributeValue(LXML_NS_ANY,
                                       node->getDocument()->getAttrNameIndex(
                                               domText(QString::fromLatin1(name)).c_str()))
             : node->getAttributeValue(name);
-    return text(attribute)
-            .split(QRegularExpression("\\s+"), kobalt::qt::skipEmptyParts)
-            .contains(value, Qt::CaseInsensitive);
 }
 
+// One of the words of an attribute, separated by white space. Most elements
+// have no such attribute: those need no split.
+bool hasToken(const lString32 &attribute, const char *value)
+{
+    if (attribute.empty())
+        return false;
+    static const QRegularExpression space(QStringLiteral("\\s+"));
+    return text(attribute)
+            .split(space, kobalt::qt::skipEmptyParts)
+            .contains(QString::fromLatin1(value), Qt::CaseInsensitive);
+}
+
+bool token(ldomNode *node, const char *name, const char *value, bool anyNamespace = false)
+{
+    return hasToken(attributeOf(node, name, anyNamespace), value);
+}
+
+// A link on a page asks this of each ancestor of its target: each
+// attribute is read once.
 bool noteElement(ldomNode *node)
 {
-    return token(node, "type", "footnote", true) || token(node, "type", "endnote", true)
-            || token(node, "type", "note", true) || token(node, "type", "rearnote", true)
-            || token(node, "role", "doc-footnote") || token(node, "role", "doc-endnote")
-            || token(node, "role", "doc-note") || token(node, "role", "doc-rearnote")
-            || token(node, "class", "footnote") || token(node, "class", "endnote");
+    const auto type = attributeOf(node, "type", true);
+    for (const auto *value : { "footnote", "endnote", "note", "rearnote" })
+        if (hasToken(type, value))
+            return true;
+    const auto role = attributeOf(node, "role");
+    for (const auto *value : { "doc-footnote", "doc-endnote", "doc-note", "doc-rearnote" })
+        if (hasToken(role, value))
+            return true;
+    const auto classes = attributeOf(node, "class");
+    return hasToken(classes, "footnote") || hasToken(classes, "endnote");
 }
 
 enum class NoteMatch { Unmarked, Explicit, Passage };
@@ -492,7 +583,133 @@ bool noteHtml(ldomNode *node, QString &html, NoteBudget &budget, int depth = 0)
         html += "</" + output + ">";
     return html.size() <= noteHtmlLimit;
 }
+
+// Store publication-relative URIs, so equal ids in different chapters stay distinct.
+QString noteAddress(const QString &path, const QString &id)
+{
+    return path + QChar::Null + id;
+}
+
+bool pageNoteMarker(const QXmlStreamAttribute &attribute)
+{
+    const auto name = attribute.name();
+    if (name != QLatin1String("type") && name != QLatin1String("role")
+        && name != QLatin1String("class"))
+        return false;
+    const auto values = attribute.value().toString().simplified().split(' ');
+    for (const auto &value : values) {
+        if (name == QLatin1String("type")
+            && (value == "note" || value == "footnote" || value == "endnote"
+                || value == "rearnote"))
+            return true;
+        if (name == QLatin1String("role")
+            && (value == "doc-note" || value == "doc-footnote" || value == "doc-endnote"
+                || value == "doc-rearnote"))
+            return true;
+        if (name == QLatin1String("class") && (value == "_idFootnote" || value == "footnote"))
+            return true;
+    }
+    return false;
+}
 } // namespace
+
+EngineDocument::PageNoteLayout EngineDocument::pageNoteLayout()
+{
+    if (!source_ || source_->parent || !engine_)
+        return PageNoteLayout::Chapters;
+    if (source_->hasLinkedPageNotes >= 0)
+        return source_->hasLinkedPageNotes ? PageNoteLayout::WholeBook : PageNoteLayout::Chapters;
+    // CREngine gathers a note's lines from the same layout as the reference.
+    // A slice can omit its body even when both are in the same spine item.
+    const auto interrupted = [this] {
+        return (openInterrupt_ && openInterrupt_()) || (interrupt_ && interrupt_())
+                || engineCancellationRequested()
+                || (source_->resources
+                    && source_->resources->failure() == ResourceCache::Failure::Cancelled);
+    };
+    QSet<QString> links, bodies;
+    for (const auto &path : spineItems()) {
+        auto stream = source_->container->OpenStream(domText(path).c_str(), LVOM_READ);
+        if (stream.isNull())
+            return interrupted() ? PageNoteLayout::Interrupted : PageNoteLayout::WholeBook;
+        const auto total = stream->GetSize();
+        QUrl base;
+        base.setPath(path);
+        QXmlStreamReader xml;
+        int depth = 0, noteDepth = 0;
+        QSet<QString> ids;
+        bool content = false;
+        for (lvsize_t received = 0; received < total;) {
+            if (interrupted())
+                return PageNoteLayout::Interrupted;
+            engineActivity().checkpoint();
+            QByteArray bytes;
+            bytes.resize(int(qMin<lvsize_t>(16384, total - received)));
+            lvsize_t count = 0;
+            if (stream->Read(bytes.data(), bytes.size(), &count) != LVERR_OK || !count)
+                return interrupted() ? PageNoteLayout::Interrupted : PageNoteLayout::WholeBook;
+            received += count;
+            bytes.resize(int(count));
+            xml.addData(bytes);
+            while (!xml.atEnd()) {
+                xml.readNext();
+                if (xml.isStartElement()) {
+                    ++depth;
+                    const auto attributes = xml.attributes();
+                    const auto element = xml.name();
+                    if (element == QLatin1String("a")) {
+                        const auto href = base.resolved(QUrl(attributes.value("href").toString()));
+                        if (href.isRelative() && href.hasFragment() && !href.fragment().isEmpty()) {
+                            const auto target = noteAddress(href.path(QUrl::FullyDecoded),
+                                                            href.fragment(QUrl::FullyDecoded));
+                            if (bodies.contains(target)) {
+                                source_->hasLinkedPageNotes = 1;
+                                return PageNoteLayout::WholeBook;
+                            }
+                            links.insert(target);
+                        }
+                    } else if (!noteDepth
+                               && std::any_of(attributes.cbegin(), attributes.cend(),
+                                              pageNoteMarker)) {
+                        noteDepth = depth;
+                        ids.clear();
+                        content = false;
+                    }
+                    if (noteDepth) {
+                        const auto id = attributes.value("id").toString();
+                        if (!id.isEmpty())
+                            ids.insert(noteAddress(path, id));
+                        if (element == QLatin1String("img") || element == QLatin1String("svg")
+                            || element == QLatin1String("math"))
+                            content = true;
+                    }
+                } else if (xml.isCharacters() && noteDepth && !xml.isWhitespace()) {
+                    content = true;
+                } else if (xml.isEndElement()) {
+                    if (depth == noteDepth) {
+                        if (content) {
+                            for (const auto &id : ids) {
+                                if (links.contains(id)) {
+                                    source_->hasLinkedPageNotes = 1;
+                                    return PageNoteLayout::WholeBook;
+                                }
+                                bodies.insert(id);
+                            }
+                        }
+                        noteDepth = 0;
+                    }
+                    --depth;
+                }
+            }
+            // CREngine also accepts imperfect XHTML. Let its full parser decide
+            // when this XML scan cannot establish which targets exist.
+            if (xml.hasError() && xml.error() != QXmlStreamReader::PrematureEndOfDocumentError)
+                return PageNoteLayout::WholeBook;
+        }
+    }
+    source_->hasLinkedPageNotes = 0;
+    return PageNoteLayout::Chapters;
+}
 
 void EngineDocument::markPageNotes()
 {
@@ -504,6 +721,7 @@ void EngineDocument::markPageNotes()
     QVector<ldomNode *> groups;
     QVector<ldomNode *> pending{ document->getRootNode() };
     while (!pending.isEmpty()) {
+        stopPoint();
         engineActivity().checkpoint();
         auto *node = pending.takeLast();
         if (!node || !node->isElement())
@@ -596,9 +814,9 @@ QVector<PageLink> EngineDocument::pageLinks()
             ldomXRangeList &links;
         } collect(links);
 
-        const int first = engine_->getCurPage() * columns_;
-        for (int column = 0; column < columns_ && first + column < engine_->getPageList()->length();
-             ++column) {
+        const int screen = engine_->getCurPage();
+        const int first = engine_->firstColumn(screen);
+        for (int column = 0; column < engine_->columnCount(screen); ++column) {
             const auto &page = *engine_->getPageList()->operator[](first + column);
             for (int i = 0; i < page.footnotes.length(); ++i) {
                 const auto &note = page.footnotes[i];
@@ -649,20 +867,62 @@ LinkDetails EngineDocument::linkDetails(const QString &source, bool preview)
     result.kind = LinkKind::Unavailable;
     result.error = strings::get("error.this_passage_is_unavailable");
     if (href[0] != '#') {
-        const QUrl url(text(href));
+        // getHRef decodes external URLs, including escaped path and query separators.
+        const QUrl url(text(node->getAttributeValue("href")));
         if (url.isValid() && !url.host().isEmpty()
             && (url.scheme() == "https" || url.scheme() == "http")) {
             result.kind = LinkKind::Website;
-            result.target = url.toString();
+            result.target = url.toString(QUrl::FullyEncoded);
             result.error.clear();
         }
         return result;
     }
-    auto *target = doc->getNodeById(doc->getAttrValueIndex(href.substr(1).c_str()));
+    // A fragment is a URI component. Decode it once before comparing it
+    // with the Unicode id from the XHTML.
+    const auto id = DecodeHTMLUrlString(href.substr(1));
+    auto *target = doc->getNodeById(doc->getAttrValueIndex(id.c_str()));
+    auto match = noteReference(node);
+    // In chapter mode the target can be in a spine item that is not loaded.
+    // The engine names a link into spine item n "#_doc_fragment_n_ id".
+    EngineDocument *targetDocument = this;
+    std::unique_ptr<EngineDocument> sideWindow;
+    if (!target && windowFirst_ >= 0) {
+        static const QRegularExpression fragment(QStringLiteral("^_doc_fragment_(\\d+)_ "));
+        const auto found = fragment.match(text(id));
+        const int item = found.hasMatch() ? found.captured(1).toInt() : -1;
+        if (item < 0 || (item >= windowFirst_ && item <= windowLast_))
+            return result;
+        // The kind of a link on the page needs no layout. A missing target
+        // stays unavailable; a note without markup remains a guess.
+        if (!preview) {
+            const auto targetKind = source_
+                    ? linkTargetKind(*source_, spineItems().value(item),
+                                     text(id).mid(found.capturedLength()), text(id), interrupt_)
+                    : ReaderSource::LinkTarget::Unknown;
+            if (targetKind == ReaderSource::LinkTarget::Missing)
+                return result;
+            result.kind = match == NoteMatch::Explicit
+                            || (match == NoteMatch::Unmarked
+                                && targetKind == ReaderSource::LinkTarget::Footnote)
+                    ? LinkKind::Footnote
+                    : LinkKind::Passage;
+            result.error.clear();
+            return result;
+        }
+        if (slicePages_ > 0) {
+            targetDocument = openAhead(item);
+        } else {
+            sideWindow = openSide(windowSettings(item, item), {}, nullptr);
+            targetDocument = sideWindow.get();
+        }
+        if (!targetDocument || !targetDocument->engine_)
+            return result;
+        auto *other = targetDocument->engine_->getDocument();
+        target = other->getNodeById(other->getAttrValueIndex(id.c_str()));
+    }
     if (!target)
         return result;
     auto *note = target;
-    auto match = noteReference(node);
     const auto targetStyle = target->getStyle();
     if (match == NoteMatch::Unmarked && !targetStyle.isNull()) {
         if (STYLE_HAS_CR_HINT(targetStyle, FOOTNOTE)) {
@@ -692,8 +952,22 @@ LinkDetails EngineDocument::linkDetails(const QString &source, bool preview)
         }
     }
     ldomXPointer destination(target, 0);
-    if (destination.toPoint().y >= 0) {
-        result.target = text(destination.toString());
+    // The destination may be in another slice of this document or of a chapter
+    // opened for the link. Such a block has no coordinates until the jump.
+    const auto position = text(destination.toString());
+    bool navigable = destination.toPoint().y >= 0;
+    if (!navigable && targetDocument->slices()) {
+        const int offset = targetDocument->textBefore(position);
+        navigable = offset >= 0
+                && (offset < targetDocument->sliceFirst_ || offset >= targetDocument->sliceEnd_);
+        for (auto *parent = target; navigable && parent; parent = parent->getParentNode()) {
+            const auto style = parent->getStyle();
+            if (!style.isNull() && style->display == css_d_none)
+                navigable = false;
+        }
+    }
+    if (navigable) {
+        result.target = position;
         if (preview)
             result.chapter = chapterTitle(result.target);
     }

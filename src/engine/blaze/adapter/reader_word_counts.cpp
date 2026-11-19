@@ -1,5 +1,6 @@
 #include "column_view.h"
 #include "engine_document.h"
+#include "reader_source.h"
 
 #include "engine/engine_activity.h"
 #include "reading/logical_word_counter.h"
@@ -120,6 +121,68 @@ DocumentWordCounts EngineDocument::wordCounts(std::function<bool()> current)
     if (!engine_ || (current && !current())) {
         return {};
     }
+    if (windowFirst_ >= 0) {
+        // The styled DOM contains only one Fast window. Source counts cover
+        // the whole book without rendering it; CSS visibility can differ.
+        if (totalWords_ >= 0 && !graph_.isEmpty()
+            && std::all_of(graph_.cbegin(), graph_.cend(),
+                           [](const ChapterLink &chapter) { return chapter.words >= 0; })) {
+            DocumentWordCounts result;
+            result.total = totalWords_;
+            result.cached = true;
+            for (const auto &chapter : graph_)
+                result.chapters.append({ chapter.position, chapter.words });
+            return result;
+        }
+        auto &map = pageMap();
+        if (!map.allMeasured())
+            return {};
+        QVector<qint64> starts(map.items() + 1, 0);
+        for (int item = 0; item < map.items(); ++item) {
+            const auto words = map.itemWords(item);
+            if (words < 0 || (current && !current()))
+                return {};
+            starts[item + 1] = starts[item] + words;
+        }
+        const auto chapters = this->chapters();
+        QVector<qint64> prefixes;
+        for (const auto &chapter : chapters) {
+            engineActivity().checkpoint();
+            if (current && !current())
+                return {};
+            const int item = spineItemIndex(chapter.position);
+            if (item < 0 || item >= map.items())
+                return {};
+            textFraction(item, chapter.position, false, current);
+            const auto prefix = source_->textWordPrefixes.value(chapter.position, -1);
+            if (prefix < 0)
+                return {};
+            prefixes.append(starts[item] + qMin(prefix, map.itemWords(item)));
+        }
+        DocumentWordCounts result;
+        result.total = starts.last();
+        QVector<int> ordered;
+        for (int i = 0; i < chapters.size(); ++i) {
+            result.chapters.append({ chapters[i].position, -1 });
+            ordered.append(i);
+        }
+        std::stable_sort(ordered.begin(), ordered.end(),
+                         [&prefixes](int a, int b) { return prefixes[a] < prefixes[b]; });
+        for (int rank = 0; rank < ordered.size(); ++rank) {
+            const int index = ordered[rank];
+            const auto end = rank + 1 < ordered.size() ? prefixes[ordered[rank + 1]] : result.total;
+            result.chapters[index].words = qMax<qint64>(0, end - prefixes[index]);
+        }
+        if (current && !current())
+            return {};
+        totalWords_ = result.total;
+        graph_ = chapters;
+        externalChapters_ = false;
+        for (int i = 0; i < graph_.size(); ++i)
+            graph_[i].words = result.chapters[i].words;
+        graphIndex_ = {};
+        return result;
+    }
     auto *document = engine_->getDocument();
     ChapterPositions positions;
     QVector<ChapterLink> chapters;
@@ -132,6 +195,7 @@ DocumentWordCounts EngineDocument::wordCounts(std::function<bool()> current)
     const auto publish = [&](DocumentWordCounts counts) {
         totalWords_ = counts.total;
         graph_ = chapters;
+        externalChapters_ = false;
         for (int i = 0; i < graph_.size(); ++i) {
             graph_[i].words = counts.chapters[i].words;
         }

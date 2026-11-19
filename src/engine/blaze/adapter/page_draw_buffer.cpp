@@ -151,8 +151,10 @@ void PageDrawBuffer::Draw(int x, int y, const lUInt8 *bitmap, int width, int hei
     lvRect clip;
     GetClipRect(&clip);
     if (width > 0 && height > 0 && qint64(x) + width > clip.left && x < clip.right
-        && qint64(y) + height > clip.top && y < clip.bottom)
+        && qint64(y) + height > clip.top && y < clip.bottom) {
         hasText = true;
+        hasUnsupportedFormatting |= unsupportedSource;
+    }
     const auto color = palette ? palette[0] : GetTextColor();
     const auto background = GetBackgroundColor();
     const bool neutral = qRed(color) == qGreen(color) && qRed(color) == qBlue(color);
@@ -179,6 +181,10 @@ void PageDrawBuffer::Draw(LVImageSourceRef image, int x, int y, int width, int h
             qMin<qint64>(pageSize.width(), qMin<qint64>(qint64(x) + width, clip.right));
     const qint64 bottom =
             qMin<qint64>(pageSize.height(), qMin<qint64>(qint64(y) + height, clip.bottom));
+    auto *node = image->GetSourceNode();
+    const auto style = node ? node->getStyle() : css_style_ref_t();
+    const bool unsupportedImage =
+            !style.isNull() && style->writing_mode_warning == css_wmw_unsupported;
     if (!imageRegionsFull && right > left && bottom > top) {
         if (imageRegions.size() < 128)
             imageRegions.append(QRect(int(left), int(top), int(right - left), int(bottom - top)));
@@ -214,6 +220,7 @@ void PageDrawBuffer::Draw(LVImageSourceRef image, int x, int y, int width, int h
     if (dark)
         InvertRect(x, y, x + width, y + height);
     LVColorDrawBuf::Draw(image, x, y, width, height, dither);
+    hasUnsupportedFormatting |= unsupportedImage && imageHasVisiblePixels;
     if (dark)
         InvertRect(x, y, x + width, y + height);
 }

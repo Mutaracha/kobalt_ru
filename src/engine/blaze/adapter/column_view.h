@@ -5,6 +5,9 @@
 #include <QString>
 #include <QRect>
 #include <algorithm>
+#include <algorithm>
+#include <memory>
+#include <vector>
 
 namespace kobalt {
 // Keep CREngine's pagination at one column. Public page numbers refer to whole
@@ -30,6 +33,20 @@ public:
     // Pair only adjacent image-only pages with one known portrait bitmap each.
     // Prose, wide art, covers and ambiguous/multiple-image pages remain single.
     void rebuildComicSpreads();
+    struct CallbackTarget
+    {
+        ColumnView *view;
+    };
+
+    ~ColumnView() override
+    {
+        callbackTarget_->view = nullptr;
+        setCallback(nullptr);
+    }
+
+    // Callback guards follow the view when its owner moves, and can detach
+    // safely when a failed opening destroys the view before the guard exits.
+    const std::shared_ptr<CallbackTarget> &callbackTarget() const { return callbackTarget_; }
 
     void setColumns(int count) { columns = count; }
 
@@ -72,7 +89,7 @@ public:
                              : 0;
         width = columns > 1 ? qMax(1, (available - gutter * (columns - 1)) / columns) : w;
         // CREngine gives these side margins to each paragraph as its usable overflow.
-        // Its render context includes them (crengine-render-overflow.patch), so a
+        // Its render context includes them, so a
         // changed allowance lays the book out again, and a cached or retained layout
         // with the same allowance is reused.
         overflow = hangingPunctuation && columns > 1 ? qMin(sideMargin, gutter / 2) : 0;
@@ -81,49 +98,108 @@ public:
         LVDocView::Resize(columnWidth(), h);
     }
 
-    int getPageCount() { return comicStarts.isEmpty() ? (LVDocView::getPageCount() + columns - 1) / columns : comicStarts.size(); }
+    // A non-linear flow must be reachable on its own screen when ordinary
+    // turns skip it. A short last screen has an empty trailing column.
+    void groupColumns(bool separateFlows)
+    {
+        screenStarts.clear();
+        if (!separateFlows || columns == 1)
+            return;
+        auto *pages = getPageList();
+        if (!pages->hasNonLinearFlows())
+            return;
+        for (int first = 0; first < pages->length();) {
+            screenStarts.push_back(first);
+            const auto flow = pages->get(first)->flow;
+            int end = first + 1;
+            while (end < pages->length() && end - first < columns && pages->get(end)->flow == flow)
+                ++end;
+            first = end;
+        }
+    }
+
+    int getPageCount()
+    {
+        return !comicStarts.isEmpty() ? comicStarts.size() : screenStarts.empty() ? (LVDocView::getPageCount() + columns - 1) / columns
+                                    : int(screenStarts.size());
+    }
+
+    int firstColumn(int screen) const
+    {
+        if (!comicStarts.isEmpty())
+            return screen >= 0 && screen < comicStarts.size() ? comicStarts[screen] : comicInternalPages;
+        if (screenStarts.empty())
+            return screen * columns;
+        return screen >= 0 && screen < int(screenStarts.size()) ? screenStarts[screen] : -1;
+    }
+
+    int columnCount(int screen)
+    {
+        if (!comicStarts.isEmpty()) return comicPageCount(screen);
+        const int first = firstColumn(screen);
+        if (first < 0)
+            return 0;
+        const int end =
+                screen + 1 < getPageCount() ? firstColumn(screen + 1) : LVDocView::getPageCount();
+        return end - first;
+    }
+
+    int screenOfColumn(int column) const
+    {
+        if (!comicStarts.isEmpty()) {
+            const auto it = std::upper_bound(comicStarts.cbegin(), comicStarts.cend(), column);
+            return column < 0 ? -1 : qMax(0, int(it - comicStarts.cbegin()) - 1);
+        }
+        if (column < 0 || screenStarts.empty())
+            return column < 0 ? -1 : column / columns;
+        return int(std::upper_bound(screenStarts.begin(), screenStarts.end(), column)
+                   - screenStarts.begin())
+                - 1;
+    }
 
     int getCurPage(bool internal = false)
     {
         const int page = LVDocView::getCurPage(true);
-        return internal ? page : screenPage(page);
+        return internal ? page : screenOfColumn(page);
     }
 
     bool goToPage(int page, bool internal = false, bool updateBookmark = true, bool regulate = true)
     {
-        return LVDocView::goToPage(internal ? page : firstPage(page), true, updateBookmark,
+        return LVDocView::goToPage(internal ? page : firstColumn(page), true, updateBookmark,
                                    regulate);
     }
 
     ldomXPointer getPageBookmark(int page, bool precise = true, bool internal = false)
     {
-        return LVDocView::getPageBookmark(internal ? page : firstPage(page), precise, true);
+        return LVDocView::getPageBookmark(internal ? page : firstColumn(page), precise, true);
     }
 
     int getBookmarkPage(ldomXPointer pointer, bool internal = false)
     {
         const int page = LVDocView::getBookmarkPage(pointer, true);
-        return internal || page < 0 ? page : screenPage(page);
+        return internal ? page : screenOfColumn(page);
     }
 
-    int getPageFlow(int page) { return LVDocView::getPageFlow(firstPage(page)); }
+    int getPageFlow(int page) { return LVDocView::getPageFlow(firstColumn(page)); }
 
     lString32 getPageText(bool wrap, int page = -1)
     {
         if (page < 0)
             page = getCurPage();
         lString32 text;
-        for (int i = 0; i < pageColumns(page) && firstPage(page) + i < LVDocView::getPageCount(); ++i) {
+        for (int i = 0; i < columnCount(page); ++i) {
             if (i)
                 text += U"\n";
-            text += LVDocView::getPageText(wrap, firstPage(page) + i);
+            text += LVDocView::getPageText(wrap, firstColumn(page) + i);
         }
         return text;
     }
 
     void drawColumn(LVDrawBuf &buffer, int page, int column)
     {
-        LVDocView::Draw(buffer, -1, firstPage(page) + column, false, false);
+        const int physical =
+                column < columnCount(page) ? firstColumn(page) + column : LVDocView::getPageCount();
+        LVDocView::Draw(buffer, -1, physical, false, false);
     }
 
     ldomXPointer getNodeByPoint(lvPoint point, bool strict = false, bool selection = false)
@@ -145,9 +221,10 @@ public:
             point.y -= comicVerticalOffsets.value(firstPage(getCurPage()) + column);
             return LVDocView::getNodeByPoint(point, strict, selection);
         }
-        const int first = getCurPage() * columns;
-        for (int column = 0; column < columns && first + column < LVDocView::getPageCount();
-             ++column) {
+        const int screen = getCurPage();
+        const int first = firstColumn(screen);
+        const int count = columnCount(screen);
+        for (int column = 0; column < count; ++column) {
             const auto &page = *getPageList()->operator[](first + column);
             const int left = columns > 1 ? columnOffset(column) + overflow : margins.left;
             const int right = columns > 1 ? left + width : viewportWidth - margins.right;
@@ -171,8 +248,8 @@ public:
         if (local < -overflow || local >= width + overflow)
             return {};
         const int column = rightToLeft() ? columns - 1 - physical : physical;
-        const int target = getCurPage() * columns + column;
-        if (target >= LVDocView::getPageCount())
+        const int target = first + column;
+        if (column >= count)
             return {};
         Position restore(*this, target);
         point.x = local + overflow;
@@ -193,9 +270,10 @@ public:
         }
         // Page notes use their source coordinates in the DOM, but the engine
         // draws their fragments at the bottom of each referencing page.
-        const int first = getCurPage() * columns;
-        for (int column = 0; column < columns && first + column < LVDocView::getPageCount();
-             ++column) {
+        const int screen = getCurPage();
+        const int first = firstColumn(screen);
+        const int count = columnCount(screen);
+        for (int column = 0; column < count; ++column) {
             const auto &page = *getPageList()->operator[](first + column);
             int y = noteTop(page);
             for (int i = 0; i < page.footnotes.length(); ++i) {
@@ -213,7 +291,7 @@ public:
         if (columns == 1)
             return LVDocView::docToWindowPoint(point, bottom, fit);
         const int target = getPageList()->FindNearestPage(point.y - (bottom ? 1 : 0), 0);
-        if (target < first || target >= first + columns)
+        if (target < first || target >= first + count)
             return false;
         Position restore(*this, target);
         if (!LVDocView::docToWindowPoint(point, bottom, fit))
@@ -229,9 +307,10 @@ public:
             return;
         }
         list.clear();
-        const int page = getCurPage();
-        const int first = firstPage(page);
-        for (int i = 0; i < pageColumns(page) && first + i < LVDocView::getPageCount(); ++i) {
+        const int screen = getCurPage();
+        const int first = firstColumn(screen);
+        const int count = columnCount(screen);
+        for (int i = 0; i < count; ++i) {
             Position restore(*this, first + i);
             ldomXRangeList links;
             LVDocView::getCurrentPageLinks(links);
@@ -247,18 +326,9 @@ private:
     QVector<int> comicVerticalOffsets;
     QVector<QRect> comicImageRects;
     int comicInternalPages = 0;
-    int firstPage(int page) const
-    {
-        return comicStarts.isEmpty() ? page * columns
-                : page >= 0 && page < comicStarts.size() ? comicStarts[page] : comicInternalPages;
-    }
-    int pageColumns(int page) const { return comicStarts.isEmpty() ? columns : comicPageCount(page); }
-    int screenPage(int internal) const
-    {
-        if (comicStarts.isEmpty()) return internal / columns;
-        const auto it = std::upper_bound(comicStarts.cbegin(), comicStarts.cend(), internal);
-        return qMax(0, int(it - comicStarts.cbegin()) - 1);
-    }
+    int firstPage(int page) const { return firstColumn(page); }
+    int pageColumns(int page) { return columnCount(page); }
+    int screenPage(int internal) const { return screenOfColumn(internal); }
     int comicOffset(int physical) const
     {
         return (physical * viewportWidth / 2 + (physical + 1) * viewportWidth / 2 - viewportWidth) / 2;
@@ -278,9 +348,12 @@ private:
                 == U"rtl";
     }
 
+    std::vector<int> screenStarts;
     int columns = 1, width = 1, gutter = 0, spacing = 0, overflow = 0;
     bool hangingPunctuation = false;
     int viewportWidth = 1, viewportHeight = 1, sideMargin = 0;
+    const std::shared_ptr<CallbackTarget> callbackTarget_ =
+            std::make_shared<CallbackTarget>(CallbackTarget{ this });
     lvRect margins;
 
     struct Position

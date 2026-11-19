@@ -415,3 +415,25 @@ PASS: focused native с location corpus/boundaries, reported FB2, сохране
 прежними regressions; offline и Qt5 build/package/contents.
 Qt6 skipped; full upstream suite/Android/sanitizers/device не запускались.
 Новый adapter Hybrid и ReaderSession остаются следующим незавершённым участком.
+
+### Beta.9 — реальный Engine API и Blaze adapter
+
+**in progress / CI pending / no device handoff**. Перенесены upstream Engine
+interface/factory, новый Blaze adapter (windows/slices/estimates/background full
+layout/adoption/search/preview/text samples), PageMap и позиционный host codec.
+Fork FB2/comics/style модули сохранены, пересечения сведены контекстно, библиотека
+не менялась. В shared PageDrawBuffer перенесён beta.9 formatting tracker без второй
+копии drawing primitive. Зависимости font inputs и interrupted-operation diagnostics
+обновлены вместе с их потребителями. Текущий ReaderSession ещё concrete/whole-book;
+автоматическая пользовательская Hybrid интеграция и новый UI остаются pending.
+
+FB2 raw-stream dispatch остаётся до CSS/configure и EPUB-only проверок. На каждом
+open сбрасываются window/slices; setChapterMode реально применяет patch/viewport/
+anchor через whole-book replacement, не отвечает ложным no-op success. Preview
+через Engine& dispatch-ится в semantic FB2 path до DocFragment/container lookup.
+Comics geometry/hits/spreads остаются в fork-модулях, column grouping объединён с
+upstream non-linear grouping; cache identity включает comics и layout/source state.
+
+CI дополняется upstream engine-contract/spine-window/chapter-slices и FB2 Engine
+boundary test: exact pages, отсутствие лишнего full build, mode/reflow/anchor,
+preview lifetime. Native и Qt5 обязательны; G1–G9/device ещё не закрыты.

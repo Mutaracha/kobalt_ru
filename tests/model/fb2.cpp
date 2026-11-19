@@ -532,6 +532,47 @@ void reportedFictionBook(const QString &path)
     std::puts("PASS: reported FB2 numbered chapter starts and screenshot paragraph geometry");
 }
 
+// Exercise the real beta9 Engine API without inventing a chapter/spine for FB2.
+void engineBoundary()
+{
+    setChapterModeOverride(1);
+    auto model = createEngine(test::readerFonts());
+    QString error;
+    const auto bytes = utf8FictionBook();
+    require(model->open(bytes, {600, 800}, {{"koblaze_first_spine_item", 2},
+                                         {"koblaze_last_spine_item", 3}}, &error), qPrintable(error));
+    const auto whole = [&] {
+        const auto info = model->pageInfo();
+        require(info.bookPages.exact() && info.bookPages.value() == model->pages()
+                        && info.bookPage.exact() && info.bookPage.value() == model->page(),
+                "FB2 did not expose exact whole-book page values");
+        require(!model->continuesBefore() && !model->continuesAfter()
+                        && model->roughPages().pages == 0 && model->bookFraction() < 0,
+                "FB2 acquired a chapter window or a rough book estimate");
+        require(!model->refinePageEstimate()
+                        && model->prepareFullDocument([] { return true; }) == Engine::FullDocument::None
+                        && !model->fullDocumentReady() && !model->fullDocumentStarted(),
+                "Whole-book FB2 scheduled a redundant background document");
+        require(model->bookPages({model->position()}).value(0) == model->page() + 1,
+                "FB2 bookPages lost its one-based contract");
+    };
+    whole();
+    require(model->go(qMin(1, model->pages() - 1)), "Cannot select FB2 page");
+    const auto position = model->position();
+    require(model->setChapterMode(true, appearance::Patch({{"font_pixels", 34}}), {800, 600}),
+            "FB2 chapter-mode request did not apply whole-book reflow");
+    require(model->fontSize() == 34 && model->viewport() == QSize(800, 600)
+                    && model->position() == position, "FB2 reflow lost settings or source anchor");
+    whole();
+    auto preview = createEngine(test::readerFonts());
+    require(preview->openPreview(*model, {600, 800}, &error), qPrintable(error));
+    const auto previewPosition = preview->position();
+    model.reset();
+    require(!preview->image(preview->page()).isNull() && preview->goTo(previewPosition),
+            "FB2 preview lost its source lifetime at the Engine boundary");
+    setChapterModeOverride(-1);
+}
+
 void renderWindows1251() {
     const auto bytes = windows1251FictionBook();
     Publication publication;
@@ -565,5 +606,6 @@ int main(int argc, char **argv) {
     renderFictionBook();
     renderWindows1251();
     sharedNormalization();
+    engineBoundary();
     std::puts("PASS: FB2 inspection, cp1251 decoding, rendering, contents, cover, footnotes and preview");
 }

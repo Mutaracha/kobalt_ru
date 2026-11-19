@@ -15,7 +15,9 @@ public:
     PageDrawBuffer(QImage &image, bool dark, bool smooth, bool normalizeTextColors,
                    QMap<std::tuple<quintptr, int, int>, bool> *inversion = nullptr);
     void SetTextColor(lUInt32 color) override;
-    bool hasImages = false, hasText = false;
+    void SetUnsupportedFormatting(bool unsupported) override { unsupportedSource = unsupported; }
+    void OnImageDrawn(bool visiblePixels) override { imageHasVisiblePixels = visiblePixels; }
+    bool hasImages = false, hasText = false, hasUnsupportedFormatting = false;
     QVector<QRect> imageRegions;
     using LVColorDrawBuf::Draw;
     void Draw(int x, int y, const lUInt8 *bitmap, int width, int height,
@@ -25,6 +27,7 @@ public:
 private:
     QSize pageSize;
     bool imageRegionsFull = false;
+    bool unsupportedSource = false, imageHasVisiblePixels = false;
     bool dark;
     bool normalizeTextColors;
     QMap<std::tuple<quintptr, int, int>, bool> *inversion;
