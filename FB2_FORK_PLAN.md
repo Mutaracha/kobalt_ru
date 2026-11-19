@@ -323,3 +323,9 @@ Parser cache identity обновлён 11→13, rendering policy — upstream ve
 ACK/provenance и source-archive external-library probe актуализированы.
 Native focused + Qt5 CI ожидаются. По результатам исправлять API/поведение
 на этой границе; затем переходить к новому adapter/ReaderSession Hybrid.
+
+Первый CI этапа 1 `44593194056`: Qt5 compile/package/contents и offline checks PASS;
+native compile PASS, матрица остановилась на engine.page-layout: kept-block
+chapter boundary дал пустую страницу. В Blaze drop-empty-pages — explicit adapter
+policy; добавлен upstream setKoblazeDropEmptyPages(true) перед Render без правки
+библиотеки/теста. Повторный native+Qt5 прогон ожидается; ранний package не для device.

@@ -1,3 +1,6 @@
+#if __has_include(<koblaze.h>)
+#  include <koblaze.h>
+#endif
 #include "reader_comics.h"
 #include "support/qt_compat.h"
 #include "support/strings.h"
@@ -654,6 +657,11 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
         engine_->getDocument()->forceReinitStyles();
     }
     if (comicsMode_) markComicImages(engine_.get());
+#ifdef KOBLAZE_DROP_EMPTY_PAGES
+    // Blaze makes this adapter policy explicit; preserve beta.9's removal
+    // of zero-height pages between consecutive forced chapter breaks.
+    engine_->getDocument()->setKoblazeDropEmptyPages(true);
+#endif
     applyStyleSheet();
     engine_->Render();
     engine_->rebuildComicSpreads();
