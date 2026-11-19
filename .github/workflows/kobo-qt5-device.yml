@@ -106,15 +106,15 @@ jobs:
             # Surface runtime output through the checks API as well as artifacts.
             # Some clients cannot follow the external artifact/log redirects.
             awk '
-              { lines[NR % 35] = $0 }
+              /Testing: / { test = $0; output = "" }
+              { output = output $0 "%0A" }
               /Test Failed\./ {
-                for (i = (NR > 34 ? NR - 34 : 1); i <= NR; i++) {
-                  line = lines[i % 35]
-                  gsub(/%/, "%25", line); gsub(/\r/, "%0D", line)
-                  report = report line "%0A"
-                }
+                gsub(/%0A/, "\n", output)
+                gsub(/%/, "%25", output); gsub(/\r/, "%0D", output)
+                gsub(/\n/, "%0A", output)
+                print "::error::" test "%0A" output
+                output = ""
               }
-              END { if (length(report)) print "::error::Failed test tails%0A" report }
             ' build/desktop-linux/Testing/Temporary/LastTest.log
           fi
           exit "$status"

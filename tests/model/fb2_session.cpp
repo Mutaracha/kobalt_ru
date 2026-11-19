@@ -129,23 +129,29 @@ void checkMode(const QString &path, int mode)
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
-    QTemporaryDir directory;
-    require(directory.isValid(), "Cannot create FB2 session fixture directory");
-    const auto path = directory.path() + "/session.fb2";
-    QFile file(path);
-    require(file.open(QIODevice::WriteOnly), "Cannot create FB2 session fixture");
-    QByteArray book("<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
-                    "<description><title-info><book-title>Session boundary</book-title>"
-                    "<lang>ru</lang></title-info></description><body><section>");
-    for (int i = 0; i < 240; ++i)
-        book += "<p>Body passage " + QByteArray::number(i)
-                + " with enough text to exercise page turns, reflow and a semantic preview.</p>";
-    book += "</section></body></FictionBook>";
-    require(file.write(book) == book.size(), "Cannot write FB2 session fixture");
-    file.close();
-    renderingMode::setBuildQuietMilliseconds(0);
-    checkMode(path, 0);
-    checkMode(path, 2);
-    renderingMode::setOverride(-1);
-    std::puts("PASS: Accurate/Hybrid FB2 sessions retain exact whole-book pages, reflow and preview ownership");
+    // Run inside application event delivery, just like the upstream session
+    // checks: aboutToQuit stops the engine worker before Qt tears down.
+    QTimer::singleShot(0, &app, [&] {
+        QTemporaryDir directory;
+        require(directory.isValid(), "Cannot create FB2 session fixture directory");
+        const auto path = directory.path() + "/session.fb2";
+        QFile file(path);
+        require(file.open(QIODevice::WriteOnly), "Cannot create FB2 session fixture");
+        QByteArray book("<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
+                        "<description><title-info><book-title>Session boundary</book-title>"
+                        "<lang>ru</lang></title-info></description><body><section>");
+        for (int i = 0; i < 240; ++i)
+            book += "<p>Body passage " + QByteArray::number(i)
+                    + " with enough text to exercise page turns, reflow and a semantic preview.</p>";
+        book += "</section></body></FictionBook>";
+        require(file.write(book) == book.size(), "Cannot write FB2 session fixture");
+        file.close();
+        renderingMode::setBuildQuietMilliseconds(0);
+        checkMode(path, 0);
+        checkMode(path, 2);
+        renderingMode::setOverride(-1);
+        std::puts("PASS: Accurate/Hybrid FB2 sessions retain exact whole-book pages, reflow and preview ownership");
+        app.quit();
+    });
+    return app.exec();
 }

@@ -41,25 +41,26 @@ Preview store теперь использует private `.preview`; startup PNG 
 на этом шаге нет. Добавлены в focused CI upstream session Hybrid/adoption suite,
 preview-store safety tests, dictionary-store и sleep-persistence.
 
-CI `44627847298` (`f1672e5e`): Qt5/package PASS, native build PASS;
-style-sample-cache/styling reuse и reading-book sanitation проходят. Остались
-6 runtime failures: advancedText, appearanceWriteFailureRetainsDraft,
-appearanceCloseDuringPreview, highlight-session, reader-session и fb2-session.
-Диагностика markup: generation/request/image совпадают, resolvedRanges=0;
-highlight invalid font command сохраняет frame, но не сообщает error. Причины
-этих двух ошибок пока не установлены, assertions не ослаблены. Деталь FB2 failure
-не попала в первые 100 строк annotation; CI теперь публикует хвост каждого
-падающего теста, включая failures без FAIL-префикса. Внешние artifact/log redirects
-в текущем окружении недоступны.
+CI `44630442930` (`a6ad4211`): Qt5/package PASS. После переноса upstream
+ReadingBook progress/finish логики advancedText и оба exit/appearance lifecycle
+сценария больше не падают. Остаются reading-book (native activity page),
+highlight-session (invalid appearance), reader-session (markup ranges) и
+fb2-session (process exit без доступного diagnostic tail).
 
-**implemented / CI pending:** ReadingBook использует upstream whole-book
-progressPercent/bookPage/bookPages для activity/native/checkpoint/time remaining;
-canFinish учитывает book_fraction и continuesAfter, а не конец текущего фрагмента.
-Добавлен regression: последний лист не-final fragment не предлагает закончить
-книгу и сохраняет book percentage. Mode-forcing regression выполняется последним,
-чтобы не менять defaults остальных существующих сценариев. Это возможная причина трёх exit/lifecycle
-failures выше, не подтверждённое их исправление до CI. Native lifecycle/save epoch
-рефакторинг пока не перенесён.
+**implemented / CI pending:** найден пропуск upstream test infrastructure:
+`platforms/desktop/run-test.cmake` beta9 фиксирует `KOBALT_CHAPTER_MODE=0` для
+legacy whole-book checks, сохраняя внешний override. У нас оставался launcher
+beta8: после setOverride(-1) сессии могли открываться chapter-local, а старый
+highlight тест переключал Accurate → Hybrid на invalid font request. Launcher
+теперь exact upstream9; assertions не изменены. Dedicated Hybrid/adoption suite
+и FB2 Accurate/Hybrid по-прежнему используют явный setOverride, включая новый
+fragment-finish regression.
+
+FB2 session test теперь выполняется внутри app.exec, как upstream session checks:
+aboutToQuit завершает engine worker до разрушения Qt. Причина прежнего process
+exit не подтверждена; CI печатает отдельный annotation для каждого упавшего теста,
+чтобы его вывод не обрезался общим лимитом annotation. Native lifecycle/save epoch
+рефакторинг и complete UI integration остаются pending.
 
 **Следующий шаг:** довести session CI. Затем связать host mode/application, UI whole-book
 counts/progress, navigation/bookmark indexes и полосу; default Hybrid не считать
