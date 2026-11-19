@@ -341,3 +341,20 @@ policy; добавлен upstream setKoblazeDropEmptyPages(true) перед Rend
 PASS — focused native matrix, reported FB2 fixture, offline checks, Qt5 build/package/contents.
 Это не upstream beta.9 full-suite/Hybrid validation и не device-приёмка.
 Подробности: [doc/reports/beta9-stage1-blaze.md](doc/reports/beta9-stage1-blaze.md).
+
+### Beta.9 этап 2 — подготовка adapter/API boundaries
+
+**in progress / CI pending / no device package**. Текущий whole-book adapter и
+fork FB2/comics модули перемещены в src/engine/blaze/adapter; worker/activity/links/
+word_counts — в engine root по структуре beta.9. Для всех перемещённых файлов
+проверено отсутствие изменений тела вне #include. Includes, CMake configure,
+source globs и perf corpus identities обновлены; vendor library по-прежнему не
+компилируется как app objects. Новый upstream adapter/Hybrid/ReaderSession ещё не
+заменяет текущую реализацию — это подготовка следующей интеграции.
+Полоса получила nullable-panel predicate/stack anchor: не создаёт Settings или
+Appearance ради проверки и не разыменовывает отсутствующую панель. Добавлены
+проверки первого состояния с null Settings/Appearance и скрывающих условий.
+По просьбе пользователя подготовлен draft device checklist:
+[doc/validation/beta9-device.md](doc/validation/beta9-device.md). Выдавать его вместе
+с конкретным финальным тестовым пакетом и заполненным CI/runtime, а не просить
+проверять промежуточные этапы 1/2. Native/Qt5 CI ожидаются.

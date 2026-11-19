@@ -54,14 +54,21 @@ bool Navigation::eventFilter(QObject *watched, QEvent *event)
     return QObject::eventFilter(watched, event);
 }
 
+bool forkui::menuPageStripVisible(const NavigationState &state, bool countAvailable)
+{
+    const auto visible = [](const QWidget *panel) { return panel && panel->isVisible(); };
+    // Beta.9 builds Settings and Appearance lazily. Checking visibility must
+    // neither dereference an absent panel nor create it just for the strip.
+    return state.visible && !state.zen && !state.chaptersOpen && !state.searchOpen
+            && !visible(state.settings) && !visible(state.appearance) && countAvailable;
+}
+
 void Navigation::updateForkPageStrip(QSize size, const NavigationState &state)
 {
     if (pageStrip) {
         pageStrip->setGeometry(0, toolbarHeight(), size.width(), pageStrip->sizeHint().height());
-        pageStrip->setVisible(state.visible && !state.zen && !state.chaptersOpen
-                              && !state.settings->isVisible() && !state.searchOpen
-                              && !state.appearance->isVisible() && page && !page->text().isEmpty());
-        pageStrip->stackUnder(state.appearance);
+        pageStrip->setVisible(forkui::menuPageStripVisible(state, page && !page->text().isEmpty()));
+        pageStrip->stackUnder(state.appearance ? state.appearance : toolbar);
     }
 }
 

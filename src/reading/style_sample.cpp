@@ -1,6 +1,6 @@
 #include "style_sample.h"
-#include "engine/crengine/engine_worker.h"
-#include "engine/crengine/engine_activity.h"
+#include "engine/engine_worker.h"
+#include "engine/engine_activity.h"
 #include "appearance_settings.h"
 #include "reading_density.h"
 #include "support/qt_compat.h"

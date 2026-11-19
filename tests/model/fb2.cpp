@@ -2,9 +2,9 @@
 #include "anchor_preview.h"
 #include "reader_source_index_probe.h"
 #include "check.h"
-#include "engine/crengine/engine_document.h"
-#include "engine/crengine/reader_fb2.h"
-#include "engine/crengine/reader_fork_styles.h"
+#include "engine/blaze/adapter/engine_document.h"
+#include "engine/blaze/adapter/reader_fb2.h"
+#include "engine/blaze/adapter/reader_fork_styles.h"
 #include <QCryptographicHash>
 #include <QtEndian>
 #include "publication/fb2.h"

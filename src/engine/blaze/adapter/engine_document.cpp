@@ -13,7 +13,7 @@
 #include "publication/image_policy.h"
 #include "publication/resource_cache.h"
 #include "reader_render_callback.h"
-#include "engine_activity.h"
+#include "engine/engine_activity.h"
 #include "reader_styles.h"
 #include "reader_hyphenation.h"
 #include "reader_alignment.h"

@@ -1,5 +1,5 @@
 #pragma once
-#include "engine/crengine/engine_document.h"
+#include "engine/blaze/adapter/engine_document.h"
 #include "open_request.h"
 #include "highlight_geometry.h"
 #include "storage/custom_pins.h"

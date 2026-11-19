@@ -56,7 +56,7 @@ string(TIMESTAMP KOBALT_BUILD_TIME "%Y-%m-%d %H:%M UTC" UTC)
 configure_file("${source}/support/build_info.h.in" build_info.h @ONLY)
 
 file(GLOB_RECURSE shared CONFIGURE_DEPENDS "${source}/*.cpp" "${source}/*.h")
-list(FILTER shared EXCLUDE REGEX "/src/engine/blaze/")
+list(FILTER shared EXCLUDE REGEX "/src/engine/blaze/(crengine|extensions)/")
 # The scenario player is built only into evaluation builds.
 list(FILTER shared EXCLUDE REGEX "/src/scenario/")
 list(REMOVE_ITEM shared "${source}/assets/system_fonts.cpp")

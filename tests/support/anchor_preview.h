@@ -1,7 +1,7 @@
 #pragma once
 #include "check.h"
 #include "reader_source_index_probe.h"
-#include "engine/crengine/engine_document.h"
+#include "engine/blaze/adapter/engine_document.h"
 
 namespace kobalt::test {
 // Anchored previews must not lend page-list geometry or cached note images to reading.

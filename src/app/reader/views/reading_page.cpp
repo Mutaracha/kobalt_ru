@@ -5,7 +5,7 @@
 #include "ui/controls/text.h"
 #include "ui/controls/icons.h"
 #include "reading_page.h"
-#include "engine/crengine/engine_document.h"
+#include "engine/blaze/adapter/engine_document.h"
 #include "render/bookmark_paint.h"
 #include "render/page_turn_paint.h"
 #include "ui/style/fonts.h"

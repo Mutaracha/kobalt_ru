@@ -1,4 +1,5 @@
 #include "app/reader/views/fork_navigation.h"
+#include "app/reader/views/navigation.h"
 #include "ui/controls/rows.h"
 #include "support/host_presentation.h"
 #include "platform/posix/diagnostics.h"
@@ -58,7 +59,7 @@
 #include "support/screenshot_gallery.h"
 #include "support/screenshot_runner.h"
 #include "support/strings.h"
-#include "engine/crengine/engine_document.h"
+#include "engine/blaze/adapter/engine_document.h"
 #include "ui/controls/page_scrubber.h"
 #include "ui/controls/loading.h"
 #include "app/reader/settings/dictionaries_page.h"
@@ -121,8 +122,8 @@
 
 #include "app/reader/panels/word_list.h"
 #include "storage/saved_words.h"
-#include "engine/crengine/engine_activity.h"
-#include "engine/crengine/engine_worker.h"
+#include "engine/engine_activity.h"
+#include "engine/engine_worker.h"
 #include "support/qt_compat.h"
 #include <QScopeGuard>
 #include <QSemaphore>
@@ -4650,6 +4651,21 @@ private slots:
         QVERIFY(!fixture.widget("rrComicsReadingMode"));
         QVERIFY(!fixture.widget("rrHeaderFooterSlot0"));
         // Formatting is independent of a visible menu, and uses book not chapter time.
+        NavigationState unbuilt{};
+        unbuilt.visible = true;
+        QVERIFY(reader::forkui::menuPageStripVisible(unbuilt, true));
+        QVERIFY(!reader::forkui::menuPageStripVisible(unbuilt, false));
+        unbuilt.visible = false;
+        QVERIFY(!reader::forkui::menuPageStripVisible(unbuilt, true));
+        unbuilt.visible = true;
+        unbuilt.zen = true;
+        QVERIFY(!reader::forkui::menuPageStripVisible(unbuilt, true));
+        unbuilt.zen = false;
+        unbuilt.chaptersOpen = true;
+        QVERIFY(!reader::forkui::menuPageStripVisible(unbuilt, true));
+        unbuilt.chaptersOpen = false;
+        unbuilt.searchOpen = true;
+        QVERIFY(!reader::forkui::menuPageStripVisible(unbuilt, true));
         QWidget stripHost;
         auto *probeStrip = reader::forkui::makeMenuPageStrip(&stripHost);
         headerfooter::Values estimate;

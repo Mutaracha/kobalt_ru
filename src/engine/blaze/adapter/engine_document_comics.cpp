@@ -3,7 +3,7 @@
 #include <QPainter>
 #include "column_view.h"
 #include "reader_source.h"
-#include "engine_activity.h"
+#include "engine/engine_activity.h"
 #include "publication/resource_cache.h"
 #include "support/diagnostics.h"
 

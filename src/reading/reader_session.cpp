@@ -5,10 +5,10 @@
 #include "reader_session.h"
 #include "opening_job.h"
 #include "sync/kosync.h"
-#include "engine/crengine/engine_worker.h"
+#include "engine/engine_worker.h"
 #include "render/highlight_paint.h"
 #include "appearance_settings.h"
-#include "engine/crengine/engine_activity.h"
+#include "engine/engine_activity.h"
 #include "support/diagnostics.h"
 #include <QElapsedTimer>
 #include "publication/publication.h"

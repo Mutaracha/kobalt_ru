@@ -2,7 +2,7 @@
 #include "engine_document.h"
 #include "platform/api/position_codec.h"
 #include "support/strings.h"
-#include "engine_activity.h"
+#include "engine/engine_activity.h"
 #include <lvdocview.h>
 
 namespace kobalt {

@@ -13,7 +13,7 @@
 #include "reader_beautifier.h"
 #include "reader_page_layout.h"
 #include "document_cache.h"
-#include "engine_activity.h"
+#include "engine/engine_activity.h"
 #include "publication/publication.h"
 #include "publication/fb2.h"
 #include <lvdocview.h>

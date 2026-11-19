@@ -2,8 +2,8 @@
 #include "reader_inputs.h"
 #include "reader_source_index_probe.h"
 #include "reading/appearance_settings.h"
-#include "engine/crengine/page_draw_buffer.h"
-#include "engine/crengine/reader_comics.h"
+#include "engine/blaze/adapter/page_draw_buffer.h"
+#include "engine/blaze/adapter/reader_comics.h"
 #include <QBuffer>
 #include <QGuiApplication>
 #include <QTemporaryDir>

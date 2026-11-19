@@ -1,6 +1,6 @@
 #include "opening_job.h"
 #include "appearance_settings.h"
-#include "engine/crengine/engine_activity.h"
+#include "engine/engine_activity.h"
 #include "publication/layout_compatibility.h"
 #include "storage/layout_cache.h"
 #include "support/diagnostics.h"
