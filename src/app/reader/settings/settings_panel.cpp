@@ -47,6 +47,27 @@ using ui::makeButton;
 using ui::readerStyle;
 using ReaderOption = ui::DescribedOption;
 
+ui::DescribedOption *checklistOption(QWidget *parent, const QString &name, const QString &label,
+                                     const QString &description, bool first)
+{
+    auto *option = new ui::DescribedOption(label, description, parent);
+    option->setObjectName(name);
+    auto presentation = option->presentation();
+    presentation.indicator = ui::DescribedOption::Indicator::Square;
+    presentation.pressedFill = true;
+    presentation.leadingIndicator = true;
+    presentation.dividers = Qt::BottomEdge;
+    if (first)
+        presentation.dividers |= Qt::TopEdge;
+    presentation.horizontalInset = chrome::inset;
+    presentation.labelPixels = chrome::labelText;
+    presentation.descriptionPixels = chrome::descriptionText;
+    presentation.indicatorSize = { chrome::checkSize, chrome::checkSize };
+    presentation.minimumRowHeight = chrome::optionHeight;
+    option->setPresentation(presentation);
+    return option;
+}
+
 namespace {
 // Leaves Zen mode only after a held press. While held, it inverts and fills
 // three steps, one update each, so an e-ink panel sees no animation. Letting
@@ -194,27 +215,6 @@ private:
     int step = 0;
     bool cell = false;
 };
-
-ui::DescribedOption *checklistOption(QWidget *parent, const QString &name, const QString &label,
-                                     const QString &description, bool first)
-{
-    auto *option = new ui::DescribedOption(label, description, parent);
-    option->setObjectName(name);
-    auto presentation = option->presentation();
-    presentation.indicator = ui::DescribedOption::Indicator::Square;
-    presentation.pressedFill = true;
-    presentation.leadingIndicator = true;
-    presentation.dividers = Qt::BottomEdge;
-    if (first)
-        presentation.dividers |= Qt::TopEdge;
-    presentation.horizontalInset = chrome::inset;
-    presentation.labelPixels = chrome::labelText;
-    presentation.descriptionPixels = chrome::descriptionText;
-    presentation.indicatorSize = { chrome::checkSize, chrome::checkSize };
-    presentation.minimumRowHeight = chrome::optionHeight;
-    option->setPresentation(presentation);
-    return option;
-}
 
 QPushButton *segmentButton(QWidget *parent, QHBoxLayout *layout, QButtonGroup *group,
                            const QString &name, const QString &text);

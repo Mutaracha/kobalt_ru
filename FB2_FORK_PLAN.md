@@ -6,7 +6,9 @@
 **Следующий focused CI:** upstream Custom sleep/editor, per-book positions,
 wallpaper sleep/off и follow-reading orientation подключены. Сохранены fork text
 fitting и двухстрочная лента. Добавлены upstream Custom/editor/cancel tests;
-workflow выбирает sleep lifecycle. Runtime результат этого блока pending;
+workflow выбирает sleep lifecycle. Первый compile CI выявил checklistOption с anonymous linkage в Settings;
+helper вынесен в общий Settings API как upstream, без изменения checkbox style.
+Runtime результат этого блока pending;
 Startup preview migration подключена отдельно: удаляются только generated PNG;
 scan marker завершается после native doneProcessing (есть exactly-once regression).
 Финальные G1–G9 ещё не завершены. Device handoff нет.
