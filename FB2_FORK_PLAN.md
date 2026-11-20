@@ -13,7 +13,7 @@ Baseline форка `4e3a33b9`, upstream beta.9 `be472588`.
 | Блок | Статус | Следующий результат / gate |
 |---|---|---|
 | Уборка артефактов и incidental diff | in progress | Удалены список и 26 старых engine patches: consumers отсутствуют, build использует in-tree Blaze. Cache recipe/filter оставлены byte-identical, чтобы не менять dependency key. Прочий incidental diff ещё не сводился; CI 44800640114 PASS. |
-| Общие реализации beta.9 | in progress: пресеты device accepted; panel/theme CI pending | Контекстно свести пресеты, chapter lookup, аннотации/keyboard, KOSync, sleep/storage. Использовать upstream lazy panels вместо собственной оптимизации; проверить shared helper/API и protected fork behavior. |
+| Общие реализации beta.9 | in progress: пресеты device accepted; panel/theme CI verified | Контекстно свести пресеты, chapter lookup, аннотации/keyboard, KOSync, sleep/storage. Использовать upstream lazy panels вместо собственной оптимизации; проверить shared helper/API и protected fork behavior. |
 | Актуальная карта дельты | planned | Обновить fork-delta по фактическим файлам; для каждого retained delta указать причину и gate, upstream-only файлы проверить отдельно. |
 | Подготовка FB2 Hybrid | in progress: source analysis | [Граница и матрица](doc/reports/fb2-hybrid-preparation.md) описаны по коду. Далее corpus, sections/notes/resources/anchors и проверяемый whole-book fallback. Реализация и включение partial layout не разрешены автоматически. |
 | Следующее обновление | planned; blocked до фиксации нового upstream SHA для runtime-переноса | Использовать протокол отчёта; сначала завершить cleanup и составить dependency/consumer/test matrix. Beta.10 ещё не анализировалась. |
@@ -24,9 +24,18 @@ layout, adoption, fallback) базовой версии и не пишем со�
 Существующие narrow hooks, включая comics frameImage, сохраняются по назначению.
 FB2 whole-book остаётся безопасным поведением до отдельного проверенного решения.
 
-**Следующий блок — panel/theme prerequisite:** ensureAppearance, themeWidget и
+**Текущий проверенный runtime:** `613df9ba96ff6b4406398ae942d92045e72d6a5c`,
+[CI 44808379234](https://github.com/Mutaracha/kobalt_ru/actions/runs/44808379234)
+**PASS**: focused native с themeChanges/lightDarkModeShortcut/lazyAppearance,
+EPUB/FB2 и прежними settings/lifecycle checks; Kobo Qt5/offline/package/contents.
+[Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44808379234/artifacts/14665345524).
+Qt6 skipped; full suite/Android/device NOT RUN. Это shared theme prerequisite,
+не готовый lazy Settings. Следующее действие: цельный KOSync model/page split
+с nullable Settings consumers, затем upstream ensureSettings/preparePanels.
+
+**Реализован panel/theme prerequisite:** ensureAppearance, themeWidget и
 applyTheme взяты из pinned upstream; удалена fork-копия late-widget styling.
-CI pending: lazyAppearance (light/dark, strip/comics/idempotence), themeChanges,
+CI 44808379234 PASS: lazyAppearance (light/dark, strip/comics/idempotence), themeChanges,
 lightDarkModeShortcut добавлены/сохранены в selection. Settings пока eager:
 перед его отложенным построением нужно отделить KOSync model от kosyncPage,
 инициализировать nullable controls и перенести null-safe consumers целиком.

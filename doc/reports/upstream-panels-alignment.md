@@ -28,9 +28,46 @@ Do not introduce a fork-specific deferred builder to bypass these dependencies.
 
 ## Validation
 
-CI pending. Focused selection includes existing lazyAppearance light/dark,
+Focused CI verified (see checkpoint below). Selection includes existing lazyAppearance light/dark,
 strip/comics and idempotence assertions; enabled upstream-derived themeChanges
 and lightDarkModeShortcut tests, previously outside this focused workflow.
 Settings/appearance lifecycle/preset checks retain their prior selection.
 Local Qt/CMake/Docker unavailable; native/device NOT RUN locally.
 Device approval for presets 9633d3fd does not approve this next runtime.
+
+## Closed dependency group for the next checkpoint
+
+- `reader_kosync.cpp`: upstream buildKosync/buildKosyncPage split, buffered status
+  replay and null-safe async completions; build model before building Settings.
+  Keep existing native cloud-sync policy. Audit book-vs-fragment coordinates
+  separately against the shared progress contract; do not alter EPUB slicing.
+- `reader_p.h`: nullable Settings/page/control initialization and settingsVisible
+  predicate; no uninitialized option may be read before ensureSettings.
+- `reader_settings.cpp`: openSettings calls ensureSettings; fit/apply/host refresh
+  handle an absent panel. `reader_refresh.cpp` guards darkOption and panel access.
+- Other consumers: reader.cpp, reader_build, dialogs, annotations and navigation
+  must retain behavior before Settings exists; geometry/raise paths run only for
+  the built panel. Preserve strip visibility and hidden-action preferences.
+- Only then connect upstream preparePanels/settled/input-quiet bookkeeping and
+  transfer its test expectations. The current fork lazyAppearance test explicitly
+  asserts no early construction, so an upstream background-preparation change
+  requires a matching harness update, not removal of assertions on a failed CI.
+
+This dependency inventory is analysis, not an implementation claim.
+
+
+## Verified checkpoint
+
+Runtime `613df9ba96ff6b4406398ae942d92045e72d6a5c`,
+[CI 44808379234](https://github.com/Mutaracha/kobalt_ru/actions/runs/44808379234)
+completed success. Native job 136538246110 includes the extended theme tests and
+existing focused EPUB/FB2/settings/lifecycle matrix. Qt5 job 136538245875 passed
+offline, build/package/contents. Package artifact 14665345524; native results
+artifact 14666150878. Raw XML was not downloaded/inspected for this checkpoint;
+job outcomes are confirmed via GitHub API. Full suite/Android/device NOT RUN,
+Qt6 skipped. No measured performance or physical acceptance claim.
+
+Optional device focus for this package: open Text/Layout first in a dark reader;
+repeat after switching theme before first opening those panels. Check controls,
+icons, comics switch and strip, then close/reopen the panel. Existing preset
+acceptance remains attached to 9633d3fd, not automatically to this binary.

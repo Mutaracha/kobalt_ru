@@ -6,6 +6,9 @@ PASS: focused native EPUB/FB2 и Kobo Qt5/offline/package/contents; Qt6 skipped.
 [Пакет Kobalt-qt5-device](https://github.com/Mutaracha/kobalt_ru/actions/runs/44801198903/artifacts/14661747164).
 Native results artifact: 14661049659; raw download из Arena получил redirect EOF,
 поэтому отдельный count/test XML здесь не заявлен. Full suite/Android NOT RUN.
+Пользователь подтвердил: «пресеты работают». Это принятие пресетов данного runtime,
+не утверждение о прохождении каждого пункта или полного device suite.
+
 Это проверка отдельного этапа; не полный upstream alignment и не FB2 Hybrid.
 Перед установкой сохранить полный профиль по doc/storage.md. Не очищать профиль
 или кэши вручную: проверяем обычное обновление с прежнего runtime cfb8f51c.

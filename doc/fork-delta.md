@@ -13,7 +13,10 @@ Baseline: upstream `be472588`, fork runtime `9633d3fd` (focused CI 44801198903 P
   текущий styling cache consumer передаёт font catalog в общий ключ.
 - EPUB Hybrid algorithms не менялись. FB2 whole-book contract сохранён;
   подготовка partial режима — [отдельный анализ](reports/fb2-hybrid-preparation.md).
-- Аннотации/keyboard/KOSync/sleep/lazy panels остаются в очереди выравнивания;
+- Runtime `613df9ba`: ensureAppearance перенесён из fork_reader_actions в общий
+  reader_build; themeWidget/applyTheme взяты из pinned upstream. Удалён отдельный
+  palette/icon loop поздних контролов. CI 44808379234 PASS, device pending.
+- Аннотации/keyboard/KOSync/sleep/lazy Settings/background preparePanels остаются в очереди выравнивания;
   не считать их завершёнными по результату этого блока.
 
 Подробности/проверки: [cleanup report](reports/upstream-cleanup-stage1.md),
