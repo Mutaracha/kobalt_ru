@@ -9533,18 +9533,24 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         for (const auto locale : { strings::Locale::Russian, strings::Locale::English }) {
             strings::setLocale(locale);
             for (const auto &test : cases) {
-                auto summary = activity::summarize({}, QDate(2026, 11, 20));
+                const QDate today(2026, 11, 20);
+                ActivityRecords records;
+                // A real reading day makes Overview visible, including when
+                // there are no finished books. Empty history shows a message.
+                records.days[today] = 60000;
+                auto summary = activity::summarize(records, today);
                 summary.finished = test.count;
                 summary.totalMilliseconds = qint64(test.count) * 3600000;
                 ActivityView view(nullptr);
                 view.resize(1264, 1680);
-                view.setRecords({}, summary);
+                view.setRecords(records, summary);
                 view.showSection(ActivityView::Section::Overview);
                 view.show();
                 QCoreApplication::processEvents();
                 auto *books = view.findChild<QLabel *>("rrActivityFinishedUnit");
                 auto *figure = view.findChild<QLabel *>("rrActivityFinishedFigure");
                 QVERIFY(books && figure);
+                QVERIFY(books->isVisible() && figure->isVisible());
                 QCOMPARE(figure->text(), QString::number(test.count));
                 QCOMPARE(books->text(), locale == strings::Locale::Russian
                                                ? QString::fromUtf8(test.book)

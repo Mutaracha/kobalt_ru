@@ -11,8 +11,11 @@ warm Accurate/Hybrid ~4,8 с с retained model; cold ~16,28 с, причина w
 добавлены диагностические mode/fallback события без изменения алгоритма.
 Технический CI `44775124583` PASS. Пользователь одобрил весь перевод/склонения
 из review: три RU уточнения и шесть EN/RU unit keys внесены. Runtime
-`cb9afca9`, CI `44778323964` pending; локальные source/parity/Ninja string
-self-tests PASS. Пакет с этими переводами ещё не объявлен проверенным.
+`cb9afca9`, CI `44778323964`: Qt5 PASS; native FAIL только
+activityUnitForms (empty history скрывала Overview). Исправлен fixture реальным
+reading day и проверкой видимости без ослабления сравнений. Повторный CI pending.
+[Короткий повторный прогон](doc/validation/033d0be2-followup.md).
+Локальные source/parity/Ninja string self-tests ранее PASS.
 Числа Activity согласуются с округлением/порогами; база профиля не предоставлена,
 точность исторических итогов не объявлена подтверждённой.
 
