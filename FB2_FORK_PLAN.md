@@ -87,6 +87,15 @@ Source checks PASS; local Kobo syntax blocked отсутствием подго�
 Qt6 source перенесён, но отдельная Qt6 package/device проверка не выполнялась.
 Это не проверка на устройстве; wake/recovery consumers и host-mode/UI остаются pending.
 
+**implemented / CI pending — wake/save recovery:** sleep теперь сохраняет progress
+перед drain native time, а поздний result обрабатывается после wake. Подключены
+upstream SleepSave/epoch callback/clear pending Exit и повторная попытка без закрытия
+книги. Согласованные EN/RU строки внесены; оценка переносов по будущим скриншотам
+пользователя. Upstream close/sleep order, stale pre-sleep completion и wake retry
+regressions перенесены вместе с fixture и включены в focused CI (старые обратные
+order tests заменены, не ослаблены). Source checks и strings parity/generation
+PASS. Общий host-mode/UI перенос ещё pending.
+
 **Следующий шаг:** связать host rendering-mode preference/application и выполнить
 перенести оставшиеся wake/recovery consumers и подключение save epochs;
 затем UI whole-book counts/progress, navigation/bookmark indexes и полосу.

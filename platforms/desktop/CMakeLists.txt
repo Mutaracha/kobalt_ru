@@ -384,7 +384,7 @@ if(BUILD_TESTING)
             appearanceSleepRetainsDraft appearanceFailedPreviewDismisses appearanceApplyFailureCanExit
             appearanceCloseDuringPreview appearanceSleepDuringFirstEdit appearanceDragsDuringPreview
             pageTurnsResumeWhenReaderIsShownAfterSleep clockUpdatesOnlyReadingStrips clockStopsWhileReaderIsHidden closeWithPendingBookmark
-            closeWaitsForLocalSave closeRetriesRequiredNativeSaves quitAfterFailedLocalSaveRetry closeWaitsForNativeTimeBeforePosition sleepWaitsForNativeTimeBeforePosition revokedNativeDrainRetainsLocalSave
+            closeWaitsForLocalSave closeRetriesRequiredNativeSaves quitAfterFailedLocalSaveRetry closeWritesPositionBeforeNativeTime sleepWritesPositionBeforeNativeTime preSleepCloseAcknowledgedAfterWake retryFailedSaveAfterWake revokedNativeDrainRetainsLocalSave
             pageTurnTimingIgnoresNoopNavigation pageButtonsAfterTouchUseDeliveryTime pageFrameDuringHold pageImageDuringHold pageGestureBurstIgnoresRapidTurns exitThroughReaderAndReopen closeGuardUsesTapTime staleSearchReplyIgnored searchScopesAndPagination searchSurvivesReflow
             searchHighlightClearsOnReflow
             settingsOrientationHandoff sleepRequestFreezesOrientationBeforeHandoff closePublishesHeldOrientationBeforeBackgroundPaint
@@ -733,6 +733,7 @@ if(BUILD_TESTING)
     # `light`, `fast` and `integration` must not appear in one because the lane
     # presets filter on them.
     set(kobalt_test_areas
+        "storage:^lifecycle\\.(closeWritesPositionBeforeNativeTime|preSleepCloseAcknowledgedAfterWake|retryFailedSaveAfterWake)$"
         "reading:^session\\.fb2-session$"
         "layout:^model\\.engine-contracts$"
         "sleep:^model\\.engine-worker$"

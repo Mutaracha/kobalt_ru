@@ -1637,3 +1637,18 @@
 
 "features.comics" = "Comics mode toggle";
 "features.comics_description" = "Hides the comics mode toggle in the reading menu. The current reading mode is preserved.";
+
+/* beta9 rendering and reading-time recovery; user-approved translations. */
+"sleep.reading_time_failed" = "Couldn't save reading time";
+"sleep.reading_time_failed_detail" = "The reading time from before sleep could not be saved. You can retry here without leaving this page.";
+"sleep.reading_time_retry_failed" = "Reading time still couldn’t be saved. You can try again or keep reading.";
+"sleep.retry_save" = "Retry save";
+"settings.rendering" = "Rendering engine";
+"settings.rendering_summary" = "Hybrid opens books fast and prepares the whole book while you read.";
+"settings.rendering_description" = "A change reloads the book at your position when you close Settings.";
+"settings.rendering_hybrid" = "Hybrid";
+"settings.rendering_fast" = "Faster";
+"settings.rendering_accurate" = "More accurate";
+"settings.rendering_hybrid_description" = "Open fast, then prepare the whole book in the background.";
+"settings.rendering_fast_description" = "Lay out only the chapter you read. Page numbers stay estimates.";
+"settings.rendering_accurate_description" = "Lay out the whole book first. Large books open slower.";

@@ -195,3 +195,14 @@ No forced full-screen refresh or pagination reservation. Estimate preparation
 must not depend on toolbar visibility: normal opening prepares status before show.
 Runtime ef5424cf, CI 44397464051 native/Qt5 PASS; device acceptance pending.
 The strip starts explicitly hidden, before its first menu placement.
+
+## B9-STRINGS — rendering and reading-time recovery translations
+
+Accepted by the user in this session after the EN/RU table review. EN remains
+pinned upstream beta9. RU uses «время последнего сеанса чтения», not «до сна»;
+retry is «Сохранить снова». Rendering labels are «Движок рендеринга», «Гибридный»,
+«Быстрее», «Точнее». Descriptions end with «Быстро», «Быстрее всего», «Медленнее»;
+the accurate description is «Сразу рассчитывает всю книгу при её открытии.
+Медленнее.». Exact accepted strings live in assets/ru.strings. The user will supply
+interface screenshots to finalize wrapping/wording; visual acceptance is pending.
+This approval covers upstream controls, not additional fork settings.

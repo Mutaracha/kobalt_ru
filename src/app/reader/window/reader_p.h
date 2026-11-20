@@ -427,7 +427,7 @@ private:
     kobalt::ReaderSession *session;
     QPointer<kobalt::ReaderOrientation> orientation;
     QPointer<kobalt::ui::ModalOverlay> syncDialog, finishDialog;
-    bool finishChoiceResolved = false;
+    bool finishChoiceResolved = false, finishChoiceForExit = false;
     bool importingProgress = false, comparingProgress = false;
     // A progress check found the reader busy. refresh() repeats it once free.
     bool progressCheckDeferred = false;
@@ -1006,6 +1006,12 @@ private:
     bool allowFailedTransition = false;
     void transitionSaveError(std::function<void()> retry, std::function<void()> discard);
     void failExit(quint64 request, const QString &error = {});
+    enum class SleepSave { Idle, Waiting, Retry, Failed };
+    SleepSave sleepSave = SleepSave::Idle;
+    quint64 sleepSaveRequest = 0, wakePositionEpoch = 0;
+    QString sleepSavePosition;
+    void recoverSleepSave();
+    void clearPendingExit();
     void cancelExit();
     bool closeSaveRetried = false, closeWithoutSaving = false;
     quint64 closeRequest = 0;

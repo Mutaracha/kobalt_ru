@@ -60,6 +60,7 @@ void Reader::refresh()
     // A KOSync result that waited while the reader was hidden continues now.
     if (syncCoordinator && isVisible() && !services.suspended())
         syncCoordinator->resume();
+    recoverSleepSave();
     const bool darkReady = publishPendingDarkMode();
     if (general->isVisible())
         static_cast<SettingsPanel *>(general)->updateButtonControls(

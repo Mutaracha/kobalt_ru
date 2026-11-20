@@ -13,6 +13,7 @@ createEmbeddedOpening(QWidget *parent, PresentationFactory presentation, bool sh
 class SaveErrorView final : public ui::ChoiceModal
 {
 public:
+    explicit SaveErrorView(QWidget *parent);
     SaveErrorView(QWidget *parent, const QString &error, bool retried);
 
     QPushButton *quitButton() const { return quit; }

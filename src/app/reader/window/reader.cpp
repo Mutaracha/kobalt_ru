@@ -542,11 +542,13 @@ void Reader::sleepReader()
     }
     if (pageScrubber)
         pageScrubber->cancel();
-    if (lifecycleHidden)
+    if (lifecycleHidden || closing)
         return;
     const auto sleepRequest = ++closeRequest;
-    exportRunning = false;
-    setEnabled(true);
+    sleepSaveRequest = sleepRequest;
+    sleepSave = SleepSave::Waiting;
+    sleepSavePosition = session->state().value("position").toString();
+    clearPendingExit();
     setProperty("reader_sleep_clean_pending", true);
     session->cancelPendingTurn();
     book->sleepReading(preferences);
@@ -582,33 +584,15 @@ void Reader::sleepReader()
     appearanceEdit.clearContinuation();
     lifecycleHidden = true;
     clockTimer->stop();
-    // The session worker writes to the same database as the bookmark. Let it
-    // finish before attempting the nonblocking bookmark transaction. Keep the
-    // sleep interval intact so a short sleep can resume the same local session.
+    // As Nickel does when the device sleeps, the progress transaction ends
+    // the host's reading session and saves its time. A sleep with an
+    // unchanged position writes no progress; the drain below then ends the
+    // session in a short transaction of its own. Keep the sleep interval
+    // intact so a short sleep can resume the same local session.
     QPointer<Reader> guard(this);
     mainthread::blocking("native sleep save");
     QElapsedTimer saveDeadline;
     saveDeadline.start();
-    {
-        QEventLoop loop;
-        QTimer timeout;
-        timeout.setSingleShot(true);
-        connect(&timeout, &QTimer::timeout, &loop, &QEventLoop::quit);
-        connect(this, &QObject::destroyed, &loop, &QEventLoop::quit);
-        auto completed = std::make_shared<bool>(false);
-        book->drainReadingSave(
-                [completed, waiting = QPointer<QEventLoop>(&loop)](NativeActivityResult) {
-                    *completed = true;
-                    if (waiting)
-                        waiting->quit();
-                });
-        if (!*completed) {
-            timeout.start(2500);
-            loop.exec(QEventLoop::ExcludeUserInputEvents);
-        }
-    }
-    if (!guard || closeRequest != sleepRequest || !lifecycleHidden)
-        return;
     saveNativeProgress();
     // This result means no progress write began. Another Nickel writer can
     // outlast the session queue's retries. Retry only that failure, within the
@@ -625,6 +609,19 @@ void Reader::sleepReader()
             return;
         saveNativeProgress();
     }
+    {
+        mainthread::AllowBlocking allow("native progress");
+        book->drainReadingSave([guard, sleepRequest](NativeActivityResult result) {
+            if (guard && guard->sleepSaveRequest == sleepRequest
+                && guard->sleepSave == SleepSave::Waiting) {
+                guard->sleepSave =
+                        result == NativeActivityResult::Failed ? SleepSave::Retry : SleepSave::Idle;
+                guard->recoverSleepSave();
+            }
+        });
+    }
+    if (!guard || closeRequest != sleepRequest || !lifecycleHidden)
+        return;
     checkpoint();
     // A device can stay asleep until its battery runs out, so the last sync
     // time cannot wait for the book to close. The sleep sync below starts
@@ -731,6 +728,8 @@ void Reader::wakeReader()
     sleepImage = {};
     presentation->clearSleepScreen();
     setProperty("reader_sleep_clean_pending", false);
+    if (lifecycleHidden)
+        wakePositionEpoch = book->advancePositionSaveEpoch();
     lifecycleHidden = false;
     if (sleep::mode(preferences) == sleep::Mode::Overlay)
         prepareSleepOverlay();
@@ -3044,14 +3043,87 @@ void Reader::failExit(quint64 request, const QString &error)
         textRefresh(widget);
 }
 
-void Reader::cancelExit()
+void Reader::recoverSleepSave()
 {
+    if ((sleepSave != SleepSave::Retry && sleepSave != SleepSave::Failed) || lifecycleHidden
+        || services.suspended() || !isVisible() || closing || exitPending
+        || book->deviceTransition() || closeSaveError)
+        return;
+    if (sleepSave == SleepSave::Retry) {
+        sleepSave = SleepSave::Waiting;
+        const QPointer<Reader> guard(this);
+        book->retryFailedReadingSave(
+                [guard, request = sleepSaveRequest](NativeActivityResult result) {
+                    if (!guard || guard->sleepSaveRequest != request
+                        || guard->sleepSave != SleepSave::Waiting)
+                        return;
+                    guard->sleepSave = result == NativeActivityResult::Failed ? SleepSave::Failed
+                                                                              : SleepSave::Idle;
+                    guard->recoverSleepSave();
+                },
+                ReadingSaveRetry::Background);
+        return;
+    }
+    auto *notice = new SaveErrorView(this);
+    closeSaveError = notice;
+    notice->setGeometry(rect());
+    auto dismiss = [this, notice] {
+        sleepSave = SleepSave::Idle;
+        notice->hide();
+        notice->deleteLater();
+        closeSaveError.clear();
+    };
+    notice->dismissed = dismiss;
+    connect(notice->secondaryButton(), &QPushButton::clicked, this, dismiss);
+    connect(notice->primaryButton(), &QPushButton::clicked, this, [this, notice, dismiss] {
+        notice->primaryButton()->setEnabled(false);
+        const QPointer<Reader> guard(this);
+        const QPointer<SaveErrorView> dialog(notice);
+        book->retryFailedReadingSave([guard, dialog, dismiss](NativeActivityResult result) {
+            if (!guard || !dialog || guard->closeSaveError.data() != dialog.data())
+                return;
+            if (result == NativeActivityResult::Failed) {
+                dialog->descriptionLabel()->setText(
+                        strings::get("sleep.reading_time_retry_failed"));
+                dialog->fitCard();
+                dialog->primaryButton()->setEnabled(true);
+                dialog->primaryButton()->setFocus();
+            } else {
+                dismiss();
+            }
+        });
+    });
+    notice->show();
+    notice->raise();
+    notice->primaryButton()->setFocus();
+    for (auto *widget : notice->findChildren<QWidget *>())
+        textRefresh(widget);
+}
+
+void Reader::clearPendingExit()
+{
+    // An abandoned close keeps the cache. The next Return asks nothing.
+    if (finishDialog && finishChoiceForExit) {
+        finishDialog->hide();
+        finishDialog->deleteLater();
+        finishDialog.clear();
+    }
+    if (closeSaveError) {
+        closeSaveError->hide();
+        closeSaveError->deleteLater();
+        closeSaveError.clear();
+    }
     closeSaveRetried = false;
-    ++closeRequest;
     exitPending = exportRunning = false;
     finishChoiceResolved = false;
     setEnabled(true);
     closingTimes = {};
+}
+
+void Reader::cancelExit()
+{
+    ++closeRequest;
+    clearPendingExit();
     observeReading();
     refresh();
 }

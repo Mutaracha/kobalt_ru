@@ -1691,3 +1691,18 @@
 
 "features.comics" = "Переключатель режима комиксов";
 "features.comics_description" = "Скрывает переключатель режима комиксов в меню чтения. Текущий режим чтения сохраняется.";
+
+/* beta9 rendering and reading-time recovery; user-approved translations. */
+"sleep.reading_time_failed" = "Не удалось сохранить время чтения";
+"sleep.reading_time_failed_detail" = "Не удалось сохранить время последнего сеанса чтения. Можно повторить попытку, не закрывая книгу.";
+"sleep.reading_time_retry_failed" = "Время чтения пока не сохранено. Можно повторить попытку или читать дальше.";
+"sleep.retry_save" = "Сохранить снова";
+"settings.rendering" = "Движок рендеринга";
+"settings.rendering_summary" = "Гибридный режим быстро открывает книгу и рассчитывает её в фоне.";
+"settings.rendering_description" = "После закрытия настроек книга перезагрузится на текущем месте.";
+"settings.rendering_hybrid" = "Гибридный";
+"settings.rendering_fast" = "Быстрее";
+"settings.rendering_accurate" = "Точнее";
+"settings.rendering_hybrid_description" = "Рассчитывает текущую главу, затем всю книгу в фоне. Быстро.";
+"settings.rendering_fast_description" = "Рассчитывает только текущую главу. Страницы приблизительные. Быстрее всего.";
+"settings.rendering_accurate_description" = "Сразу рассчитывает всю книгу при её открытии. Медленнее.";

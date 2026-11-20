@@ -678,6 +678,17 @@ createEmbeddedOpening(QWidget *parent, PresentationFactory presentation, bool sh
     return std::make_unique<OpeningView>(parent, preferences, std::move(presentation), true);
 }
 
+SaveErrorView::SaveErrorView(QWidget *parent)
+    : ui::ChoiceModal(parent,
+                      { strings::get("sleep.reading_time_failed_detail"),
+                        strings::get("sleep.reading_time_failed"),
+                        {} },
+                      { strings::get("closing.return"), "rrSleepSaveReturn" },
+                      { strings::get("sleep.retry_save"), "rrSleepSaveRetry" })
+{
+    setObjectName("rrSleepSaveError");
+}
+
 SaveErrorView::SaveErrorView(QWidget *parent, const QString &error, bool retried)
     : ui::ChoiceModal(
               parent,
