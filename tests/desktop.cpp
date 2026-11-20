@@ -9534,8 +9534,10 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         QVERIFY(fixture.press(fixture.visible("rrGraphActivity") ? "rrGraphActivity" : "rrGraphActivityCell"));
         QTRY_VERIFY(fixture.visible("rrActivityWelcome"));
         QVERIFY(fixture.press("rrActivityWelcomeClose"));
+        QTRY_VERIFY(!fixture.visible("rrActivityWelcome"));
+        QTRY_VERIFY(fixture.visible("rrActivityOverview"));
         for (const char *tab : { "rrActivityCalendarTab", "rrActivityBooksTab", "rrActivityRecordsTab", "rrActivityOverviewTab" })
-            QVERIFY(fixture.press(tab));
+            QTRY_VERIFY(fixture.press(tab));
         QVERIFY(fixture.press("rrActivityClose"));
         QTRY_VERIFY(!fixture.visible("rrActivity"));
         QVERIFY(fixture.visible("rrGraphActivity") || fixture.visible("rrGraphActivityCell"));
@@ -13515,7 +13517,7 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
                                  "rrSettingsAbout", "rrSettingsKosync" }) {
             if (!fixture.visible(tab))
                 continue;
-            QVERIFY(fixture.press(tab));
+            QTRY_VERIFY(fixture.press(tab));
             QTRY_VERIFY(!fixture.state().value("busy").toBool());
             rewindPager(fixture, "rrSettingsOptionsPrevious");
             for (int page = 0; page < 20; ++page) {

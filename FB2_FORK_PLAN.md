@@ -180,8 +180,11 @@ input barrier и resize. Fork strip/icons/comics/font policy сохранены;
 не standalone Library. Settings preference consumers получили upstream delta/FIFO
 writes, чтобы welcome не терял соседние изменения. Routed Activity open/tabs/close,
 upstream author-caption и cached-cover replacement tests добавлены в focused CI.
-Source checks и EN/RU parity/code-reference generation PASS. Runtime CI pending;
-device visual review unrun. Sleep custom/positions и preview startup ещё pending.
+Source checks и EN/RU parity/code-reference generation PASS. Activity CI
+`44729373527`: Qt5/package PASS; native failed only stale Stats word-count
+expectation and Activity smoke click before modal dismissal. Tests aligned with
+upstream Stats labels and explicit modal disappearance; repeat CI pending. Device
+visual review unrun. Sleep custom/positions и preview startup подключены выше.
 
 **Следующий шаг:** дождаться Activity UI CI и исправить реальные failures.
 Backend CI `44725474629` superseded green `44728203966`. Daily history PASS. Затем подключить Activity UI и

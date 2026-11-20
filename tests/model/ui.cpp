@@ -2242,8 +2242,24 @@ int main(int argc, char **argv)
                 "A new session did not clear its displayed page turns");
         require(text("rrGraphChapterNumber") == get("stats.contents_position").arg(13).arg(24)
                         && text("rrGraphSessionFigure") == "23"
-                        && text("rrGraphBookDetail") == get("stats.words").arg("35,706"),
-                "Chapter number, session or word count is missing");
+                        && text("rrGraphBookDetail").isEmpty(),
+                "Chapter number or session is missing, or the book cell kept the word count");
+        // The word totals label the chart, between the bars and the cells.
+        const auto chapterWords = get("stats.words")
+                                          .arg(QLocale(QLocale::English, QLocale::UnitedStates)
+                                                       .toString(chapters[20].words));
+        require(text("rrGraphChapterWords") == get("stats.chapter_words").arg(13).arg(chapterWords)
+                        && text("rrGraphBookWords")
+                                == get("stats.book_words").arg(get("stats.words").arg("35,706")),
+                "The word totals below the chart are missing");
+        graph.setChapterNumber(0, 24);
+        require(text("rrGraphChapterWords") == get("stats.this_chapter_words").arg(chapterWords),
+                "A position before the contents named a chapter number");
+        graph.setChapterNumber(13, 24);
+        graph.setData(chapters, { 20, -1, 1, 1 }, false, {});
+        require(text("rrGraphChapterWords").isEmpty(),
+                "The chapter's word total did not wait for the counts");
+        graph.setData(chapters, { 20, -1, 1, 1 }, true, {});
         for (int width : { 758, 1072, 1448 }) {
             graph.resize(width, chapterMetrics::graphHeight);
             graph.setProgress("Large book", 1, 3500, 3500, 1, 10000);

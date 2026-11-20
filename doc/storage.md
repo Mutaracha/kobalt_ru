@@ -341,3 +341,16 @@ The welcome and other independent setting edits use the upstream ordered
 `RecordWriter::Delivery::All` queue and snapshot deltas (`updatePreferences`),
 preserving unrelated fields. A failed welcome save may show the introduction
 again. Preference schema 1 and profile schema 4 are unchanged.
+
+### beta9 sleep presentation and preview reconciliation
+
+Sleep Custom/preferences keep separate sleeping and powered-off looks, wallpaper
+filenames, global status places and the follow-reading orientation flag. Per-book
+`sleep_positions` overrides global places without changing the reading position.
+Invalid object fields fall back individually using the shared sleep model.
+
+Kobo initialization migrates only generated legacy PNG preview files before
+native startup completes. The persisted scan marker is completed only after
+Nickel emits `doneProcessing`; a pending scan cannot be requested twice. Private
+`.preview` files remain separate. Profile preparation also runs the idempotent
+migration; it does not replace user images or clear book state.

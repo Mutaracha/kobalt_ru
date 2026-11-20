@@ -5109,7 +5109,7 @@ private slots:
     void sleepFromLandscapeKeepsTheReadingPage()
     {
         const auto paths = testPaths();
-        QVERIFY(storage::writePreferences(paths.preferences(), { { sleep::designKey, "letter" } }));
+        QVERIFY(storage::writePreferences(paths.preferences(), { { sleep::designKey, "letter" }, { sleep::followOrientationKey, false } }));
         auto state = std::make_shared<test::SleepPresentationState>();
         ReaderFixture host(paths, testFonts, testPlaceholder);
         host.configureServices = [state](ReaderHostServices &services) {
