@@ -9533,8 +9533,7 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         for (const auto locale : { strings::Locale::Russian, strings::Locale::English }) {
             strings::setLocale(locale);
             for (const auto &test : cases) {
-                activity::Summary summary;
-                summary.today = QDate(2026, 11, 20);
+                auto summary = activity::summarize({}, QDate(2026, 11, 20));
                 summary.finished = test.count;
                 summary.totalMilliseconds = qint64(test.count) * 3600000;
                 ActivityView view(nullptr);
