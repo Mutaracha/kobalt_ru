@@ -1127,6 +1127,18 @@ void Reader::applyAutomaticOpening(bool enabled)
     settingsError->hide();
 }
 
+void Reader::themeWidget(QWidget *widget, const QPalette &colors)
+{
+    // Native controls manage their own source colors and cached icons.
+    for (auto *ancestor = widget; ancestor && ancestor != this; ancestor = ancestor->parentWidget())
+        if (ancestor->property("reader_native_colors").toBool())
+            return;
+    ui::applyReaderPalette(widget, colors);
+    textRefresh(widget);
+    if (auto *button = qobject_cast<QPushButton *>(widget))
+        kobalt::ui::refreshButtonIcon(button);
+}
+
 void Reader::applyTheme(bool dark)
 {
     if (themeReady && darkTheme == dark)
@@ -1139,26 +1151,12 @@ void Reader::applyTheme(bool dark)
     darkTheme = dark;
     // Theme this window only. Nickel keeps its own palette when we close.
     const auto colors = ui::readerPalette(palette(), dark);
-    const auto applyColors = [&colors](QWidget *widget) { ui::applyReaderPalette(widget, colors); };
+    themePalette = colors;
     setProperty("reader_dark", dark);
-    applyColors(this);
+    ui::applyReaderPalette(this, colors);
     textRefresh(this);
-    for (auto *widget : findChildren<QWidget *>()) {
-        // Native controls manage their own source colors and cached icons.
-        bool nativeColors = false;
-        for (auto *ancestor = widget; ancestor && ancestor != this;
-             ancestor = ancestor->parentWidget())
-            if (ancestor->property("reader_native_colors").toBool()) {
-                nativeColors = true;
-                break;
-            }
-        if (nativeColors)
-            continue;
-        applyColors(widget);
-        textRefresh(widget);
-        if (auto *button = qobject_cast<QPushButton *>(widget))
-            kobalt::ui::refreshButtonIcon(button);
-    }
+    for (auto *widget : findChildren<QWidget *>())
+        themeWidget(widget, colors);
     update();
     if (first)
         openingStages["theme_ms"] = theming.nsecsElapsed() / 1e6;

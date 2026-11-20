@@ -334,6 +334,8 @@ private:
     void buildOverlays();
     void buildAppearance(const kobalt::reader::AppearanceLayout &layout);
     void ensureAppearance();
+    void themeWidget(QWidget *widget, const QPalette &colors);
+    QPalette themePalette;
     void toggleComicsMode();
     void styleForkToolbarActions();
     void refreshForkToolbarActions(bool settingsOpen, bool zen);

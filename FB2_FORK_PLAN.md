@@ -5,7 +5,7 @@
 
 ## Активная очередь — выравнивание с upstream перед следующим обновлением
 
-**in progress: подготовка кода; cleanup и upstream presets — CI verified, device pending.**
+**in progress: подготовка кода; cleanup и upstream presets — CI verified; пресеты device accepted.**
 Baseline форка `4e3a33b9`, upstream beta.9 `be472588`.
 [Разбор отказов beta.8 → beta.9 и протокол обновления](doc/reports/beta9-upgrade-retrospective.md).
 Решение: [UPSTREAM-NEXT](doc/fork-decisions.md#upstream-next--граница-подготовки-следующего-обновления).
@@ -13,7 +13,7 @@ Baseline форка `4e3a33b9`, upstream beta.9 `be472588`.
 | Блок | Статус | Следующий результат / gate |
 |---|---|---|
 | Уборка артефактов и incidental diff | in progress | Удалены список и 26 старых engine patches: consumers отсутствуют, build использует in-tree Blaze. Cache recipe/filter оставлены byte-identical, чтобы не менять dependency key. Прочий incidental diff ещё не сводился; CI 44800640114 PASS. |
-| Общие реализации beta.9 | in progress: пресеты CI verified | Контекстно свести пресеты, chapter lookup, аннотации/keyboard, KOSync, sleep/storage. Использовать upstream lazy panels вместо собственной оптимизации; проверить shared helper/API и protected fork behavior. |
+| Общие реализации beta.9 | in progress: пресеты device accepted; panel/theme CI pending | Контекстно свести пресеты, chapter lookup, аннотации/keyboard, KOSync, sleep/storage. Использовать upstream lazy panels вместо собственной оптимизации; проверить shared helper/API и protected fork behavior. |
 | Актуальная карта дельты | planned | Обновить fork-delta по фактическим файлам; для каждого retained delta указать причину и gate, upstream-only файлы проверить отдельно. |
 | Подготовка FB2 Hybrid | in progress: source analysis | [Граница и матрица](doc/reports/fb2-hybrid-preparation.md) описаны по коду. Далее corpus, sections/notes/resources/anchors и проверяемый whole-book fallback. Реализация и включение partial layout не разрешены автоматически. |
 | Следующее обновление | planned; blocked до фиксации нового upstream SHA для runtime-переноса | Использовать протокол отчёта; сначала завершить cleanup и составить dependency/consumer/test matrix. Beta.10 ещё не анализировалась. |
@@ -23,6 +23,16 @@ layout, adoption, fallback) базовой версии и не пишем со�
 Восстановление upstream consumers/UI не является разрешением менять эти алгоритмы.
 Существующие narrow hooks, включая comics frameImage, сохраняются по назначению.
 FB2 whole-book остаётся безопасным поведением до отдельного проверенного решения.
+
+**Следующий блок — panel/theme prerequisite:** ensureAppearance, themeWidget и
+applyTheme взяты из pinned upstream; удалена fork-копия late-widget styling.
+CI pending: lazyAppearance (light/dark, strip/comics/idempotence), themeChanges,
+lightDarkModeShortcut добавлены/сохранены в selection. Settings пока eager:
+перед его отложенным построением нужно отделить KOSync model от kosyncPage,
+инициализировать nullable controls и перенести null-safe consumers целиком.
+Фоновый preparePanels также ещё не подключён; не считать lazy Settings выполненным.
+Пресеты runtime 9633d3fd приняты пользователем: «пресеты работают»;
+это не physical acceptance следующего panel/theme блока.
 
 **Validation:** runtime `9633d3fd4b2df250c97ac77d1ff5e0827db35465`,
 [CI 44801198903](https://github.com/Mutaracha/kobalt_ru/actions/runs/44801198903)

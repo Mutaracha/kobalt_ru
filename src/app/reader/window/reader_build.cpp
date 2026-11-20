@@ -1461,6 +1461,37 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
     }
 }
 
+void Reader::ensureAppearance()
+{
+    if (appearanceBuilt)
+        return;
+    appearanceBuilt = true;
+    QSet<QWidget *> before;
+    for (auto *widget : findChildren<QWidget *>())
+        before.insert(widget);
+    // The window built these controls before it had a theme. Some take
+    // colours from the theme while they are made, so they are made without
+    // it and get it below.
+    const auto dark = property("reader_dark");
+    setProperty("reader_dark", QVariant());
+    buildAppearance(appearanceLayout);
+    setProperty("reader_dark", dark);
+    // As for Settings: polishing applies the style sheets, which replace the
+    // gray roles, and the theme restores them, as for the window's widgets.
+    QVector<QWidget *> added;
+    for (auto *widget : findChildren<QWidget *>())
+        if (!before.contains(widget)) {
+            widget->ensurePolished();
+            added.append(widget);
+        }
+    for (auto *widget : added) {
+        if (themeReady)
+            themeWidget(widget, themePalette);
+        else
+            textRefresh(widget);
+    }
+}
+
 void Reader::buildSettings()
 {
     kobalt::reader::SettingsPanelInputs settingsInputs;
