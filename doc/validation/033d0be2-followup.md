@@ -1,6 +1,12 @@
 # Короткая проверка после разбора 033d0be2
 
-Новый пакет выдаётся только после зелёного native/Qt5 CI. Предыдущий
+**Пакет для проверки:** [Kobalt-qt5-device](https://github.com/Mutaracha/kobalt_ru/actions/runs/44781746091/artifacts/14652058784),
+runtime `cfb8f51c81ab290d400d715b5ff8f4942b40ebf4`.
+[CI 44781746091](https://github.com/Mutaracha/kobalt_ru/actions/runs/44781746091) **PASS**: native EPUB/FB2 (включая
+activityUnitForms), Kobo Qt5/offline/package/contents. Device-проверка новой
+правки ещё не выполнена.
+
+Предыдущий
 `44778323964`: Kobo Qt5 PASS, native FAIL только в новом `activityUnitForms`.
 Причина: пустая история теста включает empty-state, а тест проверял скрытые
 подписи. Fixture получил реальный reading day, включая случай 0 прочитанных

@@ -13,9 +13,11 @@ warm Accurate/Hybrid ~4,8 с с retained model; cold ~16,28 с, причина w
 из review: три RU уточнения и шесть EN/RU unit keys внесены. Runtime
 `cb9afca9`, CI `44778323964`: Qt5 PASS; native FAIL только
 activityUnitForms (empty history скрывала Overview). Исправлен fixture реальным
-reading day и проверкой видимости без ослабления сравнений. Повторный CI pending.
+reading day и проверкой видимости без ослабления сравнений. Повторный runtime `cfb8f51c`, CI `44781746091` **PASS**: native
+EPUB/FB2 (включая activityUnitForms), Kobo Qt5/offline/package/contents.
 [Короткий повторный прогон](doc/validation/033d0be2-followup.md).
 Локальные source/parity/Ninja string self-tests ранее PASS.
+[Новый пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/44781746091/artifacts/14652058784).
 Числа Activity согласуются с округлением/порогами; база профиля не предоставлена,
 точность исторических итогов не объявлена подтверждённой.
 
@@ -631,7 +633,8 @@ upstream ResourceCache delta с сохранением fork image request trace/
 Comics target-preview использует свою bounded pair loading без навигации source;
 layout signature включает fork grouping/viewport. Добавлен реальный engine-only
 chapter → full build → prepared preview → adoption smoke (без ReaderSession).
-Повторный CI pending.
+Повторный runtime `cfb8f51c`, CI `44781746091` **PASS**: native
+EPUB/FB2 (включая activityUnitForms), Kobo Qt5/offline/package/contents.
 
 CI `44611131876`: Qt5 build/package/contents PASS; native linking выявил отсутствие
 page_estimate.cpp в явном desktop core source list (Kobo собирает рекурсивно).

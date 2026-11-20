@@ -151,4 +151,8 @@ ZIP содержат events/session/state, **но не таблицы профи
 Технический runtime `5a43bd4b`, CI `44775124583`: native/Qt5/offline/package
 **PASS**. После approval внесены три уточнения и шесть unit keys; добавлен
 `desktop.activityUnitForms` для 0/1/2/5/11/21/22/25/101/111 в RU/EN. Числа и
-расчёты статистики неизменны. Новый native/Qt5 прогон перевода pending.
+расчёты статистики неизменны. CI `44778323964` выявил empty-state fixture:
+искусственно пустая история скрывала подписи. Fixture исправлен реальным reading
+day с явной проверкой видимости; production-код для прохождения теста не менялся.
+Финальный runtime `cfb8f51c`, [CI 44781746091](https://github.com/Mutaracha/kobalt_ru/actions/runs/44781746091)
+**PASS** native/Qt5/offline/package/contents. [Пакет и короткий прогон](../validation/033d0be2-followup.md).
