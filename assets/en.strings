@@ -1817,3 +1817,11 @@
 "stats.chapter_words" = "Chapter %1 · %2";
 "stats.this_chapter_words" = "This chapter · %1";
 "stats.book_words" = "Book · %1";
+
+/* Approved Activity unit inflections. */
+"activity.book_unit_one" = "book";
+"activity.book_unit_few" = "books";
+"activity.book_unit_many" = "books";
+"activity.hour_unit_one" = "hour";
+"activity.hour_unit_few" = "hours";
+"activity.hour_unit_many" = "hours";

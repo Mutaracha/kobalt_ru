@@ -9519,6 +9519,49 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         }
     }
 
+    void activityUnitForms()
+    {
+        const auto previous = strings::locale();
+        const auto restore = qScopeGuard([previous] { strings::setLocale(previous); });
+        struct Case { int count; const char *book; const char *hour; };
+        const Case cases[] = {
+            { 0, "книг", "часов" }, { 1, "книга", "час" }, { 2, "книги", "часа" },
+            { 5, "книг", "часов" }, { 11, "книг", "часов" },
+            { 21, "книга", "час" }, { 22, "книги", "часа" }, { 25, "книг", "часов" },
+            { 101, "книга", "час" }, { 111, "книг", "часов" }
+        };
+        for (const auto locale : { strings::Locale::Russian, strings::Locale::English }) {
+            strings::setLocale(locale);
+            for (const auto &test : cases) {
+                activity::Summary summary;
+                summary.today = QDate(2026, 11, 20);
+                summary.finished = test.count;
+                summary.totalMilliseconds = qint64(test.count) * 3600000;
+                ActivityView view(nullptr);
+                view.resize(1264, 1680);
+                view.setRecords({}, summary);
+                view.showSection(ActivityView::Section::Overview);
+                view.show();
+                QCoreApplication::processEvents();
+                auto *books = view.findChild<QLabel *>("rrActivityFinishedUnit");
+                auto *figure = view.findChild<QLabel *>("rrActivityFinishedFigure");
+                QVERIFY(books && figure);
+                QCOMPARE(figure->text(), QString::number(test.count));
+                QCOMPARE(books->text(), locale == strings::Locale::Russian
+                                               ? QString::fromUtf8(test.book)
+                                               : QString(test.count == 1 ? "book" : "books"));
+                // Under ten hours, the existing abbreviated duration is used.
+                if (test.count >= 10) {
+                    auto *hours = view.findChild<QLabel *>("rrActivityReadingUnit");
+                    QVERIFY(hours);
+                    QCOMPARE(hours->text(), locale == strings::Locale::Russian
+                                                   ? QString::fromUtf8(test.hour)
+                                                   : QStringLiteral("hours"));
+                }
+            }
+        }
+    }
+
     void activityLocale()
     {
         const auto previous = strings::locale();

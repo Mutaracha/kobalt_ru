@@ -74,6 +74,17 @@ QString plural(const char *one, const char *many, qint64 count)
     return strings::get(count == 1 ? one : many).arg(count);
 }
 
+// Units have no number placeholder. Keep English one/many and the fork's
+// Russian CLDR forms without feeding a bare unit through QString::arg().
+QString countedUnit(const char *base, qint64 count)
+{
+    QByteArray key(base);
+    key += strings::locale() == strings::Locale::Russian
+            ? strings::pluralSuffix(int(count % 100))
+            : count == 1 ? QByteArray("_one") : QByteArray("_many");
+    return strings::get(key.constData());
+}
+
 QString authorCaption(const QString &author)
 {
     static const QRegularExpression lineBreak(QStringLiteral("\\s*\\R\\s*"),
@@ -411,7 +422,7 @@ public:
                         : QString());
         const qint64 hours = summary.totalMilliseconds / hour;
         if (hours >= 10)
-            totals[0]->set(QString::number(hours), strings::get("activity.hours"),
+            totals[0]->set(QString::number(hours), countedUnit("activity.hour_unit", hours),
                            summary.daysSince ? strings::get("activity.per_day")
                                                        .arg(duration(summary.totalMilliseconds
                                                                      / summary.daysSince))
@@ -423,8 +434,7 @@ public:
                                                                   / summary.daysSince))
                                           : QString());
         totals[1]->set(QString::number(summary.finished),
-                       summary.finished == 1 ? strings::get("activity.book")
-                                             : strings::get("activity.books_unit"),
+                       countedUnit("activity.book_unit", summary.finished),
                        strings::get("activity.in_progress").arg(summary.inProgress));
         totals[2]->set(
                 QString::number(summary.sessions), QString(),

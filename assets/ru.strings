@@ -1697,12 +1697,12 @@
 "sleep.reading_time_failed_detail" = "Не удалось сохранить время последнего сеанса чтения. Можно повторить попытку, не закрывая книгу.";
 "sleep.reading_time_retry_failed" = "Время чтения пока не сохранено. Можно повторить попытку или читать дальше.";
 "sleep.retry_save" = "Сохранить снова";
-"settings.rendering" = "Движок рендеринга";
+"settings.rendering" = "Режим рендеринга";
 "settings.rendering_summary" = "Гибридный режим быстро открывает книгу и рассчитывает её в фоне.";
 "settings.rendering_description" = "После закрытия настроек книга перезагрузится на текущем месте.";
 "settings.rendering_hybrid" = "Гибридный";
 "settings.rendering_fast" = "Быстрее";
-"settings.rendering_accurate" = "Точнее";
+"settings.rendering_accurate" = "Точный";
 "settings.rendering_hybrid_description" = "Рассчитывает текущую главу, затем всю книгу в фоне. Быстро.";
 "settings.rendering_fast_description" = "Рассчитывает только текущую главу. Страницы приблизительные. Быстрее всего.";
 "settings.rendering_accurate_description" = "Сразу рассчитывает всю книгу при её открытии. Медленнее.";
@@ -1774,7 +1774,7 @@
 "activity.this_week_count" = "За неделю: %1";
 "activity.books" = "Книги";
 "activity.this_month_count" = "За месяц: %1";
-"activity.longest" = "Самый долгий";
+"activity.longest" = "Самая длинная";
 "activity.this_month" = "За месяц";
 "activity.days_of" = "Дней: %1 из %2";
 "activity.days_of_one" = "%1 из %2 дня";
@@ -1871,3 +1871,11 @@
 "stats.chapter_words" = "Глава %1 · %2";
 "stats.this_chapter_words" = "Эта глава · %1";
 "stats.book_words" = "Книга · %1";
+
+/* Approved Activity unit inflections. */
+"activity.book_unit_one" = "книга";
+"activity.book_unit_few" = "книги";
+"activity.book_unit_many" = "книг";
+"activity.hour_unit_one" = "час";
+"activity.hour_unit_few" = "часа";
+"activity.hour_unit_many" = "часов";
