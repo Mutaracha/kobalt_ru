@@ -3,21 +3,21 @@
 Принятые решения: [doc/fork-decisions.md](doc/fork-decisions.md).
 Инструкции агентам: [AGENTS.md](AGENTS.md).
 
-**Следующий focused CI:** upstream Custom sleep/editor, per-book positions,
-wallpaper sleep/off и follow-reading orientation подключены. Сохранены fork text
-fitting и двухстрочная лента. Добавлены upstream Custom/editor/cancel tests;
-workflow выбирает sleep lifecycle. Первый compile CI выявил checklistOption с anonymous linkage в Settings;
-helper вынесен в общий Settings API как upstream, без изменения checkbox style.
-Runtime результат этого блока pending;
-Startup preview migration подключена отдельно: удаляются только generated PNG;
-scan marker завершается после native doneProcessing (есть exactly-once regression).
-Финальные G1–G9 ещё не завершены. Device handoff нет.
+**Готово к device-тесту Kobo Qt5:** runtime `033d0be278f2f7afecd5a9a1825d07ffb5a8e13a`,
+[CI 44731173763](https://github.com/Mutaracha/kobalt_ru/actions/runs/44731173763) **PASS**: focused native EPUB/FB2,
+Activity/Stats, sleep/Custom/editor/privacy, profile/writer/preview reconciliation;
+Kobo Qt5/offline/package/contents. [Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44731173763/artifacts/14626623140).
+[Чек-лист устройства](doc/validation/beta9-device.md). Это не physical acceptance,
+не полный upstream/all-variant suite и не обещание исправления старого freeze.
 
-**Текущая работа — in progress:** переход на beta.9. Blaze, Engine/adapter и
-реальные reading consumers подключены. Последний проверенный runtime:
-`3ee4a6225a0c6a64bc9a4aa2eaf80548505729ea`, [CI `44728203966`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44728203966)
-**PASS**: focused native EPUB/FB2 regressions, Kobo Qt5/offline/package/contents.
-Это не полный upstream/all-variant suite и не device acceptance.
+Sleep custom/positions и startup preview migration подключены. Первый sleep CI
+нашёл anonymous checklistOption; helper опубликован в общем Settings API как
+upstream. Activity smoke ждёт загруженный Overview и исчезновение welcome;
+Stats test проверяет перенесённые общие word labels. Финальный CI выше проверил
+исправления. Сохранены fork fit и двухстрочная sleep-лента, strip/comics/font
+policy. G1–G9: focused автоматическое покрытие PASS; визуальная и аппаратная
+части остаются NOT RUN до устройства. Дальше — пользовательский прогон и снимки
+для длины/переносов утверждённых RU строк; новых переводов не вводилось.
 
 **done / CI verified:** whole-book FB2 boundary, семантический preview, comics
 pair readiness через Engine, bounded page-estimate checkpoints; ReaderSession,
@@ -174,32 +174,15 @@ UI table inserted EN/RU. Source checks и approved EN/RU parity/generation PASS.
 (`3ee4a622`): native/Qt5/offline/package PASS, включая FIFO/launch-failure
 writer tests и model.reading-activity.
 
-**in progress — Activity UI/Stats integration:** ActivityView, ChapterGraph/StatsCell,
-reader_activity и CoverThumbnails взяты целиком из pinned upstream. Host связывает
-Stats → Activity, background load/edit/map/cover, first-open welcome, page-button
-input barrier и resize. Fork strip/icons/comics/font policy сохранены; новый экран
-использует общие fonts/styles. Kobo sources включают только cover helper/metadata,
-не standalone Library. Settings preference consumers получили upstream delta/FIFO
-writes, чтобы welcome не терял соседние изменения. Routed Activity open/tabs/close,
-upstream author-caption и cached-cover replacement tests добавлены в focused CI.
-Source checks и EN/RU parity/code-reference generation PASS. Activity CI
-`44729373527`: Qt5/package PASS; native failed only stale Stats word-count
-expectation and Activity smoke click before modal dismissal. Tests aligned with
-upstream Stats labels and explicit modal disappearance; repeat CI pending. Device
-visual review unrun. Sleep custom/positions и preview startup подключены выше.
-
-**Следующий шаг:** дождаться Activity UI CI и исправить реальные failures.
-Backend CI `44725474629` superseded green `44728203966`. Daily history PASS. Затем подключить Activity UI и
-sleep custom/positions consumers целыми upstream модулями, сохраняя fork
-privacy/standby/strip. До внесения строк согласовать
-[таблицу EN/RU](doc/beta9-strings-review.md): теперь approval получен, строки внесены.
-После этого — preview startup scan/reconciliation, оставшиеся G1–G9 и финальный
-Qt5 build/checklist. Default Hybrid ещё не объявлен device-ready.
-
-G1–G9 остаются **pending** для полной интеграции. Промежуточный пакет не для
-устройства. При итоговой выдаче заполнить runtime/CI и выдать пользователю
-[device checklist](doc/validation/beta9-device.md).
-Подробности adapter: [отчёт](doc/reports/beta9-engine-adapter.md).
+**done / focused CI verified — Activity/sleep/preview integration:** ActivityView,
+ChapterGraph/StatsCell, reader_activity и CoverThumbnails взяты из pinned upstream.
+Host связывает Stats → Activity, load/edit/map/cover, welcome, input barrier и
+resize. Preference deltas/FIFO не теряют соседние изменения. Custom sleep/editor,
+sleep/off wallpaper, per-book places и follow-reading wiring используют общую
+реализацию. Startup удаляет только generated legacy PNG, сохраняет scan marker
+и завершает его после native doneProcessing; есть exactly-once regression.
+Source checks и EN/RU parity/reference generation PASS. Финальный CI и пакет
+указаны в начале. Device visual review NOT RUN; это следующий этап.
 
 
 ## Завершено

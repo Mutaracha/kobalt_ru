@@ -171,8 +171,24 @@ scan нуждаются в явном обновлении; не возвращ�
 | G8 — comics | Portrait/wide/center, landscape пары, off/on, reflow/adoption, images/hits | Геометрия/позиция/readiness сохранены, кнопка не мерцает при busy |
 | G9 — storage/platform | Reopen/cache, bookmarks/annotations, native position, sleep/close | Source positions и записи сохранены, новый close/profile writer принят |
 
-Все gates **pending**: это спецификация проверок, не PASS. Native/Qt5/device для
-порта ещё не запускались. Старое post-frame-load зависание не объявляется исправленным.
+### Итог автоматической интеграции
+
+Runtime `033d0be278f2f7afecd5a9a1825d07ffb5a8e13a`, [CI 44731173763](https://github.com/Mutaracha/kobalt_ru/actions/runs/44731173763):
+**PASS** focused native и Kobo Qt5/offline/package/contents. Это автоматическая
+часть G1–G9, а не физическая или полная upstream приёмка:
+
+| Gates | Фактически выбранное покрытие CI | Устройство |
+|---|---|---|
+| G1 | EPUB engine/session contracts + Kobo Qt5 package | NOT RUN |
+| G2–G5 | engine.fb2, fb2-session, links, layout/beautifier, style-sample-cache | NOT RUN |
+| G6 | chapter-progress, header-footer, Hybrid session/adoption, spine/window/location | NOT RUN |
+| G7 | Activity/Stats, appearance lifecycle, settings/preview, component.ui | NOT RUN |
+| G8 | engine.comics, comicsQuickToggle, buttonMapping, image-proportions | NOT RUN |
+| G9 | profile/writer/bookmark/history/activity, sleep/Custom/privacy, native lifecycle/scan | NOT RUN |
+
+[Пакет и чек-лист](../validation/beta9-device.md). Full upstream suite, sanitizers,
+Android и отдельный Qt6 не запускались. Реальная firmware/визуальная часть всех
+gates остаётся открыта; старое post-frame-load зависание не объявляется исправленным.
 
 ## Порядок дальнейшей реализации
 

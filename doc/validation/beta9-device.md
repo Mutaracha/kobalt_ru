@@ -1,10 +1,20 @@
 # Проверка beta.9 на Kobo — чек-лист для выдачи пакета
 
-**DRAFT / NOT READY FOR DEVICE.** Готовится заранее по запросу пользователя.
-Не выполнять на промежуточных пакетах этапов 1/2: там ещё нет Hybrid и полного
-интерфейса beta.9. При выдаче финального тестового пакета этот заголовок заменяется
-его точным runtime SHA, CI/artifact URL и фактическими результатами автоматики.
-Ни один пункт ниже пока не имеет device PASS.
+**Готово к совместному тестированию на Kobo Qt5**, не device acceptance и не
+заявление о проверке всего upstream beta.9 на всех платформах.
+
+- Runtime: `033d0be278f2f7afecd5a9a1825d07ffb5a8e13a`.
+- [Пакет Kobalt-qt5-device](https://github.com/Mutaracha/kobalt_ru/actions/runs/44731173763/artifacts/14626623140) (GitHub Actions artifact).
+- [CI 44731173763](https://github.com/Mutaracha/kobalt_ru/actions/runs/44731173763): **PASS** — focused native EPUB/FB2,
+  Activity/Stats, sleep lifecycle/Custom/editor/privacy, profile/writer/preview
+  migration, Kobo Qt5 build, offline checks и package contents.
+- [Native test log](https://github.com/Mutaracha/kobalt_ru/actions/runs/44731173763/artifacts/14627361034).
+- Полный upstream suite, sanitizers, отдельный Qt6/Android и физическое устройство:
+  **NOT RUN**. Ни один пункт ниже пока не имеет device PASS.
+- Native automation сопоставлена с G1–G9 в
+  [integration gates](../reports/beta9-engine-contracts.md#приёмочные-gates-до-устройства).
+  Точный визуальный вид, firmware hooks и старое post-frame-load зависание
+  автоматика не подтверждает. Приоритет — основной прогон 1–6, затем скриншоты.
 
 ## Перед установкой
 
@@ -101,8 +111,13 @@
   суммарное время; новый день/полночь отдельно отмечается, если реально проверено.
 - Quick annotation и заметка к выделению: создать, открыть, изменить, закрыть книгу
   и убедиться, что запись сохранилась и ведёт к тексту.
-- Custom sleep editor/wallpaper и rotation lock: проверить, если используются.
-- StarDict: только при наличии подготовленного словаря поддерживаемого формата.
+- Custom sleep: выбрать wallpaper из `.adds/kobalt/wallpapers`, различающиеся
+  экраны сна/выключения, переместить статус только для книги и сравнить другую
+  книгу. Проверить следование ориентации и принудительный portrait, затем reopen.
+- После обновления старые generated PNG превью заменяются private `.preview`;
+  после native scan в библиотеке Nickel не должны появляться служебные плитки.
+- Возможности, не перечисленные в результатах этого пакета, не считать
+  проверенными только по наличию текста или upstream release notes.
 
 ## Как сообщать результат
 
