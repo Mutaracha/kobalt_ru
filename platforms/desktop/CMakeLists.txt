@@ -634,7 +634,7 @@ if(BUILD_TESTING)
             target_compile_definitions(kobalt-${name}-tests PRIVATE
                 KOBALT_TEST_ASSET_ROOT="${KOBALT_ASSETS}" KOBALT_FONT_DIRECTORY="${KOBALT_ASSETS}/fonts"
                 KOBALT_INSTALLED_FONTS)
-            if(check MATCHES "^(vertical_spacing|large_toc|links)$")
+            if(check MATCHES "^(vertical_spacing|large_toc|links|bookmark_session)$")
                 target_compile_definitions(kobalt-${name}-tests PRIVATE KOBALT_TEST_ZIP="${KOBALT_TEST_ZIP}")
             endif()
             if(check MATCHES "^(location_round_trip|reader_session)$")
