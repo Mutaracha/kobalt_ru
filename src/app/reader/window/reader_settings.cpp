@@ -658,7 +658,7 @@ void Reader::renderStylingSamples(int requested)
         // The same request in the same orientation shows its earlier result
         // at once, without the engine.
         const bool landscape = width() > height();
-        const auto key = styleSampleKey(session->fontInputs(), request);
+        const auto key = styleSampleKey(session->fontInputs(), request, session->fontCatalog());
         StyleSample cached;
         if (stylingSampleCache.find(landscape, key, &cached)) {
             render.reset();

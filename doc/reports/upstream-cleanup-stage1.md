@@ -39,3 +39,17 @@ pending at publication; no new device acceptance or performance claim.
 Next: align shared preset/sample consumers with pinned upstream, carrying the
 whole API/helper/test dependency group. FB2 Hybrid preparation remains separate;
 this step does not implement or enable it.
+
+## Stage 2 — presets (implementation, CI pending)
+
+Restored pinned beta9 reader_text_presets.cpp and style_sample/cache APIs with
+matching declarations, consumers and gallery/model tests. Removed legacy hidden
+gallery probe, idle prerender queue, opening and session-idle wiring. Gallery
+uses the existing Engine::drawTextSample implementation via renderTextSample;
+keys include stable font inputs/catalog revisions. No new engine algorithm.
+Preserved whole_book_failed transient-state sanitation and its regression.
+Styling cache consumer now includes the font catalog in its key. Disposable
+preview entries from the previous key scheme may miss and regenerate; reading
+data, profile/schema and rendering cache versions remain unchanged.
+Upstream gallery test still checks one render per visible tile, memory reuse,
+storage reuse with engine blocked and physical pager behavior.
