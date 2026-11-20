@@ -684,6 +684,85 @@ private slots:
         directory.reset();
     }
 
+    void lazyPanels_data()
+    {
+        QTest::addColumn<bool>("dark");
+        QTest::addColumn<bool>("background");
+        QTest::newRow("light-on-demand") << false << false;
+        QTest::newRow("dark-on-demand") << true << false;
+        QTest::newRow("light-background") << false << true;
+        QTest::newRow("dark-background") << true << true;
+    }
+
+    void lazyPanels()
+    {
+        QFETCH(bool, dark);
+        QFETCH(bool, background);
+        QVERIFY(storage::writeJson(testPaths().preferences(), { { "dark_mode", dark } }));
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{ host };
+        bool unbuiltAtConstruction = false;
+        std::function<void()> prepare;
+        connect(&host, &ReaderFixture::opened, this, [&] {
+            // Observe construction synchronously, before queued settled events.
+            unbuiltAtConstruction = !host.window()->findChild<QWidget *>("rrGeneralSettings")
+                    && !host.window()->findChild<QWidget *>("rrComicsReadingMode");
+            prepare = std::move(host.session()->settled);
+            host.session()->settled = { };
+        });
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        QVERIFY(unbuiltAtConstruction);
+        QVERIFY(bool(prepare));
+        QTRY_VERIFY(!host.window()->busy());
+        QVERIFY(!host.window()->findChild<QWidget *>("rrGeneralSettings"));
+        QVERIFY(!host.window()->findChild<QWidget *>("rrComicsReadingMode"));
+        host.window()->refreshHostPresentation();
+        host.window()->checkpoint();
+        QVERIFY(!host.window()->findChild<QWidget *>("rrGeneralSettings"));
+        if (background) {
+            prepare();
+            // Upstream prepares Appearance first and defers the other panel.
+            QVERIFY(host.window()->findChild<QWidget *>("rrComicsReadingMode"));
+            QVERIFY(!host.window()->findChild<QWidget *>("rrGeneralSettings"));
+            QTRY_VERIFY_WITH_TIMEOUT(host.window()->findChild<QWidget *>("rrGeneralSettings"),
+                                     10000);
+            QVERIFY(!host.window()->findChild<QWidget *>("rrGeneralSettings")->isVisible());
+        }
+        host.window()->findChild<QPushButton *>("rrSettings")->click();
+        auto *panel = host.window()->findChild<QWidget *>("rrGeneralSettings");
+        QVERIFY(panel);
+        auto *status = host.window()->findChild<QLabel *>("rrKosyncStatus");
+        QVERIFY(status);
+        // KOSync initialized before its page and replays the latest status.
+        QCOMPARE(status->text(), strings::get("kosync.signed_out"));
+        auto *darkOption = host.window()->findChild<QCheckBox *>("rrDarkMode");
+        QVERIFY(darkOption);
+        QCOMPARE(darkOption->isChecked(), dark);
+        host.window()->findChild<QPushButton *>("rrSettingsClose")->click();
+        QTRY_VERIFY(!host.session()->busy());
+        host.window()->findChild<QPushButton *>("rrSettings")->click();
+        QCOMPARE(host.window()->findChild<QWidget *>("rrGeneralSettings"), panel);
+        QCOMPARE(host.window()->findChildren<QWidget *>("rrGeneralSettings").size(), 1);
+        prepare();
+        QCOMPARE(host.window()->findChild<QWidget *>("rrGeneralSettings"), panel);
+    }
+
+    void lazyPanelsCloseUnbuilt()
+    {
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{ host };
+        connect(&host, &ReaderFixture::opened, this, [&] { host.session()->settled = { }; });
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        QVERIFY(!host.window()->findChild<QWidget *>("rrGeneralSettings"));
+        QVERIFY(!host.window()->findChild<QWidget *>("rrComicsReadingMode"));
+        host.shutdown();
+        QTRY_VERIFY_WITH_TIMEOUT(host.idle(), 10000);
+    }
+
     void developmentOptions_data()
     {
         QTest::addColumn<int>("action");

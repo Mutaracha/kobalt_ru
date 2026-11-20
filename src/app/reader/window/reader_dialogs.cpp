@@ -595,9 +595,9 @@ void Reader::openBookmarks()
         return;
     }
     session->cancelPendingTurn();
-    if (general->isVisible() || appearanceEdit.panelOpen()) {
+    if (settingsVisible() || appearanceEdit.panelOpen()) {
         appearanceEdit.request(AppearanceDestination::Bookmarks);
-        if (general->isVisible())
+        if (settingsVisible())
             applySettings();
         else
             finishPreview();
@@ -765,7 +765,7 @@ void Reader::syncPinnedBookmarks()
     const bool visible = features::enabled(preferences, features::Bookmarks) && !pins.isEmpty()
             && topControls->isVisible() && !session->busy() && !lifecycleHidden && !closing
             && !services.suspended() && !annotationMode && !seekOpen && !appearanceEdit.panelOpen()
-            && !general->isVisible() && !menu->isVisible() && !choices->isVisible()
+            && !settingsVisible() && !menu->isVisible() && !choices->isVisible()
             && !lightPopup->isVisible() && !bookmarkList->isVisible()
             && !acknowledgments->isVisible() && !searchPanel->isVisible()
             && !dictionaryPanel->isVisible() && !linksActive() && !lookupPending && !syncDialog

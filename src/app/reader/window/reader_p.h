@@ -342,8 +342,18 @@ private:
     void updateForkMenuPage();
     kobalt::reader::AppearanceLayout appearanceLayout;
     bool appearanceBuilt = false;
-    void buildSettings();
+    // Shared beta9 lazy panels; controls are null until constructed.
+    void buildSettings(QWidget *parent);
+    void ensureSettings();
+    void preparePanels();
+    QElapsedTimer inputQuiet;
+    bool panelsWaiting = false;
+    bool builtPanelNow = false;
+
+    bool settingsVisible() const { return general && general->isVisible(); }
+
     void buildKosync();
+    void buildKosyncPage();
     void requestManualKosync();
     void updateKosyncToolbar();
     void synchronizeKosync(bool interactive = false);
@@ -495,8 +505,8 @@ private:
     kobalt::ui::Panel *general = nullptr;
     std::unique_ptr<kobalt::LightControls> light;
     kobalt::LightPanel *lightPopup = nullptr;
-    QCheckBox *darkOption, *animationOption, *edgeLightOption, *lightGestureFeedbackOption,
-            *denseGraphOption;
+    QCheckBox *darkOption = nullptr, *animationOption = nullptr, *edgeLightOption = nullptr,
+              *lightGestureFeedbackOption = nullptr, *denseGraphOption = nullptr;
     QCheckBox *automaticOpeningOption = nullptr, *minimalAnnotationOption = nullptr,
               *hideTabLabelsOption = nullptr, *zenModeOption = nullptr, *saveWordsOption = nullptr;
     QCheckBox *wifiPowerSaverOption = nullptr;
@@ -512,7 +522,7 @@ private:
     void setDenseGraph(bool dense);
 
     QJsonObject preferences;
-    QLabel *settingsError;
+    QLabel *settingsError = nullptr;
     kobalt::ui::ModalOverlay *busyNotice = nullptr;
     QTimer renderNoticeTimer, resizeTimer;
     kobalt::ui::LightSwipeNotice *brightnessNotice = nullptr;
@@ -547,8 +557,8 @@ private:
     qint64 previewPageKey = 0, previewPageRequested = 0;
     bool previewPageForText = false;
     kobalt::ui::PageScrubber *pageScrubber = nullptr;
-    QPushButton *resetDefaults, *chapterButton;
-    QStackedWidget *settingsPages;
+    QPushButton *resetDefaults = nullptr, *chapterButton;
+    QStackedWidget *settingsPages = nullptr;
     QVector<QPushButton *> rotationButtons;
     bool restoringDefaults = false, themeReady = false, darkTheme = false;
     // Settings > Defaults > Restore default presets was confirmed. It applies

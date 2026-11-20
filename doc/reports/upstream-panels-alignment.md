@@ -71,3 +71,36 @@ Optional device focus for this package: open Text/Layout first in a dark reader;
 repeat after switching theme before first opening those panels. Check controls,
 icons, comics switch and strip, then close/reopen the panel. Existing preset
 acceptance remains attached to 9633d3fd, not automatically to this binary.
+
+## Next checkpoint — lazy Settings and background preparation (CI pending)
+
+Implemented the dependency group described above:
+- buildKosync now creates the model/coordinator/status/timer independently;
+  buildKosyncPage binds controls and replays the latest status. Existing account,
+  native sync, upload and progress policies are unchanged in this step.
+- buildSettings(parent), ensureSettings and preparePanels follow pinned beta9;
+  dictionary language is initialized without opening Settings. Settled/input-quiet
+  wiring prepares one hidden panel at a time, with the upstream quiet interval.
+- Settings-dependent visibility, hiding, navigation bounds, hover blocking,
+  host refresh, dark-option/error and shutdown paths now handle absent controls.
+  Navigation retains the fork page strip while using upstream settingsOpen logic.
+- New settings controls start null. On-demand open uses ensureSettings; theme
+  application uses the already-verified shared late-widget boundary.
+- The settled callback is cleared when the Reader window is destroyed: a retained
+  ReaderSession must not keep a callback to the departed window.
+
+New lifecycle.lazyPanels tests observe construction synchronously, intercept the
+public session settled callback in the fixture (no runtime test flag), and release
+it explicitly. Light/dark rows check absent controls, on-demand creation, buffered
+KOSync status, Appearance-first/background Settings preparation, hidden panel and
+single-instance reuse. lazyPanelsCloseUnbuilt checks shutdown without either panel.
+The desktop strip/comics test keeps geometry/visibility/idempotence assertions;
+its old fork-only never-prebuild assumption is replaced by the explicit lifecycle
+boundary checks, since beta9 legitimately builds panels after settling.
+
+Focused CI also now builds/runs kosync, sync-coordinator and text-presets model
+tests and lifecycle.kosync* alongside the existing EPUB/FB2/settings/theme matrix.
+Changed C++ ranges formatted with repository .clang-format (tool installed only
+in excluded scratch storage; no Python/CMake application dependency added).
+No engine/session algorithm, schema, cache version, string or waveform changes.
+Device review requested by the user is combined with the preceding theme step.

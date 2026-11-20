@@ -296,7 +296,7 @@ bool Reader::saveTextPresets(QJsonObject next, const QVector<Preset> &presets)
     preferences = next;
     drawTextPresetTiles(presets);
     syncTextPresets();
-    if (general && general->isVisible()) {
+    if (general && settingsVisible()) {
         showTextPresetSettings();
         fitSettings();
     }

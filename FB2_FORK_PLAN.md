@@ -33,15 +33,17 @@ Qt6 skipped; full suite/Android/device NOT RUN. Это shared theme prerequisite
 не готовый lazy Settings. Следующее действие: цельный KOSync model/page split
 с nullable Settings consumers, затем upstream ensureSettings/preparePanels.
 
-**Реализован panel/theme prerequisite:** ensureAppearance, themeWidget и
-applyTheme взяты из pinned upstream; удалена fork-копия late-widget styling.
-CI 44808379234 PASS: lazyAppearance (light/dark, strip/comics/idempotence), themeChanges,
-lightDarkModeShortcut добавлены/сохранены в selection. Settings пока eager:
-перед его отложенным построением нужно отделить KOSync model от kosyncPage,
-инициализировать nullable controls и перенести null-safe consumers целиком.
-Фоновый preparePanels также ещё не подключён; не считать lazy Settings выполненным.
-Пресеты runtime 9633d3fd приняты пользователем: «пресеты работают»;
-это не physical acceptance следующего panel/theme блока.
+**Следующий runtime — lazy Settings/background panels: in progress / CI pending.**
+KOSync model/page разделены без изменения политики синхронизации; controls и
+Settings consumers безопасны до создания страницы. Подключены upstream
+ensureSettings/preparePanels/settled/inputQuiet; dictionary language не зависит
+от Settings. Новый lifecycle.lazyPanels (on-demand/background × light/dark) и
+close-unbuilt regression включены в focused CI вместе с lifecycle.kosync* и
+model kosync/sync-coordinator/text-presets. Старый test-only запрет prebuild
+заменён явной проверкой границы, strip/comics проверки сохранены.
+Подробности: doc/reports/upstream-panels-alignment.md.
+Пользователь проверит theme + lazy Settings вместе; промежуточного device PASS нет.
+Пресеты 9633d3fd приняты отдельно («пресеты работают»).
 
 **Validation:** runtime `9633d3fd4b2df250c97ac77d1ff5e0827db35465`,
 [CI 44801198903](https://github.com/Mutaracha/kobalt_ru/actions/runs/44801198903)

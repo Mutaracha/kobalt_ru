@@ -4649,11 +4649,15 @@ private slots:
         fixture.window.openBook(book);
         QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
         QTRY_VERIFY(!fixture.state().value("busy").toBool());
-        QVERIFY(!fixture.state().value("appearance_controls_built").toBool());
-        QVERIFY(!fixture.widget("rrComicsReadingMode"));
-        QVERIFY(!fixture.widget("rrHeaderFooterSlot0"));
+        // Upstream may prepare panels after the session settles. The strict
+        // unbuilt/on-demand boundary is checked in lifecycle.lazyPanels, with
+        // the settled callback held until the test explicitly releases it.
+        if (!fixture.state().value("appearance_controls_built").toBool()) {
+            QVERIFY(!fixture.widget("rrComicsReadingMode"));
+            QVERIFY(!fixture.widget("rrHeaderFooterSlot0"));
+        }
         // Formatting is independent of a visible menu, and uses book not chapter time.
-        NavigationState unbuilt{};
+        NavigationState unbuilt{ };
         unbuilt.visible = true;
         QVERIFY(reader::forkui::menuPageStripVisible(unbuilt, true));
         QVERIFY(!reader::forkui::menuPageStripVisible(unbuilt, false));
@@ -4732,10 +4736,10 @@ private slots:
         QVERIFY(qAbs(minutes->geometry().center().x() - toolbar->rect().center().x()) <= 1);
         QVERIFY(fixture.press("rrSettings"));
         QTRY_VERIFY(!strip->isVisible());
-        QVERIFY(!fixture.state().value("appearance_controls_built").toBool());
         QVERIFY(fixture.press("rrSettingsClose"));
         QTRY_VERIFY(!fixture.state().value("busy").toBool());
-        if (!fixture.visible("rrNavLayout")) QVERIFY(fixture.press("rrPage"));
+        if (!fixture.visible("rrNavLayout"))
+            QVERIFY(fixture.press("rrPage"));
         QVERIFY(fixture.press("rrNavLayout"));
         QTRY_VERIFY(fixture.state().value("appearance_controls_built").toBool());
         QTRY_VERIFY(!strip->isVisible());
