@@ -19,29 +19,35 @@ ui::ListHeader *forkui::makeMenuPageStrip(QWidget *parent)
     strip->hide(); // Never expose default geometry before the first menu opening.
     strip->leftLabel()->setObjectName("rrMenuTimeLeft");
     strip->rightLabel()->setObjectName("rrMenuPage");
-    for (auto *caption : {strip->leftLabel(), strip->rightLabel()}) {
+    for (auto *caption : { strip->leftLabel(), strip->rightLabel() }) {
         auto font = ui::interfaceFont(ui::metrics::panel::sessionText);
         font.setItalic(true);
         caption->setFont(font);
-        ui::readerStyle(caption, QString("font-family:'@ui-font-family@';font-size:%1px;"
-                                        "font-style:italic;font-weight:400;background:transparent;"
-                                        "border:none;padding:0;color:palette(window-text);")
-                                        .arg(int(ui::metrics::panel::sessionText)));
+        ui::readerStyle(caption,
+                        QString("font-family:'@ui-font-family@';font-size:%1px;"
+                                "font-style:italic;font-weight:400;background:transparent;"
+                                "border:none;padding:0;color:palette(window-text);")
+                                .arg(int(ui::metrics::panel::sessionText)));
     }
     return strip;
 }
 
 void forkui::updateMenuPageStrip(ui::ListHeader *strip, const headerfooter::Values &values,
-                                bool shown)
+                                 bool shown)
 {
     QString time;
     // Prepare before toolbar show; no visibility-dependent estimate gate.
     if (shown && values.bookMilliseconds >= 0) {
         time = headerfooter::content(headerfooter::Field::BookTimeLeft, values, false).text;
-        if (!time.isEmpty()) time[0] = time.at(0).toUpper();
+        if (!time.isEmpty())
+            time[0] = time.at(0).toUpper();
     }
-    strip->setCaptions(time, shown ? strings::get("navigation.page_count")
-                                           .arg(values.page).arg(values.pages) : QString());
+    const auto pages = values.percentTenths >= 0
+            ? strings::get("header_footer.calculating")
+            : strings::get("navigation.page_count")
+                      .arg(values.page)
+                      .arg(headerfooter::pageTotal(values.pages, values.pagesEstimated));
+    strip->setCaptions(time, shown ? pages : QString());
     strip->rightLabel()->setVisible(shown);
 }
 

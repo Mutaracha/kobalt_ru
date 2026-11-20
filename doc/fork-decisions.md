@@ -206,3 +206,10 @@ the accurate description is «Сразу рассчитывает всю кни�
 Медленнее.». Exact accepted strings live in assets/ru.strings. The user will supply
 interface screenshots to finalize wrapping/wording; visual acceptance is pending.
 This approval covers upstream controls, not additional fork settings.
+
+## B9-COUNTER-STRINGS — Hybrid page estimates
+
+User approved before implementation: pinned EN `common.estimated_total` “~%1”
+→ RU «~%1» and `header_footer.calculating` “Calculating…” → RU «Расчёт…».
+These are count-state labels, not new settings. Estimated totals remain marked
+until whole-book layout supplies counted pages. Device wrapping pending.

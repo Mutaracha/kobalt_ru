@@ -1706,3 +1706,6 @@
 "settings.rendering_hybrid_description" = "Рассчитывает текущую главу, затем всю книгу в фоне. Быстро.";
 "settings.rendering_fast_description" = "Рассчитывает только текущую главу. Страницы приблизительные. Быстрее всего.";
 "settings.rendering_accurate_description" = "Сразу рассчитывает всю книгу при её открытии. Медленнее.";
+
+"common.estimated_total" = "~%1";
+"header_footer.calculating" = "Расчёт…";

@@ -4680,6 +4680,18 @@ private slots:
         expectedTime[0] = expectedTime.at(0).toUpper();
         QCOMPARE(probeStrip->leftLabel()->text(), expectedTime);
         QCOMPARE(probeStrip->rightLabel()->text(), strings::get("navigation.page_count").arg(10).arg(230));
+        estimate.pagesEstimated = true;
+        reader::forkui::updateMenuPageStrip(probeStrip, estimate, true);
+        QCOMPARE(probeStrip->rightLabel()->text(),
+                 strings::get("navigation.page_count").arg(10).arg("~230"));
+        estimate.percentTenths = 427;
+        reader::forkui::updateMenuPageStrip(probeStrip, estimate, true);
+        QCOMPARE(probeStrip->rightLabel()->text(), strings::get("header_footer.calculating"));
+        reader::forkui::updateMenuPageStrip(probeStrip, estimate, false);
+        QVERIFY(probeStrip->rightLabel()->text().isEmpty());
+        QVERIFY(probeStrip->rightLabel()->isHidden());
+        estimate.percentTenths = -1;
+        estimate.pagesEstimated = false;
         QVERIFY(!probeStrip->isVisible());
         estimate.bookMilliseconds = -1;
         reader::forkui::updateMenuPageStrip(probeStrip, estimate, true);

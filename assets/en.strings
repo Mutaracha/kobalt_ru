@@ -1652,3 +1652,6 @@
 "settings.rendering_hybrid_description" = "Open fast, then prepare the whole book in the background.";
 "settings.rendering_fast_description" = "Lay out only the chapter you read. Page numbers stay estimates.";
 "settings.rendering_accurate_description" = "Lay out the whole book first. Large books open slower.";
+
+"common.estimated_total" = "~%1";
+"header_footer.calculating" = "Calculating…";

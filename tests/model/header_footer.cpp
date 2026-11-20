@@ -18,8 +18,8 @@ int main()
     auto top = presetLayout(Preset::Default);
     top.progressBar = true;
     top.progressTop = true;
-    require(fromJson(toJson(top), {}).progressTop, "Top progress lost in roundtrip");
-    require(!fromJson({{"progress_bar", true}}, top).progressTop,
+    require(fromJson(toJson(top), { }).progressTop, "Top progress lost in roundtrip");
+    require(!fromJson({ { "progress_bar", true } }, top).progressTop,
             "Legacy progress must remain at bottom");
     auto bottom = top;
     bottom.progressTop = false;
@@ -33,7 +33,7 @@ int main()
             "Six-inch reader detected as a phone");
     require(isPhoneScreen({ 824, 1648 }, 300), "BOOX Palma not detected as a phone");
     require(!isPhoneScreen({ 758, 1024 }, 212), "Six-inch 212 PPI reader detected as a phone");
-    const auto phone = select({}, true);
+    const auto phone = select({ }, true);
     require(phone.preset == Preset::Phone && !phone.layout.header() && phone.layout.footer(),
             "Phone default did not remove the header");
     require(select(qt::object({ { presetKey, "default" } }), true).layout == standard,
@@ -134,7 +134,7 @@ int main()
             "Custom without a saved layout did not start from Default");
 
     // Books from before presets keep their old header and footer.
-    selection = select({});
+    selection = select({ });
     require(selection.preset == Preset::Default && selection.layout == standard,
             "Old default settings did not select Default");
     selection = select(qt::object({ { presetKey, "default" } }));
@@ -228,6 +228,36 @@ int main()
     missingChapter.chapter.clear();
     require(content(Field::ChapterAndPage, missingChapter, false).text == QStringLiteral("6 of 20"),
             "An empty chapter left a separator before its page count");
+    // An estimated total shows with a mark; a counted one is plain.
+    auto estimated = values;
+    estimated.pagesEstimated = estimated.chapterPagesEstimated = true;
+    require(content(Field::ChapterPage, estimated, false).text == QStringLiteral("6 / ~20")
+                    && content(Field::BookPage, estimated, false).text
+                            == QStringLiteral("%1 / ~193").arg(values.page)
+                    && content(Field::ChapterAndPage, missingChapter, false).text
+                            == QStringLiteral("6 of 20"),
+            "An estimated total needs its mark");
+    estimated.chapter.clear();
+    // Before the estimate there are no page numbers. The page fields say so
+    // and show no percentage in their place; the percentage fields keep theirs.
+    auto noPages = values;
+    noPages.page = noPages.pages = noPages.chapterPage = noPages.chapterPages = 0;
+    noPages.percentTenths = 427;
+    noPages.chapterPercentTenths = 309;
+    const auto calculating = strings::get("header_footer.calculating");
+    for (const auto field : { Field::ChapterPage, Field::BookPage, Field::ChapterPagesLeft })
+        require(content(field, noPages, false).text == calculating,
+                "A page field without page numbers must show that they are being calculated");
+    require(content(Field::BookPercent, noPages, false).text == QStringLiteral("42%")
+                    && content(Field::ChapterPercent, noPages, false).text == QStringLiteral("30%"),
+            "The percentage fields keep their percentage");
+    noPages.decimalPercentages = true;
+    require(content(Field::BookPercent, noPages, false).text == QStringLiteral("42.7%")
+                    && content(Field::ChapterPercent, noPages, false).text
+                            == QStringLiteral("30.9%"),
+            "Chapter mode lost decimal precision before estimates arrived");
+    require(content(Field::ChapterAndPage, estimated, false).text == QStringLiteral("6 of ~20"),
+            "An estimated total beside a name needs its mark");
     auto missingTotal = values;
     missingTotal.chapterPages = 0;
     require(content(Field::ChapterAndPage, missingTotal, false).chapterPosition.isEmpty()

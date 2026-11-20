@@ -214,7 +214,7 @@ void Reader::syncFrameState()
 {
     syncBookmarks();
     if (!session->busy() && !pendingSearchHit.start.isEmpty()) {
-        const auto hit = std::exchange(pendingSearchHit, {});
+        const auto hit = std::exchange(pendingSearchHit, { });
         const auto epoch = searchEpoch;
         const auto imageKey = session->image().cacheKey();
         QPointer<Reader> guard(this);
@@ -233,7 +233,7 @@ void Reader::syncFrameState()
         dismissLookup(true);
     if (!session->busy() && !pendingPassage.position.isEmpty()) {
         // Accept the visit only after the engine confirms a different passage.
-        const auto origin = std::exchange(pendingPassage, {});
+        const auto origin = std::exchange(pendingPassage, { });
         if (session->error().isEmpty()
             && session->state().value("position").toString() != origin.position) {
             // One return point covers a chain of pinned reference shortcuts.
@@ -291,7 +291,8 @@ bool Reader::syncFontPicker()
 // footer's place until it clears.
 void Reader::showChapterText()
 {
-    const bool comics = session->requestedAppearance().fields().value(appearance::comicsModeKey).toBool(false);
+    const bool comics =
+            session->requestedAppearance().fields().value(appearance::comicsModeKey).toBool(false);
     if (page->comicsMode != comics) {
         page->comicsMode = comics;
         header->setVisible(page->showHeader());
@@ -323,7 +324,8 @@ bool Reader::appearancePreviewFits() const
 
 void Reader::syncAppearancePreview()
 {
-    if (!appearanceBuilt) return;
+    if (!appearanceBuilt)
+        return;
     using Axis = kobalt::reader::AppearancePreview::Axis;
     const bool layoutOpen = menu->isVisible()
             && panels->currentIndex() == int(kobalt::reader::AppearancePage::Layout);
@@ -334,7 +336,7 @@ void Reader::syncAppearancePreview()
     if ((!layoutOpen && !textOpen) || !appearancePreviewFits()) {
         // Navigation can cancel this request without changing the reading image.
         previewPageKey = previewPageRequested = 0;
-        previewPage = {};
+        previewPage = { };
         appearancePreview->hide();
         appearancePreview->clear();
         return;
@@ -343,13 +345,13 @@ void Reader::syncAppearancePreview()
     if (previewPageForText != textOpen) {
         previewPageForText = textOpen;
         previewPageKey = previewPageRequested = 0;
-        previewPage = {};
+        previewPage = { };
     }
     auto *settings =
             appearanceEdit.edited() && appearanceEdit.ready() ? appearanceEdit.preview() : session;
     // Compose draft chrome using draft geometry, not the applied book mode.
-    const bool comics = settings->requestedAppearance().fields()
-            .value(appearance::comicsModeKey).toBool(false);
+    const bool comics =
+            settings->requestedAppearance().fields().value(appearance::comicsModeKey).toBool(false);
     QScopedValueRollback<bool> mode(page->comicsMode);
     page->comicsMode = comics;
     const int side = kobalt::readingPixels(marginSlider->value());
@@ -429,7 +431,7 @@ void Reader::showPageImage(const QImage &nextImage)
     if (displayedImage.cacheKey() != page->image.cacheKey()) {
         // Temporary search and link marks belong to the old page geometry.
         // Clear them without cancelling the gesture that edits the preview.
-        page->mark({});
+        page->mark({ });
         page->animationDirection = isVisible() && !appearanceEdit.panelOpen()
                         && !topControls->isVisible() && !general->isVisible()
                         && !linkReturn->isVisible() && !syncDialog && !kosyncDialog && !finishDialog
@@ -459,7 +461,7 @@ void Reader::showPageImage(const QImage &nextImage)
 // does not wait; until the answer arrives the placeholder draws plain lines.
 void Reader::sampleReflowText()
 {
-    page->setReflowText({});
+    page->setReflowText({ });
     auto *preview = appearanceEdit.preview();
     ReaderSession *source =
             preview && preview->image().cacheKey() == page->image.cacheKey() ? preview : session;
@@ -517,11 +519,15 @@ void Reader::paintTurn()
 
 void Reader::syncAppearanceControls(bool pickingFont)
 {
-    if (!appearanceBuilt) return;
+    if (!appearanceBuilt)
+        return;
     auto *settings =
             appearanceEdit.edited() && appearanceEdit.ready() ? appearanceEdit.preview() : session;
     if (auto *option = findChild<QCheckBox *>("rrComicsReadingMode")) {
-        option->setChecked(settings->requestedAppearance().fields().value(appearance::comicsModeKey).toBool(false));
+        option->setChecked(settings->requestedAppearance()
+                                   .fields()
+                                   .value(appearance::comicsModeKey)
+                                   .toBool(false));
     }
     previewLabel->setText(appearanceEdit.error());
     previewLabel->setVisible(!pickingFont && !appearanceEdit.error().isEmpty());
@@ -654,18 +660,18 @@ void Reader::syncReadingControls()
         chapters.append({ chapter.page, chapter.title });
     // The turn may adopt Hybrid's whole-book layout. Keep the open Navigate
     // panel until it can show the new reading page in whole-book coordinates.
-    const bool keepNavigation = seekOpen && !chapterBar && !session->busy()
-            && !resizePending && !appearanceEdit.applying() && pageScrubber->chapterNavigationPending();
+    const bool keepNavigation = seekOpen && !chapterBar && !session->busy() && !resizePending
+            && !appearanceEdit.applying() && pageScrubber->chapterNavigationPending();
     pageScrubber->setChapterBar(chapterBar, keepNavigation);
     pageScrubber->setChapterJumps(chapterBar
-                                  || pageNavigation::barButtons(preferences)
-                                          == pageNavigation::BarButtons::Chapters,
+                                          || pageNavigation::barButtons(preferences)
+                                                  == pageNavigation::BarButtons::Chapters,
                                   keepNavigation);
     if (chapterBar) {
         const bool before =
                 session->page() > 0 || session->state().value("continues_before").toBool();
         const bool after = session->page() + 1 < session->pages() || session->continuesAfter();
-        pageScrubber->setBook(int(before), 1 + int(before) + int(after), {},
+        pageScrubber->setBook(int(before), 1 + int(before) + int(after), { },
                               session->image().size());
         QVector<int> chapterPages;
         for (const auto &chapter : chapters)
@@ -813,16 +819,17 @@ void Reader::openPendingDestination()
 void Reader::updateGraph()
 {
     const bool counted = session->totalWords() >= 0;
-    const auto graph = counted ? session->chapterGraph()
-                               : kobalt::chapterPageLengths(session->chapters(), session->pages());
+    const auto graph = counted
+            ? session->chapterGraph()
+            : kobalt::chapterPageLengths(session->chapters(), session->bookPages());
     chapterGraph->setData(graph, counted ? session->graphSelection() : session->contentsSelection(),
-                          true, {});
+                          true, { });
     const auto contents = session->chapters();
     const int next = session->contentsSelection().next;
     int nextPages = 0;
     if (next >= 0 && next < contents.size()) {
         const int start = contents[next].page;
-        int end = session->pages();
+        int end = session->bookPages();
         for (const auto &chapter : contents)
             if (chapter.page > start)
                 end = qMin(end, chapter.page);
@@ -831,8 +838,10 @@ void Reader::updateGraph()
     chapterGraph->setChapterNumber(session->contentsSelection().current + 1, contents.size());
     updateReadingStats();
     chapterGraph->setProgress(session->chapterTitle(), session->chapterPage(),
-                              session->chapterPages(), nextPages, session->page(),
-                              session->pages());
+                              session->chapterPages(), nextPages, session->bookPage(),
+                              session->bookPages(),
+                              session->bookPages() > 0 ? -1 : session->progressFraction(),
+                              session->bookPagesEstimated());
 }
 
 void Reader::updateMenuStatus()

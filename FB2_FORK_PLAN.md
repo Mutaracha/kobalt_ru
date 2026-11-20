@@ -126,7 +126,19 @@ slice/layout revision validation и сохранение mark при prepared-ne
 Reader bookmark rows используют bookPage для подписи и local page для current;
 sleep progress/preview используют whole-book progressPercent. Добавлен upstream
 prepared-bookmark regression; session.bookmark-session включён в focused CI.
-Source checks PASS; runtime CI pending. Новых строк/настроек нет.
+CI `44722105686`: Qt5/package PASS; native compile выявил недостающий
+KOBALT_TEST_ZIP у нового fixture. Условие compile definitions перенесено из
+upstream (`8040a9f9`); повторный CI `44723018339` pending. Новых строк/настроек нет.
+
+**in progress — whole-book counters/chrome:** перенесены upstream Values estimate
+flags, percent fallback и pageTotal formatting без debug controls/новых настроек.
+Approved `~%1`/«Расчёт…» добавлены EN/RU. Chrome не подставляет chapter-local
+номера вместо whole-book, fork menu strip использует те же флаги/формат total;
+ToC и Stats получают whole-book pages/fraction. Upstream estimated/no-pages
+header/footer regressions добавлены к уже выбранному model.header-footer.
+Source checks, EN/RU parity/code-reference generation и strings self-tests (Ninja)
+PASS. Runtime CI pending. Activity/history/sleep positions
+ещё не закончены, package пока не готов для device handoff.
 
 **Следующий шаг:** whole-book counts/progress, navigation/bookmark indexes и полоса,
 затем activity/history/sleep positions. Default Hybrid не считать готовым до

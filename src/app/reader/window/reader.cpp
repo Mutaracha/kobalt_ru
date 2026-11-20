@@ -64,8 +64,8 @@ Reader::~Reader()
     // QWidget hides children after Reader's members are destroyed. Stop child-owned
     // callbacks now; removing this Reader's own event filters does not stop them.
     if (appearancePreview)
-        appearancePreview->followPanel(nullptr, {});
-    static_cast<SettingsPanel *>(general)->stylingHidden = {};
+        appearancePreview->followPanel(nullptr, { });
+    static_cast<SettingsPanel *>(general)->stylingHidden = { };
     cancelStylingSamples();
     if (kosyncClient)
         kosyncClient->persistSyncTime();
@@ -86,29 +86,29 @@ Reader::~Reader()
     annotationExporter.reset();
     cancelKosync();
     kosyncPage->dismissEditor();
-    book->onEstimatesChanged({});
+    book->onEstimatesChanged({ });
     session->cancelPagePreview();
     if (pageScrubber) {
         pageScrubber->cancel();
-        pageScrubber->cancelled = {};
+        pageScrubber->cancelled = { };
     }
-    session->renderProgressChanged = {};
+    session->renderProgressChanged = { };
     renderNoticeTimer.stop();
     session->cancelPendingTurn();
-    session->turnBoundary = {};
-    session->idle = {};
+    session->turnBoundary = { };
+    session->idle = { };
     page->cancelHold();
     brightnessHide.stop();
     lightFeedback.stop();
     annotationModeHide.stop();
-    lightPopup->changed = {};
+    lightPopup->changed = { };
     delete lightPopup;
     light.reset();
     presentation->clearSleepScreen();
     presentation->resumeBackground();
-    kobalt::ui::setInterfaceFontFamily({});
-    kobalt::ui::setInterfaceMonoFontFamily({});
-    kobalt::ui::setHeaderFooterFontFamily({});
+    kobalt::ui::setInterfaceFontFamily({ });
+    kobalt::ui::setInterfaceMonoFontFamily({ });
+    kobalt::ui::setHeaderFooterFontFamily({ });
     kobalt::ui::setHeaderFooterAddedWeight(2);
 }
 
@@ -195,7 +195,7 @@ void Reader::prepareTransition(std::function<void()> finished, bool usb)
     }
     if (pageScrubber)
         pageScrubber->cancel();
-    sleepImage = {};
+    sleepImage = { };
     presentation->clearSleepScreen();
     session->cancelPendingTurn();
     book->stopReading(true);
@@ -225,7 +225,7 @@ void Reader::prepareTransition(std::function<void()> finished, bool usb)
         if (std::exchange(*completed, true))
             return;
         kobalt::diagnostic(usb ? "usb-save-timeout" : "shutdown-save-timeout");
-        complete({}, {}, false);
+        complete({ }, { }, false);
     });
     deadline->start(2000);
     session->nativePosition([completed, complete, timer = QPointer<QTimer>(deadline)](
@@ -328,8 +328,8 @@ void Reader::saveTransition(quint64 request, bool usb, const QString &location,
 void Reader::prepareSleepCover()
 {
     const auto request = ++sleepCoverRequest;
-    sleepCover = {};
-    sleepCoverSource = {};
+    sleepCover = { };
+    sleepCoverSource = { };
 #ifdef KOBALT_SCENARIO_PLAYER
     setProperty("eval_sleep_cover_pending", false);
     setProperty("eval_sleep_cover_ready", false);
@@ -405,7 +405,7 @@ sleep::Snapshot Reader::powerScreenSnapshot()
                 // Coverless books use the reading page. Rebuild that clean backdrop
                 // rather than preserving the status already painted for sleep.
                 shot.image = page->snapshot(true);
-                shot.coverArea = {};
+                shot.coverArea = { };
                 shot.dimPage = true;
                 portraitSleepSnapshot(shot);
             }
@@ -481,7 +481,7 @@ sleep::Snapshot Reader::captureSleepScreen()
     if (mode == sleep::Mode::Stock || !presentation->supportsSleepScreen() || !isVisible()
         || !foreground || pixels <= 0 || pixels > 4 * 1024 * 1024 || !readyForPresentation()
         || appearanceEdit.panelOpen() || session->temporaryTypography())
-        return {};
+        return { };
     const bool plain = mode == sleep::Mode::Plain;
     const bool useCover = mode == sleep::Mode::Cover && !sleepCover.isNull();
     const QSize sleepSize(qMin(page->width(), page->height()), qMax(page->width(), page->height()));
@@ -494,15 +494,14 @@ sleep::Snapshot Reader::captureSleepScreen()
         frame = useCover ? sleepCoverBackground(sleepCover, sleepSize) : page->snapshot(true);
     }
     if (frame.isNull())
-        return {};
+        return { };
     const bool useOverlay = mode == sleep::Mode::Overlay && !sleepOverlay.isNull();
     if (useOverlay) {
         dimSleepPage(frame, darkTheme);
         sleep::drawOverlay(frame, sleepOverlay);
     }
     // A book marked as finished is done, wherever its last page sits.
-    const int percent =
-            book->finishedHere() ? 100 : session->progressPercent();
+    const int percent = book->finishedHere() ? 100 : session->progressPercent();
     sleep::Snapshot snapshot{ std::move(frame),
                               kobalt::shownOrientation(QGuiApplication::primaryScreen()),
                               strings::get("sleep.percent_read").arg(percent),
@@ -563,7 +562,7 @@ void Reader::sleepReader()
             : sleepBattery.charging               ? SleepStatus::Charging
                                                   : SleepStatus::Sleeping;
     sleepShot = snapshot;
-    sleepShot.image = {};
+    sleepShot.image = { };
     sleepImage = sleepDesignImage(std::move(snapshot.image), sleepShot, sleepBattery.percent,
                                   status, &sleepUnderlay);
     if (book->hideBookOnSleepScreen()) {
@@ -725,7 +724,7 @@ void Reader::wakeReader()
     kosyncStarted = false;
     kosyncWaking = true;
     syncCoordinator->resetBackgroundFailures();
-    sleepImage = {};
+    sleepImage = { };
     presentation->clearSleepScreen();
     setProperty("reader_sleep_clean_pending", false);
     if (lifecycleHidden)
@@ -1358,7 +1357,7 @@ void Reader::hideEvent(QHideEvent *event)
 
 kobalt::SafeArea Reader::safeArea() const
 {
-    return services.safeArea ? services.safeArea(size()) : kobalt::SafeArea{};
+    return services.safeArea ? services.safeArea(size()) : kobalt::SafeArea{ };
 }
 
 QSize Reader::bodySize() const
@@ -1541,7 +1540,7 @@ void Reader::closeEvent(QCloseEvent *event)
         closingTimes.add("sleep_dispatch", sleepDispatch);
     }
 #endif
-    exitSleepSnapshot = {};
+    exitSleepSnapshot = { };
     setProperty("reader_exit_clean_pending", true);
     setProperty("reader_preparing_handoff", true);
     // Restore orientation while Home is paused, then repaint its backing store
@@ -1555,10 +1554,10 @@ void Reader::closeEvent(QCloseEvent *event)
     step.start();
     book->releaseNative(!closeWithoutSaving);
     closingTimes.add("session", step);
-    session->updated = {};
-    session->renderProgressChanged = {};
-    session->turnBoundary = {};
-    session->idle = {};
+    session->updated = { };
+    session->renderProgressChanged = { };
+    session->turnBoundary = { };
+    session->idle = { };
     renderNoticeTimer.stop();
     busyNotice->setDelayedProgress(false, 0, 0);
     if (finished)
@@ -1586,7 +1585,7 @@ void Reader::updateOrientationBlock()
 void Reader::closeSearch()
 {
     ++searchEpoch;
-    pendingSearchHit = {};
+    pendingSearchHit = { };
     session->cancelSearch();
     const bool searchOpen = searchPanel && searchPanel->isVisible();
     if (searchPanel) {
@@ -1859,7 +1858,7 @@ void Reader::dismissLookup(bool keepGesture)
     brightnessHide.stop();
     if (brightnessNotice)
         brightnessNotice->hide();
-    page->mark({});
+    page->mark({ });
     if (dictionaryPanel) {
         const bool wasVisible = dictionaryPanel->isVisible();
         dictionaryPanel->dismiss();
@@ -2087,7 +2086,7 @@ void Reader::hideRevealedLinks(bool restoreControls)
     }
     revealingLinks = false;
     revealedPosition.clear();
-    page->revealLinks({});
+    page->revealLinks({ });
 }
 
 void Reader::showRevealedLinks()
@@ -2172,7 +2171,7 @@ void Reader::syncLinkDiscovery()
         const int strip = top ? page->topHeight() : page->bottomHeight();
         const int text = top ? page->headerTextPixels() : page->footerTextPixels();
         linkDiscovery->setVisible(top || fits(strip, text));
-        linkDiscovery->setEdges({});
+        linkDiscovery->setEdges({ });
         linkDiscovery->setDividers(top ? Qt::BottomEdge : Qt::TopEdge);
         // Children paint their own background, so keep them off the divider.
         const int border = metrics::control::border;
@@ -2254,7 +2253,7 @@ void Reader::syncNavigation()
     const bool zen = zenMode();
     // Only Zen mode's reading stats use the estimates here.
     const bool zenStats = zen && preferences.value("zen_stats").toBool(false);
-    const auto estimates = zenStats ? book->estimates() : decltype(book->estimates()){};
+    const auto estimates = zenStats ? book->estimates() : decltype(book->estimates()){ };
     const auto update = [&] {
         const int active = cover || chromeSheet ? int(Nav::Layout)
                 : chapters                      ? int(Nav::Chapters)
@@ -2301,7 +2300,7 @@ void Reader::syncNavigation()
                 { bottomControls,
                   menu,
                   chapterGraph,
-                  cover                               ? cover
+                  cover ? cover
                           : bookmarkList->isVisible() ? static_cast<QWidget *>(bookmarkList)
                                                       : static_cast<QWidget *>(choices),
                   cover || chapters || bookmarkList->isVisible(),
@@ -2516,7 +2515,7 @@ void Reader::showChapters()
     for (const auto &chapter : session->chapters()) {
         const int index = items.size();
         const auto name = QString("rrChapter%1").arg(index);
-        items.append({ chapter.title, chapter.position, name, {}, chapter.depth, chapter.page });
+        items.append({ chapter.title, chapter.position, name, { }, chapter.depth, chapter.page });
         if (index == session->contentsSelection().current)
             current = name;
     }
@@ -2532,7 +2531,12 @@ void Reader::showChapters()
     choices->setGeometry(0, top, width(),
                          (navigation ? navigation->contentBottom(size()) : height()) - top);
     choices->setChapterPosition(
-            strings::get("stats.page_of").arg(session->page() + 1).arg(session->pages()));
+            session->bookPages() > 0
+                    ? strings::get("stats.page_of")
+                              .arg(session->bookPage() + 1)
+                              .arg(headerfooter::pageTotal(session->bookPages(),
+                                                           session->bookPagesEstimated()))
+                    : strings::get("common.percent").arg(session->progressPercent()));
     const auto groups = preferences.value("chapter_groups").toString();
     choices->showChoices(session->title(), std::move(items), current, ChoiceScreen::Mode::Chapters,
                          groups == "off"           ? ChapterGroups::Off
@@ -2625,7 +2629,7 @@ QJsonObject Reader::benchmarkState() const
 {
     if (!session->temporaryTypography() || closing || exportRunning || lifecycleHidden
         || services.suspended() || !isVisible())
-        return {};
+        return { };
     const auto source = session->state();
     QJsonObject result;
     for (const auto *key : { "page", "pages", "next_page", "position", "font_face",
@@ -2959,7 +2963,7 @@ void Reader::transitionSaveError(std::function<void()> retry, std::function<void
     if (closeSaveError)
         return;
     setEnabled(true);
-    auto *notice = new SaveErrorView(this, {}, true);
+    auto *notice = new SaveErrorView(this, { }, true);
     closeSaveError = notice;
     notice->secondaryButton()->hide();
     notice->setGeometry(rect());
@@ -3117,7 +3121,7 @@ void Reader::clearPendingExit()
     exitPending = exportRunning = false;
     finishChoiceResolved = false;
     setEnabled(true);
-    closingTimes = {};
+    closingTimes = { };
 }
 
 void Reader::cancelExit()
@@ -3399,7 +3403,7 @@ void Reader::save(bool snapshot, bool background, bool persist)
     if (!reportWriter)
         reportWriter = std::make_unique<storage::RecordWriter>();
     reportWriter->post([path = book->paths().stateReport, state] { return writeJson(path, state); },
-                       {});
+                       { });
 }
 
 } // namespace kobalt::reader

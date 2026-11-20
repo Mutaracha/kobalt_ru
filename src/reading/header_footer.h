@@ -66,7 +66,7 @@ int legacySize(const QString &value);
 // Resolved slot configuration and independent text sizes.
 struct Layout
 {
-    std::array<Field, slotCount> slotFields{};
+    std::array<Field, slotCount> slotFields{ };
     int headerSize = smallSize, footerSize = smallSize;
     bool headerEnabled = true, footerEnabled = true;
     // Each slot chooses its own case.
@@ -117,10 +117,15 @@ Layout customLayout(const QJsonObject &preferences, const Layout &fallback);
 // What the reader knows about the book and the device. Pages count from 1.
 // A negative estimate has no time to show. `learningPace` marks an estimate
 // that still needs reading history, or the native fallback's learning delay.
+QString pageTotal(int pages, bool estimated);
+
 struct Values
 {
     QString title, author, chapter, time;
     int chapterPage = 0, chapterPages = 0, page = 0, pages = 0;
+    bool pagesEstimated = false, chapterPagesEstimated = false;
+    int percentTenths = -1, chapterPercentTenths = -1;
+    bool decimalPercentages = false;
     int battery = -1;
     bool charging = false;
     // False on hosts that hide device status, such as the desktop app. It

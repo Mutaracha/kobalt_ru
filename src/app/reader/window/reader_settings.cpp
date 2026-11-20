@@ -93,6 +93,27 @@ kobalt::headerfooter::Values Reader::chromeValues()
     values.chapterPages = session->chapterPages();
     values.page = session->page() + 1;
     values.pages = session->pages();
+    // An engine with the text of only a part of the book shows rough page
+    // numbers from its page estimate. The chapter is the spine item. Before
+    // the estimate has a total, each page field shows its percent form.
+    const auto &state = session->state();
+    if (state.contains("book_fraction") && state.value("rough_pages").toInt() > 0
+        && state.value("rough_item_pages").toInt() > 0) {
+        values.page = state.value("rough_page").toInt();
+        values.pages = state.value("rough_pages").toInt();
+        values.chapterPage = state.value("rough_item_page").toInt();
+        values.chapterPages = state.value("rough_item_pages").toInt();
+        values.pagesEstimated = state.value("rough_pages_estimated").toBool();
+        values.chapterPagesEstimated = state.value("rough_item_pages_estimated").toBool();
+    } else if (state.contains("book_fraction")) {
+        values.page = values.pages = values.chapterPage = values.chapterPages = 0;
+        values.percentTenths = int(session->progressFraction() * 1000);
+        const int itemPages = session->state().value("rough_item_pages").toInt();
+        if (itemPages > 0)
+            values.chapterPercentTenths =
+                    int(1000LL * qBound(1, state.value("rough_item_page").toInt(), itemPages)
+                        / itemPages);
+    }
     const auto battery = services.battery();
     values.battery = battery.percent;
     values.charging = battery.charging;
@@ -119,7 +140,8 @@ bool Reader::customModified() const
     const auto custom = fromJson(saved.toObject(), standard);
     return saved.isObject()
             && (custom.slotFields != standard.slotFields || custom.uppercase != standard.uppercase
-                || custom.progressBar != standard.progressBar || custom.progressTop != standard.progressTop);
+                || custom.progressBar != standard.progressBar
+                || custom.progressTop != standard.progressTop);
 }
 
 bool Reader::chromeTicks() const
@@ -178,7 +200,8 @@ bool Reader::saveChrome(kobalt::headerfooter::Preset preset,
 
 void Reader::syncChromeControls()
 {
-    if (!slotMap) return;
+    if (!slotMap)
+        return;
     using namespace kobalt::headerfooter;
     // A changed field can start or end the need for the minute clock, and a
     // time-left field needs the reading pace.
@@ -212,7 +235,9 @@ void Reader::syncChromeControls()
     footerSizeControl->setSize(current.footerSize, current.footerEnabled);
     for (auto *button : progressBarButtons)
         button->setChecked(button->property("progress_position").toInt()
-                == (!current.progressBar ? 0 : current.progressTop ? 2 : 1));
+                           == (!current.progressBar          ? 0
+                                       : current.progressTop ? 2
+                                                             : 1));
     // A modified Custom layout carries a star, as on its card.
     const bool starred = chromePreset == Preset::Custom && modified;
     headerFooterRow->setText(
@@ -640,7 +665,7 @@ void Reader::renderStylingSamples(int requested)
             panel->setStylingSample(entry.feature, cached);
             continue;
         }
-        panel->setStylingSample(entry.feature, {});
+        panel->setStylingSample(entry.feature, { });
         render = request.cancelled = std::make_shared<std::atomic_bool>(false);
         ++stylingSamplesPending;
         renderStyleSample(session->fontInputs(), request, this,
@@ -677,7 +702,7 @@ pageButtons::Buttons Reader::buttonControls() const
     auto buttons = services.buttonControls
             ? pageButtons::held(services.buttonControls(),
                                 services.pageButtonsRotated && services.pageButtonsRotated())
-            : pageButtons::Buttons{};
+            : pageButtons::Buttons{ };
     for (auto &button : buttons) {
         QKeyEvent event(QEvent::KeyPress, button.key, Qt::NoModifier);
         const int nativeDirection = services.pageButtonDirection(&event);
@@ -865,7 +890,7 @@ void Reader::applySettings()
     }
     if (!features::enabled(preferences, features::Words)) {
         ++savedLookupEpoch;
-        lookupSnapshot = {};
+        lookupSnapshot = { };
         dictionaryPanel->setSaved(false, false);
         if (wordNotice)
             wordNotice->hide();
@@ -1207,10 +1232,10 @@ void Reader::resizeText()
 {
     if (!isVisible() || closing)
         return;
-    const auto *draft = appearanceEdit.edited() && appearanceEdit.ready()
-            ? appearanceEdit.preview() : session;
-    const bool draftComics = draft->requestedAppearance().fields()
-            .value(appearance::comicsModeKey).toBool(false);
+    const auto *draft =
+            appearanceEdit.edited() && appearanceEdit.ready() ? appearanceEdit.preview() : session;
+    const bool draftComics =
+            draft->requestedAppearance().fields().value(appearance::comicsModeKey).toBool(false);
     QScopedValueRollback<bool> previewMode(page->comicsMode);
     page->comicsMode = draftComics;
     const QSize viewport = bodySize();
@@ -1343,7 +1368,7 @@ void Reader::schedulePreviewWarm()
 
 void Reader::mutateAppearance(std::function<void(ReaderSession &)> operation)
 {
-    diagnostic("appearance-preview-request", {}, false);
+    diagnostic("appearance-preview-request", { }, false);
     appearanceViewport = bodySize();
     appearanceEdit.mutate(
             *session, bodySize(), [this] { refresh(); },
@@ -1411,8 +1436,11 @@ void Reader::finishPreview()
     preferences = next;
     appearanceEdit.clearError();
     if (appearanceEdit.ready())
-        page->comicsMode = appearanceEdit.preview()->requestedAppearance().fields()
-                                  .value(appearance::comicsModeKey).toBool(false);
+        page->comicsMode = appearanceEdit.preview()
+                                   ->requestedAppearance()
+                                   .fields()
+                                   .value(appearance::comicsModeKey)
+                                   .toBool(false);
     const QSize viewport = bodySize();
     if (appearanceEdit.ready())
         session->requestAppearance(appearanceEdit.preview()->requestedAppearance(), viewport);
@@ -1575,7 +1603,7 @@ void Reader::openSettingsFont(const QString &key)
             && !nativeFamilies.contains(fonts[row].family, Qt::CaseInsensitive))
             fonts.removeAt(row);
     fonts = orderedReadingFonts(std::move(fonts), { selected });
-    fonts.prepend({ QString(), {}, FontOrigin::Recommended, {}, {} });
+    fonts.prepend({ QString(), { }, FontOrigin::Recommended, { }, { } });
     panel->showFontChoices(
             isDefault                ? strings::get("reader.default_font")
                     : isUi           ? strings::get("settings.ui_font")
