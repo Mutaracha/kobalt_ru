@@ -914,6 +914,31 @@ void Reader::buildBottomControls()
     pageScrubber->previewRequested = [this](int target, QSize bounds) {
         if (closing || lifecycleHidden || services.suspended())
             return;
+        if (session->state().contains("book_fraction")) {
+            const int current =
+                    int(session->page() > 0 || session->state().value("continues_before").toBool());
+            pageScrubber->setCurrentPageBookmarked(page->bookmarked);
+            QPointer<kobalt::ui::PageScrubber> scrubber(pageScrubber);
+            const auto finished = [scrubber, target](QImage image) {
+                if (scrubber)
+                    scrubber->setPreview(target, std::move(image));
+            };
+            if (target == current)
+                session->previewPage(session->page(), bounds, finished);
+            else {
+                QStringList marked;
+                if (features::enabled(preferences, features::Bookmarks))
+                    for (const auto &bookmark : bookmarks->bookmarks())
+                        marked.append(bookmark.position);
+                session->previewAdjacentPage(target - current, bounds, marked,
+                                             [scrubber, target](QImage image, bool bookmarked) {
+                                                 if (scrubber)
+                                                     scrubber->setPreview(target, std::move(image),
+                                                                          bookmarked);
+                                             });
+            }
+            return;
+        }
         QPointer<kobalt::ui::PageScrubber> scrubber(pageScrubber);
         session->previewPage(target, bounds, [scrubber, target](QImage image) {
             if (scrubber)
@@ -924,10 +949,33 @@ void Reader::buildBottomControls()
         session->cancelPagePreview();
         seekOpen = false;
     };
+    pageScrubber->chapterRequested = [this](int chapter) {
+        if (session->busy() || closing || lifecycleHidden || services.suspended())
+            return;
+        const auto chapters = session->chapters();
+        if (chapter < 0 || chapter >= chapters.size())
+            return;
+        const LinkVisit origin{ session->state().value("position").toString(), session->bookPage(),
+                                session->chapterTitle().toUpper() };
+        session->cancelPagePreview();
+        pageScrubber->beginNavigation();
+        if (session->goToChapter(chapter))
+            pendingPassage = origin;
+        else
+            pageScrubber->showCurrentPage();
+    };
+    pageScrubber->pageRequested = [this](int direction) {
+        if (session->busy() || closing || lifecycleHidden || services.suspended())
+            return;
+        session->cancelPagePreview();
+        pageScrubber->beginNavigation();
+        if (!session->turn(direction))
+            pageScrubber->showCurrentPage();
+    };
     pageScrubber->accepted = [this](int target) {
         if (session->busy() || closing || lifecycleHidden || services.suspended())
             return;
-        if (target == session->page()) {
+        if (session->state().contains("book_fraction") || target == session->page()) {
             dismissControls();
             return;
         }

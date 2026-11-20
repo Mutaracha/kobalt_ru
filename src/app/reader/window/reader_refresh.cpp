@@ -444,8 +444,13 @@ void Reader::showPageImage(const QImage &nextImage)
     if (!page->viewportTransition())
         page->image = std::move(displayedImage);
     // Only a turn forward counts towards the session's pace; jumps and reflows do not.
-    if (!session->busy())
-        book->pace().observe(session->page(), session->turnDirection() > 0);
+    if (!session->busy()) {
+        if (session->state().contains("book_fraction"))
+            book->pace().observePosition(session->state().value("position").toString(),
+                                         session->turnDirection() > 0);
+        else
+            book->pace().observe(session->page(), session->turnDirection() > 0);
+    }
 }
 
 // The reflow placeholder repeats the word lengths of the displayed page. Read
@@ -477,7 +482,7 @@ void Reader::paintTurn()
     QElapsedTimer painting;
     if (turnStarted.isValid())
         painting.start();
-    page->progressFraction = pageProgressFraction(session->page(), session->pages());
+    page->progressFraction = session->progressFraction();
     page->preparedDamage = session->damage();
     page->preparedFrom = session->damageFrom();
     // The Refresh the screen setting decides which turns flash.
@@ -627,7 +632,7 @@ void Reader::syncReadingState()
 {
     if (session->busy())
         pageScrubber->cancel();
-    page->progressFraction = pageProgressFraction(session->page(), session->pages());
+    page->progressFraction = session->progressFraction();
     if (!session->busy())
         applyingText = false;
     refreshRenderNotice();
@@ -636,21 +641,47 @@ void Reader::syncReadingState()
 
 void Reader::syncReadingControls()
 {
-    if (session->busy())
-        pageScrubber->cancel();
-    page->chapterFractions = chapterProgressFractions(session->chapters(), session->pages());
+    if (session->busy()) {
+        if (seekOpen && session->state().contains("book_fraction"))
+            pageScrubber->beginNavigation();
+        else
+            pageScrubber->cancel();
+    }
+    const bool chapterBar = session->state().contains("book_fraction");
+    page->chapterFractions = chapterProgressFractions(session->chapters(), session->bookPages());
     QVector<QPair<int, QString>> chapters;
     for (const auto &chapter : session->chapters())
         chapters.append({ chapter.page, chapter.title });
-    pageScrubber->setChapterJumps(pageNavigation::barButtons(preferences)
-                                  == pageNavigation::BarButtons::Chapters);
-    pageScrubber->setBook(session->page(), session->pages(), chapters, session->image().size());
+    // The turn may adopt Hybrid's whole-book layout. Keep the open Navigate
+    // panel until it can show the new reading page in whole-book coordinates.
+    const bool keepNavigation = seekOpen && !chapterBar && !session->busy()
+            && !resizePending && !appearanceEdit.applying() && pageScrubber->chapterNavigationPending();
+    pageScrubber->setChapterBar(chapterBar, keepNavigation);
+    pageScrubber->setChapterJumps(chapterBar
+                                  || pageNavigation::barButtons(preferences)
+                                          == pageNavigation::BarButtons::Chapters,
+                                  keepNavigation);
+    if (chapterBar) {
+        const bool before =
+                session->page() > 0 || session->state().value("continues_before").toBool();
+        const bool after = session->page() + 1 < session->pages() || session->continuesAfter();
+        pageScrubber->setBook(int(before), 1 + int(before) + int(after), {},
+                              session->image().size());
+        QVector<int> chapterPages;
+        for (const auto &chapter : chapters)
+            chapterPages.append(chapter.first);
+        pageScrubber->setChapterPosition(session->contentsSelection().current, chapters.size(),
+                                         session->chapterTitle(), session->progressPercent(),
+                                         session->bookPage(), session->bookPages(), chapterPages);
+    } else {
+        pageScrubber->setBook(session->page(), session->pages(), chapters, session->image().size());
+    }
     pageScrubber->setEnabled(!session->busy());
     const auto chapter = session->chapterTitle().isEmpty() ? strings::get("reader.contents")
                                                            : session->chapterTitle();
     chapterButton->setText(chapter);
     chapterButton->setAccessibleName(strings::get("reader.contents_detail").arg(chapter));
-    page->progressFraction = pageProgressFraction(session->page(), session->pages());
+    page->progressFraction = session->progressFraction();
     if (!session->busy())
         applyingText = false;
     refreshRenderNotice();

@@ -5652,6 +5652,22 @@ int main(int argc, char **argv)
     sendMouse(QEvent::MouseButtonPress, closing);
     sendMouse(QEvent::MouseButtonRelease, closing);
     require(!guard, "Button click did not delete its target");
+    {
+        kobalt::ui::PageScrubber scrubber(nullptr);
+        scrubber.setChapterBar(true);
+        scrubber.setBook(2, 8, {}, {});
+        scrubber.show();
+        scrubber.showCurrentPage();
+        scrubber.beginNavigation();
+        scrubber.setChapterBar(false, true);
+        scrubber.setBook(1100, 2400, {}, {});
+        scrubber.showCurrentPage();
+        const auto *slider = scrubber.slider();
+        require(scrubber.selectedPage() == 1100 && slider->value() == 1100
+                        && slider->minimum() > 0 && slider->maximum() < 2399
+                        && slider->maximum() - slider->minimum() + 1 <= 1000,
+                "Whole-book Navigate handoff lost the initial zoom range");
+    }
     for (auto presentation : { kobalt::ui::CaptionButton::Presentation::Caption,
                                kobalt::ui::CaptionButton::Presentation::ListAction }) {
         using namespace kobalt::ui;

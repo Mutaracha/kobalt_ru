@@ -105,7 +105,19 @@ Hybrid/Accurate и debug-only Fast (по существующему debug_mode p
 Host standalone/Kobo применяют preference до opening. Строки ранее согласованы;
 строка расположена в существующем разделе Opening, без нового заголовка/строк.
 Используется общий styleListAction; визуальная проверка на устройстве pending.
-CI pending. Whole-book counters/navigation/strip и activity consumers ещё pending.
+CI `44719630736` (`cedd10e9`): native и Kobo Qt5/offline/package PASS.
+Новый routed regression settingsRendering добавлен следующим navigation slice:
+проверяет caption/ListAction, save/reopen, position retention и отсутствие Fast.
+
+**in progress — Hybrid navigation handoff:** PageScrubber/SettingSlider перенесены
+целиком из pinned upstream (без fork policy). Reader использует chapter bar,
+preview adjacent source pages/bookmarks и goToChapter/turn, затем сохраняет
+Navigate при adoption whole-book layout. Fork chapter ticks используют bookPages,
+progress strip — session progressFraction. ReadingPace получает upstream source
+position observation, чтобы локальная нумерация главы не теряла forward turns.
+Добавлен upstream component regression range handoff; component.ui уже включён
+в focused CI. Source checks и strings self-tests (Ninja) PASS; runtime CI pending.
+Whole-book chrome/counters/graphs и history/activity consumers ещё pending.
 
 **Следующий шаг:** whole-book counts/progress, navigation/bookmark indexes и полоса,
 затем activity/history/sleep positions. Default Hybrid не считать готовым до
