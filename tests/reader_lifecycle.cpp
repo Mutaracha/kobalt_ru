@@ -694,6 +694,7 @@ private slots:
         QTest::newRow("dark-background") << true << true;
     }
 
+    // Checks unbuilt controls, on-demand/background preparation and status replay in both themes.
     void lazyPanels()
     {
         QFETCH(bool, dark);
@@ -749,6 +750,7 @@ private slots:
         QCOMPARE(host.window()->findChild<QWidget *>("rrGeneralSettings"), panel);
     }
 
+    // Checks that shutdown drains safely before either settings panel has been constructed.
     void lazyPanelsCloseUnbuilt()
     {
         ReaderFixture host(testPaths(), testFonts, testPlaceholder);

@@ -104,3 +104,10 @@ Changed C++ ranges formatted with repository .clang-format (tool installed only
 in excluded scratch storage; no Python/CMake application dependency added).
 No engine/session algorithm, schema, cache version, string or waveform changes.
 Device review requested by the user is combined with the preceding theme step.
+
+
+Initial CI 44813033108 stopped native configure: the two new lifecycle tests
+were registered/selected but missing the settings area pattern. Added the area
+and one-line test descriptions; no tests removed or assertions weakened. This
+repeats a known migration preflight omission, not a rendering failure. Follow-up
+must pass the area/selection check before rerunning CI.
