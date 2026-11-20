@@ -1,3 +1,4 @@
+#include "reading/rendering_mode.h"
 #include "diagnostics.h"
 #include "clocks.h"
 #include "native_tile_cover.h"
@@ -1028,6 +1029,7 @@ void ReaderCoordinator::load()
 #endif
     const auto preferences = kobalt::appearance::readerPreferences(
             kobalt::storage::readPreferences(environment_.paths.preferences()).object, saved);
+    kobalt::renderingMode::apply(preferences);
     run.orientation->configure(preferences);
     saved["dark_mode"] = preferences.value("dark_mode").toBool(false);
     saved["bold_reading"] = preferences.value("bold_reading").toString("off");

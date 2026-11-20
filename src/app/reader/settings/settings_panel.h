@@ -90,6 +90,10 @@ public:
     void showTimeRemainingFormats(const QString &current,
                                   std::function<void(const QString &)> chosen);
     static QString timeRemainingFormatLabel(const QString &format);
+    static QString renderingModeLabel(const QString &mode);
+    void showRenderingModes(const QString &current, bool debug,
+                            std::function<void(const QString &)> chosen);
+    ui::CaptionButton *renderingButton = nullptr;
     void showColumnSpacingChoices(int current, std::function<void(int)> chosen);
     static QString columnSpacingLabel(int percent);
     enum class AdvancedText {

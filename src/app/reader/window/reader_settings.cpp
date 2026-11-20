@@ -1,3 +1,4 @@
+#include "reading/rendering_mode.h"
 #include <QKeyEvent>
 #include <QScopedValueRollback>
 #include "reading/remaining_time.h"
@@ -350,6 +351,7 @@ void Reader::openSettings()
     settingsDictionaryFontFace = preferences.value("dictionary_font_face").toString();
     settingsDictionaryFontSize = preferences.value("dictionary_font_size").toInt(100);
     settingsHeaderFooterWeight = ui::headerFooterAddedWeight();
+    settingsRenderingMode = renderingMode::value(renderingMode::fromPreferences(preferences));
     settingsTimeRemainingFormat =
             remainingTime::approximate(preferences) ? "approximate" : "detailed";
     hideTabLabelsOption->setChecked(preferences.value("hide_tab_labels").toBool(false));
@@ -780,6 +782,7 @@ void Reader::applySettings()
     if (disableStandbyOption)
         next[disableReaderStandbyKey] = disableStandbyOption->isChecked();
     next[remainingTime::preferenceKey] = settingsTimeRemainingFormat;
+    next[renderingMode::preferenceKey] = settingsRenderingMode;
     for (const auto *key : appearance::fallbackFontKeys)
         next[key] = settingsFontFaces.value(key).toString();
     next["bold_reading"] =
@@ -913,7 +916,13 @@ void Reader::applySettings()
         for (auto it = defaults.begin(); it != defaults.end(); ++it)
             settings[it.key()] = it.value();
     }
-    session->requestAppearance(requested.edited(appearance::Patch(settings)), bodySize());
+    renderingMode::apply(preferences);
+    const auto rendering = renderingMode::effective(renderingMode::fromPreferences(preferences));
+    session->requestAppearance(requested.edited(appearance::Patch(settings)), bodySize(),
+                               rendering == renderingMode::Mode::Accurate ? 0
+                                       : rendering == renderingMode::Mode::Hybrid
+                                       ? ReaderSession::hybridChapterMode
+                                       : 1);
     applyingText = session->busy();
     if (appearanceEdit.destination() == AppearanceDestination::None)
         appearanceEdit.request(AppearanceDestination::Controls);
@@ -1470,6 +1479,8 @@ void Reader::applyInterfaceFonts()
 void Reader::showSettingsFonts()
 {
     auto *panel = static_cast<SettingsPanel *>(general);
+    panel->renderingButton->setCaption(
+            SettingsPanel::renderingModeLabel(settingsRenderingMode).toUpper());
     panel->timeRemainingFormatButton->setCaption(
             SettingsPanel::timeRemainingFormatLabel(settingsTimeRemainingFormat).toUpper());
     panel->headerFooterWeightButton->setCaption(

@@ -1,3 +1,4 @@
+#include "reading/rendering_mode.h"
 #include "ui/controls/rows.h"
 #include "app/reader/views/fork_navigation.h"
 #include "render/page_content.h"
@@ -1610,6 +1611,13 @@ void Reader::buildSettings()
                                                showSettingsFonts();
                                            });
     });
+    connect(settings->renderingButton, &QPushButton::clicked, this, [this, settings] {
+        settings->showRenderingModes(settingsRenderingMode, features::debugMode(preferences),
+                                     [this](const QString &mode) {
+            settingsRenderingMode = mode;
+            showSettingsFonts();
+        });
+    });
     connect(settings->headerFooterWeightButton, &QPushButton::clicked, this, [this, settings] {
         auto sampleFont = ui::headerFooterFont(page->headerTextPixels());
         if (!settingsHeaderFooterFontFace.isEmpty())
@@ -1687,6 +1695,7 @@ void Reader::buildSettings()
         settingsDictionaryFontSize = 100;
         settingsHeaderFooterWeight = 2;
         settingsTimeRemainingFormat = "detailed";
+        settingsRenderingMode = renderingMode::value(renderingMode::Mode::Hybrid);
         hideTabLabelsOption->setChecked(false);
         zenModeOption->setChecked(false);
         if (wifiPowerSaverOption)

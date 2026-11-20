@@ -87,7 +87,7 @@ Source checks PASS; local Kobo syntax blocked отсутствием подго�
 Qt6 source перенесён, но отдельная Qt6 package/device проверка не выполнялась.
 Это не проверка на устройстве; wake/recovery consumers и host-mode/UI остаются pending.
 
-**implemented / CI pending — wake/save recovery:** sleep теперь сохраняет progress
+**done / focused CI verified — wake/save recovery:** sleep теперь сохраняет progress
 перед drain native time, а поздний result обрабатывается после wake. Подключены
 upstream SleepSave/epoch callback/clear pending Exit и повторная попытка без закрытия
 книги. Согласованные EN/RU строки внесены; оценка переносов по будущим скриншотам
@@ -96,13 +96,20 @@ regressions перенесены вместе с fixture и включены в 
 order tests заменены, не ослаблены). Source checks и strings parity/generation
 PASS. CI `44712598821`: Qt5/package PASS; native compile нашёл недостающий
 QSemaphore include у перенесённого regression. Добавлен явный include; runtime
-проверка новых wake regressions pending. Общий host-mode/UI перенос ещё pending.
+проверка новых wake regressions PASS в CI `44713551666` (`17ae835a`),
+как и Qt5/offline/package. Это не проверка на устройстве.
 
-**Следующий шаг:** связать host rendering-mode preference/application и выполнить
-перенести оставшиеся wake/recovery consumers и подключение save epochs;
-затем UI whole-book counts/progress, navigation/bookmark indexes и полосу.
-Default Hybrid не считать готовым до этой интеграции. Не использовать chapter-local
-номера как book pages. Новые настройки/строки на этом checkpoint не добавлялись.
+**in progress — host rendering selector/application:** подключены approved selector
+Hybrid/Accurate и debug-only Fast (по существующему debug_mode preference, без
+нового debug switch), load/save/reset/caption и requestAppearance с mode override.
+Host standalone/Kobo применяют preference до opening. Строки ранее согласованы;
+строка расположена в существующем разделе Opening, без нового заголовка/строк.
+Используется общий styleListAction; визуальная проверка на устройстве pending.
+CI pending. Whole-book counters/navigation/strip и activity consumers ещё pending.
+
+**Следующий шаг:** whole-book counts/progress, navigation/bookmark indexes и полоса,
+затем activity/history/sleep positions. Default Hybrid не считать готовым до
+полной интеграции. Не использовать chapter-local номера как book pages.
 
 G1–G9 остаются **pending** для полной интеграции. Промежуточный пакет не для
 устройства. При итоговой выдаче заполнить runtime/CI и выдать пользователю

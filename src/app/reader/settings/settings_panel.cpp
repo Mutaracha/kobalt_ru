@@ -1048,6 +1048,9 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
             check(systemPage, "rrHideOpeningCover", strings::get("settings.opening_cover"),
                   strings::get("settings.opening_cover_description"));
     systemRows->addWidget(openingCoverOption);
+    renderingButton = ui::makeCaptionButton(systemPage, systemRows, "rrRendering",
+                                            strings::get("settings.rendering"), [] { });
+    renderingButton->setDescription(strings::get("settings.rendering_summary"));
     systemRows->addStretch(1);
     aboutPage = new AboutPage(settingsPages);
     settingsPages->addWidget(aboutPage);
@@ -1228,6 +1231,7 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
                           zenSyncButton,
                           zenAutomaticButton,
                           zenAboutButton,
+                          renderingButton,
                           textForNewBooksButton }) {
         styleListAction(button);
         // The refresh row's caption shows its current choice, set when Settings opens.
@@ -1237,7 +1241,7 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
             || button == paragraphSpacingButton || button == trackingButton
             || button == hangingPunctuationButton || button == widowsOrphansButton
             || button == verticalSpacingButton || button == zenSyncButton
-            || button == zenAboutButton) {
+            || button == zenAboutButton || button == renderingButton) {
             button->setMaximumHeight(QWIDGETSIZE_MAX);
             readerStyle(
                     button,
@@ -1882,6 +1886,41 @@ void SettingsPanel::showTimeRemainingFormats(const QString &current,
     choices->chosen = [this, chosen, formats](int index) {
         dismissSheet();
         chosen(formats[index]);
+    };
+    ui::fitChoiceSheet(sheet, choices);
+    presentSheet();
+}
+
+QString SettingsPanel::renderingModeLabel(const QString &mode)
+{
+    return strings::get(mode == "accurate"       ? "settings.rendering_accurate"
+                                : mode == "fast" ? "settings.rendering_fast"
+                                                 : "settings.rendering_hybrid");
+}
+
+void SettingsPanel::showRenderingModes(const QString &current, bool debug,
+                                       std::function<void(const QString &)> chosen)
+{
+    if (sheet)
+        return;
+    auto *choices = openChoiceSheet("rrRendering", strings::get("settings.rendering"),
+                                    strings::get("settings.rendering_description"));
+    // Hybrid replaces Fast. Debug mode still offers it.
+    QStringList modes{ "hybrid", "accurate" };
+    if (debug)
+        modes.insert(1, "fast");
+    for (const auto &mode : modes) {
+        choices->add(QString("rrRendering_%1").arg(mode), renderingModeLabel(mode),
+                     strings::get(mode == "accurate" ? "settings.rendering_accurate_description"
+                                          : mode == "fast"
+                                          ? "settings.rendering_fast_description"
+                                          : "settings.rendering_hybrid_description"));
+        if (mode == current)
+            choices->setCurrent(choices->options().size() - 1);
+    }
+    choices->chosen = [this, chosen, modes](int index) {
+        dismissSheet();
+        chosen(modes[index]);
     };
     ui::fitChoiceSheet(sheet, choices);
     presentSheet();
