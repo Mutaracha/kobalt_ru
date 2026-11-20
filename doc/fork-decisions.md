@@ -234,3 +234,24 @@ This changes presentation only, not recorded time, thresholds or totals.
 Dates and grouped word counts follow the selected UI language without changing
 Nickel's global process locale. Exact strings and the approved table are in
 assets/*.strings and doc/reports/033d0be2-device-review.md.
+
+
+## UPSTREAM-NEXT — граница подготовки следующего обновления
+
+- Scope: cleanup beta.9, подготовка обновления и FB2 Hybrid.
+- Decision: пользователь уточнил, что откладывал собственную оптимизацию в ожидании
+  beta.9; при совпадении задач использовать готовую upstream реализацию, включая
+  lazy panels. Это уточняет D07 и прежнее ограничение на автоматический перенос
+  lazy Settings; не разрешает новые собственные оптимизации открытия.
+- EPUB Hybrid остаётся upstream-owned: сейчас не менять его алгоритмы slicing,
+  фоновой полной раскладки, adoption и safety fallback. Дальнейшие оптимизации
+  ожидаются пользователем в beta.10; их наличие/результат пока не проверены.
+- Параллельно cleanup разрешена подготовка FB2 к Hybrid: анализ, corpus и
+  контрактные границы. Это не разрешение включить partial layout или изменить
+  общий EPUB algorithm ради FB2. До доказанной корректности сохранять whole-book
+  FB2 и защиту cross-section сносок; необходимые изменения общей архитектуры
+  выносить на отдельное согласование.
+- Source/approval: последние уточнения пользователя в этой сессии; план cleanup
+  одобрен, дополнен подготовкой FB2 и анализом отказов beta.8 → beta.9.
+- Validation: docs-only; runtime не менялся. Очередь в FB2_FORK_PLAN.md,
+  причины отказов и gates — doc/reports/beta9-upgrade-retrospective.md.

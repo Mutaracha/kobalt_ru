@@ -3,6 +3,33 @@
 Принятые решения: [doc/fork-decisions.md](doc/fork-decisions.md).
 Инструкции агентам: [AGENTS.md](AGENTS.md).
 
+## Активная очередь — выравнивание с upstream перед следующим обновлением
+
+**in progress: анализ/план; runtime cleanup planned, не выполнен.**
+Baseline форка `4e3a33b9`, upstream beta.9 `be472588`.
+[Разбор отказов beta.8 → beta.9 и протокол обновления](doc/reports/beta9-upgrade-retrospective.md).
+Решение: [UPSTREAM-NEXT](doc/fork-decisions.md#upstream-next--граница-подготовки-следующего-обновления).
+
+| Блок | Статус | Следующий результат / gate |
+|---|---|---|
+| Уборка артефактов и incidental diff | planned | Подтвердить отсутствие consumers старых engine patches; удалить только доказанно неиспользуемое, проверить build/cache contracts. |
+| Общие реализации beta.9 | planned | Контекстно свести пресеты, chapter lookup, аннотации/keyboard, KOSync, sleep/storage. Использовать upstream lazy panels вместо собственной оптимизации; проверить shared helper/API и protected fork behavior. |
+| Актуальная карта дельты | planned | Обновить fork-delta по фактическим файлам; для каждого retained delta указать причину и gate, upstream-only файлы проверить отдельно. |
+| Подготовка FB2 Hybrid | planned | Параллельно UI/build cleanup: corpus, sections/notes/resources/anchors, зависимости и проверяемый whole-book fallback. Реализация и включение partial layout не разрешены автоматически. |
+| Следующее обновление | planned; blocked до фиксации нового upstream SHA для runtime-переноса | Использовать протокол отчёта; сначала завершить cleanup и составить dependency/consumer/test matrix. Beta.10 ещё не анализировалась. |
+
+**Граница:** сейчас не меняем алгоритмы EPUB Hybrid (slicing, background full
+layout, adoption, fallback) базовой версии и не пишем собственные оптимизации.
+Восстановление upstream consumers/UI не является разрешением менять эти алгоритмы.
+Существующие narrow hooks, включая comics frameImage, сохраняются по назначению.
+FB2 whole-book остаётся безопасным поведением до отдельного проверенного решения.
+
+**Validation:** текущая правка — только документы; нового binary/CI/device PASS нет.
+Исторические этапы ниже — evidence, их промежуточные pending не переоткрывают задачи.
+Старое зависание после frame load не объявлено исправленным.
+
+## Последние результаты устройства и выполненных этапов
+
 **Device follow-up cfb8f51c / upload 487416ff:** получены 2 снимка Activity
 и лог четырёх открытий. [Разбор](doc/reports/cfb8f51c-device-followup.md).
 Подтверждён Hybrid chapter request → `page-note-layout` fallback → whole-book
