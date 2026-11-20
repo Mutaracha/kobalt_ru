@@ -3,6 +3,16 @@
 Принятые решения: [doc/fork-decisions.md](doc/fork-decisions.md).
 Инструкции агентам: [AGENTS.md](AGENTS.md).
 
+**Device review 033d0be2 / upload e82e1e1b:** пользователь кратко проверил
+FB2/EPUB/comics, прислал 51 снимок и три ZIP диагностики. [Разбор](doc/reports/033d0be2-device-review.md):
+warm Accurate/Hybrid ~4,8 с с retained model; cold ~16,28 с, причина whole-book
+в старом логе не наблюдаема. Оптимизация открытия не возобновлена. Исправлены
+пустой заголовок hidden Navigate и принудительные EN даты/word totals в RU;
+добавлены диагностические mode/fallback события без изменения алгоритма.
+Новые формулировки/склонения только предложены, требуют approval. CI pending.
+Числа Activity согласуются с округлением/порогами; база профиля не предоставлена,
+точность исторических итогов не объявлена подтверждённой.
+
 **Готово к device-тесту Kobo Qt5:** runtime `033d0be278f2f7afecd5a9a1825d07ffb5a8e13a`,
 [CI 44731173763](https://github.com/Mutaracha/kobalt_ru/actions/runs/44731173763) **PASS**: focused native EPUB/FB2,
 Activity/Stats, sleep/Custom/editor/privacy, profile/writer/preview reconciliation;
