@@ -5,7 +5,7 @@
 
 **Текущая работа — in progress:** переход на beta.9. Blaze, Engine/adapter и
 реальные reading consumers подключены. Последний проверенный runtime:
-`b3253e6b251c582715da7021fd3030ad9bd13b55`, [CI `44723102693`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44723102693)
+`40d3948aafaace881ab90a7efbb0c419081dfcd3`, [CI `44724222957`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44724222957)
 **PASS**: focused native EPUB/FB2 regressions, Kobo Qt5/offline/package/contents.
 Это не полный upstream/all-variant suite и не device acceptance.
 
@@ -99,7 +99,7 @@ QSemaphore include у перенесённого regression. Добавлен я
 проверка новых wake regressions PASS в CI `44713551666` (`17ae835a`),
 как и Qt5/offline/package. Это не проверка на устройстве.
 
-**in progress — host rendering selector/application:** подключены approved selector
+**done / focused CI verified — host rendering selector/application:** подключены approved selector
 Hybrid/Accurate и debug-only Fast (по существующему debug_mode preference, без
 нового debug switch), load/save/reset/caption и requestAppearance с mode override.
 Host standalone/Kobo применяют preference до opening. Строки ранее согласованы;
@@ -109,7 +109,7 @@ CI `44719630736` (`cedd10e9`): native и Kobo Qt5/offline/package PASS.
 Новый routed regression settingsRendering добавлен следующим navigation slice:
 проверяет caption/ListAction, save/reopen, position retention и отсутствие Fast.
 
-**in progress — Hybrid navigation handoff:** PageScrubber/SettingSlider перенесены
+**done / focused CI verified — Hybrid navigation handoff:** PageScrubber/SettingSlider перенесены
 целиком из pinned upstream (без fork policy). Reader использует chapter bar,
 preview adjacent source pages/bookmarks и goToChapter/turn, затем сохраняет
 Navigate при adoption whole-book layout. Fork chapter ticks используют bookPages,
@@ -120,7 +120,7 @@ position observation, чтобы локальная нумерация глав�
 settingsRendering и component.ui handoff.
 Whole-book chrome/counters/graphs и history/activity consumers ещё pending.
 
-**in progress — bookmark local/display coordinates:** BookmarkSession перенесён
+**done / focused CI verified — bookmark local/display coordinates:** BookmarkSession перенесён
 целиком из pinned upstream: separate local marking/merging и whole-book display,
 slice/layout revision validation и сохранение mark при prepared-neighbour update.
 Reader bookmark rows используют bookPage для подписи и local page для current;
@@ -130,7 +130,7 @@ CI `44722105686`: Qt5/package PASS; native compile выявил недостаю
 KOBALT_TEST_ZIP у нового fixture. Условие compile definitions перенесено из
 upstream (`8040a9f9`); повторный CI `44723018339` PASS (native и Qt5/package, включая prepared bookmark). Новых строк/настроек нет.
 
-**in progress — whole-book counters/chrome:** перенесены upstream Values estimate
+**done / focused CI verified — whole-book counters/chrome:** перенесены upstream Values estimate
 flags, percent fallback и pageTotal formatting без debug controls/новых настроек.
 Approved `~%1`/«Расчёт…» добавлены EN/RU. Chrome не подставляет chapter-local
 номера вместо whole-book, fork menu strip использует те же флаги/формат total;
@@ -141,7 +141,7 @@ PASS. CI `44723102693` (`b3253e6b`): native и Qt5/offline/package PASS,
 включая no-pages/estimated header-footer и strip assertions. Activity/history/sleep positions
 ещё не закончены, package пока не готов для device handoff.
 
-**in progress — daily history/opening accounting:** ReadingHistory и ReadingBook
+**done / focused CI verified — daily history/opening accounting:** ReadingHistory и ReadingBook
 теперь exact pinned upstream (включая per-day/per-hour records, opening ID,
 new-book preset selection и checkpoint sleep_positions field). Reader загружает
 чужие opening totals в фоне и прибавляет текущий day из памяти, без удвоения
@@ -149,7 +149,8 @@ queued save и без переноса вчерашнего чтения на с
 sleep-gap и failed transaction/retry regressions импортированы; model.reading-history
 включён в focused CI. Схема уже 4; новые записи optional format 1, schema bump нет.
 Sleep positions host consumers и Activity UI пока pending; новых строк нет.
-Source checks PASS; runtime CI pending.
+Source checks PASS; CI `44724222957` (`40d3948a`): native и Qt5/offline/package
+PASS, включая новые midnight/DST/sleep/failed-day-transaction regressions.
 
 **in progress — Activity records/model:** импортированы exact upstream
 ActivityRecordStore и reading_activity summary: async read/hide/remove,
@@ -157,9 +158,13 @@ opening exclusion, streak/calendar/hour aggregation и optional hidden-books rec
 UI и его строки ещё не подключены. Exact upstream model.reading-activity
 regressions добавлены в focused CI. Source checks PASS; runtime CI pending.
 
-**Следующий шаг:** whole-book counts/progress, navigation/bookmark indexes и полоса,
-затем activity/history/sleep positions. Default Hybrid не считать готовым до
-полной интеграции. Не использовать chapter-local номера как book pages.
+**Следующий шаг:** дождаться Activity backend CI `44725474629`, исправить реальные
+failures. Daily-history CI `44724222957` PASS. Затем подключить Activity UI и
+sleep custom/positions consumers целыми upstream модулями, сохраняя fork
+privacy/standby/strip. До внесения строк согласовать
+[таблицу EN/RU](doc/beta9-strings-review.md): это proposal, не approval.
+После этого — preview startup scan/reconciliation, оставшиеся G1–G9 и финальный
+Qt5 build/checklist. Default Hybrid ещё не объявлен device-ready.
 
 G1–G9 остаются **pending** для полной интеграции. Промежуточный пакет не для
 устройства. При итоговой выдаче заполнить runtime/CI и выдать пользователю
