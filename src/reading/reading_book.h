@@ -1,4 +1,6 @@
 #pragma once
+#include <QDate>
+#include <QMap>
 #include "reading_pace.h"
 #include "reading_speed.h"
 #include "reading_progress.h"
@@ -99,6 +101,11 @@ public:
 
     // Active time for this opening, excluding sleep and hidden reader time.
     qint64 readingMilliseconds() const;
+    QString readingDay() const;
+    QString readingOpeningId() const;
+    qint64 readingDayMilliseconds();
+    // This opening's reading per local date, including time not saved yet.
+    QMap<QDate, qint64> readingDays();
 
     qint64 sessionReadingMilliseconds() const { return readingMilliseconds() - sessionBaseline; }
 
@@ -130,6 +137,13 @@ public:
 
     // Memory only. The caller queues the existing book checkpoint.
     void setHideBookOnSleepScreen(bool hide) { hideBookOnSleepScreen_ = hide; }
+
+    // This book's own sleep-screen positions, a `sleep_positions` object.
+    // They override the global ones, like the privacy choice survive Mark as
+    // unread, and are saved with the next checkpoint.
+    QJsonObject sleepPositions() const { return sleepPositions_; }
+
+    void setSleepPositions(const QJsonObject &positions) { sleepPositions_ = positions; }
 
     void suppressFinishPrompt() { finishPromptSuppressed = true; }
 
@@ -193,6 +207,7 @@ private:
     bool canFinish() const;
     bool finishPromptSuppressed = false;
     bool hideBookOnSleepScreen_ = false;
+    QJsonObject sleepPositions_;
     struct ActivitySave;
     void writeActivity(std::shared_ptr<ActivitySave>, int attempt);
     void resumeDeferredCheckpoints();

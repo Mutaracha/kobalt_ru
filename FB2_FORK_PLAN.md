@@ -5,7 +5,7 @@
 
 **Текущая работа — in progress:** переход на beta.9. Blaze, Engine/adapter и
 реальные reading consumers подключены. Последний проверенный runtime:
-`cb96eb65f80dc556f29bccbb40fd2ffd281121b9`, [CI `44705458156`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44705458156)
+`8040a9f9015564facbd1498e4815dc623d345400`, [CI `44723018339`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44723018339)
 **PASS**: focused native EPUB/FB2 regressions, Kobo Qt5/offline/package/contents.
 Это не полный upstream/all-variant suite и не device acceptance.
 
@@ -128,7 +128,7 @@ sleep progress/preview используют whole-book progressPercent. Доба
 prepared-bookmark regression; session.bookmark-session включён в focused CI.
 CI `44722105686`: Qt5/package PASS; native compile выявил недостающий
 KOBALT_TEST_ZIP у нового fixture. Условие compile definitions перенесено из
-upstream (`8040a9f9`); повторный CI `44723018339` pending. Новых строк/настроек нет.
+upstream (`8040a9f9`); повторный CI `44723018339` PASS (native и Qt5/package, включая prepared bookmark). Новых строк/настроек нет.
 
 **in progress — whole-book counters/chrome:** перенесены upstream Values estimate
 flags, percent fallback и pageTotal formatting без debug controls/новых настроек.
@@ -139,6 +139,16 @@ header/footer regressions добавлены к уже выбранному mode
 Source checks, EN/RU parity/code-reference generation и strings self-tests (Ninja)
 PASS. Runtime CI pending. Activity/history/sleep positions
 ещё не закончены, package пока не готов для device handoff.
+
+**in progress — daily history/opening accounting:** ReadingHistory и ReadingBook
+теперь exact pinned upstream (включая per-day/per-hour records, opening ID,
+new-book preset selection и checkpoint sleep_positions field). Reader загружает
+чужие opening totals в фоне и прибавляет текущий day из памяти, без удвоения
+queued save и без переноса вчерашнего чтения на сегодня. Переход полуночи/DST,
+sleep-gap и failed transaction/retry regressions импортированы; model.reading-history
+включён в focused CI. Схема уже 4; новые записи optional format 1, schema bump нет.
+Sleep positions host consumers и Activity UI пока pending; новых строк нет.
+Source checks PASS; runtime CI pending.
 
 **Следующий шаг:** whole-book counts/progress, navigation/bookmark indexes и полоса,
 затем activity/history/sleep positions. Default Hybrid не считать готовым до

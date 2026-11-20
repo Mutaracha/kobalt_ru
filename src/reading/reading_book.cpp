@@ -81,6 +81,8 @@ ReadingBook::ReadingBook(std::unique_ptr<ReaderSession> session, QString statePa
     // Privacy belongs to the publication, including after Mark as unread.
     hideBookOnSleepScreen_ = saved.value("book").toString() == identity_
             && saved.value("hide_book_on_sleep_screen").toBool(false);
+    if (saved.value("book").toString() == identity_)
+        sleepPositions_ = saved.value("sleep_positions").toObject();
     // The native opener resets its snapshot before the database record is
     // replaced. Apply the same reset before retaining fields or preferences.
     if (this->bridge)
@@ -103,8 +105,13 @@ ReadingBook::ReadingBook(std::unique_ptr<ReaderSession> session, QString statePa
             layoutPreferences_[key] = preferences.value(key);
     if (saved.value("book").toString() == identity_)
         dictionaryChoice_ = saved.value("dictionary_id").toString();
-    if (saved.value("book").toString() == identity_)
+    if (session_->savedStateMatched() && saved.value("book").toString() == identity_) {
         textPreset_ = saved.value(textpresets::bookKey).toString().left(64);
+    } else {
+        const auto choice = textpresets::newBookChoice(preferences);
+        if (choice != "last" && choice != "book")
+            textPreset_ = choice;
+    }
     // Qt 5.2 leaves a default-constructed QElapsedTimer uninitialized, so
     // isValid() is not reliable until the timer is invalidated or started.
     progressPoll.invalidate();
@@ -635,6 +642,39 @@ void ReadingBook::saveSpeed(bool force, bool background)
     });
 }
 
+QString ReadingBook::readingDay() const
+{
+    return history ? history->day()
+                   : QDateTime::fromMSecsSinceEpoch(utc()).date().toString(Qt::ISODate);
+}
+
+QString ReadingBook::readingOpeningId() const
+{
+    return history ? history->openingId() : QString();
+}
+
+qint64 ReadingBook::readingDayMilliseconds()
+{
+    if (!history)
+        return 0;
+    if (activeReading.isValid())
+        history->update(readingMilliseconds(), session_->state().value("position").toString());
+    return history->dayMilliseconds(readingDay());
+}
+
+QMap<QDate, qint64> ReadingBook::readingDays()
+{
+    QMap<QDate, qint64> result;
+    if (!history)
+        return result;
+    if (activeReading.isValid())
+        history->update(readingMilliseconds(), session_->state().value("position").toString());
+    const auto &days = history->dayTotals();
+    for (auto it = days.cbegin(); it != days.cend(); ++it)
+        result.insert(QDate::fromString(it.key(), Qt::ISODate), it.value());
+    return result;
+}
+
 qint64 ReadingBook::readingMilliseconds() const
 {
     return completedReadingMilliseconds + (activeReading.isValid() ? activeReading.elapsed() : 0);
@@ -889,6 +929,10 @@ QJsonObject ReadingBook::checkpointState() const
     state["finished_position"] = acceptedFinishedAnchor;
     state["suppress_finish_prompt"] = finishPromptSuppressed;
     state["hide_book_on_sleep_screen"] = hideBookOnSleepScreen_;
+    if (sleepPositions_.isEmpty())
+        state.remove("sleep_positions");
+    else
+        state["sleep_positions"] = sleepPositions_;
     if (!imageViews.isEmpty())
         state["image_views"] = imageViews;
     // For the Android and desktop library, which shows progress without
