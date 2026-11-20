@@ -3,6 +3,16 @@
 Принятые решения: [doc/fork-decisions.md](doc/fork-decisions.md).
 Инструкции агентам: [AGENTS.md](AGENTS.md).
 
+**Device follow-up cfb8f51c / upload 487416ff:** получены 2 снимка Activity
+и лог четырёх открытий. [Разбор](doc/reports/cfb8f51c-device-followup.md).
+Подтверждён Hybrid chapter request → `page-note-layout` fallback → whole-book
+при включённых нижних сносках. Cold до reader-shown: Hybrid 16,538 с, Accurate
+18,302 с (разные disk-cache состояния); repeat 5,021 / 4,996 с с retained model.
+Снимки подтверждают RU даты/заголовок серии, сохранность показанных исторических
+итогов и согласованность видимых чисел с округлением. Полная база не предоставлена.
+Повтор того же прогона не нужен; новых runtime правок/сборки нет. Защита сносок
+и закрытая задача оптимизации открытия не изменены. Это не полный device PASS.
+
 **Device review 033d0be2 / upload e82e1e1b:** пользователь кратко проверил
 FB2/EPUB/comics, прислал 51 снимок и три ZIP диагностики. [Разбор](doc/reports/033d0be2-device-review.md):
 warm Accurate/Hybrid ~4,8 с с retained model; cold ~16,28 с, причина whole-book

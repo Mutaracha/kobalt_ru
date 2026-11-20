@@ -3,8 +3,13 @@
 **Пакет для проверки:** [Kobalt-qt5-device](https://github.com/Mutaracha/kobalt_ru/actions/runs/44781746091/artifacts/14652058784),
 runtime `cfb8f51c81ab290d400d715b5ff8f4942b40ebf4`.
 [CI 44781746091](https://github.com/Mutaracha/kobalt_ru/actions/runs/44781746091) **PASS**: native EPUB/FB2 (включая
-activityUnitForms), Kobo Qt5/offline/package/contents. Device-проверка новой
-правки ещё не выполнена.
+activityUnitForms), Kobo Qt5/offline/package/contents.
+
+**Получен follow-up 487416ff:** два снимка Activity и четыре открытия EPUB
+разобраны в [отчёте](../reports/cfb8f51c-device-followup.md). RU даты и заголовок
+серии проверены визуально. Hybrid fallback для нижних сносок подтверждён.
+Пункты 5–6 выполнены, повторять не требуется. Пункты 1/3 полностью по этим
+снимкам не подтверждаются (настройки не показаны).
 
 Предыдущий
 `44778323964`: Kobo Qt5 PASS, native FAIL только в новом `activityUnitForms`.
