@@ -502,7 +502,7 @@ sleep::Snapshot Reader::captureSleepScreen()
     }
     // A book marked as finished is done, wherever its last page sits.
     const int percent =
-            book->finishedHere() ? 100 : pageProgressPercent(session->page(), session->pages());
+            book->finishedHere() ? 100 : session->progressPercent();
     sleep::Snapshot snapshot{ std::move(frame),
                               kobalt::shownOrientation(QGuiApplication::primaryScreen()),
                               strings::get("sleep.percent_read").arg(percent),

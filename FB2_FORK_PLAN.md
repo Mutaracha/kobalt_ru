@@ -116,8 +116,17 @@ Navigate при adoption whole-book layout. Fork chapter ticks использу�
 progress strip — session progressFraction. ReadingPace получает upstream source
 position observation, чтобы локальная нумерация главы не теряла forward turns.
 Добавлен upstream component regression range handoff; component.ui уже включён
-в focused CI. Source checks и strings self-tests (Ninja) PASS; runtime CI pending.
+в focused CI. Source checks и strings self-tests (Ninja) PASS; CI `44720881637` (`7014d57e`) native и Qt5/package PASS, включая
+settingsRendering и component.ui handoff.
 Whole-book chrome/counters/graphs и history/activity consumers ещё pending.
+
+**in progress — bookmark local/display coordinates:** BookmarkSession перенесён
+целиком из pinned upstream: separate local marking/merging и whole-book display,
+slice/layout revision validation и сохранение mark при prepared-neighbour update.
+Reader bookmark rows используют bookPage для подписи и local page для current;
+sleep progress/preview используют whole-book progressPercent. Добавлен upstream
+prepared-bookmark regression; session.bookmark-session включён в focused CI.
+Source checks PASS; runtime CI pending. Новых строк/настроек нет.
 
 **Следующий шаг:** whole-book counts/progress, navigation/bookmark indexes и полоса,
 затем activity/history/sleep positions. Default Hybrid не считать готовым до
