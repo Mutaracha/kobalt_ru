@@ -111,3 +111,13 @@ were registered/selected but missing the settings area pattern. Added the area
 and one-line test descriptions; no tests removed or assertions weakened. This
 repeats a known migration preflight omission, not a rendering failure. Follow-up
 must pass the area/selection check before rerunning CI.
+
+Follow-up CI 44813639385: Qt5/offline/package PASS; native completed compilation
+and ran 475 selected tests. Six KOSync tests failed because their old harness
+accessed Settings controls before creating the now-lazy page (null status/sync/
+automatic controls, including test-side dereferences). The new lazyPanels tests
+and previous focused checks were not listed as failures. Restored pinned beta9
+openSettings/buildSettings fixture helpers and its small call-site hunks that
+materialize controls before UI assertions. Request-count assertions surrounding
+those calls are retained: constructing the UI must not initiate network work.
+No synchronization policy or test expectation was changed to hide these failures.

@@ -596,6 +596,28 @@ bool click(Canvas &canvas, QWidget *widget)
     return clickAt(canvas, point);
 }
 
+// Settings is built when it first opens. Opens it so that its controls exist.
+QWidget *openSettings(ReaderFixture &host)
+{
+    if (auto *open = host.window()->findChild<QPushButton *>("rrSettings"))
+        open->click();
+    // Tests without a canvas leave the window hidden, so ask the panel itself.
+    auto *settings = host.window()->findChild<QWidget *>("rrGeneralSettings");
+    return settings && !settings->isHidden() ? settings : nullptr;
+}
+
+// Opens and closes Settings once, so that its controls, such as the KOSync
+// status and Sync now, exist while the book is read.
+bool buildSettings(ReaderFixture &host)
+{
+    auto *settings = openSettings(host);
+    auto *close = host.window()->findChild<QPushButton *>("rrSettingsClose");
+    if (!settings || !close)
+        return false;
+    close->click();
+    return QTest::qWaitFor([&] { return settings->isHidden() && !host.session()->busy(); });
+}
+
 QPushButton *sizeStep(ReaderFixture &host)
 {
     auto *slider = host.window()->findChild<QSlider *>("rrTextSize");
@@ -811,6 +833,7 @@ private slots:
         QSignalSpy opened(&host, &ReaderFixture::opened);
         host.open(fixture(), nativeSize);
         QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        QVERIFY(openSettings(host));
         auto *entry = host.window()->findChild<QPushButton *>("rrDebugProgress");
         if (action < 0) {
             QVERIFY(!entry);
@@ -6768,6 +6791,7 @@ private slots:
         QVERIFY(manual);
         QCOMPARE(!manual->isHidden(), account == "automatic-off");
         if (account == "logout") {
+            QVERIFY(openSettings(host));
             auto *automatic = host.window()->findChild<QPushButton *>("rrKosyncAutomatic");
             QVERIFY(automatic && automatic->isEnabled());
             automatic->click();
@@ -6992,6 +7016,7 @@ private slots:
         canvas.show();
         QVERIFY(QTest::qWaitForWindowExposed(&canvas));
         QPointer<ReaderWindow> window = host.window();
+        QVERIFY(buildSettings(host));
         auto *status = window->findChild<QLabel *>("rrKosyncStatus");
         QVERIFY(status);
         if (!sleepSync) {
@@ -7423,6 +7448,8 @@ private slots:
         QVERIFY(QTest::qWaitForWindowExposed(&canvas));
         QCoreApplication::processEvents();
         QVERIFY(!host.window()->findChild<QWidget *>("rrKosyncOpening"));
+        QCOMPARE(network->requests, 0);
+        QVERIFY(buildSettings(host));
         QCOMPARE(network->requests, 0);
         if (automaticAfterWake) {
             // With automatic sync off, the wake sync cannot run.
@@ -7969,6 +7996,8 @@ private slots:
                     && popup->isVisible());
         QVERIFY(click(canvas, popup->findChild<QPushButton *>("rrKosyncCancel")));
         QCOMPARE(network->requests, 1);
+        QVERIFY(buildSettings(host));
+        QCOMPARE(network->requests, 1);
         // A page turn syncs once five minutes have passed since the last sync.
         int direction = 1;
         const auto readOn = [&](double minutes) {
@@ -8149,6 +8178,7 @@ private slots:
             skip();
             QCOMPARE(network->releases, 1);
             // Sync now leaves Wi-Fi as it is, whether it connects or not.
+            QVERIFY(buildSettings(host));
             auto *sync = host.window()->findChild<QPushButton *>("rrKosyncNow");
             QVERIFY(sync);
             sync->click();
@@ -8263,6 +8293,8 @@ private slots:
         canvas.show();
         QVERIFY(QTest::qWaitForWindowExposed(&canvas));
         QTRY_VERIFY(!host.session()->busy());
+        QVERIFY(buildSettings(host));
+        QCOMPARE(requests, 0);
         auto *status = host.window()->findChild<QLabel *>("rrKosyncStatus");
         QVERIFY(status);
         status->setText("unchanged");
@@ -10991,6 +11023,7 @@ private:
             QTRY_VERIFY(!popup || !popup->isVisible());
             QCOMPARE(network->cancellations, 1);
             QCOMPARE(attempts.count(), 0);
+            QVERIFY(buildSettings(host));
             QCOMPARE(host.window()->findChild<QLabel *>("rrKosyncStatus")->text(),
                      strings::get("kosync.connection_timeout"));
         } else {
@@ -11001,6 +11034,7 @@ private:
             QCoreApplication::processEvents();
             QCOMPARE(attempts.count(), 0);
             network->connected = false;
+            QVERIFY(buildSettings(host));
             // A later periodic sync without Wi-Fi permission stays local.
             auto *status = host.window()->findChild<QLabel *>("rrKosyncStatus");
             QVERIFY(status);
