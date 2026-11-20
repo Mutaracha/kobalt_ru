@@ -1,3 +1,26 @@
+# Текущая граница выравнивания beta.9
+
+Baseline: upstream `be472588`, fork runtime `9633d3fd` (focused CI 44801198903 PASS; device pending).
+Полный актуальный inventory ещё planned; историческая карта beta.8 ниже не
+является доказательством завершённости beta.9 consumer migration.
+
+- Vendor `src/engine/blaze/crengine` не менялся при cleanup.
+- Удалена старая external engine patch series; build recipe/cache key не менялись.
+- `reader_text_presets.cpp` теперь byte-identical upstream beta.9; общий
+  style_sample/cache API и tests перенесены вместе. Старая gallery prerender
+  очередь и её opening/idle wiring удалены.
+- Сохранён fork transient `whole_book_failed` в sample settings sanitation;
+  текущий styling cache consumer передаёт font catalog в общий ключ.
+- EPUB Hybrid algorithms не менялись. FB2 whole-book contract сохранён;
+  подготовка partial режима — [отдельный анализ](reports/fb2-hybrid-preparation.md).
+- Аннотации/keyboard/KOSync/sleep/lazy panels остаются в очереди выравнивания;
+  не считать их завершёнными по результату этого блока.
+
+Подробности/проверки: [cleanup report](reports/upstream-cleanup-stage1.md),
+текущая очередь: [план](../FB2_FORK_PLAN.md).
+
+---
+
 # Карта расхождений kobalt_ru с upstream beta.8
 
 Это поддерживаемая карта владения кодом для следующих обновлений, не новый

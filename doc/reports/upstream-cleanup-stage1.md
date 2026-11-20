@@ -53,3 +53,19 @@ preview entries from the previous key scheme may miss and regenerate; reading
 data, profile/schema and rendering cache versions remain unchanged.
 Upstream gallery test still checks one render per visible tile, memory reuse,
 storage reuse with engine blocked and physical pager behavior.
+
+
+## Verified checkpoint
+
+Runtime `9633d3fd4b2df250c97ac77d1ff5e0827db35465`,
+[CI 44801198903](https://github.com/Mutaracha/kobalt_ru/actions/runs/44801198903)
+completed success: native job 136516428147 and Kobo Qt5 job 136516428744.
+Offline/package/contents PASS, Qt6 skipped. The focused selection includes
+model.style-sample-cache and desktop.settingsTextPresetGallery; no full upstream
+suite or device acceptance is inferred. Package artifact 14661747164;
+native-results artifact 14661049659. Raw results download redirected to an
+inaccessible blob (EOF), so no independently inspected CTest count is claimed.
+The preceding removal-only checkpoint also passed CI 44800640114.
+Device checklist: ../validation/upstream-presets-device.md.
+Remaining lazy panels/annotations/keyboard/KOSync/sleep alignment is not completed
+by this package. FB2 preparation is source analysis only, documented separately.

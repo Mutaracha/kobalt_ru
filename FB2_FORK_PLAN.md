@@ -5,17 +5,17 @@
 
 ## Активная очередь — выравнивание с upstream перед следующим обновлением
 
-**in progress: подготовка кода; первый build-input cleanup выполнен, CI pending.**
+**in progress: подготовка кода; cleanup и upstream presets — CI verified, device pending.**
 Baseline форка `4e3a33b9`, upstream beta.9 `be472588`.
 [Разбор отказов beta.8 → beta.9 и протокол обновления](doc/reports/beta9-upgrade-retrospective.md).
 Решение: [UPSTREAM-NEXT](doc/fork-decisions.md#upstream-next--граница-подготовки-следующего-обновления).
 
 | Блок | Статус | Следующий результат / gate |
 |---|---|---|
-| Уборка артефактов и incidental diff | in progress | Удалены список и 26 старых engine patches: consumers отсутствуют, build использует in-tree Blaze. Cache recipe/filter оставлены byte-identical, чтобы не менять dependency key. Прочий incidental diff ещё не сводился; CI pending. |
-| Общие реализации beta.9 | in progress: пресеты перенесены, CI pending | Контекстно свести пресеты, chapter lookup, аннотации/keyboard, KOSync, sleep/storage. Использовать upstream lazy panels вместо собственной оптимизации; проверить shared helper/API и protected fork behavior. |
+| Уборка артефактов и incidental diff | in progress | Удалены список и 26 старых engine patches: consumers отсутствуют, build использует in-tree Blaze. Cache recipe/filter оставлены byte-identical, чтобы не менять dependency key. Прочий incidental diff ещё не сводился; CI 44800640114 PASS. |
+| Общие реализации beta.9 | in progress: пресеты CI verified | Контекстно свести пресеты, chapter lookup, аннотации/keyboard, KOSync, sleep/storage. Использовать upstream lazy panels вместо собственной оптимизации; проверить shared helper/API и protected fork behavior. |
 | Актуальная карта дельты | planned | Обновить fork-delta по фактическим файлам; для каждого retained delta указать причину и gate, upstream-only файлы проверить отдельно. |
-| Подготовка FB2 Hybrid | planned | Параллельно UI/build cleanup: corpus, sections/notes/resources/anchors, зависимости и проверяемый whole-book fallback. Реализация и включение partial layout не разрешены автоматически. |
+| Подготовка FB2 Hybrid | in progress: source analysis | [Граница и матрица](doc/reports/fb2-hybrid-preparation.md) описаны по коду. Далее corpus, sections/notes/resources/anchors и проверяемый whole-book fallback. Реализация и включение partial layout не разрешены автоматически. |
 | Следующее обновление | planned; blocked до фиксации нового upstream SHA для runtime-переноса | Использовать протокол отчёта; сначала завершить cleanup и составить dependency/consumer/test matrix. Beta.10 ещё не анализировалась. |
 
 **Граница:** сейчас не меняем алгоритмы EPUB Hybrid (slicing, background full
@@ -24,7 +24,16 @@ layout, adoption, fallback) базовой версии и не пишем со�
 Существующие narrow hooks, включая comics frameImage, сохраняются по назначению.
 FB2 whole-book остаётся безопасным поведением до отдельного проверенного решения.
 
-**Validation:** пресеты/sample/cache переведены на upstream с matching tests; CI pending. Первый cleanup удаляет только неиспользуемые build artifacts, runtime source не менялся. Static references/build ownership/cache input checks PASS; локально CMake/Qt SDK отсутствуют, native/package NOT RUN. Push CI pending; нового device PASS нет.
+**Validation:** runtime `9633d3fd4b2df250c97ac77d1ff5e0827db35465`,
+[CI 44801198903](https://github.com/Mutaracha/kobalt_ru/actions/runs/44801198903)
+**PASS**: focused native EPUB/FB2, presets gallery/cache через settings/model
+selection; Kobo Qt5/offline/package/contents. Qt6 skipped, full upstream suite,
+Android и устройство NOT RUN. Локально нет CMake/Qt SDK/Docker; source checks
+и publication diff --check PASS. Raw native artifact download из Arena недоступен
+(redirect EOF); CI job success подтверждён GitHub API, сырые результаты не изучены.
+[Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44801198903/artifacts/14661747164),
+[короткий device checklist](doc/validation/upstream-presets-device.md).
+Это checkpoint только presets/build cleanup, не завершение всей очереди.
 Исторические этапы ниже — evidence, их промежуточные pending не переоткрывают задачи.
 Старое зависание после frame load не объявлено исправленным.
 
