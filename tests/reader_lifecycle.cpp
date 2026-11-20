@@ -4600,13 +4600,14 @@ private slots:
         host.window()->show();
         QTRY_VERIFY(host.window()->readyForPresentation());
         host.book()->setHideBookOnSleepScreen(true);
-        const auto backdrop = sleep::privateSnapshot(nativeSize, preferences);
+        const auto backdrop = sleep::privateSnapshot(dark ? nativeSize : nativeSize.transposed(),
+                                                     preferences, {}, true);
         const auto awake = host.window()->powerScreenSnapshot();
         QCOMPARE(awake.image, backdrop.image);
         QCOMPARE(awake.mode, sleep::Mode::Plain);
-        QCOMPARE(awake.design,
-                 sleep::design(preferences) == sleep::Design::Stock ? sleep::Design::Card
-                                                                    : sleep::design(preferences));
+        // Kobo's screen becomes the card; Custom becomes the status it chose.
+        QCOMPARE(awake.design, backdrop.design);
+        QVERIFY(awake.design != sleep::Design::Stock && awake.design != sleep::Design::Custom);
         QVERIFY(awake.privateBook);
         QCOMPARE(awake.percent,
                  pageProgressPercent(host.session()->page(), host.session()->pages()));
@@ -4694,6 +4695,8 @@ private slots:
         QVERIFY(poweredOff != state->image);
     }
 
+    // Kobalt's folder joins Nickel's scan exclusion without losing the
+    // reader's own, and leaves it as it was on removal.
     void sleepScreenDimsOnlyItsOwnedPage_data()
     {
         QTest::addColumn<int>("ppi");
@@ -4839,21 +4842,30 @@ private slots:
         QTest::addColumn<bool>("dark");
         QTest::addColumn<bool>("longMetadata");
         QTest::addColumn<bool>("privateBook");
+        QTest::addColumn<int>("place");
+        const int standard = int(sleep::Place::Default);
         for (const auto design : sleep::designs) {
-            if (sleep::tiled(design) || design == sleep::Design::Stock)
+            // Custom reaches the painters as the status it chose.
+            if (sleep::tiled(design) || design == sleep::Design::Stock
+                || design == sleep::Design::Custom)
                 continue;
             QTest::newRow(qPrintable(sleep::value(design) + "-light"))
-                    << int(design) << false << false << false;
+                    << int(design) << false << false << false << standard;
             QTest::newRow(qPrintable(sleep::value(design) + "-dark"))
-                    << int(design) << true << false << false;
+                    << int(design) << true << false << false << standard;
             for (bool dark : { false, true })
                 QTest::newRow(
                         qPrintable(sleep::value(design) + (dark ? "-long-dark" : "-long-light")))
-                        << int(design) << dark << true << false;
+                        << int(design) << dark << true << false << standard;
             for (bool dark : { false, true })
                 QTest::newRow(qPrintable(sleep::value(design)
                                          + (dark ? "-private-dark" : "-private-light")))
-                        << int(design) << dark << false << true;
+                        << int(design) << dark << false << true << standard;
+            // Every other place of a status that moves, with long metadata.
+            for (const auto place : sleep::places(design))
+                if (place != sleep::defaultPlace(design))
+                    QTest::newRow(qPrintable(sleep::value(design) + "-" + sleep::value(place)))
+                            << int(design) << false << true << false << int(place);
         }
     }
 
@@ -4865,6 +4877,7 @@ private slots:
         QFETCH(bool, dark);
         QFETCH(bool, longMetadata);
         QFETCH(bool, privateBook);
+        QFETCH(int, place);
         const auto design = sleep::Design(designIndex);
         const int previous = ui::density();
         ui::setDensity(300);
@@ -4887,6 +4900,7 @@ private slots:
             shot.privateBook = privateBook;
             shot.mode = sleep::backdrop(design);
             shot.tile = sleep::Tile::None;
+            shot.place = sleep::Place(place);
             shot.dimPage = false;
             shot.dark = dark;
             shot.percent = 42;
@@ -5091,6 +5105,7 @@ private slots:
                  "A title containing %3 must not disappear as a template placeholder");
     }
 
+    // The reader hands off its portrait direction without changing its reading layout.
     void sleepFromLandscapeKeepsTheReadingPage()
     {
         const auto paths = testPaths();
@@ -5245,6 +5260,7 @@ private slots:
         QCOMPARE(page.snapshot(true), blank);
     }
 
+    // Checks that the chapter, book and sleep-screen time-remaining texts use the same detailed or approximate format.
     void sleepCustomPowerOffUsesItsOwnLook()
     {
         const auto paths = testPaths();
@@ -5739,7 +5755,8 @@ private slots:
         QTemporaryDir directory;
         QVERIFY(directory.isValid());
         const auto state = std::make_shared<test::SleepPresentationState>();
-        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        const auto paths = testPaths();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
         host.configureServices = [&](ReaderHostServices &services) {
             services.sleepOverlayDirectories = { directory.path() };
             services.presentation = [state](QWidget *) {
@@ -5773,13 +5790,30 @@ private slots:
         QTRY_VERIFY(gallery && gallery->isVisible());
         auto *grid = gallery->findChild<QWidget *>("rrSleepGalleryGrid");
         QVERIFY(grid && grid->isVisible());
+        auto *follow = gallery->findChild<QPushButton *>("rrSleepFollowOrientation");
+        QVERIFY(follow);
+        QVERIFY(click(canvas, follow));
+        QTRY_COMPARE(storage::readPreferences(paths.preferences())
+                             .object.value(sleep::followOrientationKey),
+                     QJsonValue(false));
+        auto *notice = gallery->findChild<QWidget *>("rrSleepOrientationNotice");
+        QVERIFY(notice && notice->isVisible());
+        auto *noticeText = notice->findChild<QLabel *>("rrButtonFeedbackText");
+        QVERIFY(noticeText);
+        QCOMPARE(noticeText->text(), strings::get("sleep.rotation_disabled"));
+        QVERIFY(click(canvas, follow));
+        QTRY_COMPARE(storage::readPreferences(paths.preferences())
+                             .object.value(sleep::followOrientationKey),
+                     QJsonValue(true));
+        QCOMPARE(noticeText->text(), strings::get("sleep.rotation_enabled"));
+
         auto *counter = gallery->findChild<QLabel *>("rrSleepGalleryPage");
         QVERIFY(counter);
         const auto firstPage = counter->text();
         const auto readingPage = host.session()->state().value("page");
         host.window()->physicalPageButton(Qt::Key_F23, -1);
         QCOMPARE(counter->text(), firstPage);
-        const int pages = 4;
+        const int pages = 5;
         for (int index = 0; index < pages; ++index) {
             if (!capture.isEmpty())
                 QVERIFY(host.window()->grab().save(
@@ -5799,9 +5833,9 @@ private slots:
         QCOMPARE(host.session()->state().value("page"), readingPage);
         for (int index = 1; index < pages; ++index)
             host.window()->physicalPageButton(Qt::Key_F24, 1);
-        // PNG over text is the fourth entry on the last page. Without PNGs it is
+        // PNG over text is the only entry on the last page. Without PNGs it is
         // unavailable, and a tap explains where to add them.
-        const auto cell = QPoint(grid->width() * 3 / 4, grid->height() * 3 / 4);
+        const auto cell = QPoint(grid->width() / 4, grid->height() / 4);
         QVERIFY(clickAt(canvas, grid->mapTo(canvas.surface(), cell)));
         auto *help = host.window()->findChild<QWidget *>("rrSleepOverlayHelpPopup");
         QTRY_VERIFY(help && help->isVisible());
@@ -5831,6 +5865,7 @@ private slots:
         QVERIFY(gallery->isVisible());
     }
 
+    // Activity must recheck the book before returning a cached cover.
     void sleepGreetingEditor()
     {
         QTemporaryDir directory;
@@ -5864,15 +5899,15 @@ private slots:
         auto *grid = gallery->findChild<QWidget *>("rrSleepGalleryGrid");
         QVERIFY(grid);
         const auto openEditor = [&] {
-            // Night is the lower-left entry on page three. Await the real hold timer.
+            // Night is the lower-right entry on page three. Await the real hold timer.
             QTest::mousePress(grid, Qt::LeftButton, Qt::NoModifier,
-                              QPoint(grid->width() / 4, grid->height() * 3 / 4));
+                              QPoint(grid->width() * 3 / 4, grid->height() * 3 / 4));
             const bool shown = QTest::qWaitFor([&] {
                 auto *dialog = host.window()->findChild<QWidget *>("rrSleepGreeting");
                 return dialog && dialog->isVisible();
             });
             QTest::mouseRelease(grid, Qt::LeftButton, Qt::NoModifier,
-                                QPoint(grid->width() / 4, grid->height() * 3 / 4));
+                                QPoint(grid->width() * 3 / 4, grid->height() * 3 / 4));
             return shown;
         };
         QVERIFY(openEditor());

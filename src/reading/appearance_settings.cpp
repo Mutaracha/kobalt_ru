@@ -158,6 +158,7 @@ QJsonObject cleanPreferences(QJsonObject preferences)
                              "edge_light_gestures",
                              "show_light_gesture_feedback",
                              "show_opening_cover",
+                             sleep::followOrientationKey,
                              "dense_stats_chart",
                              "hanging_punctuation",
                              "hide_nonlinear_fragments",
@@ -193,6 +194,9 @@ QJsonObject cleanPreferences(QJsonObject preferences)
     choice("sleep_screen", { "stock", "cover", "page", "overlay" });
     choice("sleep_tile", { "card", "bookmark", "none" });
     choice(sleep::designKey, sleep::designValues());
+    for (const auto *key : { sleep::customKey, sleep::placesKey })
+        if (preferences.contains(key) && !preferences.value(key).isObject())
+            preferences.remove(key);
     if (preferences.contains(sleep::greetingKey)
         && (!preferences.value(sleep::greetingKey).isString()
             || preferences.value(sleep::greetingKey).toString().size() > sleep::greetingLength))
