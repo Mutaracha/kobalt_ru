@@ -10,7 +10,9 @@ warm Accurate/Hybrid ~4,8 с с retained model; cold ~16,28 с, причина w
 пустой заголовок hidden Navigate и принудительные EN даты/word totals в RU;
 добавлены диагностические mode/fallback события без изменения алгоритма.
 Технический CI `44775124583` PASS. Пользователь одобрил весь перевод/склонения
-из review: три RU уточнения и шесть EN/RU unit keys внесены, новый CI pending.
+из review: три RU уточнения и шесть EN/RU unit keys внесены. Runtime
+`cb9afca9`, CI `44778323964` pending; локальные source/parity/Ninja string
+self-tests PASS. Пакет с этими переводами ещё не объявлен проверенным.
 Числа Activity согласуются с округлением/порогами; база профиля не предоставлена,
 точность исторических итогов не объявлена подтверждённой.
 

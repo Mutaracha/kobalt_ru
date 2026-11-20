@@ -220,3 +220,17 @@ The user approved every EN/RU row in doc/beta9-strings-review.md before insertio
 into assets. This covers Activity, custom sleep/position controls and chapter/book
 word-count captions. Preserve the existing Letter wording and accepted sleep
 design names. Final wrapping/length review remains by device screenshots.
+
+## B9-DEVICE-REVIEW-STRINGS — approved screenshot refinements
+
+After reviewing upload e82e1e1b (runtime 033d0be2), the user approved the complete
+`device-review-translation` proposal. This supersedes the earlier RU rendering
+labels only where specified: settings.rendering is «Режим рендеринга» and
+settings.rendering_accurate is «Точный». activity.longest is «Самая длинная»
+(the streak heading, not the session heading). EN labels and speed descriptions
+are unchanged. Six approved EN/RU Activity unit keys supply book/books and
+hour/hours with RU книга/книги/книг and час/часа/часов; use existing CLDR rules.
+This changes presentation only, not recorded time, thresholds or totals.
+Dates and grouped word counts follow the selected UI language without changing
+Nickel's global process locale. Exact strings and the approved table are in
+assets/*.strings and doc/reports/033d0be2-device-review.md.
