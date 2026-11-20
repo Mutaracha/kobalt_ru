@@ -40,6 +40,9 @@ public:
 
     bool connected() const { return connected_; }
 
+    // Request one native local-library scan; consume completion on doneProcessing.
+    bool scanLibrary(std::function<void()> done);
+
     bool blocked() const
     {
         return asleep || usbPending || exported || poweringOff || removalPending;
@@ -91,6 +94,7 @@ private slots:
     void unplugging();
 
 private:
+    std::function<void()> scanDone;
     bool eventFilter(QObject *object, QEvent *event) override;
     void checkSleepView(const char *source);
     void queueSleepViewCheck();

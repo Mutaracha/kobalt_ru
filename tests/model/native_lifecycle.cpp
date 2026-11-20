@@ -83,6 +83,8 @@ class PlugWorkflowManager : public QObject
     Q_OBJECT
 public:
     static PlugWorkflowManager *sharedInstance();
+    void sync();
+    int scans = 0;
     bool pluggedInViewVisible() const;
 signals:
     void aboutToConnect();
@@ -94,6 +96,11 @@ PlugWorkflowManager *PlugWorkflowManager::sharedInstance()
 {
     static PlugWorkflowManager manager;
     return &manager;
+}
+
+void PlugWorkflowManager::sync()
+{
+    ++scans;
 }
 
 bool PlugWorkflowManager::pluggedInViewVisible() const
@@ -174,6 +181,15 @@ int main(int argc, char **argv)
                         "Suspend hook changed its native arguments");
             };
     kobalt::NativeLifecycle lifecycle(nullptr);
+    int scanCompletions = 0;
+    require(lifecycle.scanLibrary([&] { ++scanCompletions; }) && usb->scans == 1,
+            "Native library scan was not requested");
+    require(!lifecycle.scanLibrary([&] { ++scanCompletions; }) && usb->scans == 1,
+            "A pending library scan was requested twice");
+    emit usb->doneProcessing();
+    emit usb->doneProcessing();
+    require(scanCompletions == 1, "Scan completion was not consumed exactly once");
+
     require(lifecycle.connected(), "Mock Nickel managers did not connect");
     require(!kobalt::NativeLifecycle::protectStandbyInput(),
             "Reader input guard activated without a reader");

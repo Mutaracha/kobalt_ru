@@ -7,7 +7,9 @@
 wallpaper sleep/off и follow-reading orientation подключены. Сохранены fork text
 fitting и двухстрочная лента. Добавлены upstream Custom/editor/cancel tests;
 workflow выбирает sleep lifecycle. Runtime результат этого блока pending;
-startup preview migration и финальные G1–G9 ещё не завершены. Device handoff нет.
+Startup preview migration подключена отдельно: удаляются только generated PNG;
+scan marker завершается после native doneProcessing (есть exactly-once regression).
+Финальные G1–G9 ещё не завершены. Device handoff нет.
 
 **Текущая работа — in progress:** переход на beta.9. Blaze, Engine/adapter и
 реальные reading consumers подключены. Последний проверенный runtime:

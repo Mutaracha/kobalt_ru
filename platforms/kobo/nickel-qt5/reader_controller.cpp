@@ -1,3 +1,4 @@
+#include "storage/preview_store.h"
 #include "../common/diagnostics.h"
 #include "platforms/kobo/common/standby_diagnostics.h"
 #include "support/qt_compat.h"
@@ -423,6 +424,7 @@ public:
         kobalt::diagnostic("ready",
                            kobalt::qt::object({ { "startup_ms", double(elapsed.elapsed()) },
                                                 { "opener", fromOpener } }));
+        candidate->finishPreviewMigration();
         nh_log("reader: native controller ready");
     }
 
@@ -449,6 +451,9 @@ private:
 };
 
 int initialize() {
+    // Reconcile public legacy previews only after Nickel startup has completed.
+    if (!kobalt::storage::migratePreviews(QString::fromLatin1(configDir) + "/cache/previews", true))
+        nh_log("reader: preview cache migration incomplete");
     // Pick the interface language before any UI string is read.
     kobalt::strings::setLocale(kobalt::resolveLocale());
 #ifdef KOBALT_READER_HARDWARE

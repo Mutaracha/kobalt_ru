@@ -1,3 +1,4 @@
+#include "storage/preview_store.h"
 #include "reading/rendering_mode.h"
 #include "diagnostics.h"
 #include "clocks.h"
@@ -445,6 +446,13 @@ void ReaderCoordinator::finishHomeNavigation()
 bool ReaderCoordinator::idleForBenchmark() const
 {
     return !busy && !run.reader && !run.fallbackAlert && !lifecycle->draining;
+}
+
+void ReaderCoordinator::finishPreviewMigration()
+{
+    const auto directory = environment_.paths.previews();
+    if (storage::previewMigrationNeedsScan(directory))
+        lifecycle->scanLibrary([directory] { storage::completePreviewMigration(directory); });
 }
 
 bool ReaderCoordinator::available() const
