@@ -9519,6 +9519,29 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         }
     }
 
+    void activityLocale()
+    {
+        const auto previous = strings::locale();
+        const auto restore = qScopeGuard([previous] { strings::setLocale(previous); });
+        const QDate today(2026, 11, 20);
+        ActivityRecords records;
+        records.days[today] = 5 * 60000;
+        for (const auto locale : { strings::Locale::Russian, strings::Locale::English }) {
+            strings::setLocale(locale);
+            ActivityView view(nullptr);
+            view.resize(1264, 1680);
+            view.setRecords(records, activity::summarize(records, today));
+            view.showSection(ActivityView::Section::Calendar);
+            view.show();
+            QCoreApplication::processEvents();
+            auto *month = view.findChild<QLabel *>("rrActivityMonthsPage");
+            QVERIFY(month && month->isVisible());
+            QCOMPARE(month->text(), locale == strings::Locale::Russian
+                                     ? QString::fromUtf8("ноябрь 2026")
+                                     : QStringLiteral("November 2026"));
+        }
+    }
+
     // Activity opens from Stats, owns all four tabs and dismisses back to Stats.
     void activity()
     {
@@ -10364,6 +10387,15 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
             QVERIFY(fixture.press("rrDisabledFeaturesDone"));
             QCOMPARE(featuresButton->caption(), pass ? QString("None") : allHidden);
             QCOMPARE(fixture.widget("rrSettingsKosync")->isHidden(), pass == 0);
+            QVERIFY(fixture.press("rrSettingsControls"));
+            if (!pass) {
+                QVERIFY(!fixture.visible("rrNavigationBarButtons"));
+                QVERIFY(!fixture.visible("rrControlsNavigationBarSection"));
+            } else {
+                QVERIFY(revealSettingsOption(fixture, "rrNavigationBarButtons"));
+                QVERIFY(fixture.visible("rrNavigationBarButtons"));
+                QVERIFY(fixture.visible("rrControlsNavigationBarSection"));
+            }
             QVERIFY(fixture.press("rrSettingsClose"));
             QTRY_VERIFY(!fixture.visible("rrGeneralSettings"));
             QTRY_VERIFY(!fixture.state().value("busy").toBool());

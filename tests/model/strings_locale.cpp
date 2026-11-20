@@ -31,6 +31,13 @@ void translatedLookup() {
     using strings::Locale;
     strings::setLocale(Locale::Russian);
     require(strings::locale() == Locale::Russian, "Russian locale was not stored");
+    require(strings::formatLocale().language() == QLocale::Russian
+                    && strings::formatLocale().standaloneMonthName(11)
+                            == QString::fromUtf8("ноябрь"),
+            "Activity dates must follow the selected Russian UI, not the process locale");
+    require(strings::formatLocale().toString(285644)
+                    == QLocale(QLocale::Russian, QLocale::Russia).toString(285644),
+            "Russian grouped word totals use the wrong locale");
     require(strings::get("common.cancel") == QString::fromUtf8("Отмена"), "Russian lookup returned the wrong copy");
     require(strings::get("library.title") == QString::fromUtf8("Библиотека"), "Russian library title mismatch");
     require(strings::get("settings.paragraph_choices_description")
@@ -48,6 +55,10 @@ void translatedLookup() {
             "Approved reserve-font label mismatch: settings.mono_font");
     strings::setLocale(Locale::English);
     require(strings::get("common.cancel") == QStringLiteral("Cancel"), "English lookup returned the wrong copy");
+    require(strings::formatLocale().language() == QLocale::English
+                    && strings::formatLocale().standaloneMonthName(11) == QStringLiteral("November")
+                    && strings::formatLocale().toString(285644) == QStringLiteral("285,644"),
+            "Switching back to English must restore upstream dates and number formatting");
     require(strings::get("missing.unknown.key") == QStringLiteral("missing.unknown.key"),
             "An unknown key must resolve to itself");
 }

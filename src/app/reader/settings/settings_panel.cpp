@@ -2533,6 +2533,7 @@ void SettingsPanel::updateFeatureOptions()
     const bool navigate = features::enabled(featurePreferences, features::Navigate);
     const bool stats = features::enabled(featurePreferences, features::Stats);
     navigationBarButton->setVisible(navigate);
+    findChild<QWidget *>("rrControlsNavigationBarSection")->setVisible(navigate);
     menuViewButton->setVisible(navigate || stats);
     denseGraphOption->setVisible(stats);
     saveWordsOption->setVisible(features::enabled(featurePreferences, features::Words));

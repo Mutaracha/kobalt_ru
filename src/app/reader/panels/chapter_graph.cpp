@@ -402,11 +402,11 @@ void ChapterGraph::refreshCells()
                                                    : strings::get("common.pages"))
             : p.chapterPages > 0 ? strings::get("stats.last_chapter")
                                  : QString();
-    // The catalog is English, so group digits the English way on every device.
+    // Use the selected interface language for grouped word totals.
     const auto wordTotal = [](qint64 count) {
         return count >= 0
                 ? strings::get("stats.words")
-                          .arg(QLocale(QLocale::English, QLocale::UnitedStates).toString(count))
+                          .arg(strings::formatLocale().toString(count))
                 : QString();
     };
     // A chapter's total waits for the counts, and a failed count never shows

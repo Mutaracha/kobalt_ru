@@ -704,6 +704,10 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
         firstSpineItem = lastSpineItem = -1;
         slicePages_ = 0;
     }
+    diagnostic("engine-opening-mode",
+               { { "fb2", loadingFb2 }, { "chapter_mode_requested", chapterMode() },
+                 { "first_spine_item", firstSpineItem }, { "last_spine_item", lastSpineItem },
+                 { "inpage_footnotes", inpageFootnotes_ } });
     EngineSlowdownScope slowdown(firstSpineItem >= 0,
                                  [this] { return openInterrupt_ && openInterrupt_(); });
     QElapsedTimer windowTimer;
@@ -802,6 +806,8 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
     if (notes == PageNoteLayout::Interrupted)
         return fail(OpeningFailureKind::Cancelled, strings::key("error.opening_interrupted"));
     if (notes == PageNoteLayout::WholeBook) {
+        diagnostic("engine-opening-fallback",
+                   { { "reason", "page-note-layout" }, { "first_spine_item", firstSpineItem } });
         auto whole = saved;
         whole["koblaze_first_spine_item"] = -1;
         whole["koblaze_last_spine_item"] = -1;

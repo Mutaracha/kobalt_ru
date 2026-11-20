@@ -2,6 +2,7 @@
 #include "string_table.h"
 #include <QByteArray>
 #include <QString>
+#include <QLocale>
 #include <atomic>
 
 namespace kobalt::strings {
@@ -33,6 +34,15 @@ inline void setLocale(Locale locale)
 inline Locale locale()
 {
     return Locale(localeStore().load());
+}
+
+// Dates and grouped figures follow the selected UI language, not Nickel's
+// process locale (which may still be C even with Russian ExtraLocales).
+inline const QLocale &formatLocale()
+{
+    static const QLocale english(QLocale::English, QLocale::UnitedStates);
+    static const QLocale russian(QLocale::Russian, QLocale::Russia);
+    return locale() == Locale::Russian ? russian : english;
 }
 
 // Nickel stores codes such as "ru", "ru_RU" and occasionally "ru-RU". Only the

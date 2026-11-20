@@ -31,16 +31,9 @@ namespace sizes = ui::metrics::activity;
 namespace {
 constexpr qint64 minute = 60 * 1000, hour = 60 * minute;
 
-// The catalog is English, so dates and day names are English on every device.
-const QLocale &english()
-{
-    static const QLocale locale(QLocale::English, QLocale::UnitedStates);
-    return locale;
-}
-
 QString day(const QDate &date, bool year = false)
 {
-    return english().toString(date, year ? QStringLiteral("d MMM yyyy") : QStringLiteral("d MMM"));
+    return strings::formatLocale().toString(date, year ? QStringLiteral("d MMM yyyy") : QStringLiteral("d MMM"));
 }
 
 QString clock(qint64 utc)
@@ -293,7 +286,7 @@ protected:
             const int left = center - barWidth / 2;
             // Today keeps its day name in a narrow column; the underline
             // still marks it.
-            const auto dayName = english().dayName(index + 1, QLocale::ShortFormat);
+            const auto dayName = strings::formatLocale().dayName(index + 1, QLocale::ShortFormat);
             const QString name = index == today
                             && ui::interfaceTextWidth(strings::get("activity.today").toUpper(),
                                                       label)
@@ -572,7 +565,7 @@ protected:
         painter.fillRect(0, 0, width(), ui::metrics::control::border, ui::dividerColor(this));
         for (int column = 0; column < 7; ++column)
             drawCaption(painter, QRect(chrome::inset + inner * column / 7, 0, inner / 7, head),
-                        english().dayName(column + 1, QLocale::ShortFormat), Qt::AlignCenter, ink);
+                        strings::formatLocale().dayName(column + 1, QLocale::ShortFormat), Qt::AlignCenter, ink);
         const QDate first = activity::weekStart(month);
         const int rowHeight = (height() - head) / 6;
         const QFont value(ui::interfaceFont(chapters::unitText));
@@ -709,7 +702,7 @@ protected:
             const int week = int(start.daysTo(QDate(today.year(), month, 1))) / 7;
             drawCaption(painter,
                         QRect(left + week * step, top + 7 * step + ui::px(4), step * 4, labels),
-                        english().monthName(month, QLocale::ShortFormat).left(1),
+                        strings::formatLocale().standaloneMonthName(month, QLocale::ShortFormat).left(1),
                         Qt::AlignLeft | Qt::AlignTop, ui::noteColor(this),
                         chrome::captionLabelText);
         }
@@ -822,14 +815,15 @@ private:
         const bool thisMonth =
                 shown.year() == summary.today.year() && shown.month() == summary.today.month();
         month->caption->setText(thisMonth ? strings::get("activity.this_month")
-                                          : english().monthName(shown.month()));
+                                          : strings::formatLocale().standaloneMonthName(shown.month()));
         setDuration(month, total,
                     strings::get(days == 1 ? "activity.days_of_one" : "activity.days_of")
                             .arg(read)
                             .arg(days));
         grid->setMonth(shown, summary.days, summary.today);
         months->setPage(monthIndex(shown), monthIndex(summary.today) + 1,
-                        english().toString(shown, QStringLiteral("MMMM yyyy")), false, {}, true);
+                        strings::formatLocale().standaloneMonthName(shown.month()) + QStringLiteral(" ")
+                                + QString::number(shown.year()), false, {}, true);
     }
 
     void arrange()
@@ -1222,7 +1216,8 @@ private:
                     auto *header = bands[bandsUsed++];
                     setBand(header,
                             month.month.isValid()
-                                    ? english().toString(month.month, QStringLiteral("MMMM yyyy"))
+                                    ? strings::formatLocale().standaloneMonthName(month.month.month())
+                                            + QStringLiteral(" ") + QString::number(month.month.year())
                                     : strings::get("activity.hidden"),
                             plural("activity.book_count", "activity.books_count",
                                    month.books.size())
@@ -1674,7 +1669,7 @@ public:
                                               + day(summary.longestSessionDate),
                               summary.longestSession);
         records[1]->setRecord(strings::get("activity.most_in_day"),
-                              summary.bestDay ? english().toString(summary.bestDayDate,
+                              summary.bestDay ? strings::formatLocale().toString(summary.bestDayDate,
                                                                    QStringLiteral("ddd d MMM"))
                                               + QStringLiteral(" · ")
                                               + plural("activity.book_count",
@@ -2425,7 +2420,7 @@ public:
             lastCell->caption->setText(strings::get("activity.last_read"));
             const auto last = total.last ? activity::localDate(total.last) : QDate();
             lastCell->set(last.isValid() ? QString::number(last.day()) : QString(),
-                          last.isValid() ? english().monthName(last.month(), QLocale::ShortFormat)
+                          last.isValid() ? strings::formatLocale().standaloneMonthName(last.month(), QLocale::ShortFormat)
                                          : QString(),
                           last.isValid() && last.year() != today.year()
                                   ? QString::number(last.year())
@@ -2545,7 +2540,7 @@ private:
                     ? strings::get("activity.today_at").arg(clock(session.started))
                     : date == today.addDays(-1)
                     ? strings::get("activity.yesterday_at").arg(clock(session.started))
-                    : english().toString(date, QStringLiteral("ddd d MMM")) + QStringLiteral(", ")
+                    : strings::formatLocale().toString(date, QStringLiteral("ddd d MMM")) + QStringLiteral(", ")
                             + clock(session.started);
             QString range;
             if (extras.ranges.contains(session.started)) {
