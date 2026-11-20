@@ -1,3 +1,4 @@
+#include <QSemaphore>
 #include "app/reader/views/annotation_exporter.h"
 #include "app/reader/panels/search_panel.h"
 #include <QVariant>

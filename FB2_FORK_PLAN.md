@@ -94,7 +94,9 @@ upstream SleepSave/epoch callback/clear pending Exit и повторная по�
 пользователя. Upstream close/sleep order, stale pre-sleep completion и wake retry
 regressions перенесены вместе с fixture и включены в focused CI (старые обратные
 order tests заменены, не ослаблены). Source checks и strings parity/generation
-PASS. Общий host-mode/UI перенос ещё pending.
+PASS. CI `44712598821`: Qt5/package PASS; native compile нашёл недостающий
+QSemaphore include у перенесённого regression. Добавлен явный include; runtime
+проверка новых wake regressions pending. Общий host-mode/UI перенос ещё pending.
 
 **Следующий шаг:** связать host rendering-mode preference/application и выполнить
 перенести оставшиеся wake/recovery consumers и подключение save epochs;
