@@ -121,3 +121,22 @@ openSettings/buildSettings fixture helpers and its small call-site hunks that
 materialize controls before UI assertions. Request-count assertions surrounding
 those calls are retained: constructing the UI must not initiate network work.
 No synchronization policy or test expectation was changed to hide these failures.
+
+
+## Verified combined checkpoint
+
+Runtime `77564e9e11d2049cf82cfd5355704ae93e1cffa8`: [CI 44815357384](https://github.com/Mutaracha/kobalt_ru/actions/runs/44815357384)
+SUCCESS. Kobo Qt5 build/offline/package/contents and focused native job PASS;
+Qt6 intentionally skipped. No local Qt runtime/device or full-suite/Android claim.
+The prior failed native run selected 475 tests; this successful run's raw XML/log
+was not downloaded (GitHub log redirect EOF), so no raw result-count claim is made.
+Artifacts API confirms Qt5 artifact 14669920633 (37360968 bytes) and native results
+14667809370 (14888 bytes). [Device package](https://github.com/Mutaracha/kobalt_ru/actions/runs/44815357384/artifacts/14669920633).
+
+Local static checks PASS: preparePanels/ensureSettings equal pinned beta9;
+ReaderSession and engine source/adapter algorithms unchanged from 02b4ddfc;
+CMake test-area preflight, focused selection/build-target check, strings generation
+and rebuild script, explicit staged diff --check. Scratch-only CMake was installed
+for script preflights, not used to claim a local Qt build. Combined device checks:
+doc/validation/upstream-panels-device.md. Settings background construction and
+first-open theme are now one package; presets have prior user approval only.

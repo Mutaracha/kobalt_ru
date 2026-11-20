@@ -24,26 +24,20 @@ layout, adoption, fallback) базовой версии и не пишем со�
 Существующие narrow hooks, включая comics frameImage, сохраняются по назначению.
 FB2 whole-book остаётся безопасным поведением до отдельного проверенного решения.
 
-**Текущий проверенный runtime:** `613df9ba96ff6b4406398ae942d92045e72d6a5c`,
-[CI 44808379234](https://github.com/Mutaracha/kobalt_ru/actions/runs/44808379234)
-**PASS**: focused native с themeChanges/lightDarkModeShortcut/lazyAppearance,
-EPUB/FB2 и прежними settings/lifecycle checks; Kobo Qt5/offline/package/contents.
-[Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44808379234/artifacts/14665345524).
-Qt6 skipped; full suite/Android/device NOT RUN. Это shared theme prerequisite,
-не готовый lazy Settings. Следующее действие: цельный KOSync model/page split
-с nullable Settings consumers, затем upstream ensureSettings/preparePanels.
+**Текущий проверенный runtime:** `77564e9e11d2049cf82cfd5355704ae93e1cffa8`,
+[CI 44815357384](https://github.com/Mutaracha/kobalt_ru/actions/runs/44815357384) **PASS**: focused native и Kobo Qt5/offline/package/contents.
+[Общий пакет theme + lazy Settings](https://github.com/Mutaracha/kobalt_ru/actions/runs/44815357384/artifacts/14669920633).
+Upstream ensureSettings/preparePanels/settled/inputQuiet подключены после
+разделения KOSync model/page; consumers безопасны до создания Settings.
+Проверены lifecycle.lazyPanels (on-demand/background × light/dark), close-unbuilt,
+KOSync lifecycle/model и прежние theme/settings/EPUB/FB2 checks.
+Qt6 skipped; full suite/Android/device NOT RUN. Пресеты 9633d3fd приняты отдельно.
 
-**Следующий runtime — lazy Settings/background panels: in progress / CI pending.**
-KOSync model/page разделены без изменения политики синхронизации; controls и
-Settings consumers безопасны до создания страницы. Подключены upstream
-ensureSettings/preparePanels/settled/inputQuiet; dictionary language не зависит
-от Settings. Новый lifecycle.lazyPanels (on-demand/background × light/dark) и
-close-unbuilt regression включены в focused CI вместе с lifecycle.kosync* и
-model kosync/sync-coordinator/text-presets. Старый test-only запрет prebuild
-заменён явной проверкой границы, strip/comics проверки сохранены.
+**Следующее действие:** совместная device-проверка theme + lazy Settings по
+[чек-листу](doc/validation/upstream-panels-device.md). Затем оставшиеся
+annotations/keyboard/KOSync policy/sleep alignment и обновление inventory;
+этот блок не закрывает всю очередь и не меняет EPUB Hybrid algorithms.
 Подробности: doc/reports/upstream-panels-alignment.md.
-Пользователь проверит theme + lazy Settings вместе; промежуточного device PASS нет.
-Пресеты 9633d3fd приняты отдельно («пресеты работают»).
 
 **Validation:** runtime `9633d3fd4b2df250c97ac77d1ff5e0827db35465`,
 [CI 44801198903](https://github.com/Mutaracha/kobalt_ru/actions/runs/44801198903)

@@ -1,6 +1,6 @@
 # Текущая граница выравнивания beta.9
 
-Baseline: upstream `be472588`, fork runtime `9633d3fd` (focused CI 44801198903 PASS; device pending).
+Baseline: upstream `be472588`, fork runtime `77564e9e` (focused CI 44815357384 PASS; combined panels device pending).
 Полный актуальный inventory ещё planned; историческая карта beta.8 ниже не
 является доказательством завершённости beta.9 consumer migration.
 
@@ -16,8 +16,11 @@ Baseline: upstream `be472588`, fork runtime `9633d3fd` (focused CI 44801198903 P
 - Runtime `613df9ba`: ensureAppearance перенесён из fork_reader_actions в общий
   reader_build; themeWidget/applyTheme взяты из pinned upstream. Удалён отдельный
   palette/icon loop поздних контролов. CI 44808379234 PASS, device pending.
-- Аннотации/keyboard/KOSync/sleep/lazy Settings/background preparePanels остаются в очереди выравнивания;
-  не считать их завершёнными по результату этого блока.
+- Runtime `77564e9e`: lazy Settings + upstream background preparePanels,
+  KOSync model/page split, null-safe consumers и lifecycle harness. CI 44815357384
+  PASS native + Qt5; theme и Settings ожидают общей device-проверки.
+- Аннотации/keyboard/остальные KOSync policy/sleep остаются в очереди выравнивания;
+  перенос model/page не означает завершения всех KOSync upstream изменений.
 
 Подробности/проверки: [cleanup report](reports/upstream-cleanup-stage1.md),
 текущая очередь: [план](../FB2_FORK_PLAN.md).
