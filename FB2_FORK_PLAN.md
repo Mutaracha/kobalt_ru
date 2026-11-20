@@ -5,7 +5,7 @@
 
 **Текущая работа — in progress:** переход на beta.9. Blaze, Engine/adapter и
 реальные reading consumers подключены. Последний проверенный runtime:
-`8040a9f9015564facbd1498e4815dc623d345400`, [CI `44723018339`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44723018339)
+`b3253e6b251c582715da7021fd3030ad9bd13b55`, [CI `44723102693`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44723102693)
 **PASS**: focused native EPUB/FB2 regressions, Kobo Qt5/offline/package/contents.
 Это не полный upstream/all-variant suite и не device acceptance.
 
@@ -137,7 +137,8 @@ Approved `~%1`/«Расчёт…» добавлены EN/RU. Chrome не под�
 ToC и Stats получают whole-book pages/fraction. Upstream estimated/no-pages
 header/footer regressions добавлены к уже выбранному model.header-footer.
 Source checks, EN/RU parity/code-reference generation и strings self-tests (Ninja)
-PASS. Runtime CI pending. Activity/history/sleep positions
+PASS. CI `44723102693` (`b3253e6b`): native и Qt5/offline/package PASS,
+включая no-pages/estimated header-footer и strip assertions. Activity/history/sleep positions
 ещё не закончены, package пока не готов для device handoff.
 
 **in progress — daily history/opening accounting:** ReadingHistory и ReadingBook
@@ -149,6 +150,12 @@ sleep-gap и failed transaction/retry regressions импортированы; mo
 включён в focused CI. Схема уже 4; новые записи optional format 1, schema bump нет.
 Sleep positions host consumers и Activity UI пока pending; новых строк нет.
 Source checks PASS; runtime CI pending.
+
+**in progress — Activity records/model:** импортированы exact upstream
+ActivityRecordStore и reading_activity summary: async read/hide/remove,
+opening exclusion, streak/calendar/hour aggregation и optional hidden-books record.
+UI и его строки ещё не подключены. Exact upstream model.reading-activity
+regressions добавлены в focused CI. Source checks PASS; runtime CI pending.
 
 **Следующий шаг:** whole-book counts/progress, navigation/bookmark indexes и полоса,
 затем activity/history/sleep positions. Default Hybrid не считать готовым до
