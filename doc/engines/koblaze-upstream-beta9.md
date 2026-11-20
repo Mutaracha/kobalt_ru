@@ -1,8 +1,9 @@
-> Upstream provenance document copied from beta.9 commit
-> be47258850ffdc3295257475afdf8b8f6cb53176. It describes the completed upstream
-> architecture, not this fork's integration status. During stage 1 the fork
-> adapter still lives in src/engine/crengine and uses whole-book rendering;
-> Hybrid/ReaderSession/UI migration has not yet been applied. See the active plan.
+> Upstream provenance copied from beta.9 commit
+> be47258850ffdc3295257475afdf8b8f6cb53176. The fork now builds the in-tree
+> Blaze library and uses the shared Engine/ReaderSession contracts. Fork-specific
+> adapter integration remains under src/engine/blaze/adapter; see the active
+> plan for remaining consumer alignment. The retired external engine patch
+> series is available in Git history only; do not apply it to the in-tree source.
 
 # Blaze source and provenance
 
