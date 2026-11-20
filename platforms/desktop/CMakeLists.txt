@@ -391,6 +391,7 @@ if(BUILD_TESTING)
             closeRestoresOrientationBeforeBackgroundPaint rotationOwnership readerUsesSelectedSleepScreen
             closedReaderDoesNotSaveSleepScreen usbDoesNotSaveSleepScreen persistedSleepScreenRejectsStaleAndDamagedFrames
             homeSleepScreenRequiresUnambiguousLastBook nativeOpeningStatus
+            sleepCustomPowerOffUsesItsOwnLook sleepCustomPowerOffRedrawsItsWallpaper sleepCustomEditorShowsTheCover sleepGalleryCancelsInterruptedPresses
             sleepScreenUpdatesWhilePluggedIn sleepWidgetsKeepTimeAcrossSessionTimeout sleepPowerOffWithoutCoverKeepsDesign sleepPrivateBookOverridesEveryDesign sleepPrivateBookRetainsNeutralFrameWhenHandoffFails sleepPrivatePreviewsHideBookPixels sleepPrivateBookCloseSavesAnonymousDesign sleepScreenDimsOnlyItsOwnedPage sleepTilesRepaintOnlyTheirArea sleepDesignsRepaintOnlyTheirStatus sleepMetadataStaysInsideItsLayout sleepLetterPreservesLiteralPlaceholders sleepBackdropsUsePortrait sleepFromLandscapeKeepsTheReadingPage
             sleepSnapshotMatchesTheDisplayedPage
             sleepSnapshotReplacesEachClockWithoutChangingTheReadingPage sleepTimeLeftUsesHoursAboveTwoHours sleepTimeLeftApproximate timeRemainingFormatShared

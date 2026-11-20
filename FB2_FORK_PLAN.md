@@ -3,6 +3,12 @@
 Принятые решения: [doc/fork-decisions.md](doc/fork-decisions.md).
 Инструкции агентам: [AGENTS.md](AGENTS.md).
 
+**Следующий focused CI:** upstream Custom sleep/editor, per-book positions,
+wallpaper sleep/off и follow-reading orientation подключены. Сохранены fork text
+fitting и двухстрочная лента. Добавлены upstream Custom/editor/cancel tests;
+workflow выбирает sleep lifecycle. Runtime результат этого блока pending;
+startup preview migration и финальные G1–G9 ещё не завершены. Device handoff нет.
+
 **Текущая работа — in progress:** переход на beta.9. Blaze, Engine/adapter и
 реальные reading consumers подключены. Последний проверенный runtime:
 `3ee4a6225a0c6a64bc9a4aa2eaf80548505729ea`, [CI `44728203966`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44728203966)

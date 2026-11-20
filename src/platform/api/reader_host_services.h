@@ -96,6 +96,7 @@ struct ReaderHostServices
     QString coverImagePath;
     // Optional host paths for user-supplied sleep PNGs.
     QStringList sleepOverlayDirectories;
+    QStringList sleepWallpaperDirectories;
     // Optional live native preferences for the stock sleep-screen preview.
     std::function<sleep::NativePreview()> nativeSleepPreview;
     // Optional host reader-selection preference. Both callbacks are supplied

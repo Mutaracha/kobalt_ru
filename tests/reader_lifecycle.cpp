@@ -17,6 +17,7 @@
 #include "assets/bundled_fonts.h"
 #include "app/reader_interface.h"
 #include "app/reader/settings/sleep_gallery.h"
+#include "app/reader/settings/sleep_editor.h"
 #include "app/reader_window.h"
 #include "ui/controls/page_scrubber.h"
 #include <QtGui/private/qeventpoint_p.h>
@@ -5242,6 +5243,281 @@ private slots:
         const auto blank = page.snapshot();
         QVERIFY(sleeping != blank);
         QCOMPARE(page.snapshot(true), blank);
+    }
+
+    void sleepCustomPowerOffUsesItsOwnLook()
+    {
+        const auto paths = testPaths();
+        QTemporaryDir wallpapers;
+        QVERIFY(wallpapers.isValid());
+        QImage wallpaper(300, 200, QImage::Format_RGB32);
+        wallpaper.fill(QColor(200, 30, 30));
+        QVERIFY(wallpaper.save(wallpapers.filePath("red.png")));
+        QVERIFY(storage::sleepWallpapers({ wallpapers.path() }) == QStringList{ "red.png" });
+        sleep::Custom custom;
+        custom.same = false;
+        custom.sleep = { sleep::Mode::Wallpaper, sleep::Design::Seal, QStringLiteral("red.png") };
+        custom.off = { sleep::Mode::Plain, sleep::Design::Pill, {} };
+        QJsonObject preferences;
+        sleep::setCustom(preferences, custom);
+        sleep::setDesign(preferences, sleep::Design::Custom);
+        QJsonObject global;
+        sleep::setPlace(global, sleep::Design::Seal, sleep::Place::TopLeft);
+        preferences[sleep::placesKey] = global;
+        QVERIFY(storage::writePreferences(paths.preferences(), preferences));
+        auto state = std::make_shared<test::SleepPresentationState>();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{ host };
+        const auto folder = wallpapers.path();
+        host.configureServices = [state, folder](ReaderHostServices &services) {
+            services.battery = [] { return BatteryStatus{ 67, false, false }; };
+            services.sleepWallpaperDirectories = { folder };
+            services.presentation = [state](QWidget *) {
+                return std::make_unique<test::HostPresentation>(state);
+            };
+        };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        host.window()->show();
+        QTRY_VERIFY(host.window()->readyForPresentation());
+        auto off = host.window()->powerScreenSnapshot();
+        QCOMPARE(off.design, sleep::Design::Pill);
+        QCOMPARE(off.mode, sleep::Mode::Plain);
+        QCOMPARE(off.place, sleep::Place::Default);
+        QTRY_VERIFY(host.window()->property("sleepWallpaperReady").toBool());
+        host.window()->sleepReader();
+        host.window()->sleepViewReady();
+        const auto image = state->image;
+        QVERIFY(!image.isNull());
+        // The wallpaper fills the screen; the seal sits in the top-left corner.
+        const auto red = [&](QPoint point) {
+            const QColor color(image.pixel(point));
+            return color.red() > 150 && color.green() < 80 && color.blue() < 80;
+        };
+        const int width = image.width(), height = image.height();
+        QVERIFY(red(QPoint(width / 2, height * 3 / 4)));
+        QVERIFY(!red(QPoint(width * 24 / 100, height * 4 / 100 + width * 19 / 100)));
+        QVERIFY(red(QPoint(width * 76 / 100, height * 96 / 100 - width * 19 / 100)));
+        const auto asleep = host.window()->powerScreenSnapshot();
+        QCOMPARE(asleep.design, sleep::Design::Pill);
+        QCOMPARE(asleep.mode, sleep::Mode::Plain);
+        host.window()->wakeReader();
+        QTRY_VERIFY(host.window()->readyForPresentation());
+        QJsonObject own;
+        own[sleep::value(sleep::Design::Pill)] = sleep::value(sleep::Place::Top);
+        host.book()->setSleepPositions(own);
+        off = host.window()->powerScreenSnapshot();
+        QCOMPARE(off.place, sleep::Place::Top);
+    }
+
+    // Power-off after sleep draws a fresh backdrop for every Custom look: the
+    // same screen with its own status over a wallpaper, and a power-off look
+    // that differs only in its wallpaper.
+    void sleepCustomPowerOffRedrawsItsWallpaper_data()
+    {
+        QTest::addColumn<bool>("same");
+        QTest::newRow("same-screen") << true;
+        QTest::newRow("other-wallpaper") << false;
+    }
+
+    void sleepCustomPowerOffRedrawsItsWallpaper()
+    {
+        QFETCH(bool, same);
+        const auto paths = testPaths();
+        QTemporaryDir wallpapers;
+        QVERIFY(wallpapers.isValid());
+        QImage red(300, 200, QImage::Format_RGB32), blue(300, 200, QImage::Format_RGB32);
+        red.fill(QColor(200, 30, 30));
+        blue.fill(QColor(30, 30, 200));
+        QVERIFY(red.save(wallpapers.filePath("red.png")));
+        QVERIFY(blue.save(wallpapers.filePath("blue.png")));
+        sleep::Custom custom;
+        custom.same = same;
+        custom.sleep = { sleep::Mode::Wallpaper, sleep::Design::Seal, QStringLiteral("red.png") };
+        custom.off = { sleep::Mode::Wallpaper, sleep::Design::Seal, QStringLiteral("blue.png") };
+        QJsonObject preferences;
+        sleep::setCustom(preferences, custom);
+        sleep::setDesign(preferences, sleep::Design::Custom);
+        QVERIFY(storage::writePreferences(paths.preferences(), preferences));
+        auto state = std::make_shared<test::SleepPresentationState>();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{ host };
+        const auto folder = wallpapers.path();
+        host.configureServices = [state, folder](ReaderHostServices &services) {
+            services.battery = [] { return BatteryStatus{ 67, false, false }; };
+            services.sleepWallpaperDirectories = { folder };
+            services.presentation = [state](QWidget *) {
+                return std::make_unique<test::HostPresentation>(state);
+            };
+        };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        host.window()->show();
+        QTRY_VERIFY(host.window()->readyForPresentation());
+        QTRY_VERIFY(host.window()->property("sleepWallpaperReady").toBool());
+        host.window()->sleepReader();
+        host.window()->sleepViewReady();
+        const auto off = host.window()->powerScreenSnapshot();
+        QCOMPARE(off.design, sleep::Design::Seal);
+        QCOMPARE(off.mode, sleep::Mode::Wallpaper);
+        // The seal's centre is plain wallpaper in a fresh backdrop.
+        const QPoint seal(off.image.width() * 76 / 100,
+                          off.image.height() * 96 / 100 - off.image.width() * 19 / 100);
+        const QColor colour(off.image.pixel(seal));
+        if (same)
+            QVERIFY(colour.red() > 150 && colour.blue() < 80);
+        else
+            QVERIFY(colour.blue() > 150 && colour.red() < 80);
+        host.window()->wakeReader();
+    }
+
+    void sleepCustomEditorShowsTheCover()
+    {
+        const auto paths = testPaths();
+        QJsonObject preferences;
+        sleep::setDesign(preferences, sleep::Design::Page);
+        sleep::Custom custom;
+        custom.sleep = { sleep::Mode::Cover, sleep::Design::Seal, {} };
+        sleep::setCustom(preferences, custom);
+        QVERIFY(storage::writePreferences(paths.preferences(), preferences));
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        const auto state = std::make_shared<test::SleepPresentationState>();
+        host.configureServices = [state](ReaderHostServices &services) {
+            services.presentation = [state](QWidget *) {
+                return std::make_unique<test::HostPresentation>(state);
+            };
+        };
+        CloseHost cleanup{ host };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        const QSize size(1072, 1448);
+        host.open(coverBook, size);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), size);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(host.window()->readyForPresentation());
+        QVERIFY(clickAt(canvas, QPoint(size.width() / 2, size.height() / 2)));
+        QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSettings")));
+        QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSettingsSystem")));
+        QVERIFY(click(canvas, host.window()->findChild<QPushButton *>("rrSleepScreen")));
+        auto *gallery = host.window()->findChild<QWidget *>("rrSleepGallery");
+        QVERIFY(gallery && gallery->isVisible());
+        auto *grid = gallery->findChild<QWidget *>("rrSleepGalleryGrid");
+        QVERIFY(grid);
+        // Custom is the second entry on page one.
+        const QPoint custom2(grid->width() * 3 / 4, grid->height() / 4);
+        const auto openEditor = [&]() -> QWidget * {
+            if (!clickAt(canvas, grid->mapTo(canvas.surface(), custom2)))
+                return nullptr;
+            QWidget *editor = nullptr;
+            (void)QTest::qWaitFor([&] {
+                editor = host.window()->findChild<QWidget *>("rrSleepEditor");
+                return editor && editor->isVisible();
+            });
+            return editor;
+        };
+        // The fixture cover is green on its left half; the backdrop is black.
+        const auto showsCover = [](QWidget *editor) {
+            auto *preview = editor->findChild<QWidget *>("rrSleepEditorPreview");
+            if (!preview)
+                return false;
+            const auto image = preview->grab().toImage();
+            const QColor colour(image.pixel(image.width() * 35 / 100, image.height() / 2));
+            return colour.green() > 100 && colour.blue() < 80;
+        };
+        auto *editor = openEditor();
+        QVERIFY(editor);
+        QTRY_VERIFY(showsCover(editor));
+        // The editor covers the gallery. A hardware page button must not
+        // change the hidden gallery page behind it.
+        auto *counter = gallery->findChild<QLabel *>("rrSleepGalleryPage");
+        auto *nextPage = gallery->findChild<QPushButton *>("rrSleepGalleryNext");
+        QVERIFY(counter && nextPage && nextPage->isEnabled());
+        const auto startingPage = counter->text();
+        host.window()->pageButton(1);
+        QCOMPARE(counter->text(), startingPage);
+        QVERIFY(click(canvas, editor->findChild<QPushButton *>("rrSleepEditorDone")));
+        QTRY_VERIFY(!host.window()->findChild<QWidget *>("rrSleepEditor")
+                    || !host.window()->findChild<QWidget *>("rrSleepEditor")->isVisible());
+        QVERIFY(gallery->isVisible());
+        host.window()->pageButton(1);
+        QVERIFY(counter->text() != startingPage);
+        host.window()->pageButton(-1);
+        QCOMPARE(counter->text(), startingPage);
+        editor = openEditor();
+        QVERIFY(editor);
+        // Done kept the decoded cover, so it shows at once.
+        QVERIFY(showsCover(editor));
+        auto *customEditor = dynamic_cast<reader::SleepEditor *>(editor);
+        QVERIFY(customEditor);
+        auto *preview = customEditor->findChild<QWidget *>("rrSleepEditorPreview");
+        auto *next = customEditor->findChild<QPushButton *>("rrSleepEditorBackdropNext");
+        QVERIFY(preview && next);
+        QSize bound;
+        customEditor->wallpaperWanted = [&](const QString &, QSize requested) {
+            bound = requested;
+        };
+        for (int i = 0; i < 3; ++i)
+            next->click();
+        preview->grab();
+        QVERIFY(!bound.isEmpty());
+        QVERIFY(bound.height() < preview->height() * preview->devicePixelRatioF());
+        QVERIFY(bound.width() < preview->width() * preview->devicePixelRatioF());
+        const auto oldBound = bound;
+        preview->setFixedHeight(preview->height() / 2);
+        preview->grab();
+        QVERIFY(bound.height() < oldBound.height());
+        QImage first(16, 16, QImage::Format_RGB32);
+        customEditor->setWallpaper("first", oldBound, first);
+        QVERIFY(first.isDetached());
+        customEditor->setWallpaper("first", bound, first);
+        QVERIFY(!first.isDetached());
+        customEditor->setWallpaper("second", bound, QImage());
+        customEditor->setWallpaper("third", bound, QImage());
+        QVERIFY(first.isDetached());
+    }
+
+    void sleepGalleryCancelsInterruptedPresses_data()
+    {
+        QTest::addColumn<bool>("pageChanged");
+        QTest::newRow("touch-cancelled") << false;
+        QTest::newRow("page-changed") << true;
+    }
+
+    void sleepGalleryCancelsInterruptedPresses()
+    {
+        QFETCH(bool, pageChanged);
+        using Design = sleep::Design;
+        QWidget window;
+        window.resize(nativeSize);
+        reader::SleepGallery gallery(&window,
+                                    { { Design::Stock }, { Design::Custom }, { Design::Page },
+                                      { Design::Bookmark }, { Design::Seal }, { Design::Letter } },
+                                    Design::Stock, {}, window.size());
+        gallery.setGeometry(window.rect());
+        QList<Design> choices;
+        gallery.chosen = [&](Design value) { choices.append(value); };
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        auto *grid = gallery.findChild<QWidget *>("rrSleepGalleryGrid");
+        QVERIFY(grid && grid->isVisible());
+        const QPoint left(grid->width() / 4, grid->height() / 4);
+        QTest::mousePress(grid, Qt::LeftButton, Qt::NoModifier, left);
+        if (pageChanged) {
+            auto *next = gallery.findChild<QPushButton *>("rrSleepGalleryNext");
+            QVERIFY(next && next->isEnabled());
+            next->click();
+        } else {
+            QTouchEvent event(QEvent::TouchCancel, QTest::createTouchDevice());
+            QCoreApplication::sendEvent(grid, &event);
+        }
+        QTest::mouseRelease(grid, Qt::LeftButton, Qt::NoModifier, left);
+        QVERIFY2(choices.isEmpty(), "An interrupted press selected a sleep screen");
+        QTest::mouseClick(grid, Qt::LeftButton, Qt::NoModifier, left);
+        QCOMPARE(choices, QList<Design>{ pageChanged ? Design::Seal : Design::Stock });
     }
 
     void sleepRibbonRemainingHasSeparateCaptionAndDuration() {
