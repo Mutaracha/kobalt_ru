@@ -5,7 +5,7 @@
 
 **Текущая работа — in progress:** переход на beta.9. Blaze, Engine/adapter и
 реальные reading consumers подключены. Последний проверенный runtime:
-`8e241eedf3086dc85beff7743b586a15d3df496d`, [CI `44637222380`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44637222380)
+`cb96eb65f80dc556f29bccbb40fd2ffd281121b9`, [CI `44705458156`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44705458156)
 **PASS**: focused native EPUB/FB2 regressions, Kobo Qt5/offline/package/contents.
 Это не полный upstream/all-variant suite и не device acceptance.
 
@@ -75,17 +75,20 @@ acceptance. Итоговый CI `44637222380` (`8e241eed`): native и Qt5/packag
 API retry host bridge, activity/calendar, sleep positions и new-book preset policy
 ещё не перенесены вместе с их consumers; не подменены локальными реализациями.
 
-**implemented / CI pending — native transaction boundary:** NativeReadingSession,
+**done / focused CI verified — native transaction boundary:** NativeReadingSession,
 NativeProgressExtra и ReadingBridge от pinned beta9 подключены для Qt5/Qt6.
 При pause сессия Nickel остаётся до boundary; progress transaction завершает её
 и сохраняет время вместе с позицией, failed commit оставляет seconds для следующей
 попытки. Explicit/Background retry API перенесён через ReadingBook. Exit/USB
 порядок операций взят из upstream; fork UI и unmapped FB2 policy сохранены.
-Pewter дополнен проверкой extra apply/commit/refused begin/rollback. Это не
-проверка на устройстве; wake/recovery consumers и host-mode/UI остаются pending.
+Pewter дополнен проверкой extra apply/commit/refused begin/rollback.
+CI `44705458156` (`cb96eb65`): native и Kobo Qt5/offline/package/contents PASS.
+Source checks PASS; local Kobo syntax blocked отсутствием подготовленного SDK.
+Qt6 source перенесён, но отдельная Qt6 package/device проверка не выполнялась.
+Это не проверка на устройстве; wake/recovery consumers и host-mode/UI остаются pending.
 
 **Следующий шаг:** связать host rendering-mode preference/application и выполнить
-контекстный перенос оставшегося upstream host native retry/lifecycle API;
+перенести оставшиеся wake/recovery consumers и подключение save epochs;
 затем UI whole-book counts/progress, navigation/bookmark indexes и полосу.
 Default Hybrid не считать готовым до этой интеграции. Не использовать chapter-local
 номера как book pages. Новые настройки/строки на этом checkpoint не добавлялись.

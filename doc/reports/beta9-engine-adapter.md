@@ -130,10 +130,19 @@ work settled. Porting upstream's pre-gate idle wait preserves the strict no-work
 assertion and the fork's interface-Sans title assertion. The final CI above passed.
 Local source checks passed; Kobo syntax could not run without a prepared SDK image.
 
-Host mode preference/application, host native retry/lifecycle API, activity/calendar,
-sleep-position and preset consumers, plus UI/strip/navigation surfaces still need
-integration. The model exposes save epochs; the wake-cycle host consumers are not
-claimed integrated yet. Session-level tests do not establish complete UI/device
-adoption. G1–G9 final gates remain open. Full upstream suite, sanitizers, Android
-and physical-device validation have not run. The old post-frame-load freeze is not
-diagnosed or claimed fixed here.
+Latest native-transaction extension: `cb96eb65f80dc556f29bccbb40fd2ffd281121b9`,
+[CI 44705458156](https://github.com/Mutaracha/kobalt_ru/actions/runs/44705458156):
+focused native and Kobo Qt5/offline/package/contents PASS. The Qt5/Qt6 native
+reading-session implementations, progress transaction hook and bridge retry API
+are pinned upstream beta9. Exit/USB use upstream progress-before-fallback-time
+ordering. Fork unmapped-FB2 and sync policy remain intact. Pewter tests exercise
+hook invocation, committed acknowledgment, refused begin and commit rollback.
+Source checks passed; local SDK syntax was unavailable. A separate Qt6 package
+or device run was not performed.
+
+Host mode preference/application, wake/recovery consumers and wiring of the
+model's save-epoch callbacks, activity/calendar, sleep-position and preset consumers,
+plus UI/strip/navigation surfaces still need integration. Session/native CI does
+not establish complete UI/device adoption. G1–G9 final gates remain open. Full
+upstream suite, sanitizers, Android and physical-device validation have not run.
+The old post-frame-load freeze is not diagnosed or claimed fixed here.
