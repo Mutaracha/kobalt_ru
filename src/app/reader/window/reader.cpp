@@ -1460,6 +1460,8 @@ void Reader::resizeEvent(QResizeEvent *)
     const auto safeRect = rect().adjusted(0, safe.top, 0, -safe.bottom);
     acknowledgments->setGeometry(safeRect);
     searchPanel->setGeometry(safeRect);
+    if (activityView)
+        activityView->setGeometry(textPresetGalleryBounds());
     const int bookmarkTop = navigation ? navigation->statusHeight() : 0;
     bookmarkList->setGeometry(0, bookmarkTop, width(),
                               (navigation ? navigation->contentBottom(size()) : height())
@@ -2598,6 +2600,7 @@ void Reader::openGraph()
     chapterGraph->open();
     if (navigation)
         navigation->stackPanel(chapterGraph);
+    loadActivity();
     refresh();
 }
 
@@ -2618,7 +2621,7 @@ bool Reader::pageList(int direction)
             || view == searchPanel || view == acknowledgments || view == fieldChooser
             || view == headerFooterView || view == dictionaryPanel || view == linkPanel
             || view == chapterGraph || view == general || view == menu || view == sleepGallery
-            || view == textPresetGallery) {
+            || view == textPresetGallery || view == activityView) {
             return true;
         }
     }

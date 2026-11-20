@@ -5,7 +5,7 @@
 
 **Текущая работа — in progress:** переход на beta.9. Blaze, Engine/adapter и
 реальные reading consumers подключены. Последний проверенный runtime:
-`40d3948aafaace881ab90a7efbb0c419081dfcd3`, [CI `44724222957`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44724222957)
+`3ee4a6225a0c6a64bc9a4aa2eaf80548505729ea`, [CI `44728203966`](https://github.com/Mutaracha/kobalt_ru/actions/runs/44728203966)
 **PASS**: focused native EPUB/FB2 regressions, Kobo Qt5/offline/package/contents.
 Это не полный upstream/all-variant suite и не device acceptance.
 
@@ -160,10 +160,23 @@ regressions добавлены в focused CI. CI `44725474629` failed before acc
 RecordWriter Delivery::All dependency not yet imported. Ported exact upstream
 RecordWriter/profile boundary plus preference normalization/update primitives;
 added writer FIFO/launch-failure regressions and area registration. Approved
-UI table inserted EN/RU. Source/string/runtime verification pending.
+UI table inserted EN/RU. Source checks и approved EN/RU parity/generation PASS. CI `44728203966`
+(`3ee4a622`): native/Qt5/offline/package PASS, включая FIFO/launch-failure
+writer tests и model.reading-activity.
 
-**Следующий шаг:** дождаться Activity backend CI `44725474629`, исправить реальные
-failures. Daily-history CI `44724222957` PASS. Затем подключить Activity UI и
+**in progress — Activity UI/Stats integration:** ActivityView, ChapterGraph/StatsCell,
+reader_activity и CoverThumbnails взяты целиком из pinned upstream. Host связывает
+Stats → Activity, background load/edit/map/cover, first-open welcome, page-button
+input barrier и resize. Fork strip/icons/comics/font policy сохранены; новый экран
+использует общие fonts/styles. Kobo sources включают только cover helper/metadata,
+не standalone Library. Settings preference consumers получили upstream delta/FIFO
+writes, чтобы welcome не терял соседние изменения. Routed Activity open/tabs/close,
+upstream author-caption и cached-cover replacement tests добавлены в focused CI.
+Source checks и EN/RU parity/code-reference generation PASS. Runtime CI pending;
+device visual review unrun. Sleep custom/positions и preview startup ещё pending.
+
+**Следующий шаг:** дождаться Activity UI CI и исправить реальные failures.
+Backend CI `44725474629` superseded green `44728203966`. Daily history PASS. Затем подключить Activity UI и
 sleep custom/positions consumers целыми upstream модулями, сохраняя fork
 privacy/standby/strip. До внесения строк согласовать
 [таблицу EN/RU](doc/beta9-strings-review.md): теперь approval получен, строки внесены.

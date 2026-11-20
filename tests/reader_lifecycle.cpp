@@ -1,3 +1,4 @@
+#include "library/cover_thumbnails.h"
 #include <QSemaphore>
 #include "app/reader/views/annotation_exporter.h"
 #include "app/reader/panels/search_panel.h"
@@ -7346,6 +7347,38 @@ private slots:
         events.seen.removeDuplicates();
         QVERIFY2(events.seen.isEmpty(),
                  qPrintable("Timer events while idle: " + events.seen.join(", ")));
+    }
+
+    // Activity must recheck the book before returning a cached cover.
+    void activityCoverReplacement()
+    {
+        QTemporaryDir root;
+        const auto path = root.filePath("book.epub");
+        QVERIFY(QFile::copy(coverBook, path));
+        library::CoverThumbnails thumbnails(root.filePath("cache"));
+        QImage image;
+        bool done = false, missing = false;
+        const auto request = [&] {
+            done = false;
+            thumbnails.request({ { "fixture", path } }, QSize(32, 32),
+                               [&](const QString &, const QImage &result, bool gone) {
+                                   image = result;
+                                   missing = gone;
+                                   done = true;
+                               });
+        };
+        request();
+        QTRY_VERIFY(done);
+        QVERIFY(!image.isNull() && !missing);
+        QVERIFY(QFile::remove(path));
+        QVERIFY(QFile::copy(textBook, path));
+        request();
+        QTRY_VERIFY(done);
+        QVERIFY(image.isNull() && !missing);
+        QVERIFY(QFile::remove(path));
+        request();
+        QTRY_VERIFY(done);
+        QVERIFY(image.isNull() && missing);
     }
 
     void readerStandbySetting_data()

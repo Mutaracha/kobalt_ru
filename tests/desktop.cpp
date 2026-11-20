@@ -1,3 +1,4 @@
+#include "app/reader/panels/activity_view.h"
 #include "reading/rendering_mode.h"
 #include "app/reader/views/fork_navigation.h"
 #include "app/reader/views/navigation.h"
@@ -9459,6 +9460,85 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         QCOMPARE(qobject_cast<QLabel *>(fixture.widget("rrZenLeaveNote"))->text(),
                  strings::get("settings.zen_leave_note"));
         QVERIFY(fixture.press("rrSettingsClose"));
+    }
+
+    // The book row and heading paint a single-line caption from saved authors.
+    void activityAuthorCaption_data()
+    {
+        QTest::addColumn<int>("width");
+        QTest::addColumn<double>("textScale");
+        QTest::newRow("phone") << 480 << 1.0;
+        QTest::newRow("six-inch") << 1072 << 1.0;
+        QTest::newRow("six-inch-large") << 1072 << 1.5;
+        QTest::newRow("seven-inch-large") << 1264 << 1.5;
+    }
+
+    void activityAuthorCaption()
+    {
+        QFETCH(int, width);
+        QFETCH(double, textScale);
+        const auto previousScale = ui::textScale();
+        const auto restoreScale = qScopeGuard([previousScale] { ui::setTextScale(previousScale); });
+        ui::setTextScale(textScale);
+        const QDate today(2026, 11, 17);
+        ActivityRecords records;
+        ActivitySession session;
+        session.book = QStringLiteral("caption-test");
+        session.title = QStringLiteral("A Reading History");
+        session.started = QDateTime(today, QTime(9, 0)).toMSecsSinceEpoch();
+        session.milliseconds = 12 * 60000;
+        session.observed = session.started + session.milliseconds;
+        records.percent.insert(session.book, 25);
+        ActivityView view(nullptr);
+        view.resize(width, 1448);
+        view.show();
+
+        const auto render = [&](const QString &author, QImage *row, QImage *heading) {
+            session.author = author;
+            records.sessions = { session };
+            view.showSection(ActivityView::Section::Books);
+            view.setRecords(records, activity::summarize(records, today));
+            const auto book = view.findChild<QWidget *>("rrActivityBook1");
+            QVERIFY(book && book->isVisible());
+            *row = book->grab().toImage();
+            view.openBook(session.book);
+            const auto detail = view.findChild<QWidget *>("rrActivityBookHeading");
+            QVERIFY(detail && detail->isVisible());
+            *heading = detail->grab().toImage();
+            QCOMPARE(view.data().sessions.first().author, author);
+        };
+        QImage normalizedRow, normalizedHeading;
+        render(QStringLiteral("Ada Rivers, Ellis Frost"), &normalizedRow, &normalizedHeading);
+        QVERIFY(!normalizedRow.isNull() && !normalizedHeading.isNull());
+        for (const auto &author : { QStringLiteral("Ada Rivers\nEllis Frost"),
+                                    QStringLiteral("Ada Rivers \r\n \n Ellis Frost") }) {
+            QImage row, heading;
+            render(author, &row, &heading);
+            QCOMPARE(row, normalizedRow);
+            QCOMPARE(heading, normalizedHeading);
+        }
+    }
+
+    // Activity opens from Stats, owns all four tabs and dismisses back to Stats.
+    void activity()
+    {
+        Fixture fixture;
+        QVERIFY(fixture.prepared);
+        QSignalSpy opened(&fixture.window, &desktop::Window::bookOpened);
+        fixture.window.openBook(book);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        QTRY_VERIFY_WITH_TIMEOUT(!fixture.state().value("busy").toBool(), 30000);
+        QVERIFY(fixture.press("rrPage"));
+        QVERIFY(fixture.press("rrNavStats"));
+        QTRY_VERIFY(fixture.visible("rrGraphActivity") || fixture.visible("rrGraphActivityCell"));
+        QVERIFY(fixture.press(fixture.visible("rrGraphActivity") ? "rrGraphActivity" : "rrGraphActivityCell"));
+        QTRY_VERIFY(fixture.visible("rrActivityWelcome"));
+        QVERIFY(fixture.press("rrActivityWelcomeClose"));
+        for (const char *tab : { "rrActivityCalendarTab", "rrActivityBooksTab", "rrActivityRecordsTab", "rrActivityOverviewTab" })
+            QVERIFY(fixture.press(tab));
+        QVERIFY(fixture.press("rrActivityClose"));
+        QTRY_VERIFY(!fixture.visible("rrActivity"));
+        QVERIFY(fixture.visible("rrGraphActivity") || fixture.visible("rrGraphActivityCell"));
     }
 
     void settingsRendering_data()

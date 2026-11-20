@@ -1,4 +1,7 @@
 #pragma once
+#include "app/reader/panels/activity_view.h"
+#include "library/cover_thumbnails.h"
+#include "storage/activity_records.h"
 #include <future>
 #include "reading/features.h"
 // Private to the reader window: its declaration and the widgets only it uses.
@@ -671,6 +674,23 @@ private:
     void lookupSelection();
     // My Words. Null with the JSON diagnostic backend, which has no database.
     std::unique_ptr<kobalt::SavedWords> savedWords;
+    // Activity: the reading history behind Stats. The store reads on the
+    // profile writer thread; the view exists while it is open.
+    std::unique_ptr<kobalt::ActivityRecordStore> activityRecords;
+    std::unique_ptr<kobalt::library::CoverThumbnails> activityCovers;
+    QPointer<kobalt::ActivityView> activityView;
+    // Shown the first time Activity opens: the history covers this device only.
+    QPointer<ui::ModalOverlay> activityWelcome;
+    void showActivityWelcome();
+    void hideActivityBook(const QString &book, bool hidden);
+    void deleteActivityBook(const QString &book, const QString &title);
+    QDate activityToday() const;
+    void openActivity();
+    void closeActivity();
+    void loadActivity();
+    void finishActivityEdit(bool ok);
+    void mapActivityBook(const QString &book);
+    void loadActivityCovers(const QVector<kobalt::activity::BookTotal> &books, QSize size);
     kobalt::WordList *wordList = nullptr, *allWords = nullptr;
     kobalt::WordPage *wordPage = nullptr;
     QString lookupContext, lookupPosition;
@@ -848,7 +868,7 @@ private:
     // Counts preferences writes. An asynchronous save that fails undoes its
     // change only when no later write started: a later write already carries
     // the change, and its own result decides.
-    quint64 preferencesWrites = 0;
+    quint64 zenStatsWrite = 0;
 
     void showSettingsWriteError();
     void selectPanel(int index);
@@ -1019,7 +1039,8 @@ private:
     quint64 closeRequest = 0;
     QElapsedTimer closeStage;
     QPointer<kobalt::ui::ChoiceModal> closeSaveError;
-    std::unique_ptr<storage::RecordWriter> reportWriter, preferencesWriter;
+    std::unique_ptr<storage::RecordWriter> reportWriter;
+    storage::RecordWriter preferencesWriter{ storage::RecordWriter::Delivery::All };
     void saveSoon();
     void save(bool snapshot = false, bool background = false, bool persist = true);
     // True while a tap can turn the page. The main thread then must not write
