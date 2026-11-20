@@ -156,13 +156,17 @@ PASS, включая новые midnight/DST/sleep/failed-day-transaction regres
 ActivityRecordStore и reading_activity summary: async read/hide/remove,
 opening exclusion, streak/calendar/hour aggregation и optional hidden-books record.
 UI и его строки ещё не подключены. Exact upstream model.reading-activity
-regressions добавлены в focused CI. Source checks PASS; runtime CI pending.
+regressions добавлены в focused CI. CI `44725474629` failed before acceptance: test area label missing and
+RecordWriter Delivery::All dependency not yet imported. Ported exact upstream
+RecordWriter/profile boundary plus preference normalization/update primitives;
+added writer FIFO/launch-failure regressions and area registration. Approved
+UI table inserted EN/RU. Source/string/runtime verification pending.
 
 **Следующий шаг:** дождаться Activity backend CI `44725474629`, исправить реальные
 failures. Daily-history CI `44724222957` PASS. Затем подключить Activity UI и
 sleep custom/positions consumers целыми upstream модулями, сохраняя fork
 privacy/standby/strip. До внесения строк согласовать
-[таблицу EN/RU](doc/beta9-strings-review.md): это proposal, не approval.
+[таблицу EN/RU](doc/beta9-strings-review.md): теперь approval получен, строки внесены.
 После этого — preview startup scan/reconciliation, оставшиеся G1–G9 и финальный
 Qt5 build/checklist. Default Hybrid ещё не объявлен device-ready.
 

@@ -213,3 +213,10 @@ User approved before implementation: pinned EN `common.estimated_total` “~%1�
 → RU «~%1» and `header_footer.calculating` “Calculating…” → RU «Расчёт…».
 These are count-state labels, not new settings. Estimated totals remain marked
 until whole-book layout supplies counted pages. Device wrapping pending.
+
+## B9-ACTIVITY-SLEEP-STRINGS — approved UI table
+
+The user approved every EN/RU row in doc/beta9-strings-review.md before insertion
+into assets. This covers Activity, custom sleep/position controls and chapter/book
+word-count captions. Preserve the existing Letter wording and accepted sleep
+design names. Final wrapping/length review remains by device screenshots.

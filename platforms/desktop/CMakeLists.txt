@@ -618,6 +618,11 @@ if(BUILD_TESTING)
             else()
                 target_link_libraries(kobalt-${name}-tests PRIVATE kobalt-regression-runtime)
             endif()
+            if(check STREQUAL "record_writer")
+                # Build this source again only for the deterministic thread launch test.
+                target_sources(kobalt-${name}-tests PRIVATE "${source}/storage/record_writer.cpp")
+                target_compile_definitions(kobalt-${name}-tests PRIVATE KOBALT_TEST_WRITER_START)
+            endif()
             if(check STREQUAL "android_assets")
                 target_sources(kobalt-${name}-tests PRIVATE "${KOBALT_ROOT}/platforms/android/assets.cpp")
                 target_include_directories(kobalt-${name}-tests PRIVATE "${KOBALT_ROOT}")
@@ -755,7 +760,7 @@ if(BUILD_TESTING)
         "links:^(desktop\\.(links|inpageFootnotes|footnote.*|revealedLinkPress|tappableLinks|bookmarkCornerLinks)|engine\\.(links|search|word-selection)|lifecycle\\.(staleSearchReplyIgnored|searchScopesAndPagination|searchSurvivesReflow|searchHighlightClearsOnReflow))$"
         "annotations:^(desktop\\.(annotation.*|bookmark.*|pinnedBookmarks|customPinnedBookmarks|coordinateProbeSerialization|selectionCrossPageDrag)|ui\\.(annotation.*|marksSortingAndAnnotationRows)|lifecycle\\.(annotation.*|closeWithPendingBookmark)|model\\.(bookmark-store|custom-pins|highlight-store|annotation-database|annotation-draft)|session\\.(bookmark|highlight)-session|engine\\.source-index)$"
         "fonts:^(desktop\\.(publisherFontDefault|fontPagingClearsCaptions|kfFontVariants|opticalSize)|ui\\.fontSelectionDoesNotToggle|model\\.font-axes|platform\\.(font-sources|system-fonts)|resource\\.resource-provider)$"
-        "progress:^(desktop\\.graphMode|lifecycle\\.(progress.*|finish.*|developmentOptions|nativeProgressWaitsForSleep)|model\\.(reading-pace|reading-speed|reading-progress|chapter-progress|logical-word-counter)|engine\\.(document-word-count|large-toc)|platform\\.(native-progress|nickel-reading-pace-cache))$"
+        "progress:^(desktop\\.graphMode|lifecycle\\.(progress.*|finish.*|developmentOptions|nativeProgressWaitsForSleep)|model\\.(reading-activity|reading-pace|reading-speed|reading-progress|chapter-progress|logical-word-counter)|engine\\.(document-word-count|large-toc)|platform\\.(native-progress|nickel-reading-pace-cache))$"
         "storage:^(model\\.(storage-assets|android-assets|profile-storage|record-writer|main-thread|save-wait|reading-history)|session\\.reading-book|lifecycle\\.(closeWaitsFor.*|closeRetriesRequiredNativeSaves|closeWithUnusableSettings|sleepWaitsForNativeTimeBeforePosition|background.*|standaloneReadingHistory|revokedNativeDrainRetainsLocalSave|quitAfterFailedLocalSaveRetry|appearanceRetryCooldown|recoveryNoticeAfterFirstPage|activityBatchesAndLowBattery)|desktop\\.(sameProcessReadersDoNotRecoverEachOther|standaloneHistorySourceKeys)|platform\\.nickel-(event|reading)-save)$"
         "sleep:^(lifecycle\\.(sleep.*|readerStandbySetting|readerUsesSelectedSleepScreen|closedReaderDoesNotSaveSleepScreen|usb.*|persistedSleepScreen.*|homeSleepScreen.*|pageTurnsResumeWhenReaderIsShownAfterSleep|shutdownFinalSaveTimesOut|teardownRemovesApplicationFilter)|platform\\.(shutdown|sleep-persistence|kobo-power-screen|usb-removal|native-lifecycle)|desktop\\.deviceEmulation|model\\.engine-activity)$"
         "diagnostics:^(model\\.(diagnostics|crash-reports)|desktop\\.(diagnostics|storageDiagnostics|settingChangesLogged)|lifecycle\\.developmentStateReports|platform\\.standby-(input|diagnostics))$"
