@@ -318,3 +318,13 @@ while activity/close writes are pending is captured after those writes settle.
 The optional `native_writeback_failure` object preserves upstream diagnostic
 fields and UTC time from the last failed or unmapped native write. It is not a
 reading position or an instruction to retry. No schema or storage path changes.
+
+### beta9 native reading-time boundary
+
+Kobo's paused native reading session ends in the progress transaction through
+`NativeProgressExtra`. Its committed flag acknowledges pending seconds only after
+that transaction commits. A failed or conflicted progress write ends the native
+interval without consuming unsaved seconds; `endNow()` is the boundary fallback.
+Background retries write nothing while input is available. Explicit retries and
+fallback writes belong to a no-input lifecycle boundary. The fork's unmapped FB2
+status/percentage-only policy remains unchanged. Device validation is pending.

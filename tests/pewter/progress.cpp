@@ -259,8 +259,8 @@ void writeFinished(NativeProgress &progress)
 
 void writeTimeOnly(NativeProgress &progress)
 {
-    // A plain EPUB position that Nickel cannot store: the time, the status
-    // and the percentage only.
+    // An unmappable KEPUB position: update activity without replacing the
+    // bookmark or requesting an upload.
     {
         QSqlQuery query(pewter::database());
         query.exec(QStringLiteral("UPDATE content SET ReadStateSynced = 1 WHERE ContentID = '%1'")
@@ -277,8 +277,69 @@ void writeTimeOnly(NativeProgress &progress)
     require(row.value("DateLastRead").toString() > before.value("DateLastRead").toString(),
             "the book still becomes the most recently read one");
     require(row.value("ReadStateSynced").toBool(), "only the bookmark call clears the sync flag");
+    requireSame(row.value("adobe_location"), before.value("adobe_location"),
+                "activity-only saving preserves the secondary native location");
     require(!pewter::find("BookmarkSyncManager::sendBookmark"),
             "a time-only record asks for no upload");
+}
+
+// Checks beta9's extra work shares the progress transaction and its commit result.
+void progressTransactionExtra(NativeProgress &progress)
+{
+    for (const int failure : { 0, 1, 2 }) {
+        const auto expected = current(progress);
+        const auto before = pewter::row(book);
+        const auto shown = activity();
+        pewter::clearCalls();
+        pewter::options().commitFails = failure == 1;
+        pewter::options().beginFails = failure == 2;
+        int applied = 0;
+        kobalt::NativeProgressExtra extra;
+        extra.apply = [&](void *target) {
+            require(target != nullptr, "progress extra receives Nickel's target Volume");
+            auto *volume = static_cast<Volume *>(target);
+            require(volume->getDbValues().value("ContentID").toString() == book,
+                    "progress extra receives another book's Volume");
+            ++applied;
+        };
+        NativeSaveResult result;
+        {
+            kobalt::mainthread::AllowBlocking allow("pewter: a lifecycle boundary");
+            result = progress.write(expected, position, 25, false, &estimates, &shown, &extra);
+        }
+        pewter::options().commitFails = false;
+        pewter::options().beginFails = false;
+        require(applied == (failure == 2 ? 0 : 1),
+                "progress extra ran outside an acquired transaction or ran twice");
+        require(extra.committed == (failure == 0) && result.saved() == (failure == 0),
+                "progress extra acknowledged an uncommitted transaction");
+        if (failure)
+            requireRefusedWrite(before, "failed progress extra transaction changed stored progress");
+        requireMainThread();
+    }
+}
+
+void refuseUnmappedTolinoPosition(NativeProgress &progress)
+{
+    if (firmware4)
+        return;
+    const auto expected = current(progress);
+    const auto before = pewter::row(book);
+    const auto shown = activity();
+    pewter::options().tolino = true;
+    pewter::clearCalls();
+    NativeSaveResult result;
+    {
+        kobalt::mainthread::AllowBlocking allow("pewter: a lifecycle boundary");
+        result = progress.write(expected, QString(), 20, false, &estimates, &shown);
+    }
+    pewter::options().tolino = false;
+    require(result.status() == NativeSaveResult::Status::Rejected,
+            "an unmapped Tolino position is rejected before native writes");
+    require(!pewter::find("DatabaseAdapter::beginTransaction")
+                    && !pewter::find("VolumeManager::updateBookmark"),
+            "an unmapped Tolino position does not enter a transaction or change its bookmark");
+    requireRefusedWrite(before, "an unmapped Tolino position preserves committed progress");
 }
 
 void refuseFailures(NativeProgress &progress)
@@ -445,6 +506,8 @@ int main(int argc, char **argv)
     writeLastPage(progress);
     writeFinished(progress);
     writeTimeOnly(progress);
+    progressTransactionExtra(progress);
+    refuseUnmappedTolinoPosition(progress);
     refuseFailures(progress);
     markRecent(progress);
     std::printf("pewter progress checks passed (Qt %s)\n", qVersion());

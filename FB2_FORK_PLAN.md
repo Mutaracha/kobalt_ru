@@ -75,6 +75,15 @@ acceptance. Итоговый CI `44637222380` (`8e241eed`): native и Qt5/packag
 API retry host bridge, activity/calendar, sleep positions и new-book preset policy
 ещё не перенесены вместе с их consumers; не подменены локальными реализациями.
 
+**implemented / CI pending — native transaction boundary:** NativeReadingSession,
+NativeProgressExtra и ReadingBridge от pinned beta9 подключены для Qt5/Qt6.
+При pause сессия Nickel остаётся до boundary; progress transaction завершает её
+и сохраняет время вместе с позицией, failed commit оставляет seconds для следующей
+попытки. Explicit/Background retry API перенесён через ReadingBook. Exit/USB
+порядок операций взят из upstream; fork UI и unmapped FB2 policy сохранены.
+Pewter дополнен проверкой extra apply/commit/refused begin/rollback. Это не
+проверка на устройстве; wake/recovery consumers и host-mode/UI остаются pending.
+
 **Следующий шаг:** связать host rendering-mode preference/application и выполнить
 контекстный перенос оставшегося upstream host native retry/lifecycle API;
 затем UI whole-book counts/progress, navigation/bookmark indexes и полосу.

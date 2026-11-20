@@ -283,41 +283,46 @@ void Reader::saveTransition(quint64 request, bool usb, const QString &location,
         retry();
         return;
     }
-    book->checkpointForClose([this, guard, request, location, error, mapped, finished,
-                              retry](bool saved) {
-        if (!guard || request != closeRequest)
-            return;
-        if (!saved) {
-            retry();
-            return;
-        }
-        book->finishReading([this, guard, request, location, error, mapped, finished,
-                             retry](NativeActivityResult activityResult) {
-            if (!guard || request != closeRequest)
-                return;
-            if (!activityCompleted(activityResult)) {
-                retry();
-                return;
-            }
-            if (mapped) {
-                mainthread::AllowBlocking allow("final native progress before storage handoff");
-                const auto result = book->writeNative(location, error);
-                if (result.failed()) {
-                    retry();
-                    return;
-                }
-            }
-            book->checkpointForClose([this, guard, request, finished, retry](bool saved) {
+    book->checkpointForClose(
+            [this, guard, request, location, error, mapped, finished, retry](bool saved) {
                 if (!guard || request != closeRequest)
                     return;
                 if (!saved) {
                     retry();
                     return;
                 }
-                finished();
+                // As Nickel's reader does, the progress transaction ends the host's
+                // reading session and saves its time. finishReading() then saves only
+                // what that write did not carry.
+                book->stopReading(true);
+                if (mapped) {
+                    mainthread::AllowBlocking allow("final native progress before storage handoff");
+                    const auto result = book->writeNative(location, error);
+                    if (result.failed()) {
+                        retry();
+                        return;
+                    }
+                }
+                mainthread::AllowBlocking allow("final native progress before storage handoff");
+                book->finishReading([this, guard, request, finished,
+                                     retry](NativeActivityResult activityResult) {
+                    if (!guard || request != closeRequest)
+                        return;
+                    if (!activityCompleted(activityResult)) {
+                        retry();
+                        return;
+                    }
+                    book->checkpointForClose([this, guard, request, finished, retry](bool saved) {
+                        if (!guard || request != closeRequest)
+                            return;
+                        if (!saved) {
+                            retry();
+                            return;
+                        }
+                        finished();
+                    });
+                });
             });
-        });
-    });
 }
 
 void Reader::prepareSleepCover()
@@ -2890,47 +2895,52 @@ void Reader::finishExitNative(quint64 request, const QString &location, const QS
     closingTimes.add("native", closeStage);
     closeStage.restart();
     const QPointer<Reader> guard(this);
-    // stopReading already started the time save while local saving and mapping
-    // ran. Let it release Nickel's database before writing the position.
-    book->finishReading(
-            [this, guard, request, location, error](NativeActivityResult activityResult) {
-                if (!guard || request != closeRequest || !exportRunning || lifecycleHidden)
-                    return;
-                closingTimes.add("session", closeStage);
-                closeStage.restart();
-                if (!activityCompleted(activityResult)) {
-                    failExit(request);
-                    return;
-                }
-                const auto result = book->writeNative(location, error);
-                closingTimes.add("native", closeStage);
-                closeStage.restart();
-                if (result.status() == NativeSaveResult::Status::Conflict) {
-                    exportRunning = false;
-                    ++closeRequest;
-                    setEnabled(true);
-                    showProgressChoice();
-                    return;
-                }
-                if (result.failed()) {
-                    failExit(request, result.message());
-                    return;
-                }
-                book->markRecent();
-                // Keep the verified native baseline with the final local checkpoint.
-                book->checkpointForClose([this, guard, request](bool saved) {
-                    if (!guard || request != closeRequest || !exportRunning || lifecycleHidden)
-                        return;
-                    closingTimes.add("checkpoint", closeStage);
-                    if (!saved) {
-                        failExit(request);
-                        return;
-                    }
-                    save(true, true, false);
-                    flushKosync([this, request] { finishExitSaved(request); },
-                                kosyncClient->schedule().onClose);
-                });
-            });
+    // As Nickel's reader does, the progress transaction ends the host's
+    // reading session and saves its time. finishReading() then saves only
+    // what that write did not carry, before the reader closes.
+    const auto result = [&] {
+        mainthread::AllowBlocking allow("final native progress before storage handoff");
+        return book->writeNative(location, error);
+    }();
+    closingTimes.add("native", closeStage);
+    closeStage.restart();
+    if (result.status() == NativeSaveResult::Status::Conflict) {
+        exportRunning = false;
+        ++closeRequest;
+        setEnabled(true);
+        showProgressChoice();
+        return;
+    }
+    if (result.failed()) {
+        failExit(request, result.message());
+        return;
+    }
+    // Without a progress write, this ends the session in a short transaction.
+    mainthread::AllowBlocking allow("final native progress before storage handoff");
+    book->finishReading([this, guard, request](NativeActivityResult activityResult) {
+        if (!guard || request != closeRequest || !exportRunning || lifecycleHidden)
+            return;
+        closingTimes.add("session", closeStage);
+        closeStage.restart();
+        if (!activityCompleted(activityResult)) {
+            failExit(request);
+            return;
+        }
+        book->markRecent();
+        // Keep the verified native baseline with the final local checkpoint.
+        book->checkpointForClose([this, guard, request](bool saved) {
+            if (!guard || request != closeRequest || !exportRunning || lifecycleHidden)
+                return;
+            closingTimes.add("checkpoint", closeStage);
+            if (!saved) {
+                failExit(request);
+                return;
+            }
+            save(true, true, false);
+            flushKosync([this, request] { finishExitSaved(request); },
+                        kosyncClient->schedule().onClose);
+        });
+    });
 }
 
 void Reader::finishExitSaved(quint64 request)

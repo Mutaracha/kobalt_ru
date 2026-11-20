@@ -214,10 +214,13 @@ bool ReadingBook::readingSavePending() const
     return bridge && bridge->readingSavePending();
 }
 
-void ReadingBook::retryFailedReadingSave()
+void ReadingBook::retryFailedReadingSave(std::function<void(NativeActivityResult)> done,
+                                         ReadingSaveRetry mode)
 {
     if (bridge)
-        bridge->retryFailedReadingSave();
+        bridge->retryFailedReadingSave(std::move(done), mode);
+    else if (done)
+        done(NativeActivityResult::NotRequired);
 }
 
 void ReadingBook::observeReading(bool learnPace)
