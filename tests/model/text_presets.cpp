@@ -38,9 +38,9 @@ int main()
     QJsonObject russianSaved;
     store(russianSaved, { localized });
     strings::setLocale(strings::Locale::English);
-    const auto restored = load(russianSaved);
-    require(restored.size() == 1 && displayName(restored[0]) == "Bookish"
-                    && restored[0] == localized && restored[0].name == russianName,
+    const auto localizedRestored = load(russianSaved);
+    require(localizedRestored.size() == 1 && displayName(localizedRestored[0]) == "Bookish"
+                    && localizedRestored[0] == localized && localizedRestored[0].name == russianName,
             "A Russian saved example did not display in English without mutation");
     localized.name = "My custom name";
     require(displayName(localized) == localized.name, "A renamed example lost its custom name");

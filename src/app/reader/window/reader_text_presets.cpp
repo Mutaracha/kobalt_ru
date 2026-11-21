@@ -1,5 +1,5 @@
-#include "reading/fork_text_preset_names.h"
 #include "reader_p.h"
+#include "reading/fork_text_preset_names.h"
 #include "platform/api/kobo_refresh.h"
 #include "app/reader/settings/settings_panel.h"
 #include "app/reader/settings/text_presets_panel.h"
@@ -258,7 +258,8 @@ void Reader::syncTextPresets()
     if (selectedIndex >= TextPresetSection::cardCount && !cards.isEmpty())
         cards.last() = textPresetView(presets[selectedIndex]);
     const auto *chosen = textpresets::find(presets, selected);
-    textPresetSection->setState(cards, selected, chosen ? textpresets::displayName(*chosen) : QString(), modified,
+    textPresetSection->setState(cards, selected,
+                                chosen ? textpresets::displayName(*chosen) : QString(), modified,
                                 preferences.value(textpresets::rowKey).toBool(false));
     if (!textPresetChoosingNewBook)
         textPresetGalleryEntries = presets;
@@ -380,7 +381,8 @@ void Reader::editTextPresetName(const QString &id)
     editor->setObjectName("rrTextPresetNameInput");
     dialog->setFocusProxy(editor);
     editor->setMaxLength(textpresets::maximumName);
-    editor->setText(existing ? textpresets::displayName(preset) : textpresets::suggestedName(presets, preset));
+    editor->setText(existing ? textpresets::displayName(preset)
+                             : textpresets::suggestedName(presets, preset));
     editor->selectAll();
     editor->setAccessibleName(strings::get("text_presets.name"));
     editor->setInputMethodHints(Qt::ImhNoPredictiveText);

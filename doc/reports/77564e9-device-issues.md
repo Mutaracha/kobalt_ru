@@ -96,3 +96,14 @@ work complete or create a tag/release.
 
 Implementation and focused CI pending at initial publication. Native Qt SDK /
 Docker unavailable locally. No device acceptance claimed for these fixes.
+
+
+Initial CI 44931369775: Kobo Qt5/offline/package PASS; native compilation stopped
+because a newly added test variable reused an existing `restored` identifier in
+main(). Renamed the new fixture variable; no assertion removed. Follow-up CI
+required. Local strings generator/parity/rebuild checks pass with scratch CMake
+and Ninja; default Make run failed its regeneration check (not claimed as PASS).
+FontTools coverage confirms Instrument Serif Italic, NV Ancizar Serif Italic and
+Libron Italic lack the Cyrillic text; Noto Serif Italic covers it. Bundled faces
+are unmodified. Opening typography and freeze remain unresolved, not silently
+included among the two fixes.
