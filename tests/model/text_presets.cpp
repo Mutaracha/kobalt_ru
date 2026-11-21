@@ -1,6 +1,7 @@
 #include "reading/appearance_settings.h"
 #include "reading/reading_density.h"
 #include "reading/text_presets.h"
+#include "reading/fork_text_preset_names.h"
 #include "support/qt_compat.h"
 #include "check.h"
 #include <QJsonArray>
@@ -28,6 +29,28 @@ int main()
     require(shipped[0].fontFace == defaultFontFace && shipped[0].halfPoints == 22
                     && shipped[0].lineSpacing == defaultLineSpacing,
             "Kobalt no longer matches the book defaults");
+    // A saved example follows EN/RU at display time, without rewriting its name or values.
+    auto localized = shipped[1];
+    strings::setLocale(strings::Locale::Russian);
+    const auto russianName = strings::get("text_presets.example_bookish");
+    require(displayName(localized) == russianName, "An English example did not display in Russian");
+    localized.name = russianName;
+    QJsonObject russianSaved;
+    store(russianSaved, { localized });
+    strings::setLocale(strings::Locale::English);
+    const auto restored = load(russianSaved);
+    require(restored.size() == 1 && displayName(restored[0]) == "Bookish"
+                    && restored[0] == localized && restored[0].name == russianName,
+            "A Russian saved example did not display in English without mutation");
+    localized.name = "My custom name";
+    require(displayName(localized) == localized.name, "A renamed example lost its custom name");
+    localized.name = russianName;
+    localized.example = false;
+    require(displayName(localized) == russianName, "A user preset was translated");
+    localized.example = true;
+    localized.id = "user-defined";
+    require(displayName(localized) == russianName, "An unknown example id was translated");
+
     // An empty saved list stays empty: deleting every preset is respected.
     QJsonObject empty;
     store(empty, {});

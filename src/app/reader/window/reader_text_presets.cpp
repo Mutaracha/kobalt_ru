@@ -1,3 +1,4 @@
+#include "reading/fork_text_preset_names.h"
 #include "reader_p.h"
 #include "platform/api/kobo_refresh.h"
 #include "app/reader/settings/settings_panel.h"
@@ -167,7 +168,7 @@ TextPresetView Reader::textPresetView(const Preset &preset)
 {
     TextPresetView view;
     view.id = preset.id;
-    view.name = preset.name;
+    view.name = textpresets::displayName(preset);
     view.detail = presetDetail(preset);
     const auto face =
             preset.fontFace.isEmpty() ? QString::fromLatin1(defaultFontFace) : preset.fontFace;
@@ -257,7 +258,7 @@ void Reader::syncTextPresets()
     if (selectedIndex >= TextPresetSection::cardCount && !cards.isEmpty())
         cards.last() = textPresetView(presets[selectedIndex]);
     const auto *chosen = textpresets::find(presets, selected);
-    textPresetSection->setState(cards, selected, chosen ? chosen->name : QString(), modified,
+    textPresetSection->setState(cards, selected, chosen ? textpresets::displayName(*chosen) : QString(), modified,
                                 preferences.value(textpresets::rowKey).toBool(false));
     if (!textPresetChoosingNewBook)
         textPresetGalleryEntries = presets;
@@ -379,7 +380,7 @@ void Reader::editTextPresetName(const QString &id)
     editor->setObjectName("rrTextPresetNameInput");
     dialog->setFocusProxy(editor);
     editor->setMaxLength(textpresets::maximumName);
-    editor->setText(existing ? preset.name : textpresets::suggestedName(presets, preset));
+    editor->setText(existing ? textpresets::displayName(preset) : textpresets::suggestedName(presets, preset));
     editor->selectAll();
     editor->setAccessibleName(strings::get("text_presets.name"));
     editor->setInputMethodHints(Qt::ImhNoPredictiveText);
@@ -536,7 +537,7 @@ void Reader::showTextPresetActions(const QString &id)
                        ui::ControlIcon::Trash, [this, id] { confirmDeleteTextPreset(id); }),
     };
     ui::ActionMenuHeader header;
-    header.title = preset->name;
+    header.title = textpresets::displayName(*preset);
     header.caption = presetSummary(*preset);
     if (textpresets::newBookChoice(preferences) == id)
         header.detail = strings::get("text_presets.used_for_new_books");
@@ -572,7 +573,7 @@ void Reader::confirmDeleteTextPreset(const QString &id)
     auto *dialog = new ui::ChoiceModal(
             this,
             { strings::get("text_presets.delete_detail"),
-              strings::get("text_presets.delete_prompt").arg(preset->name),
+              strings::get("text_presets.delete_prompt").arg(textpresets::displayName(*preset)),
               {} },
             { strings::get("common.cancel"), "rrTextPresetDeleteCancel" },
             { strings::get("text_presets.delete"), "rrTextPresetDeleteConfirm" });
@@ -807,7 +808,7 @@ void Reader::showTextPresetSettings()
     const auto choice = textpresets::newBookChoice(preferences);
     const auto *chosen = textpresets::find(presets, choice);
     panel->textForNewBooksButton->setCaption(
-            chosen ? chosen->name
+            chosen ? textpresets::displayName(*chosen)
                    : strings::get(choice == "book" ? "settings.new_book_book_default"
                                                    : "settings.new_book_last_used"));
 }

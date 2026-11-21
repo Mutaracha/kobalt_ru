@@ -1,0 +1,98 @@
+# 77564e9 — device follow-up, upload 68c77d8
+
+## Provenance and scope
+
+Original archives/screenshots: `test & diagnostic/77564e9/`, added by user commit
+`68c77d863b98190c4d137a79d1db9a153428d2bc`. Runtime remains 77564e9.
+All times below are archive UTC, not an inference about the current date.
+User previously completed the combined panels checklist successfully. Subsequent
+freeze is a separate open defect, not covered by that acceptance.
+
+## EPUB Hybrid — confirmed, no algorithm change
+
+`diagnostics epub hibrid.zip/events.jsonl`:
+- 16:36:15.355: EPUB, chapter_mode_requested=true, first/last spine item=4.
+- 16:36:21.262: next slice, first/last=5.
+- 16:36:22.295: background whole-book instance, bounds=-1 (not evidence of a
+  fallback by itself).
+- 16:36:29.429: full-document-ready, from_cache=false, pages=1000, parks=3.
+- 16:36:54.260: render-end successful, loaded_pages=1000, book_fraction=-1,
+  page=30: full document adopted on subsequent navigation.
+No engine-opening-fallback or whole-book-failed in this EPUB run. Saved mode
+hybrid, inpage_footnotes=false. Initial partial view had 23 loaded pages.
+The archive also contains an earlier FB2 session: chapter request is true but
+bounds remain -1 as intended; this is NOT evidence of partial FB2 support.
+
+## Freeze in Settings / Styling — cause unresolved
+
+Freeze archive includes current events and two history files. The relevant
+pre-reboot process is pid 216; next startup is 15:19:18.913.
+- 15:16:54.711: Settings opened, build 0.070 ms (already constructed).
+- 15:17:03–53: successive Styling samples/windows finish; feature ids
+  0,1,2,5,3,4. Last panel-open: 15:17:53.399, sample 392 ms, paint 572 ms.
+- Through 15:18:22.483: touch begin/end and synthesized mouse press/release
+  reach the main thread; display-flush operations finish (last 15:18:22.806).
+- Suspend calls in this interval also return. No recorded uncompleted sample
+  render or main-thread operation explains a permanent engine wait.
+- Then a new startup; no book-close from that process in this interval.
+
+This does not disprove the reported unresponsive UI. It rules out claiming a
+proven permanent event-loop deadlock from this log. Receiver widget, active modal,
+grabber and accepted/ignored state are not recorded; no stack dump is present.
+Possible modal/input-state or retained overlay issue remains a hypothesis, not a
+confirmed root cause. Do not disable standby, add forced flashes or change EPUB
+Hybrid algorithms as a speculative remedy. Last state.json is not a capture at
+the instant of the freeze and must not be treated as its widget tree.
+Next diagnostic step: identify the exact last Styling window/control and whether
+close/back, page buttons or power still responded; if reproduced, capture modal /
+mouse-grabber / receiver evidence. No freeze fix claimed in this checkpoint.
+
+## Screens 1–2 — opening typography, pending
+
+English uses Instrument Serif Italic. The bundled Instrument Serif has no
+Cyrillic; private-text script fallback resolves Russian to Noto Serif Italic.
+Both use the same requested opening-label pixel size, but their glyph shapes,
+width and perceived weight differ. Reducing only the nominal size cannot turn
+Noto's shapes into Instrument's. Need a narrowly scoped opening-label choice /
+size proof, not a global fallback change or synthetic horizontal compression.
+No font/size modification in this checkpoint; user request remains open.
+
+## Screens 5–6 — preset names, fix
+
+These are Text Presets, not UI light/dark themes. Names of shipped examples are
+persisted in text_presets entries in the language used at creation. Switching
+interface language changes strings but previously left those saved names alone.
+New fork-local displayName resolves known EN/RU shipped names by example id at
+presentation time, across strip, gallery, chooser, action header, rename prefill
+and delete prompt. Does not rewrite storage, alter typography/order, translate
+user presets, or replace custom-renamed examples. No new wording.
+Regression covers EN→RU, saved RU→EN, no mutation and custom/unknown entries.
+
+## Screen 8 — verified functional meaning, no wording change
+
+vertical_spacing_scope=protection reaches LVDocView::setVerticalSpacing's
+onlyProtection flag. Drawing AND coordinate conversion gate on
+RN_PAGE_PARAGRAPH_PROTECTION_GAP. Page splitting sets that flag when paragraph
+protection moved justifiable lines that otherwise fit on the previous page.
+It does not merely adjust the orphan line; Center/Expand applies to eligible
+page content to compensate for the gap caused by widow/orphan protection.
+With scope=all ordinary suitable near-full prose pages are eligible too.
+Normal/off applies neither correction. With widow/orphan protection disabled,
+protection-only scope normally has no such gaps to adjust.
+Existing RU “После защиты от висячих строк” and its description convey that
+condition accurately. No translation change is justified by this screenshot.
+Tests/model/vertical_spacing.cpp explicitly checks protection-only adjustment,
+no effect when protection is disabled and cached metadata round-trip.
+
+## Screen 7 — version, fix
+
+assets/manifest.json still held v1.0-beta.8; branch builds fall back to that
+metadata through platforms/ci/version.sh and release-version.cmake. Corrected to
+v1.0-beta.9. Do not spoof only About or replace the fork source-commit/UTC lines.
+This corrects packaging metadata; it does not declare remaining beta9 alignment
+work complete or create a tag/release.
+
+## Validation
+
+Implementation and focused CI pending at initial publication. Native Qt SDK /
+Docker unavailable locally. No device acceptance claimed for these fixes.

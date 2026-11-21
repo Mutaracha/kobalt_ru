@@ -13,7 +13,7 @@ Baseline форка `4e3a33b9`, upstream beta.9 `be472588`.
 | Блок | Статус | Следующий результат / gate |
 |---|---|---|
 | Уборка артефактов и incidental diff | in progress | Удалены список и 26 старых engine patches: consumers отсутствуют, build использует in-tree Blaze. Cache recipe/filter оставлены byte-identical, чтобы не менять dependency key. Прочий incidental diff ещё не сводился; CI 44800640114 PASS. |
-| Общие реализации beta.9 | in progress: пресеты device accepted; panel/theme CI verified | Контекстно свести пресеты, chapter lookup, аннотации/keyboard, KOSync, sleep/storage. Использовать upstream lazy panels вместо собственной оптимизации; проверить shared helper/API и protected fork behavior. |
+| Общие реализации beta.9 | in progress: пресеты device accepted; panel/theme device checklist accepted; отдельный freeze открыт | Контекстно свести пресеты, chapter lookup, аннотации/keyboard, KOSync, sleep/storage. Использовать upstream lazy panels вместо собственной оптимизации; проверить shared helper/API и protected fork behavior. |
 | Актуальная карта дельты | planned | Обновить fork-delta по фактическим файлам; для каждого retained delta указать причину и gate, upstream-only файлы проверить отдельно. |
 | Подготовка FB2 Hybrid | in progress: source analysis | [Граница и матрица](doc/reports/fb2-hybrid-preparation.md) описаны по коду. Далее corpus, sections/notes/resources/anchors и проверяемый whole-book fallback. Реализация и включение partial layout не разрешены автоматически. |
 | Следующее обновление | planned; blocked до фиксации нового upstream SHA для runtime-переноса | Использовать протокол отчёта; сначала завершить cleanup и составить dependency/consumer/test matrix. Beta.10 ещё не анализировалась. |
@@ -31,13 +31,19 @@ Upstream ensureSettings/preparePanels/settled/inputQuiet подключены п
 разделения KOSync model/page; consumers безопасны до создания Settings.
 Проверены lifecycle.lazyPanels (on-demand/background × light/dark), close-unbuilt,
 KOSync lifecycle/model и прежние theme/settings/EPUB/FB2 checks.
-Qt6 skipped; full suite/Android/device NOT RUN. Пресеты 9633d3fd приняты отдельно.
+Qt6 skipped; full suite/Android NOT RUN. Пользователь принял чек-лист theme /
+lazy Settings и кнопки; последующий freeze рассматривается отдельно, не закрыт.
+Пресеты 9633d3fd приняты отдельно.
 
-**Следующее действие:** совместная device-проверка theme + lazy Settings по
-[чек-листу](doc/validation/upstream-panels-device.md). Затем оставшиеся
-annotations/keyboard/KOSync policy/sleep alignment и обновление inventory;
-этот блок не закрывает всю очередь и не меняет EPUB Hybrid algorithms.
-Подробности: doc/reports/upstream-panels-alignment.md.
+**Следующее действие:** разобрать замечания upload `68c77d8`:
+[отчёт](doc/reports/77564e9-device-issues.md). EPUB Hybrid подтверждён логом
+(частичный старт → full-document-ready → adoption); алгоритмы не меняются.
+Fix версии manifest beta.9 и отображение EN/RU имён встроенных пресетов —
+in progress / CI pending. Freeze Settings/Styling — blocked по причине:
+нет stack trace/адресата касаний; event loop оставался активен, speculative
+standby/renderer fixes запрещены. Opening RU typography — planned: подобрать
+размер/начертание по образцу EN, не менять глобальный brand/font fallback.
+Затем оставшиеся annotations/keyboard/KOSync policy/sleep alignment и inventory.
 
 **Validation:** runtime `9633d3fd4b2df250c97ac77d1ff5e0827db35465`,
 [CI 44801198903](https://github.com/Mutaracha/kobalt_ru/actions/runs/44801198903)
