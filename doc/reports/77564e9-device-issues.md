@@ -107,3 +107,13 @@ FontTools coverage confirms Instrument Serif Italic, NV Ancizar Serif Italic and
 Libron Italic lack the Cyrillic text; Noto Serif Italic covers it. Bundled faces
 are unmodified. Opening typography and freeze remain unresolved, not silently
 included among the two fixes.
+
+
+Verified follow-up runtime `8f1fdf4d8b57c039dd5660cd183c96276aa4b2ae`:
+[CI 44932175305](https://github.com/Mutaracha/kobalt_ru/actions/runs/44932175305)
+SUCCESS, focused native (including model.text-presets locale regression) and
+Kobo Qt5/offline/package/contents. Qt6 skipped; no full-suite/Android/local Qt
+or on-device verification of the fixes. Artifacts API: native results 14718710551
+(14890 bytes), [Qt5 package](https://github.com/Mutaracha/kobalt_ru/actions/runs/44932175305/artifacts/14718635775)
+14718635775 (37361585 bytes). Raw result archive not downloaded/inspected.
+Only preset-name display and manifest version are fixed in this binary.

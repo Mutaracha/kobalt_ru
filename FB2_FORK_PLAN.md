@@ -39,7 +39,10 @@ lazy Settings и кнопки; последующий freeze рассматри�
 [отчёт](doc/reports/77564e9-device-issues.md). EPUB Hybrid подтверждён логом
 (частичный старт → full-document-ready → adoption); алгоритмы не меняются.
 Fix версии manifest beta.9 и отображение EN/RU имён встроенных пресетов —
-in progress / CI pending. Freeze Settings/Styling — blocked по причине:
+done / CI verified runtime `8f1fdf4d`,
+[CI 44932175305](https://github.com/Mutaracha/kobalt_ru/actions/runs/44932175305)
+PASS native + Qt5; device pending. Этот пакет НЕ содержит исправления freeze
+или нового шрифта экрана открытия. Freeze Settings/Styling — blocked по причине:
 нет stack trace/адресата касаний; event loop оставался активен, speculative
 standby/renderer fixes запрещены. Opening RU typography — planned: подобрать
 размер/начертание по образцу EN, не менять глобальный brand/font fallback.
