@@ -65,11 +65,11 @@ beta.8 inventory ниже не заменяет итоговый beta.9 ауди
 | RU | Полный словарь, plural one/few/many, русский перенос с EN, English fallback. Locale при каждом принятом открытии книги, ExtraLocales/C/POSIX, debug markers. | `support/string_locale.h`, `string_table.h`, `locale.*`, `debug_language.*`, короткие hooks в `strings.h`, `assets/ru.strings`, `platforms/strings*.cmake`; platform entry points. |
 | About/debug | Дополнительная строка fork + UTC build time; скрытый выбор языка. Stock version/commit сохранены. | `app/about/fork_about.*`, `fork_debug.*`; вызов из about_page, build_info и build definitions. |
 | Comics | Per-book/default off, эффективное подавление полей/chrome без потери значений, preview, landscape пары, отдельные wide/center страницы, центровка/поворот portrait center, hit bounds и resource readiness. | `reader_comics.*`, `column_view_comics.cpp`, `engine_document_comics.cpp`; состояние/общая отрисовка и позиционирование подключены в ColumnView/EngineDocument, publication/resources/session/UI. |
-| Меню чтения | Быстрые dark/comics кнопки; comics state ink + filled checked bubble, запрет действия при busy без серого мигания; скрываются только кнопки. Отдельная замещаемая полоса book-time/page-count под toolbar. | `fork_reader_actions.cpp`, `views/fork_navigation.*`, короткие toolbar wiring/refresh/navigation hooks, features/settings. Ни режим, ни Layout control не отключаются скрытием. |
+| Меню чтения | Быстрые dark/comics кнопки; comics state ink + filled checked bubble, запрет действия при busy без серого мигания; скрываются только кнопки. Полоса book-time/page-count полностью удалена в cba1e229 по новому решению пользователя; замена deferred. | `fork_reader_actions.cpp`, `views/fork_navigation.*`, короткие toolbar wiring/refresh/navigation hooks, features/settings. Ни режим, ни Layout control не отключаются скрытием. |
 | Прогресс | Выключено/Внизу/Вверху, top выше header, зеркальные chapter ticks, legacy enabled→Bottom. | `reading_page_progress.cpp`, reading_page geometry, header_footer model/panel, chapter fractions и session/navigation refresh. |
 | Shared UI | Settings-row presentation, compact checkbox Light/Layout, корректный общий baseline RU tabs, return-title typography, fork glyphs. | `fork_settings.*`, options/buttons, `return_title_text.h`, navigation, `fork_icon_geometry.*`. Не дублировать экраны Settings. |
 | Сон | Подгонка длинных надписей, две строки remaining в ribbon, fit оценок widgets; общая standby-логика beta.8 не заменяется. | `sleep_ribbon_text.cpp`, узкие изменения sleep_screen/sleep_designs. |
-| Lazy Appearance | Уже существовавшее отложенное построение Appearance с palette/refresh для поздних children. Lazy Settings не реализована, задача закрыта. | `fork_reader_actions.cpp`, reader window state/build/refresh/settings. Не новая оптимизация в этом рефакторинге. |
+| Lazy Appearance | Upstream beta9 lazy Settings/Appearance, preparePanels/settled/inputQuiet; поздние children получают актуальную palette/refresh. Собственной второй оптимизации нет. | `fork_reader_actions.cpp`, reader window state/build/refresh/settings. Не новая оптимизация в этом рефакторинге. |
 | Направление свайпов | Отдельный глобальный `invert_page_swipes`, default false; направление учитывает RTL, не меняет зоны касаний/свет/кнопки. | `reading/page_navigation.h`, Settings и ReadingPage input wiring. |
 | Kobo Libra 2 | Только landscape polarity correction поверх positional/held модели beta.8; другие устройства — upstream. | `platforms/kobo/common/page_button_mapping.h`, Qt5 native_ui; ReaderController lifecycle hooks. |
 | Kobo/FB2 прогресс | FB2 не использует EPUB-specific native position; сохраняются собственные source positions, в Nickel время/проценты. | Kobo native_publication, ReaderController, publication/opening_job/reader_session. |
@@ -415,3 +415,22 @@ vendor crengine/extensions, не adapter. Nullable Settings/Appearance predicate
 полосы вынесен и проверен отдельно. Следующий перенос обязан заменить реализации
 общего adapter/session на beta.9, сохранив узкие format-specific hooks, а не
 заморозить старый whole-book EPUB pipeline. Текущий статус — в FB2_FORK_PLAN.md.
+
+
+## Annotation foundation checkpoint — candidate 4e014dc5
+
+Nine shared upstream files restored byte-for-byte: rows h/cpp, highlight_store
+h/cpp, annotation_database.cpp, highlight_session h/cpp, bookmark_list h/cpp.
+Reader annotationRows/bookmarkRows and annotationDetails hydration bodies use
+upstream book-page/note metadata. No new schema or duplicate writer; model/UI
+retry contract is upstream's. Labeled fork highlight palette unchanged.
+[Consumer matrix](reports/beta9-annotation-port-matrix.md) tracks the remaining
+NoteEditor/actions/gesture/lifecycle integration. This is not a complete annotation
+port or a declaration that all other beta9 differences are intentional.
+
+Intermediate 29487359 / CI 45033710524: Qt5 PASS, native failed exactly at
+`Compact excerpts did not carry their notes`. SQLite excerpt consumer was still
+old; whole upstream annotation_database.cpp restored in 4e014dc5. The assertion
+was retained. Final run 45033749297 SUCCESS: native 9m55s + Qt5 5m01s; device pending. Intermediate artifact is not the
+verified handoff package. EPUB Hybrid/frameImage/comics, Libra2 mapping and the
+fork palette remain byte-identical to pre-checkpoint 34946cf2.

@@ -47,7 +47,7 @@ Sleep/exit changes that are required for editor ownership belong to that consume
 integration; unrelated standby behavior and the deferred freeze are not reopened.
 
 
-## Implemented foundation checkpoint (CI pending)
+## Implemented foundation checkpoint (CI verified, device pending)
 
 Whole upstream files restored: rows.h/cpp, highlight_store.h/cpp,
 highlight_session.h/cpp, bookmark_list.h/cpp (8 files). No parallel note storage.
@@ -74,3 +74,17 @@ annotation_database.cpp restored (header/tests already identical). Compact SELEC
 projects note presence and excerpt SELECT reads/validates note type/length/bytes;
 without this consumer the restored model would still lose SQLite note metadata.
 No database schema migration. Focused annotation-database checks added.
+
+
+Final runtime `4e014dc57c04ec35a5d3dd3e0cba7f73fa91b698` / build 254:
+[CI 45033749297](https://github.com/Mutaracha/kobalt_ru/actions/runs/45033749297) SUCCESS: native 9m55s;
+Qt5/offline/package/contents 5m01s, artifact 14758934067 (37359704 bytes).
+Qt6 skipped; Android/full suite/device not run. Focused selection includes
+annotation-database/highlight-store/highlight-session, component.ui, list note
+variants and choiceSheet/modal divider/keyboard tests, plus existing selected
+EPUB/FB2/settings/lifecycle/desktop checks. Does not claim all Reader annotation
+interaction suites (desktop.annotation* is not in this regex).
+
+Intermediate 29487359 / CI 45033710524: Qt5 passed, native failed the restored
+compact-note assertion. Whole upstream SQLite consumer in 4e014dc5 resolves the
+missing projection; the assertion is retained and the follow-up run passes.

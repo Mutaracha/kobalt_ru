@@ -35,7 +35,7 @@ Qt6 skipped; full suite/Android NOT RUN. Пользователь принял �
 lazy Settings и кнопки; последующий freeze рассматривается отдельно, не закрыт.
 Пресеты 9633d3fd приняты отдельно.
 
-**Следующий пакет — in progress / CI pending:** upstream shared ListRow и
+**Пакет 254 — implemented / CI verified, device pending:** upstream shared ListRow и
 SegmentedRow, HighlightStore/HighlightSession, BookmarkList восстановлены целиком.
 Подключены upstream annotationRows/bookmarkRows и hydration callback — note preview,
 whole-book page metadata и pending row navigation используют общую цепочку.
@@ -46,6 +46,15 @@ excerpt note/валидация. Schema unchanged. Focused CI теперь за�
 choiceSheet/modal dividers/list regressions, annotation-database и highlight-store. Это НЕ полная интеграция NoteEditor/quick gestures: Reader editor
 ownership и действия редактирования заметок остаются следующим consumer group.
 EPUB Hybrid, freeze deferred и Libra2 correction не менялись.
+Runtime `4e014dc57c04ec35a5d3dd3e0cba7f73fa91b698`,
+[CI 45033749297](https://github.com/Mutaracha/kobalt_ru/actions/runs/45033749297) **SUCCESS**:
+native 9m55s, Kobo Qt5/offline/package/contents 5m01s.
+[Пакет 254](https://github.com/Mutaracha/kobalt_ru/actions/runs/45033749297/artifacts/14758934067)
+(37359704 bytes). Qt6 skipped, Android/full suite/device NOT RUN.
+[Чек-лист устройства](doc/validation/beta9-annotation-foundation.md).
+Следующее действие после device feedback: NoteEditor + Reader actions/ownership/
+input/save/close consumers по матрице; не считать весь annotation port завершённым.
+
 
 **Последнее указание — implemented / CI verified, device pending:** принята RU строка
 «Только зазоры от висячих строк»; полоса страниц/времени до конца книги полностью
