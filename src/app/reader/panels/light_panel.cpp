@@ -132,8 +132,8 @@ LightPanel::LightPanel(LightControls &light, QWidget *parent)
     tipLayout->addWidget(new SwipeIcon(swipeRow), 0, Qt::AlignTop);
     tipLayout->addWidget(swipeTip, 1);
     outer->insertWidget(0, swipeRow);
-    // Both automatic settings belong to Nickel. Bedtime stays in Nickel's
-    // settings. Moving a slider turns its automatic setting off.
+    // Automatic settings belong to the host. Moving a slider turns its
+    // automatic setting off.
     // Brightness changes reach the device while dragging. Native persistence
     // runs on release; interrupted drags restore the original level.
     connect(brightnessSlider, &QSlider::valueChanged, this, [this](int value) {

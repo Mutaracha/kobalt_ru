@@ -169,6 +169,11 @@ int main(int argc, char **argv)
     require(resetNativeUnread(reset, unread) && reset.value("hide_book_on_sleep_screen").toBool(),
             "Mark as unread lost the book's privacy choice");
     reset = checkpoint;
+    const QJsonObject positions{ { "offset", 12 } };
+    reset["sleep_positions"] = positions;
+    require(resetNativeUnread(reset, unread) && reset.value("sleep_positions").toObject() == positions,
+            "Mark as unread lost the book's sleep image positions");
+    reset = checkpoint;
     require(!resetNativeUnread(reset, {}) && reset == checkpoint,
             "Failed native read reset the local checkpoint");
     require(!resetNativeUnread(reset, second) && reset == checkpoint,
