@@ -4,6 +4,7 @@
 #include "page_navigation.h"
 #include "header_footer.h"
 #include "sleep_screen.h"
+#include "rendering_mode.h"
 #include "session_timeout.h"
 #include "text_presets.h"
 #include <QStringList>
@@ -149,6 +150,7 @@ QJsonObject cleanPreferences(QJsonObject preferences)
                              "header_text_size", "footer_text_size" })
         preferences.remove(key);
     for (const auto *key : { "dark_mode",
+                             features::debugModeKey,
                              "hide_tab_labels",
                              "save_looked_up_words",
                              "disable_reader_standby",
@@ -195,6 +197,8 @@ QJsonObject cleanPreferences(QJsonObject preferences)
     choice("sleep_screen", { "stock", "cover", "page", "overlay" });
     choice("sleep_tile", { "card", "bookmark", "none" });
     choice(sleep::designKey, sleep::designValues());
+    // The Custom screen and the moved statuses are objects; their fields fall
+    // back to defaults one by one when read.
     for (const auto *key : { sleep::customKey, sleep::placesKey })
         if (preferences.contains(key) && !preferences.value(key).isObject())
             preferences.remove(key);
@@ -204,6 +208,8 @@ QJsonObject cleanPreferences(QJsonObject preferences)
         preferences.remove(sleep::greetingKey);
     textpresets::clean(preferences);
     choice("time_remaining_format", { "detailed", "approximate" });
+    choice(headerfooter::percentageFormatKey, { "whole", "decimal" });
+    choice(renderingMode::preferenceKey, { "hybrid", "fast", "accurate" });
     if (preferences.contains(sessionTimeout::preferenceKey)
         && !sessionTimeout::valid(preferences.value(sessionTimeout::preferenceKey)))
         preferences.remove(sessionTimeout::preferenceKey);
@@ -225,6 +231,11 @@ QJsonObject cleanPreferences(QJsonObject preferences)
         const auto value = preferences.value("orientation");
         if (!value.isDouble() || (value != 1 && value != 2 && value != 4 && value != 8))
             preferences.remove("orientation");
+    }
+    if (preferences.contains("locked_orientation")) {
+        const auto value = preferences.value("locked_orientation");
+        if (!value.isDouble() || (value != 0 && value != 1 && value != 2 && value != 4 && value != 8))
+            preferences.remove("locked_orientation");
     }
     const auto number = [&](const char *key, int minimum, int maximum) {
         const auto value = preferences.value(key);

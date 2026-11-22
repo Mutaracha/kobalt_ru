@@ -11352,10 +11352,15 @@ private:
             QCOMPARE(attempts.count(), 0);
             QVERIFY(host.window()->findChild<QPushButton *>("rrKosyncServer")->isEnabled());
             if (scenario == "login") {
-                // Password consumption makes the next sign-in invalid. It must
-                // report that locally without opening another networking dialog.
-                host.window()->findChild<QPushButton *>("rrKosyncLogin")->click();
+                // A failed connection keeps the draft. Only an explicit retry
+                // opens another connection dialog.
                 QCOMPARE(network->requests, 2);
+                host.window()->findChild<QPushButton *>("rrKosyncLogin")->click();
+                QCOMPARE(network->requests, 3);
+                QVERIFY(network->interactive && network->completed);
+                const auto retried = std::exchange(network->completed, {});
+                retried(false);
+                QCOMPARE(attempts.count(), 0);
             }
         }
         QVERIFY(!kosync::Client(paths.syncAccount()).lastSync().isValid());

@@ -4,6 +4,8 @@
 #include <array>
 
 namespace kobalt::headerfooter {
+inline constexpr auto percentageFormatKey = "header_footer_percentage_format";
+
 // What one slot shows. Saved layouts name fields by fieldValue.
 enum class Field {
     Nothing,

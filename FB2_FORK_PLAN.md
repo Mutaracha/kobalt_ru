@@ -61,6 +61,11 @@ changed / 155 fork-only / 52 upstream-only. Текущая KOSync/sleep/storage 
 не закрывает оставшиеся platform/Reader consumers; полный semantic gate OPEN.
 Сохранён fork diagnostic flag appearance_controls_built, который проверяет
 desktop.lazyAppearance; это instrumentation, не отдельная save policy.
+CI `45047454711`/54cd91ad: Qt5 package/contents PASS (5m01s), native
+compiled and executed 484 checks, failed only profile-storage invalid Rendering
+sanitization and kosyncNetwork's old password-consumption helper. Restored whole
+upstream cleanPreferences (retaining fork legacy-note migration) and all
+verifyKosync helpers. No EPUB algorithm changes; no assertions removed.
 Дополнительно зарегистрирован upstream kosyncDialogResume в CTest (сам тест
 перенесён целиком), без пропуска при focused selection.
 
