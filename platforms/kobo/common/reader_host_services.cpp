@@ -190,7 +190,7 @@ private:
 class Keyboard final : public KeyboardController
 {
 public:
-    Keyboard(QWidget *parent, QLineEdit *editor) : adapter(new NativeKeyboard(parent, editor))
+    Keyboard(QWidget *parent, QWidget *editor) : adapter(new NativeKeyboard(parent, editor))
     {
         adapter->submitted = [this] {
             const auto callback = submitted;
@@ -283,7 +283,7 @@ ReaderHostServices readerHostServices()
     result.cancelAnimation = cancelPageAnimation;
     result.light = [](QWidget *anchor) { return std::make_unique<Light>(anchor); };
     result.dictionary = [] { return std::make_unique<Dictionary>(); };
-    result.keyboard = [](QWidget *parent, QLineEdit *editor) {
+    result.keyboard = [](QWidget *parent, QWidget *editor) {
         return std::make_unique<Keyboard>(parent, editor);
     };
     result.syncNetwork = [] { return std::make_unique<NativeSyncNetwork>(); };

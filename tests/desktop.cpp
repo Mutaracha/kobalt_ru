@@ -1990,8 +1990,14 @@ void verticalJustificationTour(Fixture &fixture, const QString &name, bool scree
                                                  : "rrVerticalSpacingScope_all"));
             }
         }
+        const QPointer<QWidget> dismissedSpacing = overlay;
         QVERIFY(fixture.press("rrVerticalSpacingClose"));
         QTRY_VERIFY(!fixture.visible("rrVerticalSpacingPopup"));
+        // The reported device freeze followed this close: no hidden overlay
+        // may survive to own input when Settings remains on screen.
+        QTRY_VERIFY(dismissedSpacing.isNull());
+        QVERIFY(fixture.visible("rrSettingsClose"));
+        QVERIFY(fixture.widget("rrGeneralSettings")->isEnabled());
         if (columns) {
             QVERIFY(fixture.press("rrSettingsDisplay"));
             QVERIFY(reveal("rrLandscapeColumns"));

@@ -140,3 +140,30 @@ and rebuild script, explicit staged diff --check. Scratch-only CMake was install
 for script preflights, not used to claim a local Qt build. Combined device checks:
 doc/validation/upstream-panels-device.md. Settings background construction and
 first-open theme are now one package; presets have prior user approval only.
+
+
+## Next dependency group: keyboard and choice sheets (CI pending)
+
+Pinned beta9 keyboard/controller interface, widget keyboard, native keyboard
+header and Qt5/Qt6 adapters restored as whole files. Supports QLineEdit and
+QTextEdit before annotation note consumers migrate. All platform factories and
+model-test factories widened consistently to QWidget; no platform dictionary,
+light, sync or input method policy copied incidentally. Android's own controller
+holds QWidget as upstream; Android/Qt6 runtime not tested by Qt5-first CI.
+
+Pinned beta9 ModalOverlay and ChoiceSheet restored as whole files: long choice
+lists own row pagination and refit on resize. Existing RadioList paging API is
+already present; fork-only divider/checkbox presentation remains intact. This is
+not the vertical-spacing form's implementation and is NOT a claimed freeze fix.
+
+Added widgetKeyboardMultiline (selection replacement, deletion, submit, hide /
+bounds), extended choiceSheetListFillsCard with short-landscape paging/refit,
+and strengthened verticalJustificationTour to await destruction of the dismissed
+spacing overlay while Settings is visible/enabled. Focused CI now selects all
+widgetKeyboard* and the existing desktop.verticalJustification tour. The new test
+keeps the existing keyboard area label; no test removal or weaker assertions.
+
+Static investigation: showStylingChoices/dismissSheet and the vertical-spacing
+close callback are unchanged from pinned beta9. No evidence yet justifies a
+fork-specific close workaround. Need actual touch-path/lifecycle reproduction;
+a desktop pass cannot establish that the device freeze is solved.

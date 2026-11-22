@@ -6,6 +6,7 @@
 #include "support/paint_regions.h"
 #include "ui/controls/keyboard.h"
 #include <QLineEdit>
+#include <QTextEdit>
 #include <QDynamicPropertyChangeEvent>
 #include "assets/bundled_fonts.h"
 #include "app/library/library_view.h"
@@ -1048,6 +1049,40 @@ private slots:
     }
 
     // Checks accent popups: delayed releases, uppercase variants, drag selection, Escape, cancellation, hiding and placement.
+    // Checks the upstream multiline editor boundary before annotation note consumers migrate.
+    void widgetKeyboardMultiline()
+    {
+        ui::setDensity(300);
+        QWidget host;
+        host.resize(1072, 1448);
+        QTextEdit editor(&host);
+        editor.setGeometry(20, 20, 600, 200);
+        auto keyboard = ui::makeWidgetKeyboard(&host, &editor);
+        host.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&host));
+        QVERIFY(keyboard->show());
+        auto *panel = host.findChild<QWidget *>("widgetKeyboard");
+        QVERIFY(panel && panel->isVisible());
+        auto *letter = panel->findChild<QPushButton *>("widgetKey1_0");
+        auto *erase = panel->findChild<QPushButton *>("widgetKeyboardDelete");
+        auto *done = panel->findChild<QPushButton *>("widgetKeyboardDone");
+        QVERIFY(letter && erase && done);
+        editor.setPlainText("first\nsecond");
+        editor.selectAll();
+        letter->click();
+        QVERIFY(!editor.toPlainText().isEmpty());
+        QVERIFY(!editor.toPlainText().contains("first"));
+        QVERIFY(!editor.toPlainText().contains("second"));
+        erase->click();
+        QCOMPARE(editor.toPlainText(), QString());
+        int submitted = 0;
+        keyboard->submitted = [&] { ++submitted; };
+        done->click();
+        QCOMPARE(submitted, 1);
+        keyboard->hide();
+        QVERIFY(host.property("reader_keyboard_bounds").toRect().isEmpty());
+    }
+
     void widgetKeyboardAccents_data() { variants(); }
 
     void widgetKeyboardAccents()
@@ -2658,6 +2693,26 @@ private slots:
         QCOMPARE(sheet.list->x(), int(ui::metrics::notice::cardBorder));
         QCOMPARE(sheet.list->width(), card->width() - 2 * int(ui::metrics::notice::cardBorder));
         QCOMPARE(sheet.list->height(), sheet.list->heightForWidth(sheet.list->width()));
+        // Upstream choice lists page their rows, rather than clip input below
+        // the host. Refit the same overlay after adding long translated rows.
+        for (int index = 0; index < 18; ++index)
+            sheet.list->add(QString("probeLong%1").arg(index), QString("Choice %1").arg(index),
+                            "A longer description that needs room in a short landscape viewport.");
+        sheet.list->options().first()->setChecked(true);
+        host.resize(ui::px(1072), ui::px(600));
+        sheet.overlay->setGeometry(host.rect());
+        ui::fitChoiceSheet(sheet.overlay, sheet.list);
+        QCoreApplication::processEvents();
+        QVERIFY(sheet.overlay->rect().contains(card->geometry()));
+        auto *next = sheet.overlay->findChild<QPushButton *>("rrProbeNext");
+        QVERIFY(next && next->isVisible() && next->isEnabled());
+        next->click();
+        QVERIFY(sheet.list->options().first()->isHidden());
+        auto *previous = sheet.overlay->findChild<QPushButton *>("rrProbePrevious");
+        QVERIFY(previous && previous->isEnabled());
+        previous->click();
+        QVERIFY(!sheet.list->options().first()->isHidden());
+
     }
 
     void modalListDividers_data() { variants(); }

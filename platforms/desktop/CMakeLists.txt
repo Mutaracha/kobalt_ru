@@ -492,7 +492,7 @@ if(BUILD_TESTING)
     target_compile_options(kobalt-reader-ui-tests PRIVATE -Wall -Wextra -Werror)
     target_compile_definitions(kobalt-reader-ui-tests PRIVATE KOBALT_TEST_ASSET_ROOT="${KOBALT_ASSETS}")
     add_dependencies(kobalt-tests kobalt-reader-ui-tests)
-    foreach(check widgetKeyboardEntry widgetKeyboardAccents widgetKeyboardLayouts widgetKeyboardCase widgetKeyboardLifetime
+    foreach(check widgetKeyboardEntry widgetKeyboardMultiline widgetKeyboardAccents widgetKeyboardLayouts widgetKeyboardCase widgetKeyboardLifetime
             pagedListSwipes pagedChapterGroups pagedSwipesRespectControls pagedFontSwipesKeepHolds
             pageTurnTapFilter pageTurnFilterSeparatesInputClocks holdSourceTime holdInvalidatedTarget holdInvalidationStopsTimer holdTimerDoesNotRepeatOnRelease fontHoldCancellation fontSelectionDoesNotToggle
             holdCallbackCanDeleteReader canvasPreservesTouchTime cancelledCanvasTouchRestoresSlider

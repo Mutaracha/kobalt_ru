@@ -50,7 +50,13 @@ PASS native + Qt5; device pending. Этот пакет НЕ содержит и�
 Event loop в части лога оставался активен, speculative
 standby/renderer fixes запрещены. Opening RU typography — planned: подобрать
 размер/начертание по образцу EN, не менять глобальный brand/font fallback.
-Затем оставшиеся annotations/keyboard/KOSync policy/sleep alignment и inventory.
+**Текущий dependency group — in progress / CI pending:** общий keyboard API
+QWidget (QLineEdit/QTextEdit), widget/native Qt5/Qt6 keyboards и upstream modal /
+ChoiceSheet paging. Whole-file upstream implementations, согласованные factories;
+новый multiline regression, расширенные choice paging/vertical form teardown
+проверки. Freeze не объявлен исправленным. Затем annotations, остальные
+KOSync policy/sleep и семантический inventory. Подробности —
+[panel alignment](doc/reports/upstream-panels-alignment.md).
 
 **Validation:** runtime `9633d3fd4b2df250c97ac77d1ff5e0827db35465`,
 [CI 44801198903](https://github.com/Mutaracha/kobalt_ru/actions/runs/44801198903)
