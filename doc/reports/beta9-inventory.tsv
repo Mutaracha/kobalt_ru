@@ -16,8 +16,6 @@ different	platforms/android/CMakeLists.txt
 different	platforms/android/app/AndroidManifest.xml.in
 different	platforms/android/app/src/org/kobalt/android/BooxRefresh.java
 different	platforms/android/app/src/org/kobalt/android/KobaltActivity.java
-upstream-only	platforms/android/app/src/org/kobalt/android/KosyncBootReceiver.java
-upstream-only	platforms/android/app/src/org/kobalt/android/KosyncWork.java
 upstream-only	platforms/android/app/src/org/kobalt/android/PickerDelivery.java
 upstream-only	platforms/android/app/src/org/kobalt/android/ScreenBrightness.java
 different	platforms/android/build.sh
@@ -48,14 +46,8 @@ different	platforms/kobo/CMakeLists.txt
 different	platforms/kobo/build.sh
 different	platforms/kobo/common/book_menu.cpp
 different	platforms/kobo/common/book_menu.h
-different	platforms/kobo/common/home_sleep_screen.cpp
-different	platforms/kobo/common/home_sleep_screen.h
-different	platforms/kobo/common/last_read_book.h
 different	platforms/kobo/common/native_database_wait.h
-different	platforms/kobo/common/native_dialog_overlay.h
 fork-only	platforms/kobo/common/native_event_save.h
-different	platforms/kobo/common/native_lifecycle.cpp
-different	platforms/kobo/common/native_lifecycle.h
 fork-only	platforms/kobo/common/native_reading_save.h
 upstream-only	platforms/kobo/common/native_save_trace.h
 upstream-only	platforms/kobo/common/nickelfix.h
@@ -63,12 +55,10 @@ fork-only	platforms/kobo/common/page_button_mapping.h
 different	platforms/kobo/common/progress_policy.h
 different	platforms/kobo/common/reader_coordinator.cpp
 different	platforms/kobo/common/reader_coordinator.h
-different	platforms/kobo/common/reader_environment.h
 different	platforms/kobo/common/reader_host_services.cpp
 different	platforms/kobo/common/startup_recovery.c
 upstream-only	platforms/kobo/common/sync_exclusion.cpp
 upstream-only	platforms/kobo/common/sync_exclusion.h
-different	platforms/kobo/common/window_presentation.cpp
 upstream-only	platforms/kobo/display/opaque_copy.h
 different	platforms/kobo/display/page_animation.cpp
 different	platforms/kobo/display/page_transition.h
@@ -127,8 +117,6 @@ fork-only	src/app/reader/settings/fork_settings.cpp
 fork-only	src/app/reader/settings/fork_settings.h
 different	src/app/reader/settings/header_footer_panel.cpp
 different	src/app/reader/settings/header_footer_panel.h
-different	src/app/reader/settings/kosync_page.cpp
-different	src/app/reader/settings/kosync_page.h
 different	src/app/reader/settings/settings_panel.cpp
 different	src/app/reader/settings/settings_panel.h
 fork-only	src/app/reader/views/fork_navigation.cpp
@@ -150,16 +138,12 @@ different	src/app/reader/window/reader_annotations.cpp
 different	src/app/reader/window/reader_build.cpp
 upstream-only	src/app/reader/window/reader_debug.cpp
 different	src/app/reader/window/reader_dialogs.cpp
-different	src/app/reader/window/reader_kosync.cpp
 different	src/app/reader/window/reader_p.h
 different	src/app/reader/window/reader_refresh.cpp
 different	src/app/reader/window/reader_settings.cpp
 different	src/app/reader/window/reader_text_presets.cpp
 different	src/app/reader_interface.h
 different	src/app/reader_window.h
-different	src/assets/assets.cpp
-different	src/assets/assets.h
-different	src/assets/bundled_fonts.cpp
 different	src/engine/blaze/adapter/column_view.h
 fork-only	src/engine/blaze/adapter/column_view_comics.cpp
 different	src/engine/blaze/adapter/engine_document.cpp
@@ -187,7 +171,6 @@ different	src/platform/api/page_animation_support.h
 different	src/platform/api/reader_host_services.h
 different	src/platform/api/reader_orientation.cpp
 different	src/platform/api/reader_orientation.h
-different	src/platform/api/window_presentation.h
 fork-only	src/publication/fb2.h
 fork-only	src/publication/fb2_resources.cpp
 fork-only	src/publication/fb2_resources.h
@@ -215,9 +198,6 @@ different	src/reading/text_presets.cpp
 different	src/scenario/player.cpp
 upstream-only	src/scenario/resources.cpp
 upstream-only	src/scenario/resources.h
-different	src/storage/custom_pins.cpp
-different	src/storage/reader_storage.cpp
-different	src/storage/reader_storage.h
 different	src/support/build_info.h.in
 fork-only	src/support/debug_language.cpp
 fork-only	src/support/debug_language.h
@@ -228,10 +208,6 @@ fork-only	src/support/locale.h
 fork-only	src/support/string_locale.h
 fork-only	src/support/string_table.h
 different	src/support/strings.h
-different	src/sync/kosync.cpp
-different	src/sync/kosync.h
-different	src/sync/sync_coordinator.cpp
-different	src/sync/sync_coordinator.h
 upstream-only	src/ui/controls/brand_wordmark.h
 different	src/ui/controls/buttons.cpp
 different	src/ui/controls/buttons.h
@@ -248,7 +224,6 @@ fork-only	src/ui/controls/return_title_text.h
 different	src/ui/style/fonts.cpp
 different	src/ui/style/private_text.cpp
 upstream-only	tests/android/AndroidLifecycleTest.java
-upstream-only	tests/android/KosyncWorkTest.java
 upstream-only	tests/android/ScreenBrightnessTest.java
 different	tests/desktop.cpp
 different	tests/desktop_perf.h
@@ -260,7 +235,6 @@ fork-only	tests/fixtures/fonts/fira-sans/README.md
 upstream-only	tests/fixtures/heading-after-floats.epub
 upstream-only	tests/fixtures/overflowing-float-bookmarks.epub
 upstream-only	tests/fixtures/reporter-figure-float.epub
-different	tests/kobo_power_screen.cpp
 different	tests/kobo_shutdown.cpp
 fork-only	tests/manual/README.md
 fork-only	tests/manual/books/comics/README.md
@@ -290,8 +264,6 @@ fork-only	tests/model/fb2_session.cpp
 different	tests/model/figure_layout.cpp
 different	tests/model/header_footer.cpp
 different	tests/model/highlight_session.cpp
-different	tests/model/kosync.cpp
-different	tests/model/kosync_ui.cpp
 different	tests/model/large_toc.cpp
 upstream-only	tests/model/layout_interrupt.cpp
 different	tests/model/library.cpp
@@ -300,7 +272,6 @@ different	tests/model/local_resources.cpp
 different	tests/model/location_round_trip.cpp
 different	tests/model/multilingual.cpp
 different	tests/model/native_dialog_overlay.cpp
-different	tests/model/native_lifecycle.cpp
 different	tests/model/nickel_book_menu.cpp
 fork-only	tests/model/nickel_event_save.cpp
 fork-only	tests/model/nickel_reading_save.cpp
@@ -308,7 +279,6 @@ upstream-only	tests/model/nickel_save_trace.cpp
 different	tests/model/page_animation.cpp
 upstream-only	tests/model/page_estimate.cpp
 different	tests/model/page_transition_native.cpp
-different	tests/model/profile_storage.cpp
 different	tests/model/publisher_markup.cpp
 different	tests/model/reader.cpp
 different	tests/model/reader_orientation.cpp
@@ -316,10 +286,8 @@ different	tests/model/reader_session.cpp
 different	tests/model/reading_book.cpp
 different	tests/model/resource_cache.cpp
 different	tests/model/search.cpp
-different	tests/model/storage_assets.cpp
 fork-only	tests/model/strings_locale.cpp
 different	tests/model/style_sample_cache.cpp
-different	tests/model/sync_coordinator.cpp
 different	tests/model/text_presets.cpp
 upstream-only	tests/model/text_sample.cpp
 different	tests/model/ui.cpp

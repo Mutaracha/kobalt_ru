@@ -140,7 +140,7 @@ Android and physical device not run. Quick-mode/menu-reopen and remaining shared
 implementations are still open; this is not a completed all-file semantic audit.
 
 
-## Quick/toggle and drag consumer group — CI pending
+## Quick/toggle and drag consumer group — CI verified, device pending
 
 Reader annotation implementation now follows pinned upstream as a whole except
 retained section headers/labeled palette, common.cancel and existing dictionary
@@ -176,3 +176,9 @@ Local follow-up checks: source-checks.cmake and its planted/stale self-test PASS
 full platforms/ci/test.sh with scratch CMake/Ninja exits 0, including strings
 generation/rebuild/parity, validation coverage and release helper checks. This
 is offline verification, not a native Qt runtime test. No local Qt SDK/Docker.
+
+
+Quick group verified: runtime c8192851, CI 45043939833 SUCCESS, artifact
+14762084755 (37382310 bytes). Subsequent KOSync/storage checkpoint and exhaustive
+remaining-path gate: [inventory](beta9-inventory.md). Device drag waveform and
+native multiline keyboard remain unrun, not implied by desktop tests.

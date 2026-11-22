@@ -53,7 +53,11 @@ upstream. Сохранены только fork sleep ribbon/newline/text fitting
 native compile выявил старый KosyncHttpState fixture без lastAuthentication.
 Восстановлены целиком upstream state + mock transport, проверки не ослаблены;
 повторная native/Qt5 сборка нужна.
-Итоговый semantic inventory всё ещё требует просмотра оставшихся consumer deltas.
+[Обновлённый inventory](doc/reports/beta9-inventory.md): 1083 identical / 248
+changed / 155 fork-only / 52 upstream-only. Текущая KOSync/sleep/storage группа
+не закрывает оставшиеся platform/Reader consumers; полный semantic gate OPEN.
+Дополнительно зарегистрирован upstream kosyncDialogResume в CTest (сам тест
+перенесён целиком), без пропуска при focused selection.
 
 **Редактор заметок — implemented / CI verified, device pending:** upstream NoteEditor h/cpp целиком,
 Reader saved/draft actions и save completion/error callbacks, note popover;
