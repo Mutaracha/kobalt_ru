@@ -2722,6 +2722,7 @@ void SettingsPanel::updateFeatureOptions()
     const bool navigate = features::enabled(featurePreferences, features::Navigate);
     const bool stats = features::enabled(featurePreferences, features::Stats);
     navigationBarButton->setVisible(navigate);
+    findChild<QWidget *>("rrControlsNavigationBarSection")->setVisible(navigate);
     const bool annotations = features::enabled(featurePreferences, features::Annotations);
     annotationInteractionButton->setVisible(annotations);
     findChild<QWidget *>("rrControlsAnnotationsSection")->setVisible(annotations);

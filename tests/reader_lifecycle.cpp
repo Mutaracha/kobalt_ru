@@ -704,6 +704,234 @@ class ReaderLifecycleTests final : public QObject
     Q_OBJECT
 private slots:
 
+    void quietWindowWaitsForActivation_data()
+    {
+        QTest::addColumn<bool>("activated");
+        QTest::newRow("activated") << true;
+        QTest::newRow("dropped") << false;
+    }
+
+    void quietWindowWaitsForActivation()
+    {
+        QFETCH(bool, activated);
+        const auto paths = testPaths();
+        const auto identity =
+                QUrl::fromLocalFile(QFileInfo(fixture()).absoluteFilePath()).toString();
+        const auto statePath = paths.bookState(identity);
+        QFile::remove(statePath);
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{ host };
+        int observers = 0;
+        host.configureServices = [&](ReaderHostServices &services) {
+            services.quiet = true;
+            services.observeBattery = [&](QObject *, std::function<void()>) { ++observers; };
+            services.holdWifiOff = [&](QObject *, std::function<bool()>) { ++observers; };
+        };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        auto *clock = host.window()->findChild<QTimer *>("rrClockTimer");
+        QVERIFY(clock);
+        QVERIFY(!clock->isActive());
+        QCOMPARE(observers, 0);
+        if (!activated) {
+            auto kept = host.window()->releaseQuiet();
+            QVERIFY(kept);
+            host.shutdown();
+            QTRY_VERIFY_WITH_TIMEOUT(host.idle(), 10000);
+            QVERIFY(!QFileInfo::exists(statePath));
+            return;
+        }
+        host.window()->activate({}, {});
+        QCOMPARE(observers, 2);
+        // An active window is not quiet any more.
+        host.window()->activate({}, {});
+        QCOMPARE(observers, 2);
+        QVERIFY(!host.window()->releaseQuiet());
+    }
+
+    void panelsAfterBackgroundWork()
+    {
+        auto paths = testPaths();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{ host };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        QVERIFY(!host.window()->findChild<QWidget *>("rrTextSize"));
+        QVERIFY(!host.window()->findChild<QWidget *>("rrGeneralSettings"));
+        QTRY_VERIFY_WITH_TIMEOUT(host.window()->findChild<QWidget *>("rrTextSize"), 15000);
+        // One panel per quiet moment: Settings comes later.
+        QVERIFY(!host.window()->findChild<QWidget *>("rrGeneralSettings"));
+        QTRY_VERIFY_WITH_TIMEOUT(host.window()->findChild<QWidget *>("rrGeneralSettings"), 15000);
+        auto *settings = host.window()->findChild<QWidget *>("rrGeneralSettings");
+        QVERIFY(settings->isHidden());
+        QCOMPARE(settings->parentWidget(), static_cast<QWidget *>(host.window()));
+        // Opening it uses the panel that is already there.
+        QCOMPARE(openSettings(host), settings);
+    }
+
+    void textPresetsWithoutOpeningWait()
+    {
+        auto paths = testPaths();
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        CloseHost cleanup{ host };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        bool presented = false;
+        host.window()->preparePresentation([&](bool ready) { presented = ready; });
+        QTRY_VERIFY_WITH_TIMEOUT(presented, 10000);
+        Canvas canvas(host.window(), nativeSize);
+        const int start = host.session()->page();
+        QVERIFY(host.session()->turn(1));
+        QTRY_COMPARE(host.session()->page(), start + 1);
+        QTRY_VERIFY(!host.session()->busy());
+        QCOMPARE(host.window()->property("text_preset_tile_draws").toInt(), 0);
+    }
+
+    void settingsChoiceFitsAfterResize_data()
+    {
+        QTest::addColumn<QString>("tabName");
+        QTest::addColumn<QString>("buttonName");
+        QTest::newRow("session-timeout") << QString("rrSettingsSystem")
+                                         << QString("rrSessionTimeout");
+        QTest::newRow("screen-refresh") << QString("rrSettingsDisplay")
+                                        << QString("rrScreenRefresh");
+    }
+
+    void settingsChoiceFitsAfterResize()
+    {
+        QFETCH(QString, tabName);
+        QFETCH(QString, buttonName);
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{ host };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        const QSize portraitSize(720, 1440);
+        host.open(fixture(), portraitSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        auto *window = host.window();
+        window->show();
+        QTRY_VERIFY(window->readyForPresentation());
+        QVERIFY(openSettings(host));
+        auto *tab = window->findChild<QPushButton *>(tabName);
+        auto *button = window->findChild<QPushButton *>(buttonName);
+        QVERIFY(tab && button);
+        tab->click();
+        button->click();
+        const auto popupName = buttonName + QStringLiteral("Popup");
+        const QPointer<QWidget> popup = window->findChild<QWidget *>(popupName);
+        QVERIFY(popup && popup->isVisible());
+        QCOMPARE(popup->geometry(), window->rect());
+
+        auto *card = popup->findChild<QWidget *>("rrModalCard");
+        QVERIFY(card && popup->rect().contains(card->geometry()));
+        window->resize(portraitSize.transposed());
+        QCOMPARE(window->size(), portraitSize.transposed());
+        QCOMPARE(popup->geometry(), window->rect());
+        QVERIFY2(popup->rect().contains(card->geometry()),
+                 "Changing orientation clipped the chooser");
+        auto *choices = popup->findChild<QWidget *>(buttonName + QStringLiteral("Choices"));
+        auto *next = popup->findChild<QPushButton *>(buttonName + QStringLiteral("Next"));
+        auto *previous = popup->findChild<QPushButton *>(buttonName + QStringLiteral("Previous"));
+        QVERIFY(choices && next && previous);
+        const auto options = choices->findChildren<QCheckBox *>();
+        QVERIFY(!options.isEmpty());
+        for (int i = 0; i < options.size() && previous->isEnabled(); ++i)
+            previous->click();
+        QSet<QCheckBox *> seen;
+        for (int i = 0; i < options.size(); ++i) {
+            for (auto *option : options) {
+                if (option->isVisible()) {
+                    const QRect bounds(option->mapTo(popup, QPoint()), option->size());
+                    QVERIFY(popup->rect().contains(bounds));
+                    seen.insert(option);
+                }
+            }
+            if (!next->isEnabled())
+                break;
+            next->click();
+        }
+        QCOMPARE(seen.size(), options.size());
+        window->resize(portraitSize);
+        QCOMPARE(window->size(), portraitSize);
+        QVERIFY(popup->rect().contains(card->geometry()));
+        QVERIFY(!next->isVisible());
+        for (auto *option : options)
+            QVERIFY(option->isVisible());
+        QTest::keyClick(popup, Qt::Key_Escape);
+        QTRY_VERIFY(!popup);
+        window->resize(portraitSize.transposed());
+        button->click();
+        auto *reopened = window->findChild<QWidget *>(popupName);
+        QVERIFY(reopened && reopened->isVisible());
+        card = reopened->findChild<QWidget *>("rrModalCard");
+        QVERIFY2(card && reopened->rect().contains(card->geometry()),
+                 "Opening the chooser in landscape clips its card");
+    }
+
+    void settingsTeardownReleasesConfirmation()
+    {
+        QWidget window;
+        reader::SettingsPanelInputs inputs;
+        inputs.automaticBookOpeningSupported = true;
+        auto settings = std::make_unique<reader::SettingsPanel>(&window, inputs);
+        auto *automatic = settings->findChild<QCheckBox *>("rrAutomaticBookOpening");
+        QVERIFY(automatic && automatic->isEnabled());
+        automatic->setChecked(true);
+        automatic->click();
+        const QPointer<QWidget> dialog =
+                window.findChild<QWidget *>("rrAutomaticBookOpeningConfirmation");
+        QVERIFY(dialog && dialog->parentWidget() == &window);
+        settings.reset();
+        QVERIFY2(!dialog, "The detached confirmation still refers to the deleted Settings panel");
+    }
+
+    void layoutTimeEndsWhenWholeBookIsReady()
+    {
+        renderingMode::setOverride(2);
+        const int quiet = renderingMode::buildQuietMilliseconds();
+        renderingMode::setBuildQuietMilliseconds(0);
+        const auto restore = qScopeGuard([quiet] {
+            renderingMode::setOverride(-1);
+            renderingMode::setBuildQuietMilliseconds(quiet);
+        });
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QVERIFY(test::writeBook(directory.path(), "songs.epub", test::songbook(200)));
+        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
+        CloseHost cleanup{ host };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(directory.filePath("songs.epub"), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY_WITH_TIMEOUT(!host.session()->busy(), 30000);
+        // Reading starts the build of the whole book. Turns keep the count
+        // going, as in Book status.
+        QElapsedTimer waited, sinceTurn;
+        waited.start();
+        sinceTurn.start();
+        host.window()->pageButton(1);
+        while (waited.elapsed() < 120000 && host.session()->layoutProgressPercent() < 100) {
+            if (sinceTurn.elapsed() > 3000 && !host.session()->busy()) {
+                host.window()->pageButton(1);
+                sinceTurn.restart();
+            }
+            QTest::qWait(50);
+        }
+        QCOMPARE(host.session()->layoutProgressPercent(), 100);
+        // Without a turn, the time no longer grows.
+        const auto frozen = [&host] {
+            const auto before = host.session()->layoutMilliseconds();
+            QTest::qWait(20);
+            return before >= 0 && host.session()->layoutMilliseconds() == before;
+        };
+        QTRY_VERIFY_WITH_TIMEOUT(frozen(), 10000);
+    }
+
     void init()
     {
         directory = std::make_unique<QTemporaryDir>(QDir::tempPath() + "/kobalt-lifecycle-XXXXXX");

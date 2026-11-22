@@ -254,12 +254,6 @@ bool Reader::saveChrome(kobalt::headerfooter::Preset preset,
     }
     preferences = next;
     appearanceEdit.clearError();
-    if (appearanceEdit.ready())
-        page->comicsMode = appearanceEdit.preview()
-                                   ->requestedAppearance()
-                                   .fields()
-                                   .value(appearance::comicsModeKey)
-                                   .toBool(false);
     loadChrome();
     refresh();
     return true;
