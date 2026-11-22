@@ -167,3 +167,8 @@ Static investigation: showStylingChoices/dismissSheet and the vertical-spacing
 close callback are unchanged from pinned beta9. No evidence yet justifies a
 fork-specific close workaround. Need actual touch-path/lifecycle reproduction;
 a desktop pass cannot establish that the device freeze is solved.
+
+First CI 45025211358 Qt5 failed compiling dictionary_panel.h: the generalized
+keyboard factory no longer includes QLineEdit transitively. Restored upstream's
+explicit forward declaration in the DictionaryPanel header, preserving all fork
+presentation. No runtime success claimed for that first run.
