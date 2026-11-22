@@ -1058,7 +1058,8 @@ private:
                            int failures = 0);
     bool allowFailedTransition = false;
     void transitionSaveError(std::function<void()> retry, std::function<void()> discard);
-    void failExit(quint64 request, const QString &error = {});
+    void failExit(quint64 request, const QString &error = {},
+                  SaveErrorView::Cause cause = SaveErrorView::Cause::Failed);
     enum class SleepSave { Idle, Waiting, Retry, Failed };
     SleepSave sleepSave = SleepSave::Idle;
     quint64 sleepSaveRequest = 0, wakePositionEpoch = 0;

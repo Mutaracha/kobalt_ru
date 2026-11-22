@@ -395,7 +395,7 @@ if(BUILD_TESTING)
             closeWaitsForLocalSave closeRetriesRequiredNativeSaves quitAfterFailedLocalSaveRetry activityCoverReplacement closeWritesPositionBeforeNativeTime sleepWritesPositionBeforeNativeTime preSleepCloseAcknowledgedAfterWake retryFailedSaveAfterWake revokedNativeDrainRetainsLocalSave
             pageTurnTimingIgnoresNoopNavigation pageButtonsAfterTouchUseDeliveryTime pageFrameDuringHold pageImageDuringHold pageGestureBurstIgnoresRapidTurns exitThroughReaderAndReopen closeGuardUsesTapTime staleSearchReplyIgnored searchScopesAndPagination searchSurvivesReflow
             searchHighlightClearsOnReflow
-            chapterPagesUpdateWithoutReopening lazyPanelKeyboards lazyPanels lazyPanelsCloseUnbuilt settingsOrientationHandoff sleepRequestFreezesOrientationBeforeHandoff closePublishesHeldOrientationBeforeBackgroundPaint
+            slowCloseSave closeWithoutWaitingForHost sleepCancelsPendingExit chapterPagesUpdateWithoutReopening lazyPanelKeyboards lazyPanels lazyPanelsCloseUnbuilt settingsOrientationHandoff sleepRequestFreezesOrientationBeforeHandoff closePublishesHeldOrientationBeforeBackgroundPaint
             closeRestoresOrientationBeforeBackgroundPaint rotationOwnership readerUsesSelectedSleepScreen
             closedReaderDoesNotSaveSleepScreen usbDoesNotSaveSleepScreen persistedSleepScreenRejectsStaleAndDamagedFrames
             homeSleepScreenRequiresUnambiguousLastBook nativeOpeningStatus
@@ -755,6 +755,7 @@ if(BUILD_TESTING)
     # `light`, `fast` and `integration` must not appear in one because the lane
     # presets filter on them.
     set(kobalt_test_areas
+        "storage:^lifecycle\\.(slowCloseSave|closeWithoutWaitingForHost|sleepCancelsPendingExit)$"
         "diagnostics:^desktop\\.(engineMonitor|engineMonitorSlowdown)$"
         "reading:^desktop\\.standaloneOpeningPassageFollowsRequest$"
         "brightness:^model\\.android-light$"

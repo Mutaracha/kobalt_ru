@@ -984,7 +984,7 @@ QVector<QWidget *> Reader::popups() const
              annotationErrorDialog.data(),
              formattingWarningDialog.data(),
              settingsWriteErrorDialog.data(),
-             wordNotice };
+             wordNotice, closeSaveError.data() };
 }
 
 bool Reader::popup(QObject *object) const
@@ -2845,7 +2845,7 @@ void Reader::scriptedPageButton(int direction)
 
 void Reader::pageButton(int direction, quint32 sourceTime, bool userInput, int physicalKey)
 {
-    if (resizePending)
+    if (resizePending || closeSaveError)
         return;
     if (imageViewer && imageViewer->isVisible())
         return;
@@ -2887,7 +2887,7 @@ void Reader::turnPage(int direction, quint32 sourceTime, bool userInput, ui::Inp
     if (pageScrubber)
         pageScrubber->cancel();
     kobalt::diagnosticInput();
-    if (positionPromptOpen() || annotationErrorDialog || formattingWarningDialog
+    if (positionPromptOpen() || closeSaveError || annotationErrorDialog || formattingWarningDialog
         || settingsWriteErrorDialog || !session->canTurn() || closing || exitPending
         || lifecycleHidden || services.suspended() || book->deviceTransition()
         || appearanceEdit.panelOpen() || appearanceEdit.applying())
@@ -3014,7 +3014,7 @@ void Reader::finishExit()
         closingTimes.started.start();
     diagnostic("exit-save-ready", { { "elapsed_ms", double(closingTimes.started.elapsed()) } });
     if (book->hideBookOnSleepScreen())
-        exitSleepSnapshot = privateSleepSnapshot();
+        exitSleepSnapshot = privateSleepSnapshot(true);
     exportRunning = true;
     dismissProgressChoice();
 #ifdef KOBALT_SCENARIO_PLAYER
@@ -3029,6 +3029,18 @@ void Reader::finishExit()
     setEnabled(false);
     closeStage.start();
     const auto request = ++closeRequest;
+    // Invalidate this close attempt on timeout. A native write that has already
+    // started still owns its completion and may have committed the reading time.
+    qt::later(7000, this, [this, request] {
+        if (request != closeRequest || !exportRunning || closing || lifecycleHidden)
+            return;
+        diagnostic("exit-save-timeout",
+                   { { "request", double(request) },
+                     { "native_time_pending", book->readingSavePending() },
+                     { "local_save_pending", book->savesPending() } },
+                   DiagnosticSeverity::Warning);
+        failExit(request, {}, SaveErrorView::Cause::TimedOut);
+    });
     saveExit(request);
 }
 
@@ -3173,7 +3185,7 @@ void Reader::transitionSaveError(std::function<void()> retry, std::function<void
         textRefresh(widget);
 }
 
-void Reader::failExit(quint64 request, const QString &error)
+void Reader::failExit(quint64 request, const QString &error, SaveErrorView::Cause cause)
 {
     if (request != closeRequest || lifecycleHidden)
         return;
@@ -3182,7 +3194,13 @@ void Reader::failExit(quint64 request, const QString &error)
     setEnabled(true);
     if (closeSaveError)
         return;
-    auto *notice = new SaveErrorView(this, error, closeSaveRetried);
+    // A close that only waits for the host's records can end without them:
+    // Kobalt has saved the place in the book.
+    const bool savedLocally = cause == SaveErrorView::Cause::TimedOut && !book->savesPending()
+            && !annotationSaving && !bookmarks->saving() && !highlights->saving();
+    auto *notice = new SaveErrorView(this, error,
+                                     closeSaveRetried && cause == SaveErrorView::Cause::Failed,
+                                     cause, savedLocally);
     closeSaveError = notice;
     notice->setObjectName("rrCloseSaveError");
     notice->setGeometry(rect());

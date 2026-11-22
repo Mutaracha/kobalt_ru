@@ -14,7 +14,9 @@ class SaveErrorView final : public ui::ChoiceModal
 {
 public:
     explicit SaveErrorView(QWidget *parent);
-    SaveErrorView(QWidget *parent, const QString &error, bool retried);
+    enum class Cause { Failed, TimedOut };
+    SaveErrorView(QWidget *parent, const QString &error, bool retried, Cause cause = Cause::Failed,
+                  bool savedLocally = false);
 
     QPushButton *quitButton() const { return quit; }
 

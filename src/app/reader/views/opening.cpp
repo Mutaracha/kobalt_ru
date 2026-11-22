@@ -689,21 +689,28 @@ SaveErrorView::SaveErrorView(QWidget *parent)
     setObjectName("rrSleepSaveError");
 }
 
-SaveErrorView::SaveErrorView(QWidget *parent, const QString &error, bool retried)
+SaveErrorView::SaveErrorView(QWidget *parent, const QString &error, bool retried, Cause cause,
+                             bool savedLocally)
     : ui::ChoiceModal(
               parent,
-              { strings::get("closing.failed_detail")
+              { strings::get(cause == Cause::TimedOut ? "closing.timeout_detail"
+                                                      : "closing.failed_detail")
                         + (error.isEmpty() ? QString() : "\n\n" + error)
-                        + (retried ? "\n\n" + strings::get("closing.quit_warning") : QString()),
-                strings::get("closing.failed"),
+                        + (retried ? "\n\n" + strings::get("closing.quit_warning")
+                                   : savedLocally
+                                   ? "\n\n" + strings::get("closing.close_now_detail")
+                                   : QString()),
+                strings::get(cause == Cause::TimedOut ? "closing.timeout" : "closing.failed"),
                 {} },
               { strings::get("closing.return"), "rrCloseSaveReturn" },
               { strings::get("closing.retry"), "rrCloseSaveRetry" })
 {
     setObjectName("rrCloseSaveError");
-    if (retried) {
-        quit = ui::makeModalButton(card(), { strings::get("closing.quit"), "rrCloseSaveQuit" },
-                                   false);
+    if (retried || savedLocally) {
+        quit = ui::makeModalButton(
+                card(),
+                { strings::get(retried ? "closing.quit" : "closing.close_now"), "rrCloseSaveQuit" },
+                false);
         quit->ensurePolished();
         quit->setFixedHeight(ui::metrics::chrome::actionHeight);
         card()->rows()->addWidget(quit);
