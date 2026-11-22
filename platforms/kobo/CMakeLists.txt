@@ -95,7 +95,10 @@ foreach(target kobalt-code kobalt)
         "-iquote${KOBALT_ROOT}" "-iquote${source}")
     if(KOBALT_QT_MAJOR EQUAL 5)
         if(KOBALT_WIFI_IDLE_DIAGNOSTICS)
-            target_compile_definitions(${target} PRIVATE ${kobo_definitions}
+            target_compile_definitions(${target} PRIVATE KOBALT_WIFI_IDLE_DIAGNOSTICS)
+        endif()
+    endif()
+    target_compile_definitions(${target} PRIVATE ${kobo_definitions}
         $<$<BOOL:${KOBALT_PAGE_ANIMATIONS}>:${kobo_animation_definitions}>)
 endforeach()
 

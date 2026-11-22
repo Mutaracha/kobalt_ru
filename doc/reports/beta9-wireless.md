@@ -43,3 +43,8 @@ The beta.10 progress-bar replacement is PLANNED under D04 at the user-specified
 4a9576ae017684d290dd2311f4f5195e5e043274. Its changes were inspected only to record
 provenance and consumers. No beta.10 runtime or progress-bar code is imported here.
 Reader opening/preload, chapter/navigation and other inventory groups remain open.
+
+Initial CI 45050260780 / 80223bd2 rejected malformed CMake nesting in the
+contextual merge of the build-option loop. The whole upstream foreach block is
+restored; no test or compile option removed. Local offline/source checks did not
+configure the actual Kobo project and did not establish its CMake validity.
