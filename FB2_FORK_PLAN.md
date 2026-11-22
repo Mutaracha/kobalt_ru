@@ -49,7 +49,10 @@ messages утверждены. Sleep/USB lifecycle и assets verification upstre
 cache namespace `.cache-blaze`, optional damaged assets и persisted verification
 upstream. Сохранены только fork sleep ribbon/newline/text fitting. Quiet preload
 не включён (ранее удалённая policy); EPUB Hybrid algorithms unchanged. Проверки
-локальных offline/source gates PASS; native/Qt5 повторная сборка нужна.
+локальных offline/source gates PASS. CI `45045654719`: Qt5 package/contents PASS;
+native compile выявил старый KosyncHttpState fixture без lastAuthentication.
+Восстановлены целиком upstream state + mock transport, проверки не ослаблены;
+повторная native/Qt5 сборка нужна.
 Итоговый semantic inventory всё ещё требует просмотра оставшихся consumer deltas.
 
 **Редактор заметок — implemented / CI verified, device pending:** upstream NoteEditor h/cpp целиком,

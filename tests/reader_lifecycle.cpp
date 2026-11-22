@@ -202,7 +202,9 @@ struct KosyncHttpState
     int requests = 0, uploads = 0;
     int readStatus = 200, uploadStatus = 200;
     QByteArray readBody = "{}";
+    QByteArray uploadBody;
     QJsonObject lastUpload;
+    QNetworkRequest lastAuthentication;
     bool hold = false;
     QList<QPointer<test::KosyncReply>> held;
 };
@@ -217,6 +219,8 @@ protected:
                                  QIODevice *data) override
     {
         ++state->requests;
+        if (request.url().path().endsWith("/users/auth"))
+            state->lastAuthentication = request;
         QByteArray body = state->readBody;
         if (operation == PutOperation) {
             ++state->uploads;
@@ -226,6 +230,8 @@ protected:
             body = QJsonDocument(QJsonObject{ { "document", upload.value("document") },
                                               { "timestamp", 1 } })
                            .toJson(QJsonDocument::Compact);
+            if (!state->uploadBody.isEmpty())
+                body = state->uploadBody;
         }
         auto *reply = new test::KosyncReply(
                 request, body, operation == PutOperation ? state->uploadStatus : state->readStatus,
