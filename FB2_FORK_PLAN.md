@@ -1,3 +1,4 @@
+<!-- beta9 handoff: see doc/reports/beta9-delta/README.md for immutable divergence evidence. -->
 # kobalt_ru — актуальное состояние
 
 Принятые решения: [doc/fork-decisions.md](doc/fork-decisions.md).
@@ -828,3 +829,12 @@ in new engine.fb2 boundary bookPages/current-page assertion. Другие выб
 проверки прошли. Добавлены фактические mapped/current/source значения к ошибке;
 причина пока не установлена, speculative mapping fix не вносился. Подробности
 adapter boundary: doc/reports/beta9-engine-adapter.md. Device handoff нет.
+
+## Вход для следующего upstream update
+
+[Журнал остатка beta.9 → beta.10](doc/reports/beta9-delta/README.md):
+439 tracked расхождений на fork `3cc7ee19`, полные OID/modes и conservative review
+статусы; 14 semantic handoff групп, воспроизводимый audit script и regression tests.
+Это evidence/ownership log, не вторая очередь задач. Сначала закрывать открытые
+consumers выравнивания; после выхода beta.10 зафиксировать release SHA и сравнить
+beta.9→beta.10 отдельно от старой fork delta. REVIEW не означает одобрение.

@@ -49,16 +49,14 @@ No freeze remedy or physical-device waveform/keyboard acceptance is claimed.
 
 ## Remaining full-repository gate
 
-The requested KOSync/sleep/storage consumer group is distinct from exact platform
-parity. Upstream-only files still include Qt5 Wi-Fi-idle patches/vendor detours,
-sync folder exclusion, Android brightness/picker helpers, desktop engine monitor,
-scenario resource reporting and new independent engine tests/fixtures. Remaining
-Reader diffs also include status/debug/percentage controls, chapter/navigation
-consumers and quiet preloading, besides intentional fork presentation. These
-cannot all be described as cosmetic merely because the current CI passes.
+The exhaustive immutable-tree [beta9 → beta10 handoff ledger](beta9-delta/README.md)
+is the current divergence log: all 439 nonidentical tracked paths, both Git OIDs,
+modes, conservative review status and next-update action. The 290-row TSV above
+is only the legacy runtime/build/assets/test subset, not a semantic sign-off.
 
-The exhaustive semantic disposition of those retained/missing consumers is
-still OPEN; this report does not certify complete beta9 alignment. Frozen EPUB
-algorithms and deferred freeze investigation remain explicit exclusions. Keep
-this gate visible before new fork functionality, rather than treating a package
-for device testing as proof of whole-repository parity.
+Wi-Fi-idle/vendor and sync folder exclusion are now imported and CI verified;
+the former text listing them as missing was stale and is superseded. Remaining
+Reader quiet/preload, chapter/search/navigation, native-save tracing, Android
+brightness/picker, desktop/scenario monitoring and upstream tests are detailed
+in B9-02 through B9-09. Full alignment gate remains OPEN. Protected EPUB algorithms
+and deferred freeze are not implicitly fixed by any package checkpoint.

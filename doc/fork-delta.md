@@ -1,40 +1,27 @@
 # Текущая граница выравнивания beta.9
 
-Baseline: upstream `be472588`, fork runtime `34811f2f` / Qt5 build 266,
-CI 45048708215 SUCCESS (native + Qt5/offline/package/contents), device pending.
-[Актуальный inventory и открытые consumers](reports/beta9-inventory.md),
-[combined checklist](validation/beta9-kosync-sleep.md). KOSync и sleep/storage
-consumer group перенесены/CI verified; полный semantic gate ещё не закрыт.
-Историческая карта beta.8 ниже не является доказательством завершённости beta.9.
+**Основной журнал для обновления на beta.10:**
+[beta9 delta ledger / handoff](reports/beta9-delta/README.md).
+Зафиксированы upstream `be47258850ffdc3295257475afdf8b8f6cb53176` и fork
+`3cc7ee19c59a34cdba9651d534192a0a3c79cc9e`; 439 неидентичных tracked путей
+с обоими OID/modes, статусом разбора и действием при обновлении. Скрипт воспроизведения
+читает Git trees и не зависит от грязного checkout. Новые checkpoint сохранять
+отдельно; исторический beta.9 вход не перетирать результатами beta.10.
 
-- Vendor `src/engine/blaze/crengine` не менялся при cleanup.
-- Удалена старая external engine patch series; build recipe/cache key не менялись.
-- На checkpoint 9633d3fd `reader_text_presets.cpp` был byte-identical upstream beta.9; общий
-  style_sample/cache API и tests перенесены вместе. Старая gallery prerender
-  очередь и её opening/idle wiring удалены.
-- Сохранён fork transient `whole_book_failed` в sample settings sanitation;
-  текущий styling cache consumer передаёт font catalog в общий ключ.
-- EPUB Hybrid algorithms не менялись. FB2 whole-book contract сохранён;
-  подготовка partial режима — [отдельный анализ](reports/fb2-hybrid-preparation.md).
-- Runtime `613df9ba`: ensureAppearance перенесён из fork_reader_actions в общий
-  reader_build; themeWidget/applyTheme взяты из pinned upstream. Удалён отдельный
-  palette/icon loop поздних контролов. CI 44808379234 PASS, device pending.
-- Runtime `77564e9e`: lazy Settings + upstream background preparePanels,
-  KOSync model/page split, null-safe consumers и lifecycle harness. CI 44815357384
-  PASS native + Qt5; theme и Settings ожидают общей device-проверки.
-- Аннотации/keyboard/остальные KOSync policy/sleep остаются в очереди выравнивания;
-  перенос model/page не означает завершения всех KOSync upstream изменений.
+Последний проверенный runtime `2c5d2c55`, Qt5 build268 / CI45050356339 SUCCESS
+(native + Qt5/package), device pending. KOSync, общий sleep/storage и Wi-Fi idle /
+sync-exclusion implementation groups перенесены. **Полное выравнивание OPEN:**
+наличие согласованных fork UI/FB2 features не оправдывает все mixed hunks.
+Неразобранные Reader/platform/test consumers перечислены в журнале B9-02—B9-09.
 
-**Полное выравнивание не завершено.** Нет свежего exhaustive inventory,
-который подтверждает отсутствие необоснованных различий. После переноса presets
-в общий reader_text_presets добавлены nullable guards и fork-local presentation
-вызовы локализации имён; byte-identical для текущего файла больше не заявляется.
-Пользователь принял чек-лист panels/buttons; последующий freeze формы вертикальных
-интервалов открыт отдельно. Остаток очереди — FB2_FORK_PLAN.md; исторический
-beta.8 inventory ниже не заменяет итоговый beta.9 аудит.
+Полоса прогресса: план полной замены на beta.10 commit
+`4a9576ae017684d290dd2311f4f5195e5e043274`, без поддержки старого renderer;
+сейчас не реализовано. EPUB Hybrid алгоритмы не менять, freeze deferred.
+[Решения](fork-decisions.md), [единственная очередь](../FB2_FORK_PLAN.md),
+[предыдущий inventory](reports/beta9-inventory.md).
 
-Подробности/проверки: [cleanup report](reports/upstream-cleanup-stage1.md),
-текущая очередь: [план](../FB2_FORK_PLAN.md).
+Ниже — **историческая** карта beta.8: не использовать её численность/статусы
+как текущий baseline или доказательство beta.9 parity.
 
 ---
 

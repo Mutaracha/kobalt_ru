@@ -1,0 +1,26 @@
+{
+  "upstream": "be47258850ffdc3295257475afdf8b8f6cb53176",
+  "fork": "3cc7ee19c59a34cdba9651d534192a0a3c79cc9e",
+  "counts": {
+    "different": 247,
+    "fork-only": 158,
+    "identical": 1102,
+    "upstream-only": 34
+  },
+  "groups": {
+    "android-integration": 13,
+    "assets-localization": 12,
+    "build-platform": 26,
+    "documentation-evidence": 146,
+    "engine-fb2-comics-hybrid": 21,
+    "kobo-integration": 26,
+    "locale-publication-support": 20,
+    "progress-bar": 1,
+    "reader-consumers": 43,
+    "scenario-reporting": 3,
+    "shared-runtime-other": 45,
+    "tests-fixtures": 83
+  },
+  "nonidentical": 439,
+  "classification": "Conservative ownership hints; REVIEW is not semantic acceptance. Includes all tracked paths, modes and gitlinks."
+}
