@@ -35,7 +35,7 @@ Qt6 skipped; full suite/Android NOT RUN. Пользователь принял �
 lazy Settings и кнопки; последующий freeze рассматривается отдельно, не закрыт.
 Пресеты 9633d3fd приняты отдельно.
 
-**Редактор заметок — in progress / CI pending:** upstream NoteEditor h/cpp целиком,
+**Редактор заметок — implemented / CI verified, device pending:** upstream NoteEditor h/cpp целиком,
 Reader saved/draft actions и save completion/error callbacks, note popover;
 upstream card grid для дополнительных действий с сохранением fork section headers
 и подписей palette. Quick annotation/drag reopen timer — отдельная следующая группа,
@@ -46,6 +46,16 @@ upstream card grid для дополнительных действий с со�
 Тесты: upstream passage lines, новый save/error/retry/close state, note integration
 на базе upstream (без блока ещё не перенесённых drag/reopen gestures), прежние
 annotation/selection/grip и palette label проверки включены в focused CI.
+Runtime `09307e421d649527cdcaa6854255e335f9861409`, build **257**,
+[CI 45037956822](https://github.com/Mutaracha/kobalt_ru/actions/runs/45037956822) **SUCCESS**: native 11m00s;
+Kobo Qt5/offline/package/contents 4m51s.
+[Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45037956822/artifacts/14760328232)
+(37377574 bytes). Qt6 skipped, Android/full suite/device NOT RUN.
+[Чек-лист NoteEditor](doc/validation/beta9-note-editor.md).
+Следующий upstream consumer group: quick annotation / drag reopen и их input/
+refresh dependencies, затем оставшиеся KOSync policy/sleep/storage и semantic gate.
+До feedback устройства не считать нативную multiline keyboard проверенной.
+
 
 **Пакет 254 — implemented / CI verified, device pending:** upstream shared ListRow и
 SegmentedRow, HighlightStore/HighlightSession, BookmarkList восстановлены целиком.

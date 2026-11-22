@@ -368,5 +368,6 @@ reads carry the existing note text through HighlightExcerpt to the annotation
 list. The existing shared HighlightStore/HighlightSession setNote path is restored
 from pinned beta9 (whitespace clears a note; length limit unchanged). There is no
 new file, table, schema version or duplicate note writer. Reader note editing UI
-integration remains a separate consumer step; this foundation only exposes saved
-notes in list previews and restores the upstream model API/retry contract.
+is connected in runtime 09307e42: editor-owned retry retains an unsaved text draft
+in the editor and uses this same shared writer. No new storage/schema is added.
+Full profile backup remains required; CI verification is not device acceptance.

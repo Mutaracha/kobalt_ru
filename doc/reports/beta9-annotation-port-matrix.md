@@ -90,7 +90,7 @@ compact-note assertion. Whole upstream SQLite consumer in 4e014dc5 resolves the
 missing projection; the assertion is retained and the follow-up run passes.
 
 
-## Note editor integration checkpoint (CI pending)
+## Note editor integration checkpoint (CI verified, device pending)
 
 NoteEditor.h/cpp restored whole from pinned beta9. Reader openNoteEditor,
 showSavedAnnotationAt, showSavedAppearance and action-card implementation restored
@@ -129,3 +129,12 @@ both exact boundaries and apply label-fit checks to all three buttons.
 annotationNotes assumed the later upstream automatic menu-on-release gesture;
 this port retains toggle-mode's explicit tap, so the test now taps the fresh
 selection before opening Add note. No production gesture/timing workaround.
+
+
+Final NoteEditor runtime 09307e421d649527cdcaa6854255e335f9861409 / build 257:
+[CI 45037956822](https://github.com/Mutaracha/kobalt_ru/actions/runs/45037956822) SUCCESS; native 11m00s,
+Qt5/offline/package/contents 4m51s. Artifact 14760328232, 37377574 bytes.
+The selected note editor and desktop note/annotation/selection/grip integration
+checks pass together with previous selected regressions. Qt6 skipped; full suite,
+Android and physical device not run. Quick-mode/menu-reopen and remaining shared
+implementations are still open; this is not a completed all-file semantic audit.

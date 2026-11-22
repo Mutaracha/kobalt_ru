@@ -434,3 +434,17 @@ old; whole upstream annotation_database.cpp restored in 4e014dc5. The assertion
 was retained. Final run 45033749297 SUCCESS: native 9m55s + Qt5 5m01s; device pending. Intermediate artifact is not the
 verified handoff package. EPUB Hybrid/frameImage/comics, Libra2 mapping and the
 fork palette remain byte-identical to pre-checkpoint 34946cf2.
+
+
+## NoteEditor checkpoint — runtime 09307e42 / build 257
+
+Whole upstream NoteEditor h/cpp and Reader note consumers integrated contextually;
+labeled fork palette and section headings preserved. Existing common.cancel used
+for cancellation; five RU editor strings explicitly approved. Upstream note/draft
+save sequencing, editor-owned retry/error and callback completion share the same
+HighlightSession writer. Upstream hit/dot exclusion helper protects card actions.
+Quick-mode and delayed reopen behavior intentionally remain a separate dependency
+group; see [matrix](reports/beta9-annotation-port-matrix.md).
+[CI 45037956822](https://github.com/Mutaracha/kobalt_ru/actions/runs/45037956822) SUCCESS native + Qt5;
+device/Android/Qt6/full suite not run. This supersedes the previous foundation's
+“no editor actions yet” scope, not its historical build evidence.
