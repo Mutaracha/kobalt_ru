@@ -46,7 +46,10 @@ lazy Settings и кнопки; последующий freeze рассматри�
 CI 45025613466: Qt5 PASS, native FAIL — UI tests были выбраны, но executable
 не был включён в focused build target list. Target добавлен; это не доказательство
 ошибки клавиатуры и не успешный native run. Следующий dependency group annotations:
-сначала ListRow note support / note editor / storage API consumer matrix.
+[dependency/consumer matrix](doc/reports/beta9-annotation-port-matrix.md) готова.
+ReaderSession location API уже есть; highlight geometry/paint byte-identical.
+Далее shared ListRow + storage/session note metadata с upstream tests, затем
+BookmarkList/NoteEditor/Reader consumers. Fork labeled highlight palette сохранять.
 
 **Следующее действие:** разобрать замечания upload `68c77d8`:
 [отчёт](doc/reports/77564e9-device-issues.md). EPUB Hybrid подтверждён логом

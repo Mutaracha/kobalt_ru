@@ -23,7 +23,10 @@ hybrid, inpage_footnotes=false. Initial partial view had 23 loaded pages.
 The archive also contains an earlier FB2 session: chapter request is true but
 bounds remain -1 as intended; this is NOT evidence of partial FB2 support.
 
-## Freeze in Settings / Styling — cause unresolved
+## Freeze in Settings / Styling — deferred until a new example
+
+Latest user decision: defer investigation until a new example. No freeze fix
+claimed; the evidence below is retained as history, not an active fix queue.
 
 Freeze archive includes current events and two history files. The relevant
 pre-reboot process is pid 216; next startup is 15:19:18.913.
@@ -68,7 +71,7 @@ and delete prompt. Does not rewrite storage, alter typography/order, translate
 user presets, or replace custom-renamed examples. No new wording.
 Regression covers EN→RU, saved RU→EN, no mutation and custom/unknown entries.
 
-## Screen 8 — verified functional meaning, no wording change
+## Screen 8 — verified functional meaning, approved wording revision
 
 vertical_spacing_scope=protection reaches LVDocView::setVerticalSpacing's
 onlyProtection flag. Drawing AND coordinate conversion gate on
@@ -79,8 +82,8 @@ page content to compensate for the gap caused by widow/orphan protection.
 With scope=all ordinary suitable near-full prose pages are eligible too.
 Normal/off applies neither correction. With widow/orphan protection disabled,
 protection-only scope normally has no such gaps to adjust.
-Existing RU “После защиты от висячих строк” and its description convey that
-condition accurately. No translation change is justified by this screenshot.
+Latest user-approved RU label: «Только зазоры от висячих строк», implemented
+in assets/ru.strings. Description and EN unchanged; algorithms unchanged.
 Tests/model/vertical_spacing.cpp explicitly checks protection-only adjustment,
 no effect when protection is disabled and cached metadata round-trip.
 
@@ -146,8 +149,6 @@ normalization). Accurate hit disk document cache; initial Hybrid slice did not.
 Hybrid full background build was ready at 16:36:29.429, with subsequent adoption
 confirmed; it shifts work beyond first readable display, not eliminates it.
 
-Copy proposal only (not approved/applied): replace the scope button's RU label
-with “Только зазоры от висячих строк”. Prefer “зазор” over “разрыв”: this setting
-compensates for spare page height, it does not insert or remove a page break.
-Keep approved English and explanatory description unchanged unless user approves
-new copy. This proposal does not authorize algorithm changes.
+Latest user decision supersedes the proposal: «Только зазоры от висячих строк»
+is approved and applied. Keep English and the explanatory description unchanged;
+this copy revision does not authorize algorithm changes.
