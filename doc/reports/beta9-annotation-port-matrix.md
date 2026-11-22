@@ -121,3 +121,11 @@ native CMake configuration rejected new ui.noteEditorPassageLines without an are
 label. Added noteEditor.* to the existing annotations test area and explicit
 one-line descriptions for the new tests; no test removed or assertion relaxed.
 Follow-up native verification required before handoff.
+
+Second CI 45037014565 / 3357f0ba: Qt5 passed; native found two stale
+integration expectations. annotationSelection assumed Save directly adjoined
+Cancel, but Add note now correctly sits between them; assertions now require
+both exact boundaries and apply label-fit checks to all three buttons.
+annotationNotes assumed the later upstream automatic menu-on-release gesture;
+this port retains toggle-mode's explicit tap, so the test now taps the fresh
+selection before opening Add note. No production gesture/timing workaround.

@@ -7235,7 +7235,10 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         };
         QCOMPARE(frame(shaded).right() + 1, frame(underline).left());
         QCOMPARE(frame(underline).right() + 1, frame(dotted).left());
-        QCOMPARE(frame(save).right() + 1, frame(cancel).left());
+        auto *addNote = fixture.widget("rrAnnotationAddNote");
+        QVERIFY(addNote && addNote->isVisible());
+        QCOMPARE(frame(save).right() + 1, frame(addNote).left());
+        QCOMPARE(frame(addNote).right() + 1, frame(cancel).left());
         auto *styleSection = fixture.widget("rrAnnotationStyleSection");
         auto *actionsSection = fixture.widget("rrAnnotationActionsSection");
         QVERIFY(styleSection && actionsSection);
@@ -7278,7 +7281,7 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         QCOMPARE(frame(actionsSection).bottom() + 1, frame(cancel).top());
         QCOMPARE(frame(shaded).left(), frame(fixture.widget("rrAnnotationSave")).left());
         QCOMPARE(frame(dotted).right(), frame(cancel).right());
-        for (const auto *name : { "rrAnnotationSave", "rrAnnotationCancel" }) {
+        for (const auto *name : { "rrAnnotationSave", "rrAnnotationAddNote", "rrAnnotationCancel" }) {
             auto *button = dynamic_cast<ui::CaptionButton *>(fixture.widget(name));
             QVERIFY(button && button->isIconAboveLabel());
             QCOMPARE(ui::elideInterfaceText(button->text(), button->font(),
@@ -8056,7 +8059,9 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         // Add note on a new selection saves the highlight, then opens the editor.
         QVERIFY(fixture.selectWord(page, word));
         QTRY_VERIFY(!page->annotationHandleRect(true).isEmpty());
-        // The menu opens when the finger lifts.
+        // The current toggle-based gesture keeps a fresh selection after
+        // release; tapping it opens its actions (quick/reopen port is separate).
+        QVERIFY(fixture.click(page, word));
         QTRY_VERIFY(fixture.visible("rrAnnotationAddNote"));
         QVERIFY(fixture.press("rrAnnotationAddNote"));
         QTRY_VERIFY(fixture.visible("rrNoteEditor") && editorText());
