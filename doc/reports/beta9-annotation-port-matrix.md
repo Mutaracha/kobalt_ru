@@ -162,3 +162,17 @@ retains the fork caption/section geometry assertions instead of expecting their
 absence. preference tests cover valid/invalid and feature-hidden quick state.
 The prior package's explicit-tap limitation is superseded, not silently kept in
 the new tests. Remaining KOSync, sleep/storage and full semantic inventory OPEN.
+
+Initial CI 45041917405 / 20cbc3a0: offline gate correctly rejected missing
+reader_annotation_drag registration. User explicitly approved adding exactly the
+pinned upstream property/meaning entry; local source-check and planted/stale
+self-tests then pass. Native found stale startAnnotation fixture (it clicked the
+newly auto-opened card away) and upstream-only style check coordinates (fork keeps
+caption/top-right check). Restored whole upstream fixture and retained the fork
+check rectangle; assertions remain. Qt6 refresh is restored whole upstream too
+(its only missing difference was the same drag path); Qt6 execution still unrun.
+
+Local follow-up checks: source-checks.cmake and its planted/stale self-test PASS;
+full platforms/ci/test.sh with scratch CMake/Ninja exits 0, including strings
+generation/rebuild/parity, validation coverage and release helper checks. This
+is offline verification, not a native Qt runtime test. No local Qt SDK/Docker.

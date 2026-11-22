@@ -1507,11 +1507,11 @@ void ReadingPage::updatePointer()
 
 void ReadingPage::finishGesture()
 {
-    setPressedHandle(-1);
     holdTimer.stop();
     if (!tracking)
         return;
     tracking = false;
+    setPressedHandle(-1);
 
     // A navigation callback can destroy the reader.
     struct SourceTime

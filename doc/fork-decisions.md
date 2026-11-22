@@ -265,3 +265,7 @@ User approved six RU strings in the session choice: Выделение текс�
 Удерживайте текст, чтобы выделить его, добавить заметку или найти в словаре.
 Кнопка аннотаций скрыта. EN remains pinned upstream. Toggle remains the default;
 this is upstream alignment, not permission for an additional fork interaction mode.
+
+User separately approved restoring the single pinned-upstream
+`reader_annotation_drag` entry and meaning in platforms/checks/reader-properties.allow.
+No general relaxation of source checks or additional allowlist entries approved.

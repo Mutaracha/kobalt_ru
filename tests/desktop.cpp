@@ -894,16 +894,10 @@ struct Fixture
         if (!press("rrPage") || !QTest::qWaitFor([this] { return visible("rrAnnotate"); }, 2000)
             || !press("rrAnnotate") || !selectWord(target, position))
             return false;
-        auto *paper = static_cast<ReadingPage *>(target);
+        // A new selection in highlight mode opens its menu when the finger lifts.
         return QTest::qWaitFor(
-                       [&] {
-                           return visible("rrAnnotationEdit")
-                                   || (!state().value("annotation_dragging").toBool()
-                                       && paper->annotationContains(
-                                               position - QPoint(0, paper->topHeight())));
-                       },
-                       2000)
-                && (visible("rrAnnotationEdit") || click(target, position));
+                [this] { return visible("rrAnnotationEdit") || visible("rrAnnotationSave"); },
+                2000);
     }
 
     bool hold(QWidget *target, QPoint position)
@@ -7405,9 +7399,8 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         QVERIFY(cardBounds.bottom() <= selection.top() || cardBounds.top() >= selection.bottom());
         QVERIFY(fixture.stored("highlights.json", "highlights").isEmpty());
         QVERIFY(fixture.press("rrAnnotationStyle_underline"));
-        // The check sits right of the centered sample, centered on it.
-        const QRect check(shaded->width() / 2 + ui::px(38) + ui::px(10),
-                          shaded->height() / 2 - ui::px(10), ui::px(20), ui::px(20));
+        // Fork style cells retain the caption and top-right check geometry.
+        const QRect check(shaded->width() - ui::px(40), ui::px(10), ui::px(24), ui::px(24));
         QVERIFY(selectedSample.copy(check) != shaded->grab().toImage().copy(check));
         const auto selectedUnderline = underline->grab().toImage();
         QCOMPARE(selectedUnderline.pixelColor(selectedUnderline.width() / 2,

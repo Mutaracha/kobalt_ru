@@ -56,3 +56,5 @@ reader_tab_icon|Settings tab button: its icon, set again when the tabs switch be
 reader_tab_label|Settings tab button: its label, uppercase in the rail and as written in the section list.
 reader_transition_save_failed|Reader window: the save before USB, shutdown or closing failed three times.
 reader_waiting|KOSync diagnostic field: the reader was waiting for the sync. Not a property.
+
+reader_annotation_drag|Reader window: a finger is dragging a selection or a handle, so page updates use the fast direct waveform until it lifts.
