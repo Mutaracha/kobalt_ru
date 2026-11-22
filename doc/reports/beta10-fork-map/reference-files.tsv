@@ -1,0 +1,153 @@
+path	status
+AGENTS.md	different
+FB2_FORK_PLAN.md	fork-only
+README.md	different
+doc/acknowledgements.md	different
+doc/beta8-device-check.md	fork-only
+doc/beta9-remaining-strings-review.md	fork-only
+doc/beta9-strings-review.md	fork-only
+doc/building.md	different
+doc/engines/koblaze-upstream-beta9.md	fork-only
+doc/fb2-footnotes.md	fork-only
+doc/fork-decisions.md	fork-only
+doc/fork-delta.md	fork-only
+doc/fork-kobalt_ru.md	fork-only
+doc/fork-update-workflow.md	fork-only
+doc/forum-description.ru.bbcode.txt	fork-only
+doc/power-mechanisms.md	different
+doc/qt6-one-off.md	fork-only
+doc/reader.md	different
+doc/reader/android.md	different
+doc/reader/annotations.md	different
+doc/reader/desktop.md	different
+doc/reader/dictionaries.md	different
+doc/reader/display.md	different
+doc/reader/installation.md	different
+doc/reader/interface.md	different
+doc/reader/navigation.md	different
+doc/reader/opening.md	different
+doc/reader/progress.md	different
+doc/reader/settings.md	different
+doc/reader/sleep.md	different
+doc/reader/sync.md	different
+doc/reader/typography.md	different
+doc/reader/viewport.md	different
+doc/release-evaluation.md	different
+doc/reports/033d0be2-device-review.md	fork-only
+doc/reports/77564e9-device-issues.md	fork-only
+doc/reports/beta9-annotation-port-matrix.md	fork-only
+doc/reports/beta9-delta-current/README.md	fork-only
+doc/reports/beta9-delta-current/changes.stat	fork-only
+doc/reports/beta9-delta-current/files.tsv	fork-only
+doc/reports/beta9-delta-current/summary.json	fork-only
+doc/reports/beta9-delta/README.md	fork-only
+doc/reports/beta9-delta/changes.stat	fork-only
+doc/reports/beta9-delta/files.tsv	fork-only
+doc/reports/beta9-delta/summary.json	fork-only
+doc/reports/beta9-engine-adapter.md	fork-only
+doc/reports/beta9-engine-contracts.md	fork-only
+doc/reports/beta9-hybrid-counter.md	fork-only
+doc/reports/beta9-inventory.md	fork-only
+doc/reports/beta9-inventory.tsv	fork-only
+doc/reports/beta9-physical-buttons.md	fork-only
+doc/reports/beta9-port-map.tsv	fork-only
+doc/reports/beta9-preflight.md	fork-only
+doc/reports/beta9-source-locations.md	fork-only
+doc/reports/beta9-stage1-blaze.md	fork-only
+doc/reports/beta9-stage2-adapter.md	fork-only
+doc/reports/beta9-upgrade-retrospective.md	fork-only
+doc/reports/beta9-wireless.md	fork-only
+doc/reports/beta9-worker-contracts.md	fork-only
+doc/reports/cfb8f51c-device-followup.md	fork-only
+doc/reports/fb2-hybrid-preparation.md	fork-only
+doc/reports/fb2-post-refactor.md	fork-only
+doc/reports/fb2-preview-position.md	fork-only
+doc/reports/fb2-reliability-koreader.md	fork-only
+doc/reports/upstream-cleanup-stage1.md	fork-only
+doc/reports/upstream-panels-alignment.md	fork-only
+doc/storage.md	different
+doc/sync-data.md	different
+doc/validation.md	different
+doc/validation/033d0be2-followup.md	fork-only
+doc/validation/annotations.md	different
+doc/validation/beta9-annotation-foundation.md	fork-only
+doc/validation/beta9-device.md	fork-only
+doc/validation/beta9-kosync-sleep.md	fork-only
+doc/validation/beta9-note-editor.md	fork-only
+doc/validation/brightness.md	different
+doc/validation/chrome.md	different
+doc/validation/diagnostics.md	different
+doc/validation/dictionary.md	different
+doc/validation/display.md	different
+doc/validation/evaluation.md	different
+doc/validation/fonts.md	different
+doc/validation/gallery.md	different
+doc/validation/images.md	different
+doc/validation/input.md	different
+doc/validation/kobo.md	different
+doc/validation/layout.md	different
+doc/validation/library.md	different
+doc/validation/links.md	different
+doc/validation/progress.md	different
+doc/validation/reading.md	different
+doc/validation/settings.md	different
+doc/validation/sleep.md	different
+doc/validation/storage.md	different
+doc/validation/upstream-panels-device.md	fork-only
+doc/validation/upstream-presets-device.md	fork-only
+doc/validation/viewport.md	different
+test & diagnostic/033d0be2/diagnostics comics.zip	fork-only
+test & diagnostic/033d0be2/diagnostics epub.zip	fork-only
+test & diagnostic/033d0be2/diagnostics fb2.zip	fork-only
+test & diagnostic/033d0be2/screenshot.zip	fork-only
+test & diagnostic/1. Виртуальный свет.fb2	fork-only
+test & diagnostic/116024c/README.md	fork-only
+test & diagnostic/116024c/events.zip	fork-only
+test & diagnostic/116024c/screen_001.png	fork-only
+test & diagnostic/116024c/screen_002.png	fork-only
+test & diagnostic/116024c/screen_003.png	fork-only
+test & diagnostic/116024c/screen_004.png	fork-only
+test & diagnostic/116024c/screen_005.png	fork-only
+test & diagnostic/116024c/screen_006.png	fork-only
+test & diagnostic/116024c/screen_007.png	fork-only
+test & diagnostic/116024c/screen_008.png	fork-only
+test & diagnostic/116024c/screen_009.png	fork-only
+test & diagnostic/1a56b68/diagnostics 1a56b68.zip	fork-only
+test & diagnostic/1b09118/README.md	fork-only
+test & diagnostic/1b09118/events.zip	fork-only
+test & diagnostic/1b09118/screen_001.png	fork-only
+test & diagnostic/1b09118/screen_002.png	fork-only
+test & diagnostic/1b09118/screen_003.png	fork-only
+test & diagnostic/1b09118/screen_004.png	fork-only
+test & diagnostic/61dbfaa/Sin City vol 4.kepub.epub	fork-only
+test & diagnostic/77564e9/Adventure.ttf	fork-only
+test & diagnostic/77564e9/Oranienbaum-Regular.ttf	fork-only
+test & diagnostic/77564e9/README.md	fork-only
+test & diagnostic/77564e9/ViaodaLibre-Regular.ttf	fork-only
+test & diagnostic/77564e9/diagnostics epub hibrid.zip	fork-only
+test & diagnostic/77564e9/diagnostics epub.zip	fork-only
+test & diagnostic/77564e9/diagnostics freeze.zip	fork-only
+test & diagnostic/77564e9/screen_001.png	fork-only
+test & diagnostic/77564e9/screen_002.png	fork-only
+test & diagnostic/77564e9/screen_005.png	fork-only
+test & diagnostic/77564e9/screen_006.png	fork-only
+test & diagnostic/77564e9/screen_007.png	fork-only
+test & diagnostic/77564e9/screen_008.png	fork-only
+test & diagnostic/80ee8d7/diagnostics hibrid.zip	fork-only
+test & diagnostic/README.md	fork-only
+test & diagnostic/SHA256SUMS	fork-only
+test & diagnostic/cfb8f51c/events.zip	fork-only
+test & diagnostic/cfb8f51c/screen_001.png	fork-only
+test & diagnostic/cfb8f51c/screen_002.png	fork-only
+test & diagnostic/diagnostics 61dbfaa.zip	fork-only
+test & diagnostic/diagnostics a170389.zip	fork-only
+test & diagnostic/fb2-post-refactor/screen_002-11.png	fork-only
+test & diagnostic/fb2-post-refactor/screen_003-9.png	fork-only
+test & diagnostic/reading-menu-counter/README.md	fork-only
+test & diagnostic/reading-menu-counter/screen_001-15.png	fork-only
+test & diagnostic/reading-menu-counter/screen_001-16.png	fork-only
+test & diagnostic/reading-menu-counter/screen_001-17.png	fork-only
+test & diagnostic/reading-menu-counter/screen_001-18.png	fork-only
+test & diagnostic/reading-menu-counter/screen_001-19.png	fork-only
+test & diagnostic/reading-menu-counter/screen_002-12.png	fork-only
+test & diagnostic/reading-menu-counter/screen_002-13.png	fork-only

@@ -4,6 +4,10 @@
 Канонические состояние, решения, согласования и результаты — в
 [`FB2_FORK_PLAN.md`](../FB2_FORK_PLAN.md). Карта исходной дельты и владельцев модулей — [fork-delta](fork-delta.md).
 
+Для перехода beta9→beta10 использовать [зафиксированную карту](reports/beta10-fork-map/README.md):
+semantic features + exhaustive TSV + take-upstream list. Список неизменённых
+файлов означает отсутствие fork merge, а не освобождение от API/device проверок.
+
 ## 1. Зафиксировать исходную точку
 
 - Прочитать `AGENTS.md`, план, `building.md`, `validation.md`; перед изменением

@@ -10,7 +10,8 @@
 - EPUB Hybrid counter: deferred до beta10, без своих исправлений; проверенная
   цепочка соответствует upstream beta9. [Наблюдения и пределы](doc/reports/beta9-hybrid-counter.md).
 - Язык: вход перенесён первым пунктом только в Debug; окно/markers/применение прежние.
-  Реализация готова, CI нового checkpoint ожидается; device-приёмка не заявляется.
+  Runtime `ac21d582`, CI45067475543/build290: native + Qt5/package PASS;
+  device-приёмка переноса кнопки не заявляется.
 - Карта обновления: [beta9 → beta10](doc/reports/beta10-fork-map/README.md).
 
 ## Предыдущий checkpoint — выравнивание с upstream
