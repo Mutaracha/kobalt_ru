@@ -1893,3 +1893,7 @@
 "settings.annotation_interaction_toggle_description" = "Включите режим аннотаций в меню чтения, затем удерживайте текст для выделения. Вне этого режима удержание текста открывает поиск в выбранном словаре.";
 "settings.annotation_interaction_quick" = "Быстрый режим аннотаций";
 "settings.annotation_interaction_quick_description" = "Удерживайте текст, чтобы выделить его, добавить заметку или найти в словаре. Кнопка аннотаций скрыта.";
+
+"kosync.invalid_server" = "Введите HTTP- или HTTPS-адрес сервера без учётных данных, параметров запроса и фрагмента.";
+"kosync.invalid_username" = "Введите корректное имя пользователя KOSync.";
+"kosync.missing_password" = "Введите пароль KOSync.";

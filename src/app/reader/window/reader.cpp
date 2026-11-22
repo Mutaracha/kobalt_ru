@@ -1,3 +1,4 @@
+#include "reading/header_footer.h"
 #include "app/reader/settings/sleep_gallery.h"
 #include "render/page_content.h"
 #include "reading/remaining_time.h"
@@ -133,9 +134,34 @@ void Reader::checkpoint()
     }
     // Hosts can checkpoint before our application-state callback. Freeze the
     // clock before any save can block, so background I/O is not reading time.
-    if (services.suspended())
+    if (services.suspended()) {
         book->sleepReading(preferences);
-    save(true);
+        // A sleep that only checkpoints, such as while Nickel's browser covers
+        // the hidden reader, must still end the host's reading session, so the
+        // sleep is not counted as reading time. After a full sleep save this
+        // finds nothing left to end.
+        book->drainReadingSave([](NativeActivityResult) { });
+    }
+    const bool saved = save(true);
+    if (saved && services.deferKosync && services.suspended()) {
+        if (!book->usesNativeCloudSync() && kosyncAutomatic() && kosyncClient->signedIn()
+            && !book->pendingProgress() && !book->deviceTransition() && !session->busy()
+            && !session->temporaryTypography() && !syncCoordinator->pendingProgress()
+            && session->pages() > 0) {
+            cancelKosync();
+            auto job = kosyncClient->deferredAccount();
+            job["document"] = QString::fromLatin1(kosyncDocument());
+            job["progress"] = session->state().value("position").toString();
+            job["percentage"] = kosyncPercentage();
+            job["baseline"] = syncCoordinator->deferredBaseline();
+            job["device"] = kosyncClient->deviceName();
+            if (kosyncClient->sendMetadata())
+                job["metadata"] = qt::object({ { "filename", session->syncFilename() },
+                                               { "title", session->title().trimmed() },
+                                               { "authors", session->author().trimmed() } });
+            services.deferKosync(job);
+        }
+    }
 }
 
 void Reader::observeReading()
@@ -741,6 +767,8 @@ void Reader::sleepReader()
     if (kosyncPage)
         kosyncPage->dismissEditor();
     if (kosyncPage)
+        kosyncPage->clearPassword();
+    if (kosyncPage)
         kosyncPage->setStatus(kosyncMessage, false);
     kosyncStarted = false;
     if (kosyncDialog) {
@@ -830,14 +858,25 @@ void Reader::wakeReader()
     kosyncStarted = false;
     kosyncWaking = true;
     syncCoordinator->resetBackgroundFailures();
-    sleepImage = { };
+    sleepImage = {};
     presentation->clearSleepScreen();
     setProperty("reader_sleep_clean_pending", false);
     if (lifecycleHidden)
         wakePositionEpoch = book->advancePositionSaveEpoch();
     lifecycleHidden = false;
-    if (sleep::mode(preferences) == sleep::Mode::Overlay)
+    if (sleep::uses(preferences, sleep::Mode::Overlay))
         prepareSleepOverlay();
+    // A random wallpaper may change with every sleep. A named one is already
+    // decoded, so wake does not decode it again.
+    {
+        const auto custom = sleep::custom(preferences);
+        const auto random = [](const sleep::Layer &layer) {
+            return layer.backdrop == sleep::Mode::Wallpaper && layer.wallpaper.isEmpty();
+        };
+        if (sleep::design(preferences) == sleep::Design::Custom
+            && (random(custom.sleep) || (!custom.same && random(custom.off))))
+            prepareSleepWallpapers();
+    }
     QTimer::singleShot(0, this, [this] { synchronizeKosync(); });
     if (finishDialog)
         finishDialog->show();
@@ -2043,6 +2082,22 @@ int Reader::millisecondsOfDay() const
     return services.millisecondsOfDay ? services.millisecondsOfDay()
                                       : QTime::currentTime().msecsSinceStartOfDay();
 }
+
+void Reader::resumeReadingClock()
+{
+    if (!isVisible() || lifecycleHidden || closing || services.suspended() || !clockTimer
+        || !clockTimer->isActive())
+        return;
+
+    using namespace kobalt::headerfooter;
+    bool visibleClock = topControls && topControls->isVisible();
+    for (int slot = 0; !visibleClock && slot < slotCount; ++slot)
+        visibleClock = page->chrome.slotFields[slot] == Field::Time
+                && (footerSlot(slot) ? page->showFooter() : page->showHeader());
+    if (visibleClock)
+        startClock();
+}
+
 
 void Reader::startClock()
 {
@@ -3386,7 +3441,7 @@ bool Reader::flushBeforeStandby()
             kobalt::qt::later(0, this, [this] { runIdleSave(true); });
         return false;
     }
-    if (lowBattery && kobalt::storage::profileCheckpointDue()) {
+    if ((lowBattery || lifecycleHidden) && kobalt::storage::profileCheckpointDue()) {
         kobalt::storage::requestProfileCheckpoint();
         return false;
     }
@@ -3395,21 +3450,22 @@ bool Reader::flushBeforeStandby()
 
 // `snapshot` marks a close, sleep or shutdown. `background` queues the
 // checkpoint on the book's writer thread; a failure is only logged.
-void Reader::save(bool snapshot, bool background, bool persist)
+bool Reader::save(bool snapshot, bool background, bool persist)
 {
     localSaveDue = false;
     QJsonObject state = book->checkpointState();
     // Only a save that waits for storage, such as sleep, reports a failure.
     // Background saves are transient and only log theirs.
-    if (persist && !book->checkpoint(&state, background) && !background) {
+    const bool saved = !persist || book->checkpoint(&state, background);
+    if (!saved && !background) {
         page->notice = strings::get("reader.could_not_save_reading_position");
         page->refreshContent();
     }
     // Routine reports are opt-in; snapshots remain available at lifecycle boundaries.
     if (!snapshot && !liveState && !services.development.continuousStateReports)
-        return;
+        return saved;
     if (book->paths().stateReport.isEmpty())
-        return;
+        return saved;
     state["page"] = session->page();
     state["pages"] = session->pages();
     state["cached_pages"] = session->cachedPages();
@@ -3483,7 +3539,6 @@ void Reader::save(bool snapshot, bool background, bool persist)
     state["contents_page"] = choices->chapterPage();
     state["font_samples"] = choices->fontSamples();
     state["native_font_families"] = QJsonArray::fromStringList(pickerNativeFamilies);
-    state["appearance_controls_built"] = appearanceBuilt;
     state["font_button_family"] = fontButton ? fontButton->resolvedFace() : QString();
     state["graph_page"] = chapterGraph->graphPage();
     state["graph_pages"] = chapterGraph->graphPages();
@@ -3517,7 +3572,8 @@ void Reader::save(bool snapshot, bool background, bool persist)
     if (!reportWriter)
         reportWriter = std::make_unique<storage::RecordWriter>();
     reportWriter->post([path = book->paths().stateReport, state] { return writeJson(path, state); },
-                       { });
+                       {});
+    return saved;
 }
 
 } // namespace kobalt::reader

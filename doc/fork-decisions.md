@@ -269,3 +269,14 @@ this is upstream alignment, not permission for an additional fork interaction mo
 User separately approved restoring the single pinned-upstream
 `reader_annotation_drag` entry and meaning in platforms/checks/reader-properties.allow.
 No general relaxation of source checks or additional allowlist entries approved.
+
+
+### UPSTREAM-KOSYNC — unmodified synchronization policy
+
+2026-10-26: user explicitly instructed full pinned upstream KOSync; the fork has
+no independent KOSync policy. Whole model/coordinator/page/window handlers and
+associated tests are upstream. Keep existing accepted RU wording; three new
+login validation messages approved through `kosync_validation_strings`.
+Sleep/storage logic follows upstream; retain accepted ribbon two-line text,
+localized fitting and approved descriptions. CI/device evidence lives in the
+queue; no device acceptance is implied. EPUB Hybrid algorithms remain excluded.

@@ -35,17 +35,22 @@ Qt6 skipped; full suite/Android NOT RUN. Пользователь принял �
 lazy Settings и кнопки; последующий freeze рассматривается отдельно, не закрыт.
 Пресеты 9633d3fd приняты отдельно.
 
-**Annotation interaction/drag — in progress / CI pending:** перенесены upstream
-quick/toggle настройка (default toggle), shared preference cleaning, временный
-quick-mode lifecycle и show/settle actions; таймер повторного меню после drag,
-pressed handle geometry и Qt5 direct-partial drag + однократная text cleanup
-waveform из upstream. Это не общая замена refresh policy: comics/page turn/dark
-branches сохраняются; cleanup только для реального drag. Новые шесть RU строк
-явно приняты пользователем; EN upstream. Fork section captions/palette labels,
-common.cancel и прежний dictionary caption сохраняются. NoteEditor whole upstream.
-Обновлены upstream gesture/notes/quick tours с fork geometry assertions, добавлены
-preference gates и ABI flush drag tests. KOSync/sleep/storage и итоговый semantic
-inventory ещё не завершены. Freeze deferred; EPUB Hybrid/Libra2 unchanged.
+**Annotation interaction/drag — done / CI verified, device pending:** runtime
+`c81928517f13859cb5baaf7f1927da5b41e19fae`, CI `45043939833` SUCCESS
+(native + Qt5/offline/package/contents), artifact `14762084755` (37382310 bytes).
+Quick/toggle, auto-open/reopen 1500 ms, pressed handles и Qt5 direct-partial drag /
+one-shot REAGL cleanup; fork palette/headers сохранены. Устройство NOT RUN.
+
+**KOSync + sleep/storage — in progress / CI pending:** по прямому указанию
+пользователя KOSync целиком upstream, без fork policy. Модель, page, coordinator,
+Reader handlers, validation и тесты заменены целиком. Подключены deferred Android
+handoff, resume after native dialogs, whole-book percentage. Три RU validation
+messages утверждены. Sleep/USB lifecycle и assets verification upstream;
+cache namespace `.cache-blaze`, optional damaged assets и persisted verification
+upstream. Сохранены только fork sleep ribbon/newline/text fitting. Quiet preload
+не включён (ранее удалённая policy); EPUB Hybrid algorithms unchanged. Проверки
+локальных offline/source gates PASS; native/Qt5 повторная сборка нужна.
+Итоговый semantic inventory всё ещё требует просмотра оставшихся consumer deltas.
 
 **Редактор заметок — implemented / CI verified, device pending:** upstream NoteEditor h/cpp целиком,
 Reader saved/draft actions и save completion/error callbacks, note popover;

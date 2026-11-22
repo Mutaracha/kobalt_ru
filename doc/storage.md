@@ -378,3 +378,13 @@ Missing or invalid values use the toggleable mode. Disabling Annotations removes
 this preference along with its mode option; saved highlights/notes are retained.
 No schema version or per-book rendering identity changes. Quick selections and
 note edits continue through the existing shared annotation transaction writer.
+
+
+Blaze document cache now follows upstream `.cache-blaze`; the legacy `.cache`
+namespace is not deleted or migrated into it. Asset verification follows upstream
+boot/USB lifecycle gates and `.verified.json` metadata; required interface assets
+must pass, optional damaged assets are set aside. USB release invalidates the
+gate; remount verifies before new reader use. KOSync account policy and durable
+Android deferred jobs follow pinned upstream; jobs carry account fingerprints,
+not authentication keys. Failed login keeps the password draft for explicit
+retry; page exit, successful login/logout and sleep clear it.

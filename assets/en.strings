@@ -1839,3 +1839,7 @@
 "settings.annotation_interaction_toggle_description" = "Turn on Annotate in the reading menu, then hold text to highlight it. Outside the mode, holding text looks it up in a dictionary of your choice.";
 "settings.annotation_interaction_quick" = "Quick annotation mode";
 "settings.annotation_interaction_quick_description" = "Hold text to highlight it, add a note or look it up. The Annotate button is hidden.";
+
+"kosync.invalid_server" = "Enter an HTTP or HTTPS server URL without credentials, a query or a fragment.";
+"kosync.invalid_username" = "Enter a valid KOSync username.";
+"kosync.missing_password" = "Enter your KOSync password.";

@@ -1,5 +1,5 @@
-#include "record_writer.h"
 #include "reader_storage.h"
+#include "record_writer.h"
 #include "support/main_thread.h"
 #include "annotation_database.h"
 #include "profile_database.h"
@@ -84,7 +84,7 @@ QString Paths::previews() const
 
 QString Paths::documentCache() const
 {
-    return child(directory, ".cache");
+    return child(directory, ".cache-blaze");
 }
 
 QString Paths::bookState(const QString &identity) const

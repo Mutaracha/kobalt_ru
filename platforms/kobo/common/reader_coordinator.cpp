@@ -239,11 +239,24 @@ ReaderCoordinator::ReaderCoordinator(ReaderEnvironment &environment, Coordinator
     lifecycle->beforeStandby = [this] {
         return busy || !run.reader || run.reader->flushBeforeStandby();
     };
+    lifecycle->afterStandby = [this] {
+        if (!busy && run.reader)
+            run.reader->resumeReadingClock();
+    };
     // busy covers the whole opening, also before and after its engine jobs.
     // A fallback or error dialog also sets busy, but waits for the user.
     lifecycle->openingWorkPending = [this] { return busy && !run.fallbackAlert; };
     lifecycle->sleepWorkPending = [this] {
         return run.reader && (run.reader->pendingNetworkSync() || run.reader->pendingStorageSave());
+    };
+    // Outside the reader, Kobalt's screen still uses its own type. The fonts
+    // load with the first book otherwise. Load them once, only when the home
+    // screen draws, and never while a reader owns them. Input cannot arrive
+    // while the device sleeps or powers off.
+    homeSleep->prepareFonts = [this] {
+        if (interfaceFontsLoaded || busy || run.reader || !environment_.assets.available())
+            return;
+        interfaceFontsLoaded = kobalt::ui::initializeInterfaceFonts(environment_.assets);
     };
     lifecycle->sleep = [this] {
         if (lifecycle->shuttingDown())
@@ -258,7 +271,7 @@ ReaderCoordinator::ReaderCoordinator(ReaderEnvironment &environment, Coordinator
         // private backdrop before disposal changes the run or its busy state.
         // Once closed, identity is only retained for reuse: consult Nickel then.
         if (bindings_.enabled() && homeOwnsSleep)
-            homeSleep->preparePrivateScreen(false, busy || run.reader ? run.identity : QString());
+            homeSleep->prepareHomeScreen(false, busy || run.reader ? run.identity : QString());
         if (busy) {
             disposeForTransition([] { });
         } else if (run.reader) {
@@ -324,10 +337,18 @@ ReaderCoordinator::ReaderCoordinator(ReaderEnvironment &environment, Coordinator
                     kobalt::diagnostic("usb-release-start");
                     disposeForTransition([] { });
                 },
-                [this, ready = std::move(ready)] {
-                    environment_.assets.invalidate();
-                    ready();
-                });
+                std::move(ready));
+    };
+    lifecycle->storageReleased = [this] {
+        environment_.invalidateAssets();
+        // The files can change while the computer has the storage.
+        interfaceFontsLoaded = false;
+    };
+    lifecycle->storageRestored = [this] {
+        environment_.verifyAssets(this, "usb", [this](bool valid) {
+            if (valid)
+                kobalt::ui::prepareOpeningFonts(environment_.assets);
+        });
     };
     lifecycle->preparePowerScreen = [this](NativeLifecycle::Shutdown mode) {
         homeSleep->clear();
@@ -338,7 +359,7 @@ ReaderCoordinator::ReaderCoordinator(ReaderEnvironment &environment, Coordinator
         if (run.reader && !busy && !BrowserHandoff::activeFor(run.reader))
             homeSleep->preparePowerOff(run.reader->powerScreenSnapshot());
         else if (bindings_.enabled())
-            homeSleep->preparePrivateScreen(true, busy || run.reader ? run.identity : QString());
+            homeSleep->prepareHomeScreen(true, busy || run.reader ? run.identity : QString());
     };
     lifecycle->prepareShutdown = [this](std::function<void()> ready) {
         homeAfterClose = false;
@@ -463,7 +484,7 @@ bool ReaderCoordinator::available() const
 
 bool ReaderCoordinator::begin(const RetainOpening &retainOpening)
 {
-    if (!available())
+    if (!available() || !environment_.assets.available())
         return false;
     if (lifecycle->blocked() || lifecycle->draining)
         return true;
@@ -660,7 +681,7 @@ void ReaderCoordinator::prepareOpening(kobalt::ReaderBookRoute candidate)
     status("loading");
     const bool assetsReady = environment_.assets.available();
     bool fontsChanged = false;
-    if (!assetsReady || !kobalt::ui::initializeInterfaceFonts(environment_.assets, &fontsChanged)) {
+    if (!assetsReady || !(interfaceFontsLoaded = kobalt::ui::initializeInterfaceFonts(environment_.assets, &fontsChanged))) {
         missingAssets(assetsReady);
         return;
     }

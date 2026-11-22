@@ -6732,6 +6732,244 @@ private slots:
     }
 
     // Checks that missing, unusable and manual-only accounts never sync while reading, the toolbar Sync button and the Automatic sync sheet.
+    void kosyncSignInValidation_data()
+    {
+        QTest::addColumn<QString>("editedField");
+        QTest::addColumn<QString>("replacement");
+        QTest::newRow("unchanged") << QString() << QString();
+        QTest::newRow("username") << QString("rrKosyncUsername") << QString("different-reader");
+        QTest::newRow("server") << QString("rrKosyncServer") << QString("https://other.invalid");
+    }
+
+    void kosyncSignInValidation()
+    {
+        QFETCH(QString, editedField);
+        QFETCH(QString, replacement);
+        const auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.syncAccount(),
+                                   { { "schema", 1 },
+                                     { "server", "https://sync.invalid" },
+                                     { "username", "reader" },
+                                     { "key", "" },
+                                     { "automatic", false },
+                                     { "device_id", "sign-in-test" } }));
+        auto http = std::make_shared<KosyncHttpState>();
+        http->readStatus = 401;
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        host.configureServices = [&](ReaderHostServices &services) {
+            services.kosyncHttp = [http] { return std::make_unique<KosyncHttp>(http); };
+        };
+        CloseHost cleanup{ host };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(textBook, nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        auto *window = host.window();
+        QVERIFY(openSettings(host));
+        window->findChild<QPushButton *>("rrSettingsKosync")->click();
+        auto *login = window->findChild<QPushButton *>("rrKosyncLogin");
+        auto *status = window->findChild<QLabel *>("rrKosyncStatus");
+        auto *password =
+                dynamic_cast<ui::CaptionButton *>(window->findChild<QWidget *>("rrKosyncPassword"));
+        QVERIFY(login && status && password);
+
+        const auto edit = [&](const QString &field, const QString &text) {
+            auto *button = window->findChild<QPushButton *>(field);
+            QVERIFY(button);
+            button->click();
+            QPointer<QLineEdit> input = window->findChild<QLineEdit *>("rrKosyncInput");
+            QVERIFY(input);
+            input->setText(text);
+            window->findChild<QPushButton *>("rrKosyncEditSave")->click();
+            QTRY_VERIFY(!input);
+        };
+        login->click();
+        QCOMPARE(status->text(), strings::get("kosync.missing_password"));
+        QCOMPARE(http->requests, 0);
+        const QString draft = QStringLiteral("test-password");
+        edit("rrKosyncPassword", draft);
+        login->click();
+        QTRY_COMPARE(status->text(), strings::get("kosync.auth_error"));
+        QCOMPARE(http->requests, 1);
+        const auto masked = QStringLiteral("••••••••");
+        QCOMPARE(password->caption(), masked);
+        if (!editedField.isEmpty())
+            edit(editedField, replacement);
+        QCOMPARE(password->caption(), masked);
+        QCOMPARE(http->requests, 1);
+
+        http->readStatus = 200;
+        http->readBody = R"({"authorized":"OK"})";
+        login->click();
+        QTRY_COMPARE(status->text(), strings::get("kosync.signed_in"));
+        QCOMPARE(http->requests, 2);
+        const auto server =
+                editedField == "rrKosyncServer" ? replacement : QString("https://sync.invalid");
+        const auto username = editedField == "rrKosyncUsername" ? replacement : QString("reader");
+        QCOMPARE(http->lastAuthentication.url(), QUrl(server + "/users/auth"));
+        QCOMPARE(http->lastAuthentication.rawHeader("x-auth-user"), username.toUtf8());
+        QCOMPARE(http->lastAuthentication.rawHeader("x-auth-key"),
+                 QCryptographicHash::hash(draft.toUtf8(), QCryptographicHash::Md5).toHex());
+        const auto saved = storage::readJsonFile(paths.syncAccount()).object;
+        QCOMPARE(saved.value("server").toString(), server);
+        QCOMPARE(saved.value("username").toString(), username);
+        QCOMPARE(saved.value("key").toString().toLatin1(),
+                 http->lastAuthentication.rawHeader("x-auth-key"));
+        QCOMPARE(password->caption(), strings::get("kosync.not_set"));
+        QVERIFY(login->isHidden());
+        edit("rrKosyncServer", server);
+        QVERIFY(login->isHidden());
+        edit("rrKosyncUsername", username);
+        QVERIFY(login->isHidden());
+
+        edit("rrKosyncServer", "https://pending.invalid");
+        edit("rrKosyncPassword", "pending-test-password");
+        QCOMPARE(password->caption(), masked);
+        auto *logout = window->findChild<QPushButton *>("rrKosyncLogout");
+        QVERIFY(logout && logout->isEnabled() && !logout->isHidden());
+        logout->click();
+        QCOMPARE(status->text(), strings::get("kosync.signed_out"));
+        QCOMPARE(password->caption(), strings::get("kosync.not_set"));
+        QVERIFY(!kosync::Client(paths.syncAccount()).signedIn());
+        login->click();
+        QCOMPARE(status->text(), strings::get("kosync.missing_password"));
+        QCOMPARE(http->requests, 2);
+    }
+
+    void kosyncPause_data()
+    {
+        QTest::addColumn<bool>("automatic");
+        QTest::addColumn<bool>("signedIn");
+        QTest::addColumn<bool>("chapter");
+        QTest::newRow("automatic") << true << true << false;
+        QTest::newRow("automatic-chapter") << true << true << true;
+        QTest::newRow("manual") << false << true << false;
+        QTest::newRow("signed-out") << true << false << false;
+    }
+
+    void kosyncPause()
+    {
+        QFETCH(bool, automatic);
+        QFETCH(bool, signedIn);
+        QFETCH(bool, chapter);
+        renderingMode::setOverride(chapter ? 1 : 0);
+        const auto restoreMode = qScopeGuard([] { renderingMode::setOverride(-1); });
+        const auto paths = testPaths();
+        if (signedIn)
+            QVERIFY(storage::writeJson(paths.syncAccount(),
+                                       { { "schema", 1 },
+                                         { "server", "https://127.0.0.1:9" },
+                                         { "username", "fixture" },
+                                         { "key", QString(32, 'a') },
+                                         { "device_id", "fixture-device" },
+                                         { "automatic", automatic },
+                                         { "sync_on_open", false },
+                                         { "sync_on_close", false } }));
+        bool suspended = false;
+        QJsonObject queued;
+        QString persisted;
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        host.configureServices = [&](ReaderHostServices &services) {
+            services.suspended = [&] { return suspended; };
+            services.deferKosync = [&](const QJsonObject &job) {
+                queued = job;
+                persisted = storage::readBookState(paths, host.book()->identity())
+                                    .object.value("position")
+                                    .toString();
+            };
+        };
+        CloseHost cleanup{ host };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(host.window()->readyForPresentation());
+        host.window()->checkpoint();
+        QVERIFY(queued.isEmpty());
+        for (int turn = 0; turn < 4; ++turn) {
+            QVERIFY(host.session()->turn(1));
+            QTRY_VERIFY(!host.session()->busy());
+        }
+        const auto frame = host.session()->state();
+        QCOMPARE(frame.contains("book_fraction"), chapter);
+        const double local = double(host.session()->page()) / qMax(1, host.session()->pages() - 1);
+        const double percentage = chapter ? frame.value("book_fraction").toDouble() : local;
+        if (chapter)
+            QVERIFY(local != percentage);
+        const auto position = host.session()->state().value("position").toString();
+        suspended = true;
+        host.window()->checkpoint();
+        if (!automatic || !signedIn) {
+            QVERIFY(queued.isEmpty());
+            return;
+        }
+        QCOMPARE(queued.value("progress").toString(), position);
+        QCOMPARE(persisted, position);
+        QCOMPARE(queued.value("percentage").toDouble(-1), percentage);
+        QCOMPARE(queued.value("account_path").toString(), paths.syncAccount());
+        QCOMPARE(queued.value("account").toObject().value("key_sha256").toString().size(), 64);
+        QVERIFY(!queued.contains("key"));
+        QVERIFY(!queued.value("baseline").toObject().value("pending").toBool());
+    }
+
+    void kosyncDialogResume()
+    {
+        auto paths = testPaths();
+        QVERIFY(storage::writeJson(paths.syncAccount(),
+                                   { { "schema", 1 },
+                                     { "server", "https://fixture.invalid" },
+                                     { "username", "reader" },
+                                     { "key", QString(32, 'a') },
+                                     { "device_id", "fixture" },
+                                     { "automatic", false } }));
+        auto http = std::make_shared<KosyncHttpState>();
+        http->hold = true;
+        bool suspended = false;
+        WindowPresentation *presentation = nullptr;
+        ReaderFixture host(paths, testFonts, testPlaceholder);
+        host.configureServices = [&](ReaderHostServices &services) {
+            services.kosyncHttp = [http] { return std::make_unique<KosyncHttp>(http); };
+            services.suspended = [&] { return suspended; };
+            services.presentation = [&](QWidget *) {
+                auto result = std::make_unique<test::HostPresentation>();
+                presentation = result.get();
+                return result;
+            };
+        };
+        CloseHost cleanup{ host };
+        QSignalSpy opened(&host, &ReaderFixture::opened);
+        host.open(fixture(), nativeSize);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
+        Canvas canvas(host.window(), nativeSize);
+        canvas.resize(900, 900);
+        canvas.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&canvas));
+        QTRY_VERIFY(!host.session()->busy());
+        QVERIFY(presentation && presentation->inputResumed);
+        const auto position = host.session()->state().value("position");
+        host.window()->findChild<QPushButton *>("rrSettings")->click();
+        host.window()->findChild<QPushButton *>("rrSettingsKosync")->click();
+        host.window()->findChild<QPushButton *>("rrKosyncNow")->click();
+        QTRY_COMPARE(http->held.size(), 1);
+        suspended = true;
+        http->held.takeFirst()->finish();
+        QCOMPARE(http->uploads, 0);
+        auto *deadline = host.window()->findChild<QTimer *>("rrKosyncDeadline");
+        QVERIFY(deadline && deadline->isActive());
+        suspended = false;
+        http->hold = false;
+        presentation->inputResumed();
+        QTRY_COMPARE(http->uploads, 1);
+        auto *status = host.window()->findChild<QLabel *>("rrKosyncStatus");
+        QVERIFY(status);
+        QTRY_COMPARE(status->text(), strings::get("kosync.up_to_date"));
+        QCOMPARE(http->requests, 2);
+        QVERIFY(!deadline->isActive());
+        QCOMPARE(host.session()->state().value("position"), position);
+    }
+
     void kosyncAccountGating_data()
     {
         QTest::addColumn<QString>("account");
@@ -6954,6 +7192,12 @@ private slots:
         host.window()->findChild<QPushButton *>("rrKosyncPassword")->click();
         QPointer<QLineEdit> input = host.window()->findChild<QLineEdit *>("rrKosyncInput");
         QVERIFY(input);
+        input->setText("draft-password");
+        host.window()->findChild<QPushButton *>("rrKosyncEditSave")->click();
+        QTRY_VERIFY(!input);
+        host.window()->findChild<QPushButton *>("rrKosyncPassword")->click();
+        input = host.window()->findChild<QLineEdit *>("rrKosyncInput");
+        QVERIFY(input && input->text() == "draft-password");
         input->setText("unfinished-password");
         host.window()->findChild<QPushButton *>("rrKosyncPasswordReveal")->click();
         QCOMPARE(input->echoMode(), QLineEdit::Normal);
@@ -7163,7 +7407,22 @@ private slots:
         QTest::addColumn<bool>("missing");
         QTest::newRow("empty-object") << 200 << QByteArray("{}") << true;
         QTest::newRow("empty-array") << 200 << QByteArray("[]") << true;
+        QTest::newRow("grimmory-empty-progress")
+                << 200
+                << QByteArray(
+                           R"({"document":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","progress":null,"percentage":null,"timestamp":null,"device":"Grimmory","device_id":"Grimmory"})")
+                << true;
         QTest::newRow("missing-progress") << 404 << QByteArray(R"({"status":"not found"})") << true;
+        QTest::newRow("grimmory-missing-progress")
+                << 404
+                << QByteArray(
+                           R"({"status":404,"message":"No progress found for user and book","timestamp":"2026-11-15T12:00:00"})")
+                << true;
+        QTest::newRow("grimmory-missing-book")
+                << 404
+                << QByteArray(
+                           R"({"status":404,"message":"Book not found for hash aaaa","timestamp":"2026-11-15T12:00:00"})")
+                << false;
         QTest::newRow("missing-route") << 404 << QByteArray("<html>Not Found</html>") << false;
         QTest::newRow("ambiguous-404") << 404 << QByteArray("{}") << false;
         QTest::newRow("auth-failure") << 401 << QByteArray(R"({"status":"not found"})") << false;
@@ -7186,6 +7445,7 @@ private slots:
         auto http = std::make_shared<KosyncHttpState>();
         http->readStatus = statusCode;
         http->readBody = body;
+        http->uploadBody = R"({"status":"progress updated"})";
         ReaderFixture host(paths, testFonts, testPlaceholder);
         host.configureServices = [http](ReaderHostServices &services) {
             services.kosyncHttp = [http] { return std::make_unique<KosyncHttp>(http); };

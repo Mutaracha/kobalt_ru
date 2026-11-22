@@ -16,6 +16,7 @@
 #include "platforms/kobo/common/crash_reports.h"
 #include "support/diagnostics.h"
 #include "support/locale.h"
+#include "ui/style/fonts.h"
 #include "platforms/kobo/common/native_startup.h"
 #include "platforms/kobo/common/native_startup_wait.h"
 #include "platforms/kobo/common/reader_environment.h"
@@ -304,7 +305,14 @@ public:
     void start()
     {
         retry.start();
-        kobalt::qt::later(0, this, [this] { attempt(false); });
+        kobalt::qt::later(0, this, [this] {
+            environment().verifyAssets(this, "boot", [this](bool valid) {
+                if (valid)
+                    kobalt::ui::prepareOpeningFonts(environment().assets);
+                attempt(false);
+            });
+            attempt(false);
+        });
     }
 
     bool open(const void *volume, const void *context)
