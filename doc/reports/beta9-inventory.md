@@ -1,23 +1,14 @@
 # beta9 inventory — post wireless / sync-exclusion checkpoint
 
-Runtime source: `2c5d2c554b50181b1d03aa4ee2e14779c3866104`;
+Current implementation snapshot: `e04c5d8446d6dc71cf13c01d65767b39054b59a6`;
 pinned upstream: `be47258850ffdc3295257475afdf8b8f6cb53176`.
-All Git-tracked fork paths compared against the upstream archive; scratch build
-outputs and the dirty root are not inputs. Counts include docs/uploads:
 
-- identical: 1102
-- different: 247
-- fork-only: 158
-- upstream-only: 34
-
-[TSV](beta9-inventory.tsv): 290 nonidentical runtime/build/assets/test paths.
-A byte/path inventory is not a claim that every retained difference is justified.
-
-Wireless consumer group: Qt5 build268 / [CI45050356339](https://github.com/Mutaracha/kobalt_ru/actions/runs/45050356339)
-SUCCESS (native and Qt5 jobs). Device artifact14765951556, 37417243 bytes.
-[Details and device boundaries](beta9-wireless.md). Inventory counts include
-tracked documentation as of runtime commit; subsequent handoff docs are not
-counted as runtime changes. Whole alignment remains OPEN.
+Current exhaustive [delta + verification](beta9-delta-current/README.md):
+389 nonidentical tracked paths;215 different/165 fork-only/9 upstream-only,
+1159 identical. [TSV](beta9-inventory.tsv) is the 232-path runtime/build/assets/test
+subset, not semantic approval. Historical [beta9→beta10 input](beta9-delta/README.md)
+is retained separately. Full alignment OPEN; latest implementation CI45055269191
+SUCCESS. Latest verified handoff: build280 /e04c5d84, native and Qt5 PASS.
 
 ## Closed implementation groups
 
@@ -49,14 +40,20 @@ No freeze remedy or physical-device waveform/keyboard acceptance is claimed.
 
 ## Remaining full-repository gate
 
-The exhaustive immutable-tree [beta9 → beta10 handoff ledger](beta9-delta/README.md)
-is the current divergence log: all 439 nonidentical tracked paths, both Git OIDs,
-modes, conservative review status and next-update action. The 290-row TSV above
+The exhaustive immutable-tree [current beta9 → beta10 handoff ledger](beta9-delta-current/README.md)
+is the current divergence log: all 389 nonidentical tracked paths, both Git OIDs,
+modes, conservative review status and next-update action. The 232-row TSV above
 is only the legacy runtime/build/assets/test subset, not a semantic sign-off.
 
-Wi-Fi-idle/vendor and sync folder exclusion are now imported and CI verified;
-the former text listing them as missing was stale and is superseded. Remaining
-Reader quiet/preload, chapter/search/navigation, native-save tracing, Android
-brightness/picker, desktop/scenario monitoring and upstream tests are detailed
-in B9-02 through B9-09. Full alignment gate remains OPEN. Protected EPUB algorithms
-and deferred freeze are not implicitly fixed by any package checkpoint.
+Wi-Fi-idle/vendor/sync exclusion were already verified. Search/chapter/lazy
+consumers, Android/standalone opening, diagnostic/resource/desktop reporting,
+new upstream engine tests and dead native-save helper cleanup are imported.
+Build278 on8486d267 passes native and Qt5; Android/Qt6 are not executed by that
+workflow. Exact rotation lock and close-timeout now have their upstream consumers
+and tests in e04c5d84, with CI45055269191 SUCCESS.
+
+Remaining implementation gate: Reader quiet/preload; Debug/Settings/status and
+percentage/header-footer consumers. Approved62 strings are applied; their mere
+presence is not completion of those consumers. Per-file mixed hunks remain REVIEW
+until justified by decisions. Protected EPUB algorithms and deferred freeze are
+not implicitly fixed by any package checkpoint.

@@ -2,11 +2,11 @@
  .github/workflows/ci.yml                           |    20 -
  .github/workflows/kobo-qt5-device.yml              |   303 +
  AGENTS.md                                          |   178 +-
- FB2_FORK_PLAN.md                                   |   840 ++
+ FB2_FORK_PLAN.md                                   |   847 ++
  README.md                                          |     4 +-
  assets/CMakeLists.txt                              |     3 +
  assets/acknowledgments.json                        |    11 +
- assets/en.strings                                  |  1098 +-
+ assets/en.strings                                  |  1132 +-
  assets/hyph/Russian_EnUS.pattern                   | 11526 +++++++++++++++++++
  assets/icons/phosphor/dark-theme.svg               |     1 +
  assets/icons/phosphor/device-rotate.svg            |     1 -
@@ -15,9 +15,10 @@
  assets/notices/Fluent-MIT                          |    21 +
  assets/notices/Hyphenation-patterns                |     7 +
  assets/notices/NickelFix-MIT                       |    21 +
- assets/ru.strings                                  |  1899 +++
+ assets/ru.strings                                  |  1963 ++++
  doc/acknowledgements.md                            |     7 +-
  doc/beta8-device-check.md                          |   226 +
+ doc/beta9-remaining-strings-review.md              |    94 +
  doc/beta9-strings-review.md                        |   181 +
  doc/building.md                                    |    36 +-
  doc/engines.md                                     |    67 -
@@ -29,7 +30,7 @@
  doc/engines/migration.md                           |   305 -
  doc/fb2-footnotes.md                               |    25 +
  doc/fork-decisions.md                              |   293 +
- doc/fork-delta.md                                  |   440 +
+ doc/fork-delta.md                                  |   444 +
  doc/fork-kobalt_ru.md                              |   175 +
  doc/fork-update-workflow.md                        |   102 +
  doc/forum-description.ru.bbcode.txt                |    61 +
@@ -55,6 +56,10 @@
  doc/reports/033d0be2-device-review.md              |   158 +
  doc/reports/77564e9-device-issues.md               |   154 +
  doc/reports/beta9-annotation-port-matrix.md        |   184 +
+ doc/reports/beta9-delta-current/README.md          |    53 +
+ doc/reports/beta9-delta-current/changes.stat       |   388 +
+ doc/reports/beta9-delta-current/files.tsv          |   388 +
+ doc/reports/beta9-delta-current/summary.json       |    25 +
  doc/reports/beta9-delta/README.md                  |    96 +
  doc/reports/beta9-delta/changes.stat               |   440 +
  doc/reports/beta9-delta/files.tsv                  |   440 +
@@ -124,7 +129,7 @@
  platforms/ci/test.sh                               |    15 +-
  platforms/ci/test_upstream_delta.py                |    62 +
  platforms/ci/upstream_delta.py                     |    87 +
- platforms/desktop/CMakeLists.txt                   |   169 +-
+ platforms/desktop/CMakeLists.txt                   |   170 +-
  platforms/desktop/CMakePresets.json                |    41 -
  platforms/desktop/main.cpp                         |     2 +
  platforms/kobo/CMakeLists.txt                      |    11 +-
@@ -161,10 +166,10 @@
  src/app/reader/panels/chapter_graph.cpp            |     4 +-
  src/app/reader/panels/dictionary_panel.cpp         |    10 +-
  src/app/reader/panels/dictionary_panel.h           |     5 +-
- src/app/reader/panels/light_panel.cpp              |    22 +-
+ src/app/reader/panels/light_panel.cpp              |    14 +-
  src/app/reader/panels/search_panel.cpp             |     2 +-
- src/app/reader/settings/appearance_panel.cpp       |    59 +-
- src/app/reader/settings/appearance_panel.h         |     3 +-
+ src/app/reader/settings/appearance_panel.cpp       |    24 +-
+ src/app/reader/settings/appearance_panel.h         |     1 +
  src/app/reader/settings/fork_settings.cpp          |    24 +
  src/app/reader/settings/fork_settings.h            |    12 +
  src/app/reader/settings/header_footer_panel.cpp    |    28 +-
@@ -175,8 +180,8 @@
  src/app/reader/views/fork_navigation.h             |     5 +
  src/app/reader/views/navigation.cpp                |    36 +-
  src/app/reader/views/navigation.h                  |    12 +-
- src/app/reader/views/opening.cpp                   |   104 +-
- src/app/reader/views/opening.h                     |    10 +-
+ src/app/reader/views/opening.cpp                   |    83 +-
+ src/app/reader/views/opening.h                     |     6 -
  src/app/reader/views/reading_page.cpp              |    69 +-
  src/app/reader/views/reading_page.h                |    27 +-
  src/app/reader/views/reading_page_progress.cpp     |    79 +
@@ -185,13 +190,13 @@
  src/app/reader/views/sleep_screen.cpp              |    20 +-
  src/app/reader/views/sleep_screen.h                |     2 +
  src/app/reader/window/fork_reader_actions.cpp      |    74 +
- src/app/reader/window/reader.cpp                   |   222 +-
+ src/app/reader/window/reader.cpp                   |   191 +-
  src/app/reader/window/reader_annotations.cpp       |    25 +-
- src/app/reader/window/reader_build.cpp             |   339 +-
+ src/app/reader/window/reader_build.cpp             |   324 +-
  src/app/reader/window/reader_debug.cpp             |   212 -
  src/app/reader/window/reader_dialogs.cpp           |   101 +-
- src/app/reader/window/reader_p.h                   |   132 +-
- src/app/reader/window/reader_refresh.cpp           |   114 +-
+ src/app/reader/window/reader_p.h                   |   127 +-
+ src/app/reader/window/reader_refresh.cpp           |   106 +-
  src/app/reader/window/reader_settings.cpp          |   159 +-
  src/app/reader/window/reader_text_presets.cpp      |    17 +-
  src/app/reader_interface.h                         |     4 -
@@ -220,8 +225,6 @@
  src/library/library_database.cpp                   |    20 +-
  src/platform/api/page_animation_support.h          |     8 -
  src/platform/api/reader_host_services.h            |     8 +-
- src/platform/api/reader_orientation.cpp            |    61 +-
- src/platform/api/reader_orientation.h              |    11 +-
  src/publication/fb2.h                              |    60 +
  src/publication/fb2_resources.cpp                  |    55 +
  src/publication/fb2_resources.h                    |    13 +
@@ -259,8 +262,8 @@
  src/ui/controls/fork_icon_geometry.cpp             |    36 +
  src/ui/controls/fork_icon_geometry.h               |     8 +
  src/ui/controls/highlight_palette.h                |    60 +-
- src/ui/controls/icons.cpp                          |    37 +-
- src/ui/controls/icons.h                            |    11 +-
+ src/ui/controls/icons.cpp                          |    28 +-
+ src/ui/controls/icons.h                            |    10 +-
  src/ui/controls/options.cpp                        |    66 +-
  src/ui/controls/options.h                          |    10 +-
  src/ui/controls/panels.cpp                         |    27 -
@@ -322,7 +325,7 @@
  .../reading-menu-counter/screen_001-19.png         |   Bin 0 -> 255571 bytes
  .../reading-menu-counter/screen_002-12.png         |   Bin 0 -> 244043 bytes
  .../reading-menu-counter/screen_002-13.png         |   Bin 0 -> 249483 bytes
- tests/desktop.cpp                                  |  7215 ++++--------
+ tests/desktop.cpp                                  |  7166 ++++--------
  tests/desktop_perf.h                               |    26 +-
  .../fixtures/fonts/fira-sans/FiraSans-Regular.ttf  |   Bin 0 -> 456996 bytes
  tests/fixtures/fonts/fira-sans/OFL.txt             |    93 +
@@ -363,7 +366,6 @@
  tests/model/page_transition_native.cpp             |    19 +-
  tests/model/publisher_markup.cpp                   |     6 +-
  tests/model/reader.cpp                             |   523 +-
- tests/model/reader_orientation.cpp                 |    43 +-
  tests/model/reader_session.cpp                     |     8 +-
  tests/model/reading_book.cpp                       |   386 +-
  tests/model/reading_progress.cpp                   |     5 +
@@ -380,9 +382,9 @@
  tests/pewter/nickel.h                              |     8 -
  tests/pewter/progress.cpp                          |    37 +
  tests/pewter/refresh_qt5.cpp                       |    25 +-
- tests/reader_lifecycle.cpp                         |  2908 ++---
+ tests/reader_lifecycle.cpp                         |  4453 +++----
  tests/reader_ui.cpp                                |   247 +-
  tests/support/anchor_preview.h                     |    26 +
  tests/support/reader_source_index_probe.h          |   209 +-
  tests/support/screenshot_gallery.h                 |    42 +-
- 387 files changed, 35688 insertions(+), 15275 deletions(-)
+ 389 files changed, 37549 insertions(+), 15714 deletions(-)

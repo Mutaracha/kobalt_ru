@@ -845,3 +845,16 @@ Reader lazy/search/chapter consumers, Android/standalone opening lifecycle,
 diagnostics/scenario/desktop reporting, новые upstream engine tests, opaque-copy
 и dead native-save helper cleanup. Полный gate OPEN, CI45053881024 pending.
 [Оставшиеся тексты](doc/beta9-remaining-strings-review.md) не применены до согласования.
+
+Согласование beta9_remaining_strings: пакет62 RU строк принят пользователем и
+применён8486d267; соответствующий pending wording gate снят. Дополнительно
+перенесены rotation lock957618b9 и close-timeout/recovery e04c5d84, связанные
+upstream тесты зарегистрированы. Текущая дельта e04c5d84 обновлена;
+CI45055269191 pending, quiet/preload и debug/status/header-footer остаются OPEN.
+
+**Проверено:** runtime e04c5d84 / Qt5 build280, CI45055269191 SUCCESS:
+native11m57s, Qt5/package7m41s; artifact14767806860 (37426810 bytes),
+native14768081201. [Текущая дельта](doc/reports/beta9-delta-current/README.md).
+Ранее pending записи этого checkpoint superseded. Device/Qt6/Android pending;
+полный implementation gate остаётся OPEN (quiet/preload, Debug/status/percentage
+Settings/header-footer consumers и semantic review mixed hunks).

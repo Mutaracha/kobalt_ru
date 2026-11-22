@@ -1,7 +1,7 @@
 # Текущая граница выравнивания beta.9
 
 **Текущий checkpoint:** [delta-current](reports/beta9-delta-current/README.md),
-`ec9eee6c`, 387 tracked расхождений; native/Qt5 CI45053881024 pending.
+`e04c5d84`, 389 tracked расхождений; native/Qt5 CI45055269191 / build280 SUCCESS.
 Reader quiet/debug/status consumers остаются OPEN.
 
 **Исторический вход для обновления на beta.10:**
