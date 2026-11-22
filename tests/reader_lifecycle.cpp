@@ -1,3 +1,4 @@
+#include "app/reader/panels/dictionary_panel.h"
 #include "platforms/kobo/common/sync_exclusion.h"
 #include <QSettings>
 #include "reading/rendering_mode.h"
@@ -713,6 +714,56 @@ private slots:
     {
         engineActivity().pause(false);
         directory.reset();
+    }
+
+    void lazyPanelKeyboards()
+    {
+        struct Keyboard final : KeyboardController {
+            explicit Keyboard(int &shows) : shows(shows) { }
+            bool show() override { ++shows; return true; }
+            void hide() override { }
+            void place() override { }
+            int &shows;
+        };
+        int created = 0, shows = 0;
+        const KeyboardFactory factory = [&](QWidget *, QWidget *) {
+            ++created;
+            return std::make_unique<Keyboard>(shows);
+        };
+        QWidget parent;
+        parent.resize(600, 800);
+        parent.show();
+        {
+            SearchPanel panel(&parent, factory);
+            panel.resize(600, 800);
+            panel.stop();
+            QCOMPARE(created, 0);
+            panel.open(false, 0);
+            QCOMPARE(created, 1);
+            QVERIFY(shows > 0);
+            panel.stop();
+            panel.hide();
+            panel.open(false, 0);
+            QCOMPARE(created, 1);
+        }
+        {
+            DictionaryPanel panel(&parent, factory);
+            panel.resize(600, 800);
+            QCOMPARE(created, 1);
+            DictionaryResult result;
+            result.word = QStringLiteral("word");
+            result.html = QStringLiteral("<p>definition</p>");
+            panel.open(result.word, result, QRect(20, 200, 100, 40));
+            QCOMPARE(created, 1);
+            auto *edit = panel.findChild<QPushButton *>("rrDictionaryEdit");
+            QVERIFY(edit);
+            edit->click();
+            QCOMPARE(created, 2);
+            panel.dismiss();
+            panel.open(result.word, result, QRect(20, 200, 100, 40));
+            edit->click();
+            QCOMPARE(created, 2);
+        }
     }
 
     void lazyPanels_data()
