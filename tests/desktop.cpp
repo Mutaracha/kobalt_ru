@@ -7028,7 +7028,9 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         QTRY_VERIFY(fixture.visible("rrDictionary"));
         const auto looked = qobject_cast<QLabel *>(fixture.widget("rrDictionaryWord"))->text();
         auto *save = qobject_cast<QPushButton *>(fixture.widget("rrDictionarySave"));
-        QVERIFY(save);
+        QVERIFY(save && save->isCheckable());
+        if (!disabled)
+            QTRY_COMPARE(save->isChecked(), !switchDictionary);
         if (switchDictionary) {
             QVERIFY(fixture.press("rrDictionarySelect"));
             QTRY_VERIFY(fixture.visible("rrDictionaryChoice1"));
@@ -7087,8 +7089,12 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         QVERIFY(context && context->isVisible() && context->text().contains("<u>"));
         auto *passage = qobject_cast<QPushButton *>(fixture.widget("rrWordPagePassage"));
         QVERIFY(passage && passage->isVisible());
-        QVERIFY(passage->text().startsWith(
-                strings::get("words.go_to_page").arg(QString()).trimmed()));
+        const auto shown = fixture.state();
+        const int savedWordPage = shown.contains("book_fraction")
+                ? shown.value("rough_page").toInt()
+                : shown.value("page").toInt() + 1;
+        QVERIFY(savedWordPage > 0);
+        QCOMPARE(passage->text(), strings::get("words.go_to_page").arg(savedWordPage));
         QVERIFY(fixture.press("rrWordPageBack"));
         QTRY_VERIFY(!fixture.visible("rrWordPage"));
         // Every book's words open over the list and return to it.
@@ -7120,6 +7126,7 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         QTRY_VERIFY(save->isVisible());
         QVERIFY(fixture.press("rrDictionarySave"));
         QTRY_COMPARE(save->accessibleName(), strings::get("dictionary_panel.save_to_words"));
+        QVERIFY(!save->isChecked());
         QTRY_VERIFY(fixture.visible("rrWordNotice"));
         QCOMPARE(qobject_cast<QLabel *>(fixture.widget("rrButtonFeedbackText"))->text(),
                  QString("Removed from My Words"));
@@ -7133,6 +7140,7 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         QVERIFY(pointer->geometry().bottom() > anchor.top());
         QVERIFY(fixture.press("rrDictionarySave"));
         QTRY_COMPARE(save->accessibleName(), strings::get("dictionary_panel.remove_from_words"));
+        QVERIFY(save->isChecked());
         QTRY_COMPARE(qobject_cast<QLabel *>(fixture.widget("rrButtonFeedbackText"))->text(),
                      QString("Added to My Words!"));
         QTRY_VERIFY(!fixture.visible("rrWordNotice"));
@@ -7156,8 +7164,10 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
                      QString("Kaladin"));
         QTRY_VERIFY(save->isVisible());
         QTRY_COMPARE(save->accessibleName(), strings::get("dictionary_panel.save_to_words"));
+        QVERIFY(!save->isChecked());
         QVERIFY(fixture.press("rrDictionarySave"));
         QTRY_COMPARE(save->accessibleName(), strings::get("dictionary_panel.remove_from_words"));
+        QVERIFY(save->isChecked());
         QVERIFY(fixture.press("rrDictionaryClose"));
         QTRY_VERIFY(!fixture.visible("rrDictionary"));
         QVERIFY(fixture.press("rrPage"));
@@ -9927,7 +9937,8 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         auto *option = qobject_cast<QCheckBox *>(fixture.widget("rrDisableReaderStandby"));
         QCOMPARE(bool(option), supported);
         if (!supported) {
-            QVERIFY(!fixture.widget("rrSystemAdvancedSection"));
+            QVERIFY(fixture.widget("rrSystemSleepSection"));
+            QVERIFY(!fixture.widget("rrStandbyConfirmation"));
             return;
         }
         QVERIFY(revealSettingsOption(fixture, "rrDisableReaderStandby"));
@@ -10330,8 +10341,7 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
             QVERIFY(revealSettingsOption(fixture, "rrRendering"));
             auto *row = dynamic_cast<ui::CaptionButton *>(fixture.widget("rrRendering"));
             QVERIFY(row);
-            QVERIFY(fixture.visible("rrSystemOpeningSection"));
-            QCOMPARE(row->presentation(), ui::CaptionButton::Presentation::ListAction);
+            QVERIFY(fixture.visible("rrSystemEngineSection"));
             QCOMPARE(row->text(), strings::get("settings.rendering"));
             QCOMPARE(row->caption(), before.toUpper());
             // The captures show the default choice.
