@@ -117,3 +117,37 @@ or on-device verification of the fixes. Artifacts API: native results 1471871055
 (14890 bytes), [Qt5 package](https://github.com/Mutaracha/kobalt_ru/actions/runs/44932175305/artifacts/14718635775)
 14718635775 (37361585 bytes). Raw result archive not downloaded/inspected.
 Only preset-name display and manifest version are fixed in this binary.
+
+
+## User clarification and measured opening comparison
+
+User clarified the last interaction: changed line-spacing / vertical-page-spacing
+options, closed that setting's form, then the book stopped responding to touch
+and would not enter sleep. Recovered only via long power-button hold. This is
+not merely a slow sample render, nor user confirmation that sleep worked.
+Kernel idle-suspend events in the log are not the user-visible reader sleep
+transition. Investigate the vertical-spacing form close/apply path, modal/input
+ownership and appearance commit/cancel state. No root cause or fix proven yet.
+
+Same runtime 77564e9, EPUB full document resource_count=60 (exclude the other
+EPUB with resource_count=523 and all FB2/retained-memory runs):
+
+| Recorded run, UTC | Mode | prepare_ms | load_and_layout_ms | total_ms |
+|---|---|---:|---:|---:|
+| Nov 20 21:25:11, first book opening after startup | Accurate | 4838 | 10065 | 16969 |
+| Nov 21 16:36:15, first book opening after startup | Hybrid | 4818 | 4528 | 11408 |
+| Nov 20 21:13:35, process already used for other books | Accurate | 1216 | 9453 | 12595 |
+
+First pair: observed saving 5561 ms / 32.77% total; load/layout saving 5537 ms /
+55.01%. Against the already-warm process Accurate run: 1187 ms / 9.42% total.
+Do not present this as a controlled benchmark: different dates, process/cache
+states and layout choices (state snapshots show differing margins/line spacing/
+normalization). Accurate hit disk document cache; initial Hybrid slice did not.
+Hybrid full background build was ready at 16:36:29.429, with subsequent adoption
+confirmed; it shifts work beyond first readable display, not eliminates it.
+
+Copy proposal only (not approved/applied): replace the scope button's RU label
+with “Только зазоры от висячих строк”. Prefer “зазор” over “разрыв”: this setting
+compensates for spare page height, it does not insert or remove a page break.
+Keep approved English and explanatory description unchanged unless user approves
+new copy. This proposal does not authorize algorithm changes.

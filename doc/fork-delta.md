@@ -1,12 +1,12 @@
 # Текущая граница выравнивания beta.9
 
-Baseline: upstream `be472588`, fork runtime `77564e9e` (focused CI 44815357384 PASS; combined panels device pending).
+Baseline: upstream `be472588`, fork runtime `8f1fdf4d` (focused CI 44932175305 PASS; preset/version fixes device pending).
 Полный актуальный inventory ещё planned; историческая карта beta.8 ниже не
 является доказательством завершённости beta.9 consumer migration.
 
 - Vendor `src/engine/blaze/crengine` не менялся при cleanup.
 - Удалена старая external engine patch series; build recipe/cache key не менялись.
-- `reader_text_presets.cpp` теперь byte-identical upstream beta.9; общий
+- На checkpoint 9633d3fd `reader_text_presets.cpp` был byte-identical upstream beta.9; общий
   style_sample/cache API и tests перенесены вместе. Старая gallery prerender
   очередь и её opening/idle wiring удалены.
 - Сохранён fork transient `whole_book_failed` в sample settings sanitation;
@@ -21,6 +21,14 @@ Baseline: upstream `be472588`, fork runtime `77564e9e` (focused CI 44815357384 P
   PASS native + Qt5; theme и Settings ожидают общей device-проверки.
 - Аннотации/keyboard/остальные KOSync policy/sleep остаются в очереди выравнивания;
   перенос model/page не означает завершения всех KOSync upstream изменений.
+
+**Полное выравнивание не завершено.** Нет свежего exhaustive inventory,
+который подтверждает отсутствие необоснованных различий. После переноса presets
+в общий reader_text_presets добавлены nullable guards и fork-local presentation
+вызовы локализации имён; byte-identical для текущего файла больше не заявляется.
+Пользователь принял чек-лист panels/buttons; последующий freeze формы вертикальных
+интервалов открыт отдельно. Остаток очереди — FB2_FORK_PLAN.md; исторический
+beta.8 inventory ниже не заменяет итоговый beta.9 аудит.
 
 Подробности/проверки: [cleanup report](reports/upstream-cleanup-stage1.md),
 текущая очередь: [план](../FB2_FORK_PLAN.md).

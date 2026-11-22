@@ -43,7 +43,11 @@ done / CI verified runtime `8f1fdf4d`,
 [CI 44932175305](https://github.com/Mutaracha/kobalt_ru/actions/runs/44932175305)
 PASS native + Qt5; device pending. Этот пакет НЕ содержит исправления freeze
 или нового шрифта экрана открытия. Freeze Settings/Styling — blocked по причине:
-нет stack trace/адресата касаний; event loop оставался активен, speculative
+последнее действие уточнено — закрытие формы выравнивания по высоте после
+изменения параметров; касания и пользовательский сон перестали работать,
+потребовалось долгое нажатие питания. Нет stack trace/адресата касаний;
+следующий шаг — close/apply/modal/input path этой формы, а не общий startup.
+Event loop в части лога оставался активен, speculative
 standby/renderer fixes запрещены. Opening RU typography — planned: подобрать
 размер/начертание по образцу EN, не менять глобальный brand/font fallback.
 Затем оставшиеся annotations/keyboard/KOSync policy/sleep alignment и inventory.
