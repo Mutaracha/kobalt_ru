@@ -68,3 +68,9 @@ Full NoteEditor and quick-annotation Reader integration remain OPEN. The model
 setNote API and saved/editor-owned retry support are prerequisites, not a claim
 that the reader already exposes an editable-note action. This package adds
 correct previews of notes already stored/imported and shared list/model support.
+
+The database consumer is part of this group too: whole upstream
+annotation_database.cpp restored (header/tests already identical). Compact SELECT
+projects note presence and excerpt SELECT reads/validates note type/length/bytes;
+without this consumer the restored model would still lose SQLite note metadata.
+No database schema migration. Focused annotation-database checks added.

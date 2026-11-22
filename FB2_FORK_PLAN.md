@@ -41,8 +41,9 @@ SegmentedRow, HighlightStore/HighlightSession, BookmarkList восстановл
 whole-book page metadata и pending row navigation используют общую цепочку.
 Восстановлены note model assertions; новый annotationNoteRows проверяет note
 hydration, page reuse/очистку, geometry и pending selection light/dark × density.
-Focused CI теперь запускает также choiceSheet/modal dividers/list regressions и
-highlight-store. Это НЕ полная интеграция NoteEditor/quick gestures: Reader editor
+Whole upstream annotation_database.cpp также восстановлен: compact note flag,
+excerpt note/валидация. Schema unchanged. Focused CI теперь запускает также
+choiceSheet/modal dividers/list regressions, annotation-database и highlight-store. Это НЕ полная интеграция NoteEditor/quick gestures: Reader editor
 ownership и действия редактирования заметок остаются следующим consumer group.
 EPUB Hybrid, freeze deferred и Libra2 correction не менялись.
 
