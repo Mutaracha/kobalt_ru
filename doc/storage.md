@@ -388,3 +388,13 @@ gate; remount verifies before new reader use. KOSync account policy and durable
 Android deferred jobs follow pinned upstream; jobs carry account fingerprints,
 not authentication keys. Failed login keeps the password draft for explicit
 retry; page exit, successful login/logout and sleep clear it.
+
+
+The pinned upstream folder-exclusion adapter adds `.adds/kobalt` to Nickel's
+`FeatureSettings/ExcludeSyncFolders` expression in
+`.kobo/Kobo/Kobo eReader.conf`. `Kobalt/InstalledSyncExclusion` records only the
+change Kobalt installed. Uninstall restores the earlier value only when the
+current expression still matches that receipt; user changes, invalid expressions
+and already sufficient dot-folder exclusions are preserved. Back up this native
+configuration file too when testing installation/removal. This is Nickel's library
+scan exclusion, not KOSync account or document-progress state.

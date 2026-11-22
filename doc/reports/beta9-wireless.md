@@ -3,7 +3,7 @@
 Pinned upstream: `be47258850ffdc3295257475afdf8b8f6cb53176`.
 Previous verified fork runtime: `34811f2f` / Qt5 266.
 
-## Implemented together — CI pending
+## Implemented together — CI PASS, device pending
 
 - Whole upstream Qt5 `wifi-idle/` module, header/API, optional diagnostic module,
   verified callback installer, whole hooks.cpp, vendored NickelFix d735967
@@ -32,7 +32,8 @@ Qt5 CI must run pewter.wifi-idle and pewter.wifi-idle-log and build the real ARM
 installer/vendor sources; focused native includes the new sleep folder-exclusion
 test together with previous KOSync/annotations/sleep/FB2 checks.
 
-Device NOT RUN: known and unknown firmware, Bluetooth on/off/unknown, active
+Device NOT RUN: back up both the Kobalt profile and Nickel's
+`.kobo/Kobo/Kobo eReader.conf` before testing. Known and unknown firmware, Bluetooth on/off/unknown, active
 KOSync and native sync, reconnect/standby and both plugin load orders; verify
 NickelFix owns the fix when installed. Folder exclusion should keep wallpapers
 out of My Books and preserve an existing calibre/custom expression on uninstall.
@@ -48,3 +49,22 @@ Initial CI 45050260780 / 80223bd2 rejected malformed CMake nesting in the
 contextual merge of the build-option loop. The whole upstream foreach block is
 restored; no test or compile option removed. Local offline/source checks did not
 configure the actual Kobo project and did not establish its CMake validity.
+
+The planned beta.10 commit adds `header_footer.progress_bar_bottom` / `_top`
+(English Bottom / Top) and the upstream `Layout::progressBarTop` / `BarEdge`
+contract. Reuse the already accepted RU «Внизу» / «Вверху» wording when it is
+ported. Remove the fork bar renderer rather than layering this contract on top
+of it. No menu page/time-to-end strip is authorized by that planned replacement.
+
+## Verified checkpoint
+
+Runtime `2c5d2c554b50181b1d03aa4ee2e14779c3866104`, Qt5 build268.
+[CI45050356339](https://github.com/Mutaracha/kobalt_ru/actions/runs/45050356339)
+completed SUCCESS: focused native regressions and real Qt5 ARM package/checks.
+The Qt5 job took 5m08s. Device package artifact14765951556 (37417243 bytes):
+https://github.com/Mutaracha/kobalt_ru/actions/runs/45050356339/artifacts/14765951556
+Native results artifact14765892558. No device acceptance claimed; Android/Qt6
+not run. Initial failed CMake merge superseded by this complete successful run.
+Full log download was blocked by the runner log host/network; do not infer a new
+native test count from build266. Registered test targets are not individual
+hardware assertions.

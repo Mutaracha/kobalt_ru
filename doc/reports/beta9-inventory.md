@@ -1,17 +1,23 @@
-# beta9 inventory — post KOSync/sleep checkpoint
+# beta9 inventory — post wireless / sync-exclusion checkpoint
 
-Runtime source: `34811f2f42b64c73a557fa532a453c34851953db`;
+Runtime source: `2c5d2c554b50181b1d03aa4ee2e14779c3866104`;
 pinned upstream: `be47258850ffdc3295257475afdf8b8f6cb53176`.
 All Git-tracked fork paths compared against the upstream archive; scratch build
 outputs and the dirty root are not inputs. Counts include docs/uploads:
 
-- identical: 1083
-- different: 248
-- fork-only: 155
-- upstream-only: 52
+- identical: 1102
+- different: 247
+- fork-only: 158
+- upstream-only: 34
 
-[TSV](beta9-inventory.tsv): 308 nonidentical runtime/build/assets/test paths.
+[TSV](beta9-inventory.tsv): 290 nonidentical runtime/build/assets/test paths.
 A byte/path inventory is not a claim that every retained difference is justified.
+
+Wireless consumer group: Qt5 build268 / [CI45050356339](https://github.com/Mutaracha/kobalt_ru/actions/runs/45050356339)
+SUCCESS (native and Qt5 jobs). Device artifact14765951556, 37417243 bytes.
+[Details and device boundaries](beta9-wireless.md). Inventory counts include
+tracked documentation as of runtime commit; subsequent handoff docs are not
+counted as runtime changes. Whole alignment remains OPEN.
 
 ## Closed implementation groups
 

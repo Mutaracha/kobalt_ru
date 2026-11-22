@@ -49,7 +49,7 @@ upstream; `.cache-blaze`, optional-assets handling и boot/remount gates пер�
 flag; нет второго save pipeline. Upstream cleanPreferences восстановлен целиком
 с note-migration hook, EPUB algorithms не менялись. CI 45048708215 SUCCESS.
 
-**Wi-Fi idle / sync-exclusion — in progress, implementation / CI pending:**
+**Wi-Fi idle / sync-exclusion — implementation / CI PASS, device pending:**
 полные pinned-upstream Qt5 correction, verified callback adapter и vendor detours
 NickelFix d735967 с MIT notice; unknown firmware и установленный NickelFix
 сохраняют штатное поведение/владение. Upstream diagnostics build option default
@@ -57,7 +57,8 @@ OFF, не включается в обычном пакете. Никаких о
 исправления sleep drain. Sync exclusion применяет/откатывает upstream receipt,
 сохраняет пользовательский regex и правки после установки; Qt5/Qt6 wiring.
 Upstream tests/helper/build targets перенесены вместе; offline/source gates PASS,
-native/Qt5 проверки ещё нужны. Полоса прогресса/EPUB Hybrid unchanged.
+native/Qt5 CI45050356339 PASS, runtime `2c5d2c55`, build268. Device pending.
+[Handoff](doc/reports/beta9-wireless.md). Полоса прогресса/EPUB Hybrid unchanged.
 
 **Итоговый semantic inventory — in progress, не закрыт:**
 [актуальная карта](doc/reports/beta9-inventory.md) и TSV охватывают все nonidentical
