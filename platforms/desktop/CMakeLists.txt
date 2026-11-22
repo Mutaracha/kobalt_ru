@@ -571,7 +571,7 @@ if(BUILD_TESTING)
             target_include_directories(kobalt-${name}-tests PRIVATE "${KOBALT_ROOT}/tests/support")
             target_compile_options(kobalt-${name}-tests PRIVATE -Wall -Wextra -Werror)
             # PlainArchive stands in for Nickel's archive in checks of the native resource path.
-            if(check MATCHES "^(plain_archive|reading_book|bookmark_session|highlight_session|reader_session)$")
+            if(check MATCHES "^(plain_archive|reading_book|bookmark_session|highlight_session|reader_session|chapter_parity)$")
                 target_sources(kobalt-${name}-tests PRIVATE "${KOBALT_ROOT}/tests/support/plain_archive.cpp")
             endif()
             if(check STREQUAL "native_sync_network")
@@ -725,7 +725,7 @@ if(BUILD_TESTING)
     kobalt_regressions(model font_axes touch_rotation)
     kobalt_regressions(platform reader_orientation font_sources system_fonts nickel_dictionary_selection
         nickel_reading_pace_cache nickel_reading_save nickel_event_save nickel_account nickel_session_calls nickel_session_volume nickel_book_menu nickel_font_scale native_progress native_sync_network native_dialog_overlay native_lifecycle standby_input standby_diagnostics usb_removal page_transition_native page_animation)
-    kobalt_regressions(engine large_toc vertical_spacing source_index location_round_trip engine_contract spine_window chapter_slices columns advanced_text paragraph_spacing beautifier alignment indentation page_layout vertical_writing mathml line_breaking
+    kobalt_regressions(engine text_sample page_estimate layout_interrupt chapter_parity fast_surfaces fast_shaping large_toc vertical_spacing source_index location_round_trip engine_contract spine_window chapter_slices columns advanced_text paragraph_spacing beautifier alignment indentation page_layout vertical_writing mathml line_breaking
         fallback_styles svg_limits image_proportions figure_layout whitespace links search word_selection reader publisher_markup local_reader document_word_count document_cache alternate_layout fb2 comics)
     target_compile_definitions(kobalt-fb2-tests PRIVATE
         KOBALT_TEST_FIRA_DIRECTORY="${KOBALT_ROOT}/tests/fixtures/fonts/fira-sans")
@@ -737,6 +737,10 @@ if(BUILD_TESTING)
     kobalt_regressions(session reading_book bookmark_session highlight_session reader_session fb2_session)
     kobalt_regressions(resource image_policy resource_provider)
     kobalt_regressions(corpus multilingual)
+    foreach(check location-round-trip page-estimate chapter-parity fast-surfaces reader-session)
+        target_compile_definitions(kobalt-${check}-tests PRIVATE
+            KOBALT_TEST_FIXTURES="${KOBALT_ROOT}/tests/fixtures")
+    endforeach()
     target_compile_definitions(kobalt-figure-layout-tests PRIVATE
         KOBALT_TEST_FIGURE_BOOK="${KOBALT_ROOT}/tests/fixtures/figure-caption.epub")
     target_compile_definitions(kobalt-publisher-markup-tests PRIVATE
