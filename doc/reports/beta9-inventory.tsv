@@ -94,7 +94,6 @@ upstream-only	platforms/kobo/nickel-qt5/wifi_idle_install.cpp
 different	platforms/kobo/nickel-qt6/display_format.cpp
 different	platforms/kobo/nickel-qt6/native_publication.cpp
 different	platforms/kobo/nickel-qt6/reader_controller.cpp
-different	platforms/kobo/nickel-qt6/refresh.cpp
 different	platforms/kobo/sources.cmake
 different	platforms/shared-inputs.cmake
 different	platforms/standalone/reader.cpp
@@ -111,8 +110,6 @@ fork-only	src/app/about/fork_debug.h
 different	src/app/library/library_view.cpp
 different	src/app/reader/interface.cpp
 different	src/app/reader/panels/activity_view.cpp
-different	src/app/reader/panels/bookmark_list.cpp
-different	src/app/reader/panels/bookmark_list.h
 different	src/app/reader/panels/chapter_contents.cpp
 different	src/app/reader/panels/chapter_graph.cpp
 different	src/app/reader/panels/choice_screen.cpp
@@ -120,8 +117,6 @@ different	src/app/reader/panels/choice_screen.h
 different	src/app/reader/panels/dictionary_panel.cpp
 different	src/app/reader/panels/dictionary_panel.h
 different	src/app/reader/panels/light_panel.cpp
-upstream-only	src/app/reader/panels/note_editor.cpp
-upstream-only	src/app/reader/panels/note_editor.h
 different	src/app/reader/panels/search_panel.cpp
 different	src/app/reader/panels/search_panel.h
 different	src/app/reader/settings/appearance_panel.cpp
@@ -210,8 +205,6 @@ different	src/reading/features.h
 fork-only	src/reading/fork_text_preset_names.h
 different	src/reading/header_footer.cpp
 different	src/reading/header_footer.h
-different	src/reading/highlight_session.cpp
-different	src/reading/highlight_session.h
 different	src/reading/opening_job.cpp
 different	src/reading/page_navigation.h
 different	src/reading/reader_session.cpp
@@ -222,10 +215,7 @@ different	src/reading/text_presets.cpp
 different	src/scenario/player.cpp
 upstream-only	src/scenario/resources.cpp
 upstream-only	src/scenario/resources.h
-different	src/storage/annotation_database.cpp
 different	src/storage/custom_pins.cpp
-different	src/storage/highlight_store.cpp
-different	src/storage/highlight_store.h
 different	src/storage/reader_storage.cpp
 different	src/storage/reader_storage.h
 different	src/support/build_info.h.in
@@ -255,10 +245,7 @@ different	src/ui/controls/options.h
 different	src/ui/controls/panels.cpp
 different	src/ui/controls/panels.h
 fork-only	src/ui/controls/return_title_text.h
-different	src/ui/controls/rows.cpp
-different	src/ui/controls/rows.h
 different	src/ui/style/fonts.cpp
-different	src/ui/style/metrics.h
 different	src/ui/style/private_text.cpp
 upstream-only	tests/android/AndroidLifecycleTest.java
 upstream-only	tests/android/KosyncWorkTest.java

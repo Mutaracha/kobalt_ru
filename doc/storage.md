@@ -371,3 +371,10 @@ new file, table, schema version or duplicate note writer. Reader note editing UI
 is connected in runtime 09307e42: editor-owned retry retains an unsaved text draft
 in the editor and uses this same shared writer. No new storage/schema is added.
 Full profile backup remains required; CI verification is not device acceptance.
+
+
+`annotation_interaction` is the upstream optional global choice `toggle` / `quick`.
+Missing or invalid values use the toggleable mode. Disabling Annotations removes
+this preference along with its mode option; saved highlights/notes are retained.
+No schema version or per-book rendering identity changes. Quick selections and
+note edits continue through the existing shared annotation transaction writer.

@@ -14,6 +14,7 @@
 namespace {
 using Update = std::array<uint32_t, 18>;
 std::vector<Update> updates;
+std::vector<quint64> policies;
 int flushes = 0;
 int expectImmediate = -1;
 bool available = true;
@@ -33,6 +34,7 @@ void flush(QBackingStore *, const QRegion &region, QWindow *, const QPoint &, co
 {
     ++flushes;
     for (const auto &entry : flags) {
+        policies.push_back(quint64(entry.second));
         if (expectImmediate >= 0)
             require(bool(entry.second & 1) == bool(expectImmediate),
                     "Navigation submission lost its immediate flush flag or changed an unsplit call");
@@ -304,12 +306,12 @@ int main(int argc, char **argv)
         reader.setProperty("reader_annotation_drag", true);
         policies.clear();
         submit(step);
-        require(policies.size() == 1 && policies[0] == ((1U << 5) | (1U << 2)),
+        require(policies.size() == 1 && policies[0] == ((quint64(1) << 5) | (1U << 2)),
                 "A drag step did not use the direct waveform in partial mode");
         reader.setProperty("reader_annotation_drag", false);
         policies.clear();
         submit(next);
-        require(policies.size() == 2 && policies[0] == ((1U << 10) | (1U << 3)),
+        require(policies.size() == 2 && policies[0] == ((quint64(1) << 10) | (1U << 3)),
                 "The flush after a drag did not redraw it with REAGL in full mode");
         policies.clear();
         submit(next);
