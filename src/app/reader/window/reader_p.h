@@ -339,7 +339,6 @@ private:
     void toggleComicsMode();
     void styleForkToolbarActions();
     void refreshForkToolbarActions(bool settingsOpen, bool zen);
-    void updateForkMenuPage();
     kobalt::reader::AppearanceLayout appearanceLayout;
     bool appearanceBuilt = false;
     // Shared beta9 lazy panels; controls are null until constructed.
@@ -476,7 +475,7 @@ private:
     // The minute of the day the clock timer was last armed in.
     int clockMinute = -1;
     const bool liveState = QFile::exists(book->paths().directory + "/live-state");
-    QLabel *menuClock, *menuSession, *menuPage;
+    QLabel *menuClock, *menuSession;
     kobalt::ui::BatteryIndicator *menuBattery;
     kobalt::ui::BluetoothIndicator *menuBluetooth;
     kobalt::ui::WifiIndicator *menuWifi;

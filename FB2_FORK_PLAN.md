@@ -13,7 +13,7 @@ Baseline форка `4e3a33b9`, upstream beta.9 `be472588`.
 | Блок | Статус | Следующий результат / gate |
 |---|---|---|
 | Уборка артефактов и incidental diff | in progress | Удалены список и 26 старых engine patches: consumers отсутствуют, build использует in-tree Blaze. Cache recipe/filter оставлены byte-identical, чтобы не менять dependency key. Прочий incidental diff ещё не сводился; CI 44800640114 PASS. |
-| Общие реализации beta.9 | in progress: пресеты device accepted; panel/theme device checklist accepted; отдельный freeze открыт | Контекстно свести пресеты, chapter lookup, аннотации/keyboard, KOSync, sleep/storage. Использовать upstream lazy panels вместо собственной оптимизации; проверить shared helper/API и protected fork behavior. |
+| Общие реализации beta.9 | in progress: пресеты device accepted; panel/theme device checklist accepted; freeze deferred до нового примера | Контекстно свести пресеты, chapter lookup, аннотации/keyboard, KOSync, sleep/storage. Использовать upstream lazy panels вместо собственной оптимизации; проверить shared helper/API и protected fork behavior. |
 | Актуальная карта дельты | planned | Обновить fork-delta по фактическим файлам; для каждого retained delta указать причину и gate, upstream-only файлы проверить отдельно. |
 | Подготовка FB2 Hybrid | in progress: source analysis | [Граница и матрица](doc/reports/fb2-hybrid-preparation.md) описаны по коду. Далее corpus, sections/notes/resources/anchors и проверяемый whole-book fallback. Реализация и включение partial layout не разрешены автоматически. |
 | Следующее обновление | planned; blocked до фиксации нового upstream SHA для runtime-переноса | Использовать протокол отчёта; сначала завершить cleanup и составить dependency/consumer/test matrix. Beta.10 ещё не анализировалась. |
@@ -35,6 +35,19 @@ Qt6 skipped; full suite/Android NOT RUN. Пользователь принял �
 lazy Settings и кнопки; последующий freeze рассматривается отдельно, не закрыт.
 Пресеты 9633d3fd приняты отдельно.
 
+**Последнее указание — in progress / CI pending:** принята RU строка
+«Только зазоры от висячих строк»; полоса страниц/времени до конца книги полностью
+удалена (создание, layout, visibility, updater, state/API); проверка lazyAppearance
+теперь требует отсутствия виджетов. Session minutes/clock/battery сохранены.
+Предыдущие требования полосы superseded, новую реализацию пока не делать.
+[Аудит физических кнопок](doc/reports/beta9-physical-buttons.md): upstream main
+по API всё ещё be472588; Qt5 Libra2 correction НЕ поглощён этим кодом, пока оставлен.
+[Полный path inventory](doc/reports/beta9-inventory.md) — есть, semantic gate открыт.
+CI 45025613466: Qt5 PASS, native FAIL — UI tests были выбраны, но executable
+не был включён в focused build target list. Target добавлен; это не доказательство
+ошибки клавиатуры и не успешный native run. Следующий dependency group annotations:
+сначала ListRow note support / note editor / storage API consumer matrix.
+
 **Следующее действие:** разобрать замечания upload `68c77d8`:
 [отчёт](doc/reports/77564e9-device-issues.md). EPUB Hybrid подтверждён логом
 (частичный старт → full-document-ready → adoption); алгоритмы не меняются.
@@ -42,11 +55,11 @@ Fix версии manifest beta.9 и отображение EN/RU имён вст
 done / CI verified runtime `8f1fdf4d`,
 [CI 44932175305](https://github.com/Mutaracha/kobalt_ru/actions/runs/44932175305)
 PASS native + Qt5; device pending. Этот пакет НЕ содержит исправления freeze
-или нового шрифта экрана открытия. Freeze Settings/Styling — blocked по причине:
+или нового шрифта экрана открытия. Freeze Settings/Styling — **deferred по решению пользователя до нового примера**. Контекст:
 последнее действие уточнено — закрытие формы выравнивания по высоте после
 изменения параметров; касания и пользовательский сон перестали работать,
 потребовалось долгое нажатие питания. Нет stack trace/адресата касаний;
-следующий шаг — close/apply/modal/input path этой формы, а не общий startup.
+Новых попыток исправления до нового примера не предпринимать.
 Event loop в части лога оставался активен, speculative
 standby/renderer fixes запрещены. Opening RU typography — planned: подобрать
 размер/начертание по образцу EN, не менять глобальный brand/font fallback.
@@ -470,7 +483,7 @@ Actions runs/artifacts. Автоматически не возобновлять
 
 Для будущих установок/откатов сохраняется [backup/schema contract](doc/storage.md).
 
-## Полоса счётчика в меню чтения
+## Полоса счётчика в меню чтения — superseded: удалена
 
 **done / CI verified / device pending**. По уточнению пользователя счётчик
 страниц убран из строки часов/батареи в отдельную серую полосу под верхней панелью
@@ -486,7 +499,7 @@ PASS — focused native matrix (включая lazyAppearance light/dark), offli
 Kobo Qt5 package/contents. [Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44373349020/artifacts/14460611469).
 Device-проверка ожидается; waveform и пагинация не менялись.
 
-## Полоса меню: закрытие и время до конца главы
+## История удалённой полосы меню: закрытие и время до конца главы
 
 **done / CI verified / device pending**. Пользователь подтвердил: при
 закрытии меню не перекрытая предпросмотром полоса оставалась поверх книги.
@@ -503,7 +516,7 @@ offline checks, Kobo Qt5 package/contents.
 [Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/44377438368/artifacts/14461174896).
 Физическая device-проверка ожидается.
 
-## Полоса меню: оценка книги и курсив
+## История удалённой полосы меню: оценка книги и курсив
 
 **done / CI verified / device pending**. Пользователь сообщил о пустой
 левой подписи при открытии меню и изменил требование: остаток времени книги,
@@ -520,7 +533,7 @@ PASS: focused native matrix, offline checks, Kobo Qt5 build/package/contents.
 Device-приёмка ожидается; автоматическая fixture без reading history не доказывает
 наличие ненулевой оценки на реальном устройстве, поэтому нужна пользовательская сверка.
 
-## Полоса меню: фон, шрифт и первый показ
+## История удалённой полосы меню: фон, шрифт и первый показ
 
 **done / CI verified / device pending**. Пользователь сообщил белые прямоугольники
 под подписями, неудачный brand italic и фрагмент счётчика в (0,0) при открытии книги.

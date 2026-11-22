@@ -857,7 +857,6 @@ void Reader::updateMenuStatus()
         menuClock->setText(time);
     const auto battery = services.battery();
     menuBattery->setStatus(battery.percent, battery.charging);
-    updateForkMenuPage();
     const auto reading = book->sessionReadingMilliseconds();
     const auto session = reading > 300000
             ? strings::get("reader.session_minutes").arg(reading / 60000)

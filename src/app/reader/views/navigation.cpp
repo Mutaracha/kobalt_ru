@@ -814,7 +814,6 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
       annotate(controls.annotate),
       clock(controls.clock),
       session(controls.session),
-      page(controls.page),
       battery(controls.battery),
       bluetooth(controls.bluetooth),
       wifi(controls.wifi),
@@ -822,8 +821,6 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
       search(controls.search),
       sync(controls.sync), darkTheme(controls.darkTheme), comics(controls.comics)
 {
-    pageStrip = controls.pageStrip;
-    toolbar->installEventFilter(this);
     zenViewBase = new ZenViewBase(parent);
     zenViewBase->setObjectName("rrZenViewBase");
     upperEdge = new ReadingRule(parent);
@@ -1279,7 +1276,6 @@ void Navigation::update(QSize size, const NavigationState &state)
         state.chapters->setGeometry(0, statusHeight(), size.width(),
                                     bar->y() + (zenView ? zenOutset() : 0) - statusHeight());
     }
-    updateForkPageStrip(size, state);
     bar->select(state.active, state.enabled, state.lightAvailable);
     int top = toolbarHeight(), bottom = bar->y();
     if (settingsOpen)

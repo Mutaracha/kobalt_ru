@@ -4662,93 +4662,22 @@ private slots:
             QVERIFY(!fixture.widget("rrComicsReadingMode"));
             QVERIFY(!fixture.widget("rrHeaderFooterSlot0"));
         }
-        // Formatting is independent of a visible menu, and uses book not chapter time.
-        NavigationState unbuilt{ };
-        unbuilt.visible = true;
-        QVERIFY(reader::forkui::menuPageStripVisible(unbuilt, true));
-        QVERIFY(!reader::forkui::menuPageStripVisible(unbuilt, false));
-        unbuilt.visible = false;
-        QVERIFY(!reader::forkui::menuPageStripVisible(unbuilt, true));
-        unbuilt.visible = true;
-        unbuilt.zen = true;
-        QVERIFY(!reader::forkui::menuPageStripVisible(unbuilt, true));
-        unbuilt.zen = false;
-        unbuilt.chaptersOpen = true;
-        QVERIFY(!reader::forkui::menuPageStripVisible(unbuilt, true));
-        unbuilt.chaptersOpen = false;
-        unbuilt.searchOpen = true;
-        QVERIFY(!reader::forkui::menuPageStripVisible(unbuilt, true));
-        QWidget stripHost;
-        auto *probeStrip = reader::forkui::makeMenuPageStrip(&stripHost);
-        headerfooter::Values estimate;
-        estimate.bookMilliseconds = 3 * 3600000;
-        estimate.chapterMilliseconds = 15 * 60000;
-        estimate.page = 10;
-        estimate.pages = 230;
-        reader::forkui::updateMenuPageStrip(probeStrip, estimate, true);
-        auto expectedTime = headerfooter::content(headerfooter::Field::BookTimeLeft,
-                                                  estimate, false).text;
-        expectedTime[0] = expectedTime.at(0).toUpper();
-        QCOMPARE(probeStrip->leftLabel()->text(), expectedTime);
-        QCOMPARE(probeStrip->rightLabel()->text(), strings::get("navigation.page_count").arg(10).arg(230));
-        estimate.pagesEstimated = true;
-        reader::forkui::updateMenuPageStrip(probeStrip, estimate, true);
-        QCOMPARE(probeStrip->rightLabel()->text(),
-                 strings::get("navigation.page_count").arg(10).arg("~230"));
-        estimate.percentTenths = 427;
-        reader::forkui::updateMenuPageStrip(probeStrip, estimate, true);
-        QCOMPARE(probeStrip->rightLabel()->text(), strings::get("header_footer.calculating"));
-        reader::forkui::updateMenuPageStrip(probeStrip, estimate, false);
-        QVERIFY(probeStrip->rightLabel()->text().isEmpty());
-        QVERIFY(probeStrip->rightLabel()->isHidden());
-        estimate.percentTenths = -1;
-        estimate.pagesEstimated = false;
-        QVERIFY(!probeStrip->isVisible());
-        estimate.bookMilliseconds = -1;
-        reader::forkui::updateMenuPageStrip(probeStrip, estimate, true);
-        QVERIFY(probeStrip->leftLabel()->text().isEmpty());
-        auto *initialStrip = fixture.widget("rrMenuPageStrip");
-        QVERIFY(initialStrip);
-        QVERIFY(!initialStrip->isVisible());
+        // The retired menu counter strip must not be instantiated, even hidden.
+        for (const auto *name : { "rrMenuPageStrip", "rrMenuPage", "rrMenuTimeLeft" })
+            QVERIFY(!fixture.widget(name));
         QVERIFY(fixture.press("rrPage"));
-        auto *pageCount = qobject_cast<QLabel *>(fixture.widget("rrMenuPage"));
-        QVERIFY(pageCount);
-        QTRY_VERIFY(!pageCount->text().isEmpty());
-        auto *strip = fixture.widget("rrMenuPageStrip");
-        QVERIFY(strip);
-        QTRY_VERIFY(strip->isVisible());
-        QCOMPARE(pageCount->parentWidget(), strip);
-        auto *timeLeft = qobject_cast<QLabel *>(fixture.widget("rrMenuTimeLeft"));
-        QVERIFY(timeLeft);
-        QVERIFY(timeLeft->font().italic());
-        QVERIFY(pageCount->font().italic());
-        QCOMPARE(timeLeft->font().family(), ui::interfaceFont().family());
-        QCOMPARE(pageCount->font().family(), ui::interfaceFont().family());
-        QVERIFY(timeLeft->styleSheet().contains("background:transparent"));
-        QVERIFY(pageCount->styleSheet().contains("background:transparent"));
-        const auto timeCaption = timeLeft->text();
-        // Dismiss the plain menu without ever covering the counter with Preview.
-        QVERIFY(fixture.press("rrPage"));
-        QTRY_VERIFY(!fixture.visible("rrControlsTop"));
-        QTRY_VERIFY(!strip->isVisible());
-        QVERIFY(fixture.press("rrPage"));
-        QTRY_VERIFY(strip->isVisible());
-        QCOMPARE(timeLeft->text(), timeCaption);
+        QTRY_VERIFY(fixture.visible("rrControlsTop"));
         auto *toolbar = fixture.widget("rrControlsTop");
-        QVERIFY(toolbar);
-        QCOMPARE(strip->y(), toolbar->geometry().bottom() + 1);
         auto *minutes = fixture.widget("rrMenuSession");
-        QVERIFY(minutes);
+        QVERIFY(toolbar && minutes);
         QVERIFY(qAbs(minutes->geometry().center().x() - toolbar->rect().center().x()) <= 1);
         QVERIFY(fixture.press("rrSettings"));
-        QTRY_VERIFY(!strip->isVisible());
         QVERIFY(fixture.press("rrSettingsClose"));
         QTRY_VERIFY(!fixture.state().value("busy").toBool());
         if (!fixture.visible("rrNavLayout"))
             QVERIFY(fixture.press("rrPage"));
         QVERIFY(fixture.press("rrNavLayout"));
         QTRY_VERIFY(fixture.state().value("appearance_controls_built").toBool());
-        QTRY_VERIFY(!strip->isVisible());
         auto *option = fixture.widget("rrComicsReadingMode");
         QVERIFY(option);
         QVERIFY(fixture.widget("rrHeaderFooterSlot0"));

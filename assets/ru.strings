@@ -1214,7 +1214,7 @@
 "settings.vertical_spacing_scope_all" = "Все подходящие";
 "settings.vertical_spacing_scope_all_short" = "Все страницы";
 "settings.vertical_spacing_scope_all_description" = "Корректирует свободное место внизу всех подходящих, почти полных страниц прозы.";
-"settings.vertical_spacing_scope_protection" = "После защиты от висячих строк";
+"settings.vertical_spacing_scope_protection" = "Только зазоры от висячих строк";
 "settings.vertical_spacing_scope_protection_short" = "Висячие строки";
 "settings.vertical_spacing_scope_protection_description" = "Корректирует свободное место, только если защита от висячих строк перенесла строки, которые иначе поместились бы.";
 

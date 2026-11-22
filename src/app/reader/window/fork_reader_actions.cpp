@@ -42,12 +42,6 @@ void Reader::refreshForkToolbarActions(bool settingsOpen, bool zen)
     }
 }
 
-void Reader::updateForkMenuPage()
-{
-    forkui::updateMenuPageStrip(static_cast<ui::ListHeader *>(menuPage->parentWidget()),
-                                chromeValues(), !zenMode() && session->pages() > 0);
-}
-
 void Reader::toggleComicsMode()
 {
     auto *source = appearanceEdit.preview() ? appearanceEdit.preview() : session;

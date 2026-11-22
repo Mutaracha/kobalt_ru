@@ -27,6 +27,8 @@
 частичные назначения — из базы. Оставить только Libra 2 landscape correction;
 никакого второго actionRotation. Другие устройства не менять.
 Libra2 polarity P/L/IP/IL = false/true/true/false; остальные — upstream.
+Повторный code audit beta9/main: [отчёт](reports/beta9-physical-buttons.md).
+В проверенном upstream correction не поглощён; поведение сейчас не менялось.
 
 **Заменяет:** старую отдельную physical-action семантику и отклонённые общие
 инверсии. Portrait-поведение сохранить. Проверки: четыре ориентации,
@@ -172,29 +174,17 @@ focused native EPUB/FB2 и Qt5 build/package/contents PASS, затем device-п
 
 ## Reading-menu page counter strip
 
-- Scope: обычное меню чтения, не отдельная нижняя вкладка.
-- Decision: по уточнению пользователя (2026-10-26) счётчик страниц размещается
-  отдельной серой полосой под верхней панелью. Предпросмотр или другая панель,
-  занимающая это место, замещает полосу. Это заменяет прежнее размещение страниц
-  перед батареей. Время чтения центрируется по экрану, строки часов/батареи не меняются.
-- Validation: runtime cb3fe8da, CI 44373349020 native/Qt5 PASS; device pending.
+**Superseded by the latest explicit user instruction:** remove the complete page /
+book-time-left strip from the reading menu. No hidden strip, labels or updater;
+no replacement in the toolbar or another tab. A new implementation is deferred
+until separately designed. Prior strip placement/formatting/dismissal requirements
+no longer apply. Keep the existing centered session-minutes label, clock, battery
+and book header/footer formatting; those are not the removed strip.
 
+## Vertical spacing scope wording
 
-### Reading-menu strip: book estimate, italic captions and dismissal
-
-User revised the decision on 2026-10-26: left caption shows time left in the
-**book**, without the field-name prefix; right caption keeps book page count.
-Both captions use italic interfaceFont (IBM Plex Sans), replacing the decorative
-brand face after the user reported poor rendering; their background is transparent
-so the header shading stays continuous. This
-supersedes the earlier chapter-estimate/field-label rule. Reuse header/footer
-BookTimeLeft formatting (including exact/approximate preference); capitalize
-the first letter and leave the caption empty without an estimate.
-The strip must disappear with the reading menu even if Preview never covered it.
-No forced full-screen refresh or pagination reservation. Estimate preparation
-must not depend on toolbar visibility: normal opening prepares status before show.
-Runtime ef5424cf, CI 44397464051 native/Qt5 PASS; device acceptance pending.
-The strip starts explicitly hidden, before its first menu placement.
+User approved «Только зазоры от висячих строк» for
+`settings.vertical_spacing_scope_protection`. Description and EN unchanged.
 
 ## B9-STRINGS — rendering and reading-time recovery translations
 

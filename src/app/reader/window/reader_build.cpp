@@ -725,9 +725,6 @@ void Reader::buildToolbar()
     status->addWidget(menuSession, 0, 1);
     status->setColumnStretch(0, 1);
     status->setColumnStretch(2, 1);
-    auto *pageStrip = forkui::makeMenuPageStrip(this);
-    menuPage = pageStrip->rightLabel();
-    toolbarComposition.pageStrip = pageStrip;
     menuBattery = new kobalt::ui::BatteryIndicator(topControls);
     menuBattery->setObjectName("rrMenuBattery");
     readerStyle(menuBattery, styles::font(metrics::panel::batteryText));
@@ -868,7 +865,6 @@ void Reader::buildToolbar()
     toolbarButtons.settings = toolbarComposition.settings;
     toolbarComposition.clock = menuClock;
     toolbarComposition.session = menuSession;
-    toolbarComposition.page = menuPage;
     toolbarComposition.battery = menuBattery;
     for (auto *button :
          topControls->findChildren<QPushButton *>(QString(), Qt::FindDirectChildrenOnly)) {

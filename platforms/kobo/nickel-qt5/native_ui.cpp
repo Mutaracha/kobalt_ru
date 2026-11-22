@@ -6,7 +6,6 @@
 #include "support/diagnostics.h"
 #include "platforms/kobo/common/publication_source.h"
 #include "native_labels.h"
-#include "platforms/kobo/common/page_button_mapping.h"
 #include <QApplication>
 #include <QUrl>
 #include <QWidget>

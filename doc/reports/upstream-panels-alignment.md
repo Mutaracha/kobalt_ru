@@ -172,3 +172,22 @@ First CI 45025211358 Qt5 failed compiling dictionary_panel.h: the generalized
 keyboard factory no longer includes QLineEdit transitively. Restored upstream's
 explicit forward declaration in the DictionaryPanel header, preserving all fork
 presentation. No runtime success claimed for that first run.
+
+
+## Follow-up scope and native harness
+
+CI 45025613466 Qt5/package passed; native failed before launching the six
+widgetKeyboard tests (executable absent from focused build target list). Added
+kobalt-reader-ui-tests to that list, keeping test selection/assertions intact.
+Freeze investigation is now deferred by the user until a new example; the generic
+form teardown regression remains, but is not a freeze fix or active investigation.
+
+Annotation dependency review: BookmarkList currently lacks pagePending/hasNote/
+note fields, excerptFont public API and note-aware pagination. Whole upstream
+BookmarkList restoration needs ListRow::setNote/noteHeight and note rendering,
+plus highlight annotationDetails that supplies note text. ListRow also shares
+upstream SegmentedRow::prepend / unlabeled segmented controls changes. Reader
+annotation actions need NoteEditor, Reader private fields, highlights note API,
+state restoration/event filters/save completion and tests as one coordinated
+consumer group, not a standalone pasted reader_annotations.cpp. None of these
+annotation UI/storage changes is falsely marked completed by the keyboard port.
