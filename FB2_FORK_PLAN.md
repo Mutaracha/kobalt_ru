@@ -15,6 +15,7 @@ Baseline форка `4e3a33b9`, upstream beta.9 `be472588`.
 | Уборка артефактов и incidental diff | in progress | Удалены список и 26 старых engine patches: consumers отсутствуют, build использует in-tree Blaze. Cache recipe/filter оставлены byte-identical, чтобы не менять dependency key. Прочий incidental diff ещё не сводился; CI 44800640114 PASS. |
 | Общие реализации beta.9 | in progress: пресеты device accepted; panel/theme device checklist accepted; freeze deferred до нового примера | Контекстно свести пресеты, chapter lookup, аннотации/keyboard, KOSync, sleep/storage. Использовать upstream lazy panels вместо собственной оптимизации; проверить shared helper/API и protected fork behavior. |
 | Актуальная карта дельты | planned | Обновить fork-delta по фактическим файлам; для каждого retained delta указать причину и gate, upstream-only файлы проверить отдельно. |
+| Замена полосы прогресса beta.10 | planned; после текущего выравнивания | Полностью заменить fork progress bar на upstream `4a9576ae017684d290dd2311f4f5195e5e043274`, удалить старую реализацию/parallel wiring и заменённые тесты; не поддерживать два пути. Новые строки требуют согласования. [D04](doc/fork-decisions.md#d04--прогресс-и-меню-чтения). Сейчас runtime полосы не меняется. |
 | Подготовка FB2 Hybrid | in progress: source analysis | [Граница и матрица](doc/reports/fb2-hybrid-preparation.md) описаны по коду. Далее corpus, sections/notes/resources/anchors и проверяемый whole-book fallback. Реализация и включение partial layout не разрешены автоматически. |
 | Следующее обновление | planned; blocked до фиксации нового upstream SHA для runtime-переноса | Использовать протокол отчёта; сначала завершить cleanup и составить dependency/consumer/test matrix. Beta.10 ещё не анализировалась. |
 
@@ -47,6 +48,16 @@ upstream; `.cache-blaze`, optional-assets handling и boot/remount gates пер�
 Сохранены fork ribbon/newline/text fitting, note migration и lazy-Appearance report
 flag; нет второго save pipeline. Upstream cleanPreferences восстановлен целиком
 с note-migration hook, EPUB algorithms не менялись. CI 45048708215 SUCCESS.
+
+**Wi-Fi idle / sync-exclusion — in progress, implementation / CI pending:**
+полные pinned-upstream Qt5 correction, verified callback adapter и vendor detours
+NickelFix d735967 с MIT notice; unknown firmware и установленный NickelFix
+сохраняют штатное поведение/владение. Upstream diagnostics build option default
+OFF, не включается в обычном пакете. Никаких обещаний экономии батареи или
+исправления sleep drain. Sync exclusion применяет/откатывает upstream receipt,
+сохраняет пользовательский regex и правки после установки; Qt5/Qt6 wiring.
+Upstream tests/helper/build targets перенесены вместе; offline/source gates PASS,
+native/Qt5 проверки ещё нужны. Полоса прогресса/EPUB Hybrid unchanged.
 
 **Итоговый semantic inventory — in progress, не закрыт:**
 [актуальная карта](doc/reports/beta9-inventory.md) и TSV охватывают все nonidentical
