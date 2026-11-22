@@ -3539,6 +3539,7 @@ bool Reader::save(bool snapshot, bool background, bool persist)
     state["contents_page"] = choices->chapterPage();
     state["font_samples"] = choices->fontSamples();
     state["native_font_families"] = QJsonArray::fromStringList(pickerNativeFamilies);
+    state["appearance_controls_built"] = appearanceBuilt;
     state["font_button_family"] = fontButton ? fontButton->resolvedFace() : QString();
     state["graph_page"] = chapterGraph->graphPage();
     state["graph_pages"] = chapterGraph->graphPages();

@@ -59,6 +59,8 @@ KOBALT_CONFIG_DIR=/unused для home-screen target. Обе восстановл
 [Обновлённый inventory](doc/reports/beta9-inventory.md): 1083 identical / 248
 changed / 155 fork-only / 52 upstream-only. Текущая KOSync/sleep/storage группа
 не закрывает оставшиеся platform/Reader consumers; полный semantic gate OPEN.
+Сохранён fork diagnostic flag appearance_controls_built, который проверяет
+desktop.lazyAppearance; это instrumentation, не отдельная save policy.
 Дополнительно зарегистрирован upstream kosyncDialogResume в CTest (сам тест
 перенесён целиком), без пропуска при focused selection.
 

@@ -21,7 +21,8 @@ A byte/path inventory is not a claim that every retained difference is justified
   branch follows upstream; retained comics/page-turn policy is not overwritten.
 - KOSync: every src/sync implementation and public header, page, schedule sheet,
   notice, Reader KOSync handlers and corresponding model tests match upstream
-  byte-for-byte. Whole upstream Reader checkpoint/save plus API consumers support
+  byte-for-byte. Upstream Reader checkpoint/save (retaining the fork lazy-Appearance test report
+  flag `appearance_controls_built`) plus API consumers support
   whole-book percentage, failed-login retry, final-exchange upload tracking,
   modal-input resume and durable Android handoff. New RU errors explicitly
   approved. No independent fork KOSync policy or second writer remains.
