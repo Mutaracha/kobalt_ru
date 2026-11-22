@@ -35,7 +35,7 @@ Qt6 skipped; full suite/Android NOT RUN. Пользователь принял �
 lazy Settings и кнопки; последующий freeze рассматривается отдельно, не закрыт.
 Пресеты 9633d3fd приняты отдельно.
 
-**Последнее указание — in progress / CI pending:** принята RU строка
+**Последнее указание — implemented / CI verified, device pending:** принята RU строка
 «Только зазоры от висячих строк»; полоса страниц/времени до конца книги полностью
 удалена (создание, layout, visibility, updater, state/API); проверка lazyAppearance
 теперь требует отсутствия виджетов. Session minutes/clock/battery сохранены.
@@ -45,7 +45,9 @@ lazy Settings и кнопки; последующий freeze рассматри�
 [Полный path inventory](doc/reports/beta9-inventory.md) — есть, semantic gate открыт.
 CI 45025613466: Qt5 PASS, native FAIL — UI tests были выбраны, но executable
 не был включён в focused build target list. Target добавлен; это не доказательство
-ошибки клавиатуры и не успешный native run. Следующий dependency group annotations:
+ошибки клавиатуры и не успешный native run. Follow-up **CI 45027682492 PASS**
+для runtime `cba1e229`: native 9m52s + Qt5 4m56s; Qt6 skipped, Android/device
+NOT RUN. [Qt5 пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45027682492/artifacts/14756567766). Следующий dependency group annotations:
 [dependency/consumer matrix](doc/reports/beta9-annotation-port-matrix.md) готова.
 ReaderSession location API уже есть; highlight geometry/paint byte-identical.
 Далее shared ListRow + storage/session note metadata с upstream tests, затем
@@ -66,11 +68,14 @@ PASS native + Qt5; device pending. Этот пакет НЕ содержит и�
 Event loop в части лога оставался активен, speculative
 standby/renderer fixes запрещены. Opening RU typography — planned: подобрать
 размер/начертание по образцу EN, не менять глобальный brand/font fallback.
-**Текущий dependency group — in progress / CI pending:** общий keyboard API
+**Текущий dependency group — keyboard native/Qt5 CI verified:** общий keyboard API
 QWidget (QLineEdit/QTextEdit), widget/native Qt5/Qt6 keyboards и upstream modal /
 ChoiceSheet paging. Whole-file upstream implementations, согласованные factories;
 новый multiline regression, расширенные choice paging/vertical form teardown
-проверки. Freeze не объявлен исправленным. Затем annotations, остальные
+проверки. В focused native запуск входят widgetKeyboard*, lazyAppearance и
+verticalJustification; choiceSheetListFillsCard/modalListDividers в этой выборке
+не запускались, хотя расширение теста и исходники компилируются. Freeze deferred,
+не объявлен исправленным. Затем annotations, остальные
 KOSync policy/sleep и семантический inventory. Подробности —
 [panel alignment](doc/reports/upstream-panels-alignment.md).
 

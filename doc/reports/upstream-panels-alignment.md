@@ -191,3 +191,16 @@ annotation actions need NoteEditor, Reader private fields, highlights note API,
 state restoration/event filters/save completion and tests as one coordinated
 consumer group, not a standalone pasted reader_annotations.cpp. None of these
 annotation UI/storage changes is falsely marked completed by the keyboard port.
+
+
+## Verified follow-up
+
+Runtime cba1e229d25187c9934de18fb48359491d58b27f:
+[CI 45027682492](https://github.com/Mutaracha/kobalt_ru/actions/runs/45027682492)
+SUCCESS: native 9m52s, Qt5/offline/package/contents 4m56s, Qt6 skipped.
+Qt5 artifact 14756567766 (37359133 bytes). No device/Android test claimed.
+The focused selection ran widgetKeyboard* (including multiline), lazyAppearance
+(including absent retired strip), verticalJustification and existing EPUB/FB2 /
+settings/lifecycle regressions. ChoiceSheet/modalListDividers tests compile in
+the UI executable but are not selected by the current focused CTest regex; their
+runtime pass is NOT claimed. Overall source/semantic alignment remains incomplete.
