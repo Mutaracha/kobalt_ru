@@ -96,7 +96,11 @@ EPUB использует базовый beta.8 note pipeline; FB2 добавл�
 ## D06 — оформление, строки и локализация
 
 **Решение:** общий baseline/action/row style, IBM Plex Sans UI / Instrument Serif
-Kobalt; stock About не менять, fork UTC-row и скрытый debug input сохранить.
+Kobalt; stock About не менять, fork UTC-row сохранить.
+**Уточнение пользователя:** вход в существующее окно языка — только первый пункт
+вкладки «Отладка». Прежний скрытый жест на строке «О программе» отменён.
+Выбор English/Русский/Automatic, markers, async write и применение после
+перезапуска не меняются.
 Новые EN/RU тексты сначала согласовывать, длины RU учитывать в общей геометрии.
 Locale Kobo пересчитывать на согласованной границе открытия книги, не делать
 частичную live retranslation; explicit debug markers имеют приоритет над env.
@@ -289,3 +293,12 @@ login validation messages approved through `kosync_validation_strings`.
 Sleep/storage logic follows upstream; retain accepted ribbon two-line text,
 localized fitting and approved descriptions. CI/device evidence lives in the
 queue; no device acceptance is implied. EPUB Hybrid algorithms remain excluded.
+
+## B9-HYBRID-HANDOFF — повторная проверка на beta10
+
+**Решение пользователя:** собственных исправлений EPUB Hybrid не вносить;
+вернуться к проверке оценочного счётчика при переходе на beta10.
+Проверенная цепочка расчёта/публикации/колонтитула не отличается от pinned beta9;
+это не утверждение побайтового равенства всего движка и не доказательство
+воспроизведения дефекта в чистой upstream-сборке.
+Доказательства и границы: [отчёт](reports/beta9-hybrid-counter.md).

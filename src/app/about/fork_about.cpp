@@ -1,7 +1,5 @@
 #include "fork_about.h"
-#include "fork_debug.h"
 #include "build_info.h"
-#include "support/debug_language.h"
 #include "support/strings.h"
 #include "ui/controls/text.h"
 #include "ui/style/metrics.h"
@@ -23,6 +21,6 @@ void appendForkBuildRow(QWidget *page, QBoxLayout *rows, QWidget *host)
     label->setAlignment(Qt::AlignCenter);
     ui::readerStyle(label, ui::styles::font(ui::metrics::about::commitText));
     rows->addWidget(label);
-    installForkLanguageDebug(label, host, QString::fromLatin1(debugLanguageDirectory));
+    Q_UNUSED(host);
 }
 } // namespace kobalt::reader

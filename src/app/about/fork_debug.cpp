@@ -5,10 +5,8 @@
 #include "support/debug_language.h"
 #include "support/strings.h"
 #include <QApplication>
-#include <QElapsedTimer>
-#include <QMouseEvent>
 #include <QPointer>
-#include <QLabel>
+#include <QPushButton>
 #include <utility>
 
 namespace kobalt::reader {
@@ -16,64 +14,25 @@ namespace {
 class ForkLanguageDebug final : public QObject
 {
 public:
-    ForkLanguageDebug(QWidget *label, QWidget *host, QString directory)
-        : QObject(label), label(label), host(host), directory(std::move(directory))
+    ForkLanguageDebug(QPushButton *button, QWidget *host, QString directory)
+        : QObject(button), button(button), host(host), directory(std::move(directory))
     {
-        label->installEventFilter(this);
+        connect(button, &QPushButton::clicked, this, [this] { showChoices(); });
         host->installEventFilter(this);
     }
 
 protected:
     bool eventFilter(QObject *object, QEvent *event) override
     {
-        if (object == host) {
-            if (event->type() == QEvent::Resize && dialog)
-                dialog->setGeometry(host->rect());
-            return false;
-        }
-        const auto type = event->type();
-        if (type == QEvent::Hide || type == QEvent::WindowDeactivate) {
-            taps = 0;
-            armed = false;
-        }
-        if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick) {
-            const auto *mouse = static_cast<QMouseEvent *>(event);
-            if (mouse->button() != Qt::LeftButton)
-                return false;
-            press = mouse->pos();
-            armed = true;
-            event->accept();
-            return true;
-        }
-        if (type == QEvent::MouseButtonRelease) {
-            const auto *mouse = static_cast<QMouseEvent *>(event);
-            if (mouse->button() != Qt::LeftButton)
-                return false;
-            const bool tap = armed && label->rect().contains(mouse->pos())
-                    && (mouse->pos() - press).manhattanLength()
-                            <= QApplication::startDragDistance();
-            armed = false;
-            if (!tap) {
-                taps = 0;
-                return true;
-            }
-            if (!between.isValid() || between.elapsed() > 700)
-                taps = 0;
-            between.restart();
-            if (++taps == 5) {
-                taps = 0;
-                showChoices();
-            }
-            event->accept();
-            return true;
-        }
+        if (object == host && event->type() == QEvent::Resize && dialog)
+            dialog->setGeometry(host->rect());
         return false;
     }
 
 private:
     void showChoices()
     {
-        if (dialog || !host || !label->isVisible())
+        if (dialog || !host || !button->isVisible())
             return;
         auto *popup = new ui::ModalOverlay(host);
         dialog = popup;
@@ -141,20 +100,16 @@ private:
         popup->setFocus();
     }
 
-    QWidget *label;
+    QPushButton *button;
     QPointer<QWidget> host;
     QString directory;
     QPointer<ui::ModalOverlay> dialog;
-    QElapsedTimer between;
-    QPoint press;
-    int taps = 0;
-    bool armed = false;
 };
 } // namespace
 
-void installForkLanguageDebug(QWidget *label, QWidget *host, const QString &directory)
+void installForkLanguageDebug(QPushButton *button, QWidget *host, const QString &directory)
 {
-    if (label && host && !directory.isEmpty())
-        new ForkLanguageDebug(label, host, directory);
+    if (button && host && !directory.isEmpty())
+        new ForkLanguageDebug(button, host, directory);
 }
 } // namespace kobalt::reader

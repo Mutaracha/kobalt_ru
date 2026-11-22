@@ -4,7 +4,16 @@
 Принятые решения: [doc/fork-decisions.md](doc/fork-decisions.md).
 Инструкции агентам: [AGENTS.md](AGENTS.md).
 
-## Активная очередь — выравнивание с upstream перед следующим обновлением
+## Текущий handoff
+
+- Device: пользователь подтвердил открытие своих тестовых книг на runtime80ee8d79.
+- EPUB Hybrid counter: deferred до beta10, без своих исправлений; проверенная
+  цепочка соответствует upstream beta9. [Наблюдения и пределы](doc/reports/beta9-hybrid-counter.md).
+- Язык: вход перенесён первым пунктом только в Debug; окно/markers/применение прежние.
+  Реализация готова, CI нового checkpoint ожидается; device-приёмка не заявляется.
+- Карта обновления: [beta9 → beta10](doc/reports/beta10-fork-map/README.md).
+
+## Предыдущий checkpoint — выравнивание с upstream
 
 **Текущий checkpoint `80ee8d79`:** shared implementation alignment выполнен;
 CI45060819419 / build289 native + Qt5 PASS. Fork progress полностью удалён: stock beta9

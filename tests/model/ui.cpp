@@ -61,6 +61,7 @@
 #include <QPainter>
 #include <QAbstractTextDocumentLayout>
 #include <QTextLayout>
+#include <QLayout>
 #include <QTextBlock>
 #include <QtMath>
 #include <QKeyEvent>
@@ -4193,31 +4194,16 @@ int main(int argc, char **argv)
         require(diagnostics.isValid(), "Debug language UI directory");
         QWidget host;
         host.resize(1072, 1448);
-        kobalt::ui::InterfaceLabel label("kobalt_ru · 2026-11-06 00:00 UTC", &host);
-        label.setGeometry(120, 100, 800, 60);
-        label.setAlignment(Qt::AlignCenter);
+        QPushButton languageButton("Language", &host);
+        languageButton.setGeometry(120, 100, 800, 60);
         host.show();
         app.processEvents();
-        const auto before = label.grab().toImage();
-        const auto beforeFont = label.font();
-        const auto beforeStyle = label.styleSheet();
-        kobalt::reader::installForkLanguageDebug(&label, &host, diagnostics.path());
-        const auto tap = [&] {
-            const auto point = label.rect().center();
-            QMouseEvent down(QEvent::MouseButtonPress, QPointF(point), label.mapToGlobal(point),
-                             Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
-            QMouseEvent up(QEvent::MouseButtonRelease, QPointF(point), label.mapToGlobal(point),
-                           Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
-            QApplication::sendEvent(&label, &down);
-            QApplication::sendEvent(&label, &up);
-        };
-        for (int i = 0; i < 4; ++i) tap();
-        require(!host.findChild<QWidget *>("rrDebugLanguage"), "Debug language opens before five taps");
-        require(label.grab().toImage() == before && label.font() == beforeFont && label.styleSheet() == beforeStyle,
-                "Hidden gesture changed fork-label rendering");
+        kobalt::reader::installForkLanguageDebug(&languageButton, &host, diagnostics.path());
+        const auto tap = [&] { languageButton.click(); };
+        require(!host.findChild<QWidget *>("rrDebugLanguage"), "Language modal opened without a click");
         tap();
         auto *popup = host.findChild<QWidget *>("rrDebugLanguage");
-        require(popup && popup->isVisible(), "Five label taps did not open debug language choices");
+        require(popup && popup->isVisible(), "Debug action did not open language choices");
         auto *english = popup->findChild<QCheckBox *>("rrDebugLanguageEnglish");
         require(english, "Missing English debug choice");
         app.processEvents();
@@ -4262,8 +4248,7 @@ int main(int argc, char **argv)
                     kobalt::strings::locale() == locale,
                 "Hidden choice failed to persist English or changed the live locale");
         popup->findChild<QPushButton *>("rrDebugLanguageClose")->click();
-        require(!popup->isVisible() && label.grab().toImage() == before,
-                "Closing debug dialog changed the fork row");
+        require(!popup->isVisible(), "Closing debug dialog left it visible");
         delete popup;
         // A Russian interface does not imply a Russian override. Exercise each
         // persisted mode and ensure opening/cancelling never writes a choice.
@@ -4281,8 +4266,7 @@ int main(int argc, char **argv)
                         mode == kobalt::DebugLanguage::English ? ".lang_en" : ".lang_ru"));
                 require(marker.open(QIODevice::WriteOnly), "Create language marker fixture");
             }
-            for (int i = 0; i < 5; ++i)
-                tap();
+            tap();
             auto *reopened = host.findChild<QWidget *>("rrDebugLanguage");
             require(reopened && reopened->isVisible(), "Reopen language modal for persisted mode");
             auto *enChoice = reopened->findChild<QCheckBox *>("rrDebugLanguageEnglish");
@@ -4337,6 +4321,11 @@ int main(int argc, char **argv)
     reader.show();
     {
         kobalt::reader::SettingsPanel settings(&reader, {});
+        auto *debugPage = settings.findChild<QWidget *>("rrDebugOptions");
+        auto *languageButton = settings.findChild<QPushButton *>("rrDebugLanguageButton");
+        require(debugPage && languageButton && languageButton->parentWidget() == debugPage
+                        && debugPage->layout()->itemAt(0)->widget() == languageButton,
+                "Language action must be the first row of Debug, not About");
         // Constructor-time styling must cover every main-page option. Merely
         // using DescribedOption leaves its default Toggle and zero inset.
         auto *notes = settings.inpageFootnotesOption;
