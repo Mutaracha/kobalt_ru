@@ -235,6 +235,42 @@ QRect ReadingPage::bookmarkCorner() const
     return QRect(width() - w, 0, w, h);
 }
 
+int ReadingPage::topHeight() const
+{
+    return showHeader() ? metrics::reading::stripHeight(chrome.headerSize) : 0;
+}
+
+int ReadingPage::bottomHeight() const
+{
+    return (showFooter() ? metrics::reading::stripHeight(chrome.footerSize) : 0)
+            + (showProgress() ? ui::metrics::reading::progressHeight : 0);
+}
+
+// Keep the old edge alignment through Large. Larger sizes grow the text
+// band as well as the reserved strip so glyphs are not clipped.
+QRect ReadingPage::headerTextRect() const
+{
+    if (!showHeader())
+        return {};
+    return { 0, 0, width(), metrics::reading::textBandHeight(chrome.headerSize) };
+}
+
+QRect ReadingPage::footerTextRect() const
+{
+    if (!showFooter())
+        return {};
+    // Keep the same edge gap above the progress fill as below the top
+    // of the header. The progress strip adds space below the text.
+    const int offset = showProgress()
+            ? int(metrics::reading::progressHeight) - int(metrics::reading::progressBottom)
+                    - int(metrics::reading::progressFillHeight)
+            : 0;
+    const int band = metrics::reading::textBandHeight(chrome.footerSize);
+    const int bottom =
+            height() - bottomHeight() + offset + metrics::reading::stripHeight(chrome.footerSize);
+    return { 0, bottom - band, width(), band };
+}
+
 void ReadingPage::setCornerRadii(int top, int bottom)
 {
     if (cornerTop == top && cornerBottom == bottom)
@@ -788,13 +824,12 @@ void ReadingPage::refreshContent(bool reading, bool now)
     const int weight = kobalt::ui::interfaceWeight() + kobalt::ui::headerFooterAddedWeight();
     const HeaderState nextHeader{
         stripSlots(false),  stripFields(false), showHeader(), panelBelowHeader, width(),
-        headerTextPixels(), colors.cacheKey(),  weight,       font().family(),
-        showProgress() && chrome.progressTop, progressFraction, chapterFractions
+        headerTextPixels(), colors.cacheKey(),  weight,       font().family()
     };
     const FooterState nextFooter{ stripSlots(true), stripFields(true),  notice,
                                   showFooter(),     showProgress(),     progressFraction,
                                   width(),          footerTextPixels(), colors.cacheKey(),
-                                  weight,           font().family(), chapterFractions };
+                                  weight,           font().family() };
     kobalt::platform::pageRefresh(this, false,
                                   reading && !geometryChanged
                                           && renderedPalette == colors.cacheKey()
@@ -1440,9 +1475,6 @@ void ReadingPage::paintHeader(QPainter &painter, bool sleeping) const
     painter.setFont(font);
     if (showHeader())
         paintSlots(painter, headerTextRect(), false, sleeping);
-    if (showProgress() && chrome.progressTop)
-        paintProgress(painter, int(metrics::reading::progressBottom)
-                        - int(metrics::control::border), true);
     if (panelBelowHeader)
         painter.fillRect(0, topHeight() - metrics::control::border, width(),
                          metrics::control::border, ui::dividerColor(this));
@@ -1462,8 +1494,18 @@ void ReadingPage::paintFooter(QPainter &painter, bool sleeping) const
         } else
             paintSlots(painter, bounds, true, sleeping);
     }
-    if (showProgress() && !chrome.progressTop)
-        paintProgress(painter, bottomHeight() - metrics::reading::progressBottom);
+    if (showProgress()) {
+        const auto ink = palette().color(QPalette::WindowText);
+        painter.fillRect(QRect(0, bottomHeight() - metrics::reading::progressBottom, width(),
+                               metrics::control::border),
+                         ink);
+        painter.fillRect(QRect(0,
+                               bottomHeight() - metrics::reading::progressBottom
+                                       - metrics::reading::progressFillHeight,
+                               qRound(width() * progressFraction),
+                               metrics::reading::progressFillHeight),
+                         ink);
+    }
 }
 
 void ReadingPage::updatePointer()

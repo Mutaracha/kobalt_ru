@@ -31,8 +31,6 @@ def disposition(path, status):
         return 'tests-fixtures', 'REVIEW', 'Merge upstream tests and register targets; retain FB2/comics/RU coverage; do not weaken assertions.'
     if path.startswith('src/engine/'):
         return 'engine-fb2-comics-hybrid', 'REVIEW-PROTECTED', 'Inspect hunks: preserve approved FB2/comics; do not change base EPUB Hybrid algorithms in this alignment.'
-    if path.startswith(('src/app/reader/views/reading_page_progress.',)):
-        return 'progress-bar', 'REPLACE-BETA10', 'Delete fork implementation when porting 4a9576ae017684d290dd2311f4f5195e5e043274; no parallel renderer; D04.'
     if path.startswith('src/app/reader/'):
         return 'reader-consumers', 'REVIEW', 'Separate upstream behavior from approved fork UI; resolve missing consumers/dependencies together.'
     if path.startswith('platforms/kobo/'):

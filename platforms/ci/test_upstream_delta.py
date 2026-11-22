@@ -16,7 +16,6 @@ spec.loader.exec_module(delta)
 
 class DeltaTests(unittest.TestCase):
     def test_dispositions_are_conservative(self):
-        self.assertEqual(delta.disposition('src/app/reader/views/reading_page_progress.cpp', 'fork-only')[1], 'REPLACE-BETA10')
         self.assertEqual(delta.disposition('src/engine/new.cpp', 'upstream-only')[1], 'REVIEW-PROTECTED')
         self.assertEqual(delta.disposition('src/new.cpp', 'different')[1], 'REVIEW')
         self.assertEqual(delta.disposition('tests/a.cpp', 'fork-only')[1], 'REVIEW')

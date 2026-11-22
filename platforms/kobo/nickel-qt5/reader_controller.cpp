@@ -119,6 +119,12 @@ bool enabled()
 #endif
 }
 
+// Asset availability is retained between boot and USB storage boundaries.
+bool readerAvailable()
+{
+    return enabled() && environment().assets.available();
+}
+
 // A reader preference is independent of the installation and recovery markers.
 bool alternativeEnabled()
 {
@@ -258,6 +264,8 @@ public:
                 if (valid)
                     kobalt::ui::prepareOpeningFonts(environment().assets);
                 attempt(false);
+                if (valid && controller)
+                    controller->preloadLastBook();
             });
             attempt(false);
         });
@@ -376,7 +384,7 @@ public:
             finish();
             return;
         }
-        CoordinatorBindings bindings{ enabled };
+        CoordinatorBindings bindings{ readerAvailable };
         bindings.automaticBookOpening = alternativeEnabled;
         bindings.setAutomaticBookOpening = setAlternativeFromKobalt;
         bindings.installInput = kobalt::nickel_qt5::installTouchInput;
@@ -436,6 +444,7 @@ public:
                            kobalt::qt::object({ { "startup_ms", double(elapsed.elapsed()) },
                                                 { "opener", fromOpener } }));
         candidate->finishPreviewMigration();
+        candidate->preloadLastBook();
         nh_log("reader: native controller ready");
     }
 

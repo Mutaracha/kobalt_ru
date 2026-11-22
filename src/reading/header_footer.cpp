@@ -79,7 +79,7 @@ QString calculating()
 QString percent(qint64 tenths, bool decimal)
 {
     if (tenths < 0)
-        return { };
+        return {};
     const auto whole = tenths / 10;
     return strings::get("common.percent")
             .arg(decimal ? QString("%1.%2").arg(whole).arg(tenths % 10) : QString::number(whole));
@@ -88,7 +88,7 @@ QString percent(qint64 tenths, bool decimal)
 QString percentDone(int page, int pages, bool decimal)
 {
     if (pages <= 0)
-        return { };
+        return {};
     // Keep the existing page count and round down at the selected precision.
     // Integer arithmetic avoids rounding a penultimate page up to 100.0%.
     const qint64 tenths = 1000 * qint64(qBound(1, page, pages)) / pages;
@@ -102,6 +102,42 @@ QString pageOf(int page, int pages, bool estimated)
     return pages > 0
             ? strings::get("header_footer.page_of").arg(page).arg(pageTotal(pages, estimated))
             : QString();
+}
+
+QString milliseconds(qint64 value)
+{
+    return value >= 0 ? strings::get("header_footer.milliseconds").arg(value) : QString();
+}
+
+// The last turn time, then the layout: fast while the engine lays out a
+// chapter at a time, with the progress or failure of the whole book, and
+// full once it has the whole book, with how long that took.
+QString bookStatus(const Values &values)
+{
+    QString detail;
+    if (values.wholeBook) {
+        if (values.wholeBookMilliseconds >= 0) {
+            const double seconds = values.wholeBookMilliseconds / 1000.0;
+            detail = strings::get("header_footer.status.seconds")
+                             .arg(QString::number(seconds, 'f', seconds < 10 ? 1 : 0));
+        }
+    } else if (values.wholeBookFailed) {
+        detail = strings::get("header_footer.status.failed");
+    } else if (values.wholeBookPercent >= 0) {
+        detail = strings::get("common.percent").arg(values.wholeBookPercent);
+    }
+    const auto mode = strings::get(values.wholeBook ? "header_footer.status.full"
+                                                    : "header_footer.status.fast");
+    const auto layout =
+            strings::get("header_footer.status.layout")
+                    .arg(detail.isEmpty() ? mode
+                                          : strings::get("header_footer.status.with_detail")
+                                                    .arg(mode, detail));
+    if (values.pageTurnMilliseconds < 0)
+        return layout;
+    return strings::get("header_footer.status.parts")
+            .arg(strings::get("header_footer.status.turn").arg(values.pageTurnMilliseconds),
+                 layout);
 }
 
 QString joined(const QString &name, const QString &position)
@@ -132,7 +168,7 @@ bool Layout::operator==(const Layout &other) const
     return slotFields == other.slotFields && headerSize == other.headerSize
             && footerSize == other.footerSize && headerEnabled == other.headerEnabled
             && footerEnabled == other.footerEnabled && uppercase == other.uppercase
-            && progressBar == other.progressBar && progressTop == other.progressTop;
+            && progressBar == other.progressBar;
 }
 
 Layout presetLayout(Preset preset)
@@ -233,6 +269,12 @@ QString fieldValue(Field field)
         return QStringLiteral("book_percent");
     case Field::BatteryWarning:
         return QStringLiteral("battery_warning");
+    case Field::PageTurnTime:
+        return QStringLiteral("page_turn_time");
+    case Field::ChapterLoadTime:
+        return QStringLiteral("chapter_load_time");
+    case Field::BookStatus:
+        return QStringLiteral("book_status");
     }
     return QStringLiteral("nothing");
 }
@@ -261,7 +303,6 @@ QJsonObject toJson(const Layout &layout)
         uppercase.append(value);
     object["uppercase"] = uppercase;
     object["progress_bar"] = layout.progressBar;
-    object["progress_top"] = layout.progressTop;
     return object;
 }
 
@@ -284,7 +325,6 @@ Layout fromJson(const QJsonObject &object, const Layout &fallback)
             if (uppercase.toArray().at(slot).isBool())
                 layout.uppercase[slot] = uppercase.toArray().at(slot).toBool();
     layout.progressBar = object.value("progress_bar").toBool(fallback.progressBar);
-    layout.progressTop = object.value("progress_top").toBool(false);
     return layout;
 }
 
@@ -331,7 +371,7 @@ static Selection selectLayout(const QJsonObject &preferences)
         return selection;
     }
     const auto legacy = legacyLayout(preferences);
-    if (legacy == legacyLayout({ })) {
+    if (legacy == legacyLayout({})) {
         selection.layout = presetLayout(Preset::Default);
         return selection;
     }
@@ -458,6 +498,15 @@ Content content(Field field, const Values &values, bool uppercase)
                 ? percent(values.percentTenths, values.decimalPercentages)
                 : percentDone(values.page, values.pages, values.decimalPercentages);
         break;
+    case Field::PageTurnTime:
+        result.text = milliseconds(values.pageTurnMilliseconds);
+        break;
+    case Field::ChapterLoadTime:
+        result.text = milliseconds(values.chapterLoadMilliseconds);
+        break;
+    case Field::BookStatus:
+        result.text = bookStatus(values);
+        break;
     }
     if (uppercase) {
         result.text = result.text.toUpper();
@@ -511,8 +560,14 @@ QString fieldLabel(Field field)
         return strings::get("header_footer.field.book_percent");
     case Field::BatteryWarning:
         return strings::get("header_footer.field.battery_warning");
+    case Field::PageTurnTime:
+        return strings::get("header_footer.field.page_turn_time");
+    case Field::ChapterLoadTime:
+        return strings::get("header_footer.field.chapter_load_time");
+    case Field::BookStatus:
+        return strings::get("header_footer.field.book_status");
     }
-    return { };
+    return {};
 }
 
 QString fieldDescription(Field field)
@@ -524,8 +579,10 @@ QString fieldDescription(Field field)
     case Field::ChapterTimeLeft:
     case Field::BookTimeLeft:
         return strings::get("header_footer.field_description.time_left");
+    case Field::BookStatus:
+        return strings::get("header_footer.field_description.book_status");
     default:
-        return { };
+        return {};
     }
 }
 
@@ -554,6 +611,6 @@ QString presetLabel(Preset preset)
     case Preset::Custom:
         return strings::get("header_footer.preset.custom");
     }
-    return { };
+    return {};
 }
 } // namespace kobalt::headerfooter

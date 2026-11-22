@@ -2976,9 +2976,6 @@ void checkHeaderFooterSizes(int preset, bool dark)
     QVERIFY(fixture.press("rrHeaderFooterPreset_alternative_a"));
     QTRY_COMPARE(header->value(), offSize);
     QTRY_COMPARE(footer->value(), offSize);
-    QVERIFY(fixture.press("rrHeaderFooterProgressBar_top"));
-    QTRY_VERIFY(page->chrome.progressTop && page->chrome.progressBar);
-    QVERIFY(page->topHeight() > 0);
     QVERIFY(fixture.press("rrHeaderFooterProgressBar_off"));
     QTRY_VERIFY(!page->chrome.progressBar);
     QTRY_COMPARE(fixture.state().value("header_footer_preset").toString(), QString("custom"));
@@ -4687,7 +4684,6 @@ private slots:
         QCOMPARE(fixture.window.readerWindow()->findChildren<QWidget *>("rrComicsReadingMode").size(), 1);
     }
 
-    // Checks that top progress and chapter ticks mirror bottom progress above the header.
     // Preview chrome must not depend on the last applied page's paint cache.
     void appearanceChromeDraft()
     {
@@ -4709,47 +4705,13 @@ private slots:
         QVERIFY(!page.footerImage().isNull());
         page.chrome.headerEnabled = false;
         page.chrome.footerEnabled = false;
-        page.chrome.progressTop = true;
-        QVERIFY(!page.headerImage().isNull());
-        QVERIFY(page.footerImage().isNull());
-        const auto before = page.headerImage();
-        page.progressFraction = .8;
-        QVERIFY(page.headerImage() != before);
-        page.chrome.progressTop = false;
         QVERIFY(page.headerImage().isNull());
         QVERIFY(!page.footerImage().isNull());
+        const auto before = page.footerImage();
+        page.progressFraction = .8;
+        QVERIFY(page.footerImage() != before);
         page.chrome.progressBar = false;
         QVERIFY(page.footerImage().isNull());
-    }
-
-    void progressStripMirrors()
-    {
-        ReadingPage page(nullptr, [] { });
-        page.resize(800, 600);
-        page.setPalette(ui::readerPalette(page.palette(), false));
-        page.chrome = headerfooter::presetLayout(headerfooter::Preset::Phone);
-        page.chrome.headerEnabled = false;
-        page.chrome.footerEnabled = false;
-        page.chrome.progressBar = true;
-        page.chrome.progressTop = false;
-        page.progressFraction = .35;
-        page.chapterFractions = { .2, .7 };
-        const int strip = ui::metrics::reading::progressHeight;
-        const auto bottom = page.snapshot(true);
-        QCOMPARE(page.topHeight(), 0);
-        QCOMPARE(page.bottomHeight(), strip);
-        page.chrome.progressTop = true;
-        const auto top = page.snapshot(true);
-        QCOMPARE(page.topHeight(), strip);
-        QCOMPARE(page.bottomHeight(), 0);
-        // Exact mirror includes the already-read and unread chapter marks.
-        for (int y = 0; y < strip; ++y)
-            for (int x = 0; x < page.width(); ++x)
-                QCOMPARE(top.pixel(x, y), bottom.pixel(x, page.height() - 1 - y));
-        page.chrome.headerEnabled = true;
-        page.chrome.slotFields[0] = headerfooter::Field::Time;
-        QVERIFY(page.headerTextRect().top() >= strip);
-        QCOMPARE(page.topHeight(), strip + ui::metrics::reading::stripHeight(page.chrome.headerSize));
     }
 
     void viewportTransition()

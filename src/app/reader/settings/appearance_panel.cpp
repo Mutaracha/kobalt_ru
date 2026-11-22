@@ -571,13 +571,10 @@ AppearancePanel::AppearancePanel(const AppearanceLayout &layout,
                                           QVector<QPushButton *> &buttons) {
         ui::SegmentedRow row(custom, customRows, name, label,
                              strings::get("header_footer.progress_bar_detail"));
-        for (int position = 0; position < 3; ++position) {
-            // Keep _on for the legacy bottom button and its routed tests.
-            const auto suffix = position == 0 ? "_off" : position == 1 ? "_on" : "_top";
-            auto *button = row.add(QString(name) + suffix,
-                    strings::get(position == 0 ? "common.off" : position == 1
-                            ? "header_footer.progress_bottom" : "header_footer.progress_top"));
-            button->setProperty("progress_position", position);
+        for (const bool enabled : { false, true }) {
+            auto *button = row.add(QString(name) + (enabled ? "_on" : "_off"),
+                                   strings::get(enabled ? "common.on" : "common.off"));
+            button->setProperty("switch_on", enabled);
             buttons.append(button);
         }
     };

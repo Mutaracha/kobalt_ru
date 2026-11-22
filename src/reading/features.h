@@ -2,11 +2,12 @@
 #include <QJsonObject>
 
 namespace kobalt::features {
-inline constexpr const char *keys[] = { "disable_navigate",    "disable_stats",
-                                        "disable_annotations", "disable_bookmarks",
-                                        "disable_kosync",      "disable_words", "disable_dark_mode", "disable_comics" };
+inline constexpr const char *keys[] = { "disable_navigate",       "disable_stats",
+                                        "disable_annotations",    "disable_bookmarks",
+                                        "disable_kosync",         "disable_words",
+                                        "disable_highlight_links", "disable_dark_mode", "disable_comics" };
 
-enum Feature { Navigate, Stats, Annotations, Bookmarks, Kosync, Words, DarkMode, Comics };
+enum Feature { Navigate, Stats, Annotations, Bookmarks, Kosync, Words, HighlightLinks, DarkMode, Comics };
 
 // Settings > System > Developer. Debug mode shows the Debug tab, the debug
 // fields of the header and footer picker and the Fast rendering engine.

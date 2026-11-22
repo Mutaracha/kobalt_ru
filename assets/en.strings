@@ -1380,8 +1380,6 @@
 "reader.comics_reading_mode" = "Comics reading mode";
 
 "reader.comics_reading_mode_description" = "Hides margins, headers and footers, ignoring the current layout settings.";
-"header_footer.progress_bottom" = "Bottom";
-"header_footer.progress_top" = "Top";
 
 /* Approved beta.8 migration strings; new features arrive with the upstream integration. */
 "features.dark_mode" = "Dark theme toggle";

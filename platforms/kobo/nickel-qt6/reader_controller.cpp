@@ -116,6 +116,16 @@ bool enabled()
 int benchmarkReader = -1;
 #endif
 
+// Asset availability is retained between boot and USB storage boundaries.
+bool readerAvailable()
+{
+    return enabled() && environment().assets.available();
+}
+
+#if defined(KOBALT_BENCHMARK_API) || defined(KOBALT_SCENARIO_PLAYER)
+int benchmarkReader = -1;
+#endif
+
 // A reader preference is independent of the installation and recovery markers.
 bool alternativeEnabled()
 {
@@ -313,6 +323,8 @@ public:
                 if (valid)
                     kobalt::ui::prepareOpeningFonts(environment().assets);
                 attempt(false);
+                if (valid && controller)
+                    controller->preloadLastBook();
             });
             attempt(false);
         });
@@ -431,7 +443,7 @@ public:
             finish();
             return;
         }
-        CoordinatorBindings bindings{ enabled };
+        CoordinatorBindings bindings{ readerAvailable };
         bindings.automaticBookOpening = alternativeEnabled;
         bindings.setAutomaticBookOpening = setAlternativeFromKobalt;
 #if defined(KOBALT_BENCHMARK_API) || defined(KOBALT_SCENARIO_PLAYER)
@@ -471,6 +483,7 @@ public:
         kobalt::diagnostic(
                 "ready", { { "startup_ms", double(elapsed.elapsed()) }, { "opener", fromOpener } });
         candidate->finishPreviewMigration();
+        candidate->preloadLastBook();
         nh_log("reader: native controller ready");
     }
 

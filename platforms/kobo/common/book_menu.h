@@ -11,6 +11,7 @@ ReaderBookRoute readerBookRoute(const void *volume, QString *identity = nullptr,
                                 QString *path = nullptr);
 // Check the format and local path without opening the EPUB. The accepted
 // opening performs full inspection after its loading view has painted.
+bool readerBookFormatSupported(const void *volume);
 ReaderBookRoute readerBookCandidateRoute(const void *volume, QString *identity = nullptr,
                                          QString *path = nullptr);
 void rememberNativeBook(const QString &identity, const QString &path, bool protectedBook);

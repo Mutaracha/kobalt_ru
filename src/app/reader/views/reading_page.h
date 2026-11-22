@@ -68,7 +68,6 @@ public:
     std::array<headerfooter::Content, headerfooter::slotCount> slotContents;
     QString notice;
     qreal progressFraction = 0;
-    QVector<qreal> chapterFractions;
     bool comicsMode = false;
 
     bool showHeader() const { return !comicsMode && chrome.header(); }
@@ -189,12 +188,11 @@ private:
     // Text weight and family changes draw the strips again.
     using Slots = std::array<headerfooter::Content, 3>;
     using HeaderState = std::tuple<Slots, std::array<headerfooter::Field, 3>, bool, bool, int, int,
-                                   qint64, int, QString, bool, qreal, QVector<qreal>>;
+                                   qint64, int, QString>;
     using FooterState = std::tuple<Slots, std::array<headerfooter::Field, 3>, QString, bool, bool,
-                                   qreal, int, int, qint64, int, QString, QVector<qreal>>;
+                                   qreal, int, int, qint64, int, QString>;
     Slots stripSlots(bool footer) const;
     std::array<headerfooter::Field, 3> stripFields(bool footer) const;
-    void paintProgress(QPainter &painter, int baseline, bool down = false) const;
     void paintSlots(QPainter &painter, const QRect &bounds, bool footer,
                     bool sleeping = false) const;
     bool panelBelowHeader = false;

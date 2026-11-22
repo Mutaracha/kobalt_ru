@@ -123,6 +123,25 @@ kobalt::headerfooter::Values Reader::chromeValues()
     values.bookMilliseconds = estimates.bookMilliseconds;
     values.learningPace = estimates.learningPace;
     values.approximateTime = remainingTime::approximate(preferences);
+    values.decimalPercentages = headerfooter::decimalPercentages(preferences);
+    values.pageTurnMilliseconds = pageTurnMilliseconds;
+    if (state.contains("chapter_load_ms"))
+        values.chapterLoadMilliseconds = qint64(state.value("chapter_load_ms").toDouble());
+    values.wholeBook = !state.contains("book_fraction");
+    values.wholeBookFailed = !values.wholeBook && state.value("whole_book_failed").toBool();
+    // Fast lays out a chapter at a time and never the whole book.
+    values.wholeBookPercent = values.wholeBook || !renderingMode::countsInBackground()
+            ? -1
+            : session->layoutProgressPercent();
+    // The time of the whole book is taken when it first shows after the
+    // opening or a new layout.
+    if (session->layoutStarts() != statusLayout) {
+        statusLayout = session->layoutStarts();
+        statusWholeBookMilliseconds = -1;
+    }
+    if (values.wholeBook && statusWholeBookMilliseconds < 0 && !session->busy())
+        statusWholeBookMilliseconds = session->layoutMilliseconds();
+    values.wholeBookMilliseconds = values.wholeBook ? statusWholeBookMilliseconds : -1;
     return values;
 }
 
@@ -140,8 +159,7 @@ bool Reader::customModified() const
     const auto custom = fromJson(saved.toObject(), standard);
     return saved.isObject()
             && (custom.slotFields != standard.slotFields || custom.uppercase != standard.uppercase
-                || custom.progressBar != standard.progressBar
-                || custom.progressTop != standard.progressTop);
+                || custom.progressBar != standard.progressBar);
 }
 
 bool Reader::chromeTicks() const
@@ -153,6 +171,49 @@ bool Reader::chromeTicks() const
             || field == Field::ChapterTimeLeft || field == Field::BookTimeLeft)
             return true;
     return false;
+}
+
+bool Reader::bookStatusShown() const
+{
+    using namespace kobalt::headerfooter;
+    const auto &layout = page->chrome;
+    for (int slot = 0; slot < slotCount; ++slot)
+        if (layout.slotFields[slot] == Field::BookStatus
+            && (footerSlot(slot) ? layout.footerEnabled : layout.headerEnabled))
+            return true;
+    return false;
+}
+
+void Reader::syncStatusTimer()
+{
+    if (!bookStatusShown() || !isVisible() || lifecycleHidden || closing || services.suspended()) {
+        if (statusTimer)
+            statusTimer->stop();
+        return;
+    }
+    if (!statusTimer) {
+        statusTimer = new QTimer(this);
+        statusTimer->setObjectName("rrBookStatusTimer");
+        statusTimer->setInterval(5000);
+        connect(statusTimer, &QTimer::timeout, this, [this] {
+            if (!bookStatusShown() || !isVisible() || lifecycleHidden || closing
+                || services.suspended()) {
+                statusTimer->stop();
+                return;
+            }
+            // Panels over the page draw their own status; the strips wait.
+            if (topControls->isVisible() || settingsVisible() || dictionaryPanel->isVisible()
+                || searchPanel->isVisible() || linksActive())
+                return;
+            const auto before = page->slotContents;
+            showChapterText();
+            // Like a clock tick, it changes the strips, not the book page.
+            if (page->slotContents != before)
+                page->refreshContent();
+        });
+    }
+    if (!statusTimer->isActive())
+        statusTimer->start();
 }
 
 void Reader::loadChrome()
@@ -193,6 +254,12 @@ bool Reader::saveChrome(kobalt::headerfooter::Preset preset,
     }
     preferences = next;
     appearanceEdit.clearError();
+    if (appearanceEdit.ready())
+        page->comicsMode = appearanceEdit.preview()
+                                   ->requestedAppearance()
+                                   .fields()
+                                   .value(appearance::comicsModeKey)
+                                   .toBool(false);
     loadChrome();
     refresh();
     return true;
@@ -200,8 +267,6 @@ bool Reader::saveChrome(kobalt::headerfooter::Preset preset,
 
 void Reader::syncChromeControls()
 {
-    if (!slotMap)
-        return;
     using namespace kobalt::headerfooter;
     // A changed field can start or end the need for the minute clock, and a
     // time-left field needs the reading pace.
@@ -210,6 +275,9 @@ void Reader::syncChromeControls()
         if (paceNeeded())
             book->minuteTick();
     }
+    // The Header and footer rows follow the layout once they exist.
+    if (!appearanceBuilt)
+        return;
     const auto values = chromeValues();
     const auto contents = [&values](const Layout &layout) {
         kobalt::reader::SlotContents result;
@@ -234,10 +302,7 @@ void Reader::syncChromeControls()
     headerSizeControl->setSize(current.headerSize, current.headerEnabled);
     footerSizeControl->setSize(current.footerSize, current.footerEnabled);
     for (auto *button : progressBarButtons)
-        button->setChecked(button->property("progress_position").toInt()
-                           == (!current.progressBar          ? 0
-                                       : current.progressTop ? 2
-                                                             : 1));
+        button->setChecked(button->property("switch_on").toBool() == current.progressBar);
     // A modified Custom layout carries a star, as on its card.
     const bool starred = chromePreset == Preset::Custom && modified;
     headerFooterRow->setText(
@@ -249,11 +314,13 @@ void Reader::syncChromeControls()
                          starred ? strings::get("header_footer.preset.modified_name")
                                            .arg(presetLabel(chromePreset))
                                  : presetLabel(chromePreset)));
-    if (fieldChooser->isVisible())
+    if (fieldChooser && fieldChooser->isVisible()) {
+        fieldChooser->debug = features::debugMode(preferences);
         fieldChooser->open(fieldChooser->slot(), current.slotFields[fieldChooser->slot()], values,
                            current.uppercase[fieldChooser->slot()],
                            fieldChooser->slot() < 3 ? page->headerTextPixels()
                                                     : page->footerTextPixels());
+    }
 }
 
 QWidget *Reader::chromeView() const
@@ -269,7 +336,8 @@ void Reader::openHeaderFooterView()
 {
     if (session->temporaryTypography() || !menu->isVisible())
         return;
-    fieldChooser->hide();
+    if (fieldChooser)
+        fieldChooser->hide();
     syncChromeControls();
     headerFooterView->show();
     headerFooterView->raise();
@@ -280,7 +348,8 @@ void Reader::closeChromeViews()
 {
     if (!chromeView())
         return;
-    fieldChooser->hide();
+    if (fieldChooser)
+        fieldChooser->hide();
     headerFooterView->hide();
     refresh();
 }
@@ -290,18 +359,20 @@ void Reader::openFieldChooser(int slot)
     if (session->temporaryTypography() || !menu->isVisible())
         return;
     const auto &current = page->chrome;
-    fieldChooser->open(slot, current.slotFields[slot], chromeValues(), current.uppercase[slot],
-                       slot < 3 ? page->headerTextPixels() : page->footerTextPixels());
+    auto *chooser = ensureFieldChooser();
+    chooser->debug = features::debugMode(preferences);
+    chooser->open(slot, current.slotFields[slot], chromeValues(), current.uppercase[slot],
+                  slot < 3 ? page->headerTextPixels() : page->footerTextPixels());
     headerFooterView->hide();
-    fieldChooser->show();
-    fieldChooser->raise();
+    chooser->show();
+    chooser->raise();
     refresh();
 }
 
 // A choice or the close cell returns to Header and footer.
 void Reader::closeFieldChooser()
 {
-    if (!fieldChooser->isVisible())
+    if (!fieldChooser || !fieldChooser->isVisible())
         return;
     fieldChooser->hide();
     headerFooterView->show();
@@ -363,7 +434,8 @@ void Reader::openSettings()
     lightPopup->hide();
     chapterGraph->hide();
     bookmarkList->hide();
-    acknowledgments->hide();
+    if (acknowledgments)
+        acknowledgments->hide();
     appearanceEdit.clearContinuation();
     restoringDefaults = false;
     restoringPresets = false;
@@ -381,9 +453,10 @@ void Reader::openSettings()
     settingsDictionaryFontFace = preferences.value("dictionary_font_face").toString();
     settingsDictionaryFontSize = preferences.value("dictionary_font_size").toInt(100);
     settingsHeaderFooterWeight = ui::headerFooterAddedWeight();
-    settingsRenderingMode = renderingMode::value(renderingMode::fromPreferences(preferences));
     settingsTimeRemainingFormat =
             remainingTime::approximate(preferences) ? "approximate" : "detailed";
+    settingsPercentageFormat = headerfooter::decimalPercentages(preferences) ? "decimal" : "whole";
+    settingsRenderingMode = renderingMode::value(renderingMode::fromPreferences(preferences));
     hideTabLabelsOption->setChecked(preferences.value("hide_tab_labels").toBool(false));
     saveWordsOption->setChecked(preferences.value("save_looked_up_words").toBool(true));
     zenModeOption->setChecked(preferences.value("zen_mode").toBool(false));
@@ -397,7 +470,10 @@ void Reader::openSettings()
                         &settingsDictionaryFontFace })
         if (!session->fontFaces().contains(*face))
             face->clear();
+    showDebugSettings();
+    timing.stage("prepare");
     showSettingsFonts();
+    timing.stage("fonts");
     settingsPages->setCurrentIndex(int(SettingsPage::Display));
     resetDefaults->setText(strings::get("reader.restore_appearance_defaults"));
     resetDefaults->setEnabled(true);
@@ -468,10 +544,16 @@ void Reader::openSettings()
     screenRefreshMode = kobalt::screenRefresh(preferences.value("screen_refresh").toString());
     showScreenRefresh();
     static_cast<SettingsPanel *>(general)->setZenLayout(zenMode());
+    timing.stage("controls");
     fitSettings();
     general->show();
-    if (general)
-        general->raise();
+    general->raise();
+    // A panel that was never shown measures its word-wrapped rows too tall,
+    // so fit it again now that it shows. The first fit chose the list or a
+    // section; nothing paints before the event loop runs.
+    fitSettings();
+    timing.stage("fit");
+    // open_ms, below, is the reader's refresh.
     refresh();
     timing.finish(general);
 }
@@ -665,14 +747,14 @@ void Reader::renderStylingSamples(int requested)
         // The same request in the same orientation shows its earlier result
         // at once, without the engine.
         const bool landscape = width() > height();
-        const auto key = styleSampleKey(session->fontInputs(), request, session->fontCatalog());
+        const auto key = styleSampleKey(session->fontInputs(), request);
         StyleSample cached;
         if (stylingSampleCache.find(landscape, key, &cached)) {
             render.reset();
             panel->setStylingSample(entry.feature, cached);
             continue;
         }
-        panel->setStylingSample(entry.feature, { });
+        panel->setStylingSample(entry.feature, {});
         render = request.cancelled = std::make_shared<std::atomic_bool>(false);
         ++stylingSamplesPending;
         renderStyleSample(session->fontInputs(), request, this,
@@ -711,7 +793,7 @@ pageButtons::Buttons Reader::buttonControls() const
     auto buttons = services.buttonControls
             ? pageButtons::held(services.buttonControls(),
                                 services.pageButtonsRotated && services.pageButtonsRotated())
-            : pageButtons::Buttons{ };
+            : pageButtons::Buttons{};
     for (auto &button : buttons) {
         QKeyEvent event(QEvent::KeyPress, button.key, Qt::NoModifier);
         const int nativeDirection = services.pageButtonDirection(&event);
@@ -783,6 +865,7 @@ bool Reader::writePreferences(const QJsonObject &next)
 
 void Reader::applySettings()
 {
+    // Settings applies the choices in its own controls.
     if (!general || savingButtonControls || savingDarkMode >= 0 || savingDenseGraph
         || session->temporaryTypography())
         return;
@@ -790,8 +873,7 @@ void Reader::applySettings()
     static_cast<SettingsPanel *>(general)->dismissRestore();
     static_cast<SettingsPanel *>(general)->dismissStandbyConfirmation();
     static_cast<SettingsPanel *>(general)->dismissAutomaticOpeningConfirmation();
-    // Edits made before the preview opened have no session yet. Apply them
-    // together with these settings once the preview holds them.
+    // Apply the draft and these settings once its preview has opened.
     if (appearanceEdit.queued()
         && appearanceEdit.previewState() == AppearanceEditSession::PreviewState::Opening) {
         appearanceEdit.deferApply();
@@ -806,6 +888,8 @@ void Reader::applySettings()
     next["dictionary_font_size"] = settingsDictionaryFontSize;
     next["header_footer_added_weight"] = settingsHeaderFooterWeight;
     next["hide_tab_labels"] = hideTabLabelsOption->isChecked();
+    next[features::debugModeKey] =
+            static_cast<SettingsPanel *>(general)->debugModeOption->isChecked();
     next["save_looked_up_words"] = saveWordsOption->isChecked();
     next["zen_mode"] = zenModeOption->isChecked();
     if (wifiPowerSaverOption)
@@ -813,6 +897,7 @@ void Reader::applySettings()
     if (disableStandbyOption)
         next[disableReaderStandbyKey] = disableStandbyOption->isChecked();
     next[remainingTime::preferenceKey] = settingsTimeRemainingFormat;
+    next[headerfooter::percentageFormatKey] = settingsPercentageFormat;
     next[renderingMode::preferenceKey] = settingsRenderingMode;
     for (const auto *key : appearance::fallbackFontKeys)
         next[key] = settingsFontFaces.value(key).toString();
@@ -896,7 +981,7 @@ void Reader::applySettings()
     }
     if (!features::enabled(preferences, features::Words)) {
         ++savedLookupEpoch;
-        lookupSnapshot = { };
+        lookupSnapshot = {};
         dictionaryPanel->setSaved(false, false);
         if (wordNotice)
             wordNotice->hide();
@@ -1367,7 +1452,7 @@ void Reader::schedulePreviewWarm()
 
 void Reader::mutateAppearance(std::function<void(ReaderSession &)> operation)
 {
-    diagnostic("appearance-preview-request", { }, false);
+    diagnostic("appearance-preview-request", {}, false);
     appearanceViewport = bodySize();
     appearanceEdit.mutate(
             *session, bodySize(), [this] { refresh(); },
@@ -1415,8 +1500,7 @@ void Reader::finishPreview()
         refresh();
         return;
     }
-    // A rendering preview already holds the newest request. Only edits made
-    // before it opened must wait for it.
+    // Finish opening the draft before applying it to the reading session.
     if (appearanceEdit.preview() && !appearanceEdit.ready()) {
         appearanceEdit.deferApply();
         return;
@@ -1506,10 +1590,12 @@ void Reader::applyInterfaceFonts()
 void Reader::showSettingsFonts()
 {
     auto *panel = static_cast<SettingsPanel *>(general);
-    panel->renderingButton->setCaption(
-            SettingsPanel::renderingModeLabel(settingsRenderingMode).toUpper());
+    panel->percentageFormatButton->setCaption(
+            SettingsPanel::percentageFormatLabel(settingsPercentageFormat).toUpper());
     panel->timeRemainingFormatButton->setCaption(
             SettingsPanel::timeRemainingFormatLabel(settingsTimeRemainingFormat).toUpper());
+    panel->renderingButton->setCaption(
+            SettingsPanel::renderingModeLabel(settingsRenderingMode).toUpper());
     panel->headerFooterWeightButton->setCaption(
             (settingsHeaderFooterWeight ? strings::get("settings.header_footer_weight_heavier")
                                                   .arg(settingsHeaderFooterWeight)
@@ -1602,7 +1688,7 @@ void Reader::openSettingsFont(const QString &key)
             && !nativeFamilies.contains(fonts[row].family, Qt::CaseInsensitive))
             fonts.removeAt(row);
     fonts = orderedReadingFonts(std::move(fonts), { selected });
-    fonts.prepend({ QString(), { }, FontOrigin::Recommended, { }, { } });
+    fonts.prepend({ QString(), {}, FontOrigin::Recommended, {}, {} });
     panel->showFontChoices(
             isDefault                ? strings::get("reader.default_font")
                     : isUi           ? strings::get("settings.ui_font")

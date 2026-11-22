@@ -128,11 +128,29 @@ void rememberNativeBook(const QString &identity, const QString &path, bool prote
               protectedBook ? ReaderBookRoute::Protected : ReaderBookRoute::Remembered });
 }
 
+bool readerBookFormatSupported(const void *volume)
+{
+    if (!volume || previewBook(volume))
+        return false;
+    static const auto values = symbol<QVariantMap (*)(const void *)>("_ZNK6Volume11getDbValuesEv");
+    if (!values)
+        return false;
+    const auto mime = values(volume).value("MimeType").toString();
+    const auto id = bookIdentity(volume);
+    if (id.endsWith(QLatin1String(".txt.epub"), Qt::CaseInsensitive))
+        return false;
+    const auto path = localReaderBookPath(id);
+    return mime == "application/epub+zip" || mime == "application/x-kobo-epub+zip"
+            || path.endsWith(QLatin1String(".fb2"), Qt::CaseInsensitive)
+            || mime == "application/x-fictionbook+xml" || mime == "application/fb2"
+            || mime == "application/x-fb2";
+}
+
 static ReaderBookRoute bookRoute(const void *volume, QString *identity, QString *path,
                                  bool inspectPublication)
 {
     using Route = ReaderBookRoute;
-    if (previewBook(volume))
+    if (!readerBookFormatSupported(volume))
         return Route::Unsupported;
     static const auto values = symbol<QVariantMap (*)(const void *)>("_ZNK6Volume11getDbValuesEv");
     if (!volume || !values)
