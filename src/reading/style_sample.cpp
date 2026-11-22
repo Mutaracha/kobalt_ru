@@ -512,7 +512,7 @@ QJsonObject styleSampleSettings(QJsonObject state)
     // part is in the book, its estimated pages and how long it took to
     // load. With them a kept sample would never be found again.
     for (const auto *key :
-         { "whole_book_failed", "book_fraction", "slice_start", "continues_before", "continues_after",
+         { "book_fraction", "slice_start", "continues_before", "continues_after",
            "chapter_load_ms", "page_estimate", "rough_page", "rough_pages", "rough_item_page",
            "rough_item_pages", "rough_pages_estimated", "rough_item_pages_estimated",
            "koblaze_first_spine_item", "koblaze_last_spine_item" })

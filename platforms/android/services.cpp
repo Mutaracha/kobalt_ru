@@ -73,6 +73,7 @@ ReaderHostServices readerHostServices()
         result.deviceName = QStringLiteral("Android");
     result.colorDisplay = [] { return true; };
     result.systemRotation = true;
+    result.showNativeReaderOptions = false;
     result.browserAvailable = [] { return true; };
     result.openBrowser = [](const QUrl &url, QWidget *) {
         return url.isValid() && !url.host().isEmpty()
@@ -140,9 +141,7 @@ ReaderHostServices readerHostServices()
                 QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
                 + "/user-folders/dictionaries");
     };
-    result.keyboard = [](QWidget *, QWidget *editor) {
-        return std::make_unique<Keyboard>(editor);
-    };
+    result.keyboard = [](QWidget *, QWidget *editor) { return std::make_unique<Keyboard>(editor); };
     result.presentation = [](QWidget *) { return std::make_unique<Presentation>(); };
     return result;
 }

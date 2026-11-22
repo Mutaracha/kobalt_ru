@@ -4,7 +4,7 @@
 #include "reading/reading_book.h"
 #include "reading/appearance_settings.h"
 #include "reading/session_timeout.h"
-#include "reading/rendering_mode.h"
+#include "reading/text_presets.h"
 #include "app/messages/opening_message.h"
 #include "reading/reader_session.h"
 #include "storage/reader_storage.h"
@@ -16,6 +16,7 @@
 #include <atomic>
 #include <QSqlQuery>
 #include "publication/native_resources.h"
+#include "publication/local_resources.h"
 #include "support/qt_compat.h"
 #include "publication/resource_server.h"
 #include "plain_archive.h"
@@ -25,6 +26,7 @@
 #include <QFile>
 #include <QGuiApplication>
 #include <QJsonDocument>
+#include <QSemaphore>
 #include <QTemporaryDir>
 #include <QTimer>
 #include <QThread>
@@ -135,7 +137,8 @@ public:
         if (calls.failWrite) {
             return calls.failure;
         }
-        calls.current.location = location;
+        if (!location.isEmpty())
+            calls.current.location = location;
         ++calls.current.modified;
         calls.current.status = finished ? 2 : 1;
         return NativeSaveResult::verified(calls.current, location.isEmpty());
@@ -178,14 +181,8 @@ private:
 int main(int argc, char **argv)
 {
     QGuiApplication app(argc, argv);
-    for (const auto *identity : { "file:///mnt/onboard/book.fb2", "file:///mnt/sd/Book.FB2",
-                                  "file:///mnt/onboard/book.epub" })
-        require(nickel::allowsUnmappedPosition(QString::fromLatin1(identity)),
-                "A supported local publication lost status/percentage-only writeback");
-    for (const auto *identity : { "store-id", "file:///mnt/onboard/book.kepub.epub",
-                                  "file:///mnt/onboard/book.fb2.zip", "https://host/book.fb2" })
-        require(!nickel::allowsUnmappedPosition(QString::fromLatin1(identity)),
-                "Unmapped writeback escaped the supported local formats");
+    require(nickel::allowsUnmappedPosition(QStringLiteral("file:///mnt/onboard/book.fb2")),
+            "FB2 lost the shared activity-only progress policy");
     {
         // Replay the Clara BW report: 307 seconds of reading included 223
         // seconds of kernel standby that CLOCK_MONOTONIC did not count.
@@ -357,6 +354,93 @@ int main(int argc, char **argv)
                             && !storage::readBookState(finishPaths, identity)
                                         .object.contains("image_views"),
                     "Fit restored stale views from the opening record");
+            // Deliver the first A completion only after a second A has been queued.
+            // B reaches storage in between. Fail the second A and retry it unchanged.
+            const auto queuePreset = [&](const QString &name) {
+                reopened.setTextPreset(name);
+                require(reopened.checkpoint(&snapshot, true), "Could not queue preset");
+                storage::drainWriterThread();
+            };
+            const auto presetSql = [&](const QString &statement) {
+                return storage::profileTransaction(finishPaths.directory, [&](QSqlDatabase &db) {
+                    return QSqlQuery(db).exec(statement);
+                });
+            };
+            queuePreset("A");
+            queuePreset("B");
+            require(presetSql("CREATE TRIGGER refuse_preset BEFORE UPDATE ON book_state "
+                              "BEGIN SELECT RAISE(ABORT,'test'); END"),
+                    "Could not obstruct the second preset save");
+            int presetFailures = 0;
+            reopened.onCheckpointFailed([&] { ++presetFailures; });
+            queuePreset("A");
+            QCoreApplication::sendPostedEvents(nullptr, QEvent::MetaCall);
+            require(presetSql("DROP TRIGGER refuse_preset"), "Could not release preset save");
+            queuePreset("A");
+            QCoreApplication::sendPostedEvents(nullptr, QEvent::MetaCall);
+            require(presetFailures == 1
+                            && storage::readBookState(finishPaths, identity)
+                                            .object.value(textpresets::bookKey)
+                                    == "A",
+                    "An earlier A completion acknowledged a later failed A save");
+            reopened.onCheckpointFailed({});
+            // The timed-out close still owns its snapshot while the reader accepts input.
+            int closes = 0;
+            reopened.checkpointForClose([&](bool ok) {
+                require(ok, "Held close checkpoint failed");
+                ++closes;
+            });
+            reopened.setHideBookOnSleepScreen(true);
+            require(reopened.checkpoint(&snapshot, true), "Lost explicit choice during close save");
+            waitUntil([&] { return closes == 1 && !reopened.savesPending(); });
+            require(storage::readBookState(finishPaths, identity)
+                            .object.value("hide_book_on_sleep_screen")
+                            .toBool(),
+                    "Close completion lost the newer sleep-screen choice");
+            // Sleep can also require a durable checkpoint before the close replies.
+            QVector<quint64> savedEpochs;
+            reopened.onPositionSaved(
+                    [&](const QString &, quint64 epoch) { savedEpochs.append(epoch); });
+            reopened.checkpointForClose([&](bool ok) {
+                require(ok, "A forced save dropped a pending close");
+                ++closes;
+            });
+            const auto currentEpoch = reopened.advancePositionSaveEpoch();
+            reopened.setHideBookOnSleepScreen(false);
+            require(reopened.checkpoint(&snapshot), "A pending close prevented the durable save");
+            waitUntil([&] { return closes == 2 && !reopened.savesPending(); });
+            require(savedEpochs == QVector<quint64>{ currentEpoch }
+                            && !storage::readBookState(finishPaths, identity)
+                                        .object.value("hide_book_on_sleep_screen")
+                                        .toBool()
+                            && !storage::profileHasUnsyncedWrites(),
+                    "An obsolete close acknowledged or replaced the forced save");
+            reopened.onPositionSaved({});
+
+            // Fit is on disk. Hold the writer while the reader zooms in and
+            // returns to Fit, then check the record before a close can save it again.
+            QSemaphore entered, release;
+            storage::RecordWriter blocker;
+            blocker.post(
+                    [&] {
+                        entered.release();
+                        release.acquire();
+                        return true;
+                    },
+                    {});
+            entered.acquire();
+            require(reopened.rememberImageView(a, { { "zoom", 2 }, { "x", .5 }, { "y", .5 } })
+                            && reopened.checkpoint(&snapshot, true),
+                    "Queue zoom while the profile writer is busy");
+            require(reopened.rememberImageView(a, { { "zoom", 1 }, { "x", .5 }, { "y", .5 } })
+                            && reopened.checkpoint(&snapshot, true),
+                    "Queue Fit while the zoom checkpoint is pending");
+            release.release();
+            waitUntil([&] { return !reopened.savesPending(); });
+            const auto fitted = storage::readBookState(finishPaths, identity);
+            require(fitted.status == storage::ReadStatus::Ok
+                            && !fitted.object.contains("image_views"),
+                    "The pending zoom overwrote the reader's final Fit choice");
             for (int i = 0; i < 70; ++i)
                 require(reopened.rememberImageView(QString::number(i, 16).rightJustified(64, '0'),
                                                    { { "zoom", 2 }, { "x", .25 }, { "y", .75 } }),
@@ -461,6 +545,126 @@ int main(int argc, char **argv)
             }
             qunsetenv("KOBALT_CHAPTER_PAGES");
         }
+#if __has_include(<koblaze.h>)
+        {
+            // Chapter mode saves its page estimate with the reading position,
+            // and the book opens again with the same page numbers.
+            // Keep the Accurate pin of the test runner for the checks after this one.
+            const auto pinned = qgetenv("KOBALT_CHAPTER_MODE");
+            qputenv("KOBALT_CHAPTER_MODE", "1");
+            qputenv("KOBALT_CHAPTER_PAGES", "2");
+            {
+                const QString identity = "finish-across-slices";
+                const auto typeTester =
+                        QStringLiteral(KOBALT_TEST_FIXTURES) + "/trevelyans-type-tester.kepub.epub";
+                auto session = std::make_unique<ReaderSession>(test::readerFonts(),
+                                                               test::readerPlaceholder());
+                auto access = std::make_shared<SourceLease>();
+                bool opened = false;
+                session->open({ identity,
+                                typeTester,
+                                QSize(758, 900),
+                                {},
+                                {},
+                                {},
+                                access,
+                                localResourceFactory(typeTester, access) },
+                              [&](OpeningResult result) {
+                                  require(result.ready(), qPrintable(openingMessage(result)));
+                                  opened = true;
+                              });
+                waitUntil([&] { return opened; });
+                const auto hash = session->sourceHash();
+                ReadingBook book(std::move(session), finishPaths.bookState(identity), finishPaths,
+                                 identity, hash, nullptr, {}, {});
+                auto *reader = book.session();
+                require(!book.offerFinish(), "Opening a book offered to finish it");
+                require(reader->goToFraction(.93), "Cannot seek near the book end");
+                waitUntil([&] { return !reader->busy(); });
+                require(reader->progressFraction() >= .9 && reader->continuesAfter(),
+                        "The near-end fixture must still have a later slice");
+                require(book.offerFinish(), "Fast mode must offer to finish at 90% on exit");
+            }
+            const QString identity = "page-estimate";
+            QJsonObject shown;
+            {
+                // The page numbers come once the idle work has measured the
+                // book, at the next turn.
+                auto session = open(QSize(758, 900), {}, identity);
+                for (int turn = 0; turn < 3 || session->state().value("rough_page").toInt() <= 0;
+                     ++turn) {
+                    require(turn < 20 && session->turn(1), "Cannot turn in chapter mode");
+                    waitUntil([&] { return !session->busy() && !session->preparingNeighbours(); });
+                }
+                shown = session->state();
+                require(shown.value("rough_page").toInt() > 1
+                                && shown.value("page_estimate").isObject(),
+                        "Chapter mode has no page estimate in its frame");
+                require(shown.value("chapter_load_ms").toDouble(-1) >= 0,
+                        "Chapter mode has no chapter load time in its frame");
+                const auto hash = session->sourceHash();
+                ReadingBook book(std::move(session), finishPaths.bookState(identity), finishPaths,
+                                 identity, hash, nullptr, {}, {});
+                QJsonObject snapshot;
+                require(book.checkpoint(&snapshot), "Cannot save the chapter-mode position");
+            }
+            const auto saved = storage::readBookState(finishPaths, identity).object;
+            const auto record = saved.value("page_estimate").toObject();
+            require(record.value("page").toInt() == shown.value("rough_page").toInt()
+                            && record.value("item_page").toInt()
+                                    == shown.value("rough_item_page").toInt()
+                            && !saved.contains("rough_page") && !saved.contains("chapter_load_ms"),
+                    "The saved record must hold the shown page, without the frame values");
+            // Until the book is measured again the reader shows percentages.
+            // The first turn after that continues from the saved numbers.
+            const auto turnOnce = [&](ReaderSession &session) {
+                require(session.state().value("rough_page").toInt() == 0,
+                        "A page number before the book was measured");
+                // Neighbour work ends independently of measurement. Chapter
+                // word counts become available after every item is measured.
+                waitUntil([&] {
+                    return !session.busy() && !session.preparingNeighbours()
+                            && session.totalWords() >= 0;
+                });
+                require(session.turn(1), "Cannot turn in chapter mode");
+                waitUntil([&] { return !session.busy(); });
+                return session.state();
+            };
+            auto session = open(QSize(758, 900), saved, identity);
+            const auto hash = session->sourceHash();
+            ReadingBook reopened(std::move(session), finishPaths.bookState(identity), finishPaths,
+                                 identity, hash, nullptr, {}, {});
+            const auto again = turnOnce(*reopened.session());
+            require(again.value("rough_page").toInt() == shown.value("rough_page").toInt() + 1
+                            && again.value("rough_item_page").toInt()
+                                    == shown.value("rough_item_page").toInt() + 1,
+                    "The book must open again with the saved page numbers");
+            // A record whose numbers are ahead of the estimate, as after a
+            // correction while reading, opens with its own numbers.
+            auto ahead = saved;
+            auto aheadRecord = record;
+            aheadRecord["page"] = record.value("page").toInt() + 5;
+            aheadRecord["item_page"] = record.value("item_page").toInt() + 5;
+            ahead["page_estimate"] = aheadRecord;
+            ahead["book"] = "page-estimate-ahead";
+            require(storage::writeBookState(finishPaths, "page-estimate-ahead", ahead),
+                    "Cannot seed a page estimate ahead of the estimate");
+            auto aheadSession =
+                    open(QSize(758, 900),
+                         storage::readBookState(finishPaths, "page-estimate-ahead").object,
+                         "page-estimate-ahead");
+            const auto aheadState = turnOnce(*aheadSession);
+            require(aheadState.value("rough_page").toInt() == shown.value("rough_page").toInt() + 6
+                            && aheadState.value("rough_item_page").toInt()
+                                    == shown.value("rough_item_page").toInt() + 6,
+                    "The saved page numbers must come from the record");
+            if (pinned.isEmpty())
+                qunsetenv("KOBALT_CHAPTER_MODE");
+            else
+                qputenv("KOBALT_CHAPTER_MODE", pinned);
+            qunsetenv("KOBALT_CHAPTER_PAGES");
+        }
+#endif
         for (const auto &flag : { QJsonValue(), QJsonValue("invalid"), QJsonValue(true) }) {
             const QString identity = "finish-book";
             QJsonObject original{ { "schema", 1 },
@@ -794,7 +998,8 @@ int main(int argc, char **argv)
                     "Display-only chapter change affected the saved checkpoint");
             for (const auto *key :
                  { "chapter_title", "chapter_page", "chapter_pages", "page", "pages", "next_page",
-                   "text_font_face", "embedded_font_count", "cached_pages" })
+                   "text_font_face", "embedded_font_count", "cached_pages", "continues_before",
+                   "continues_after", "book_fraction" })
                 require(!saved.contains(key), "Checkpoint persisted a display-only field");
             require(book.session()->turn(1), "Cannot turn before background checkpoint");
             waitUntil([&] { return !book.session()->busy(); });
@@ -1118,28 +1323,7 @@ int main(int argc, char **argv)
         tick();
         const QJsonObject preferences{ { sessionTimeout::preferenceKey, minutes } };
         book.sleepReading(preferences);
-        {
-        // A fragment's final page must not offer to finish an unfinished book.
-        // Fast keeps the fixture chapter-local without a background adoption race.
-        renderingMode::setOverride(1);
-        auto session = open(QSize(758, 900), {}, "fragment-finish");
-        waitUntil([&] { return !session->busy(); });
-        require(session->state().contains("book_fraction") && session->continuesAfter(),
-                "Finish regression requires a non-final chapter fragment");
-        require(session->go(session->pages() - 1), "Cannot reach the fragment's final page");
-        waitUntil([&] { return !session->busy(); });
-        require(session->continuesAfter() && session->progressFraction() < 0.9,
-                "Finish regression unexpectedly reached the end of the book");
-        const auto hash = session->sourceHash();
-        ReadingBook book(std::move(session), paths.bookState("fragment-finish"), paths,
-                         "fragment-finish", hash, nullptr, {}, {});
-        require(!book.offerFinish(), "A chapter-local final page offered to finish the book");
-        require(book.checkpointState().value("percent").toInt()
-                        == book.session()->progressPercent(),
-                "Library checkpoint used the fragment's percentage as book progress");
-        renderingMode::setOverride(-1);
-    }
-    bool drained = false;
+        bool drained = false;
         book.drainReadingSave([&](NativeActivityResult result) {
             require(result == NativeActivityResult::NotRequired, "Sleep native drain");
             drained = true;
@@ -1429,7 +1613,8 @@ int main(int argc, char **argv)
             waitUntil([&] { return !book.session()->busy(); });
             book.observeReading();
             require(book.checkpoint(&snapshot, true), "Native history routine checkpoint");
-            storage::drainWriterThread();
+            // The writer posts its checkpoint completion to this thread.
+            waitUntil([&] { return !book.savesPending(); });
         }
         require(calls.observed == 4, "History displaced native activity reporting");
         require(historyValue("SELECT COUNT(*) FROM native_history_audit").toInt() == 0,
@@ -1770,14 +1955,36 @@ int main(int argc, char **argv)
             require(book.checkpointState().value("nickel_progress").toObject() == committed.json(),
                     "An unverified write replaced the acknowledged native baseline");
         }
-        calls.failure = NativeSaveResult::unverified("synthetic write failure");
+        calls.failWrite = false;
         const int writes = calls.writes;
-        require(book.writeNative({}, "unmappable store position").status()
-                                == NativeSaveResult::Status::LocalOnly
-                        && calls.writes == writes,
-                "Store book accepted a time-only write");
-        require(book.nativeSaveResult().status() == NativeSaveResult::Status::LocalOnly,
-                "Unsupported store position was reported as a storage failure");
+        const auto bookmark = calls.current.location;
+        const auto modified = calls.current.modified;
+        const auto mappingError = strings::get("error.invalid_source_element_offset");
+        require(book.writeNative({}, mappingError).status()
+                                == NativeSaveResult::Status::ActivityOnly
+                        && calls.writes == writes + 1 && calls.location.isEmpty()
+                        && calls.current.location == bookmark && calls.current.modified > modified,
+                "Unmapped store position did not save activity while preserving the bookmark");
+        const auto failure = book.checkpointState().value("native_writeback_failure").toObject();
+        require(failure.value("mapping_error_code") == "error.invalid_source_element_offset"
+                        && !failure.value("utc").toString().isEmpty()
+                        && !failure.contains("position"),
+                "Mapping failure lost its safe diagnostic code or retained a position");
+        require(book.writeNative("position-after-mapping-failure", {}).saved(),
+                "Mapped save did not recover after an activity-only save");
+        require(book.checkpoint(&snapshot)
+                        && snapshot.value("native_writeback_error").toString().isEmpty()
+                        && snapshot.value("native_writeback_failure").toObject() == failure
+                        && storage::readBookState(paths, "store-id")
+                                        .object.value("native_writeback_failure")
+                                        .toObject()
+                                == failure,
+                "Successful save erased the retained native failure");
+        calls.failWrite = true;
+        calls.failure = NativeSaveResult::unverified("synthetic write failure");
+        require(book.writeNative("position-two", {}).status()
+                        == NativeSaveResult::Status::Unverified,
+                "Cannot prepare a changed checkpoint for the storage failure");
         const auto changeSql = [&](const QString &sql) {
             return storage::profileTransaction(paths.directory, [&](QSqlDatabase &db) {
                 QSqlQuery query(db);
@@ -1869,67 +2076,52 @@ int main(int argc, char **argv)
                 "Released book accessed its bridge again");
     }
     {
-        // An FB2 identity has no Nickel chapter mapping. Its mapping failure must
-        // still reach KoboReader.sqlite as a time-only status/percentage write.
+        const auto retained = storage::readBookState(paths, "store-id")
+                                      .object.value("native_writeback_failure")
+                                      .toObject();
+        require(!retained.isEmpty(), "Native failure was not retained on disk");
         Calls calls;
-        calls.current.book = "file:///mnt/onboard/Books/test.fb2";
-        calls.current.location.clear();
-        calls.changed = false;
         auto session = open();
         const auto hash = session->sourceHash();
-        ReadingBook fb2(std::move(session), paths.bookState("fb2-book"), paths,
-                        "file:///mnt/onboard/Books/test.fb2", hash, std::make_unique<Bridge>(calls),
-                        calls.current, calls.current);
-        const int writes = calls.writes;
-        require(fb2.writeNative("ignored-rmsdk-location", "position cannot be mapped").saved(),
-                "FB2 mapping failure blocked the exit save");
-        require(calls.writes == writes + 1 && calls.location.isEmpty(),
-                "FB2 writeback was not time-only after a mapping failure");
-        QJsonObject snapshot;
-        require(fb2.checkpoint(&snapshot), "FB2 checkpoint failed");
-        require(snapshot.value("native_writeback") == QStringLiteral("time-only"),
-                "FB2 checkpoint did not record time-only writeback");
-    }
-    {
-        // Exercise upstream deferred-close and forced-save completion ownership.
-        auto session = open(QSize(758, 900), {}, "checkpoint-epochs");
-        const auto hash = session->sourceHash();
-        ReadingBook reopened(std::move(session), paths.bookState("checkpoint-epochs"), paths,
-                             "checkpoint-epochs", hash, nullptr, {}, {});
-        QJsonObject snapshot;
-        // The timed-out close still owns its snapshot while the reader accepts input.
-        int closes = 0;
-        reopened.checkpointForClose([&](bool ok) {
-            require(ok, "Held close checkpoint failed");
-            ++closes;
+        ReadingBook restored(std::move(session), paths.bookState("store-id"), paths, "store-id",
+                             hash, std::make_unique<Bridge>(calls), calls.current, calls.current);
+        require(restored.checkpointState().value("native_writeback_failure").toObject() == retained,
+                "Reopening erased the last native failure");
+        QTemporaryDir logs;
+        require(logs.isValid(), "Cannot create native failure diagnostics");
+        initializeDiagnostics(logs.path());
+        QJsonObject event;
+        setDiagnosticObserver([&](const QJsonObject &entry) {
+            if (entry.value("event") == "native-save")
+                event = entry;
         });
-        reopened.setHideBookOnSleepScreen(true);
-        require(reopened.checkpoint(&snapshot, true), "Lost explicit choice during close save");
-        waitUntil([&] { return closes == 1 && !reopened.savesPending(); });
-        require(storage::readBookState(paths, "checkpoint-epochs")
-                        .object.value("hide_book_on_sleep_screen")
-                        .toBool(),
-                "Close completion lost the newer sleep-screen choice");
-        // Sleep can also require a durable checkpoint before the close replies.
-        QVector<quint64> savedEpochs;
-        reopened.onPositionSaved(
-                [&](const QString &, quint64 epoch) { savedEpochs.append(epoch); });
-        reopened.checkpointForClose([&](bool ok) {
-            require(ok, "A forced save dropped a pending close");
-            ++closes;
-        });
-        const auto currentEpoch = reopened.advancePositionSaveEpoch();
-        reopened.setHideBookOnSleepScreen(false);
-        require(reopened.checkpoint(&snapshot), "A pending close prevented the durable save");
-        waitUntil([&] { return closes == 2 && !reopened.savesPending(); });
-        require(savedEpochs == QVector<quint64>{ currentEpoch }
-                        && !storage::readBookState(paths, "checkpoint-epochs")
-                                    .object.value("hide_book_on_sleep_screen")
-                                    .toBool()
-                        && !storage::profileHasUnsyncedWrites(),
-                "An obsolete close acknowledged or replaced the forced save");
-        reopened.onPositionSaved({});
-
+        const auto mappingError = strings::get("error.invalid_source_element_offset");
+        require(restored.writeNative({}, mappingError).status()
+                        == NativeSaveResult::Status::ActivityOnly,
+                "Cannot record an activity-only diagnostic");
+        require(event.value("mapping_error_code") == "error.invalid_source_element_offset"
+                        && event.value("error_code").toString().isEmpty()
+                        && event.value("mapping_failed").toBool(),
+                "Activity-only save omitted the mapping error code");
+        calls.failWrite = true;
+        calls.failure = NativeSaveResult::unverified("private/path/to/book.epub");
+        require(restored.writeNative("mapped-position", {}).failed(),
+                "Cannot record a native storage failure");
+        require(event.value("error_code") == "unknown"
+                        && !QJsonDocument(event).toJson().contains("private/path"),
+                "Native failure diagnostics exposed arbitrary error text");
+        calls.failure = NativeSaveResult::rejected();
+        require(restored.writeNative("mapped-position", {}).failed()
+                        && event.value("failed").toBool() && event.value("error_code") == "unknown"
+                        && restored.checkpointState()
+                                   .value("native_writeback_failure")
+                                   .toObject()
+                                   .value("failed")
+                                   .toBool(),
+                "A native failure without a message disappeared from diagnostics");
+        setDiagnosticObserver({});
+        require(flushDiagnostics(), "Cannot flush native failure diagnostics");
+        restored.releaseNative(false);
     }
     bool drained = false;
     ReaderSession::drain([&] { drained = true; });

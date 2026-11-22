@@ -1,6 +1,5 @@
-#include "../common/sync_exclusion.h"
-#include "storage/preview_store.h"
 #include "../common/diagnostics.h"
+#include "../common/sync_exclusion.h"
 #include "platforms/kobo/common/standby_diagnostics.h"
 #include "support/qt_compat.h"
 #include "hooks.h"
@@ -11,6 +10,7 @@
 #include "touch_input.h"
 #include "native_settings.h"
 #include "storage/reader_storage.h"
+#include "storage/preview_store.h"
 #include "platforms/kobo/common/native_lifecycle.h"
 #include "platforms/kobo/common/native_publication.h"
 #include "platforms/kobo/common/native_progress.h"
@@ -264,6 +264,8 @@ public:
                 if (valid)
                     kobalt::ui::prepareOpeningFonts(environment().assets);
                 attempt(false);
+                // The preload at ready skips while the assets are unchecked,
+                // which on a device often outlasts Nickel's startup.
                 if (valid && controller)
                     controller->preloadLastBook();
             });
@@ -444,6 +446,8 @@ public:
                            kobalt::qt::object({ { "startup_ms", double(elapsed.elapsed()) },
                                                 { "opener", fromOpener } }));
         candidate->finishPreviewMigration();
+        // Nickel has finished its startup. Get the book shown last ready, so
+        // tapping it opens at once.
         candidate->preloadLastBook();
         nh_log("reader: native controller ready");
     }
@@ -470,12 +474,13 @@ private:
     }
 };
 
-int initialize() {
-    // Reconcile public legacy previews only after Nickel startup has completed.
+int initialize()
+{
+    kobalt::strings::setLocale(kobalt::resolveLocale());
+    // Remove old files while Nickel is initializing. The coordinator requests
+    // their library reconciliation once native startup has completed.
     if (!kobalt::storage::migratePreviews(QString::fromLatin1(configDir) + "/cache/previews", true))
         nh_log("reader: preview cache migration incomplete");
-    // Pick the interface language before any UI string is read.
-    kobalt::strings::setLocale(kobalt::resolveLocale());
 #ifdef KOBALT_READER_HARDWARE
     kobalt::installCrashReports(QString::fromLatin1(configDir) + "/crash-reporting",
                                 QStringLiteral("/mnt/onboard"));
@@ -483,6 +488,7 @@ int initialize() {
     kobalt::setDiagnosticSystem(kobalt::nickel::diagnosticSystem());
     kobalt::initializeDiagnostics(QString::fromLatin1(configDir) + "/diagnostics",
                                   kobalt::diagnosticsRequested(QString::fromLatin1(configDir)));
+    kobalt::setDiagnosticsMarker(QString::fromLatin1(configDir));
     kobalt::initializeStandbyDiagnostics();
     kobalt::diagnostic(
             "startup-hooks",
@@ -543,7 +549,8 @@ int initialize() {
     nativeInitializationFinished = [startup] {
         kobalt::qt::later(0, startup, [startup] { startup->attempt(false); });
     };
-    kobalt::configureBookMenu([] { return enabled() && bool(beginOpening); }, alternativeEnabled);
+    kobalt::configureBookMenu([] { return readerAvailable() && bool(beginOpening); },
+                              alternativeEnabled);
     startup->start();
     kobalt::diagnostic("startup-listening");
     return 0;
