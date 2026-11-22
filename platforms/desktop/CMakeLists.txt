@@ -395,7 +395,7 @@ if(BUILD_TESTING)
             closeWaitsForLocalSave closeRetriesRequiredNativeSaves quitAfterFailedLocalSaveRetry activityCoverReplacement closeWritesPositionBeforeNativeTime sleepWritesPositionBeforeNativeTime preSleepCloseAcknowledgedAfterWake retryFailedSaveAfterWake revokedNativeDrainRetainsLocalSave
             pageTurnTimingIgnoresNoopNavigation pageButtonsAfterTouchUseDeliveryTime pageFrameDuringHold pageImageDuringHold pageGestureBurstIgnoresRapidTurns exitThroughReaderAndReopen closeGuardUsesTapTime staleSearchReplyIgnored searchScopesAndPagination searchSurvivesReflow
             searchHighlightClearsOnReflow
-            lazyPanelKeyboards lazyPanels lazyPanelsCloseUnbuilt settingsOrientationHandoff sleepRequestFreezesOrientationBeforeHandoff closePublishesHeldOrientationBeforeBackgroundPaint
+            chapterPagesUpdateWithoutReopening lazyPanelKeyboards lazyPanels lazyPanelsCloseUnbuilt settingsOrientationHandoff sleepRequestFreezesOrientationBeforeHandoff closePublishesHeldOrientationBeforeBackgroundPaint
             closeRestoresOrientationBeforeBackgroundPaint rotationOwnership readerUsesSelectedSleepScreen
             closedReaderDoesNotSaveSleepScreen usbDoesNotSaveSleepScreen persistedSleepScreenRejectsStaleAndDamagedFrames
             homeSleepScreenRequiresUnambiguousLastBook nativeOpeningStatus

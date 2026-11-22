@@ -1,3 +1,4 @@
+#include "reading/header_footer.h"
 #include "render/page_content.h"
 #include <QScopedValueRollback>
 #include "ui/controls/rows.h"
@@ -216,6 +217,19 @@ bool Reader::publishPendingDarkMode()
 
 void Reader::syncFrameState()
 {
+    if (choices->isVisible() && !choosingTypography) {
+        QVector<int> pages;
+        for (const auto &chapter : session->chapters())
+            pages.append(chapter.page);
+        choices->setChapterPages(pages);
+        choices->setChapterPosition(
+                session->bookPages() > 0
+                        ? strings::get("stats.page_of")
+                                  .arg(session->bookPage() + 1)
+                                  .arg(headerfooter::pageTotal(session->bookPages(),
+                                                               session->bookPagesEstimated()))
+                        : strings::get("common.percent").arg(session->progressPercent()));
+    }
     syncBookmarks();
     if (!session->busy() && !pendingSearchHit.start.isEmpty()) {
         const auto hit = std::exchange(pendingSearchHit, { });

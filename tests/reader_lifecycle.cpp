@@ -1,3 +1,4 @@
+#include "app/reader/panels/choice_screen.h"
 #include "app/reader/panels/dictionary_panel.h"
 #include "platforms/kobo/common/sync_exclusion.h"
 #include <QSettings>
@@ -714,6 +715,23 @@ private slots:
     {
         engineActivity().pause(false);
         directory.reset();
+    }
+
+    void chapterPagesUpdateWithoutReopening()
+    {
+        ChapterContents panel(nullptr);
+        panel.resize(600, 800);
+        panel.showChapters(QStringLiteral("Book"),
+                           { { QStringLiteral("One"), QStringLiteral("0"), QStringLiteral("first"), {}, 0, -1 },
+                             { QStringLiteral("Two"), QStringLiteral("1"), QStringLiteral("second"), {}, 0, -1 } }, {});
+        panel.setPages({ 10, 25 });
+        auto *page = panel.findChild<QLabel *>("firstPage");
+        QVERIFY(page);
+        QCOMPARE(page->text(), QStringLiteral("11"));
+        panel.setPages({ 50 });
+        QCOMPARE(page->text(), QStringLiteral("11"));
+        panel.setPages({ 12, 27 });
+        QCOMPARE(page->text(), QStringLiteral("13"));
     }
 
     void lazyPanelKeyboards()
