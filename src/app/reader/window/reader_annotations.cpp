@@ -1183,11 +1183,16 @@ QVector<BookmarkRow> Reader::annotationRows() const
     rows.reserve(items.size());
     for (int i = 0; i < items.size(); ++i) {
         const auto &item = items[i];
-        BookmarkRow row{ item.id, {}, {}, item.created, locations.pages.value(i * 2, -1), false };
-        row.endPage = locations.pages.value(i * 2 + 1, -1);
+        BookmarkRow row{
+            item.id, {}, {}, item.created, locations.bookPages.value(i * 2, -1), false
+        };
+        row.endPage = locations.bookPages.value(i * 2 + 1, -1);
+        row.pagePending = session->state().contains("book_fraction")
+                && session->state().value("rough_pages").toInt() <= 0;
         row.style = item.style;
         row.color = item.color;
         row.sourceOrder = locations.order.value(i * 2, -1);
+        row.hasNote = hasHighlightNote(item);
         rows.append(row);
     }
     return rows;

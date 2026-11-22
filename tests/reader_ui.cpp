@@ -3139,6 +3139,91 @@ private slots:
         }
     }
 
+    void annotationNoteRows_data() { variants(); }
+
+    // Compact rows reserve note space before hydration; reused rows must not
+    // keep text or geometry belonging to the previous note/page.
+    void annotationNoteRows()
+    {
+        QFETCH(bool, dark);
+        QFETCH(int, ppi);
+        ui::setDensity(ppi);
+        QWidget owner;
+        owner.setProperty("reader_dark", dark);
+        ui::applyReaderPalette(&owner, ui::readerPalette(owner.palette(), dark));
+        ui::readerStyle(&owner, ui::styles::reader());
+        owner.resize(ui::px(1072), ui::px(1448));
+        BookmarkList list(&owner);
+        list.setGeometry(owner.rect());
+        QVector<BookmarkRow> compact;
+        for (int i = 0; i < 50; ++i) {
+            BookmarkRow row;
+            row.position = QString::number(i);
+            row.page = row.sourceOrder = i;
+            row.hasNote = true;
+            compact.append(row);
+        }
+        QStringList loaded;
+        list.annotationDetails = [&](const QStringList &ids, QVector<BookmarkRow> *details) {
+            loaded = ids;
+            for (const auto &id : ids) {
+                BookmarkRow row;
+                row.position = id;
+                row.chapter = "Chapter";
+                row.excerpt = "A passage";
+                row.note = "Saved note " + id;
+                details->append(row);
+            }
+            return true;
+        };
+        list.showAnnotations(compact);
+        owner.show();
+        QCoreApplication::processEvents();
+        QVERIFY(!loaded.isEmpty() && loaded.size() < compact.size());
+        const auto noteLabel = [&](const QString &text) -> QLabel * {
+            for (auto *label : list.findChildren<QLabel *>())
+                if (label->text() == text && label->isVisible())
+                    return label;
+            return nullptr;
+        };
+        auto *note = noteLabel("Saved note 0");
+        QVERIFY(note);
+        auto *row = list.findChild<QWidget *>("rrAnnotation0");
+        QVERIFY(row && row->isVisible());
+        QVERIFY(row->rect().contains(QRect(note->mapTo(row, QPoint()), note->size())));
+        const int withNote = row->height();
+        QVERIFY(ui::ListRow::noteHeight(2) > ui::ListRow::noteHeight(1));
+        QCOMPARE(ui::ListRow::noteHeight(0), 0);
+        auto *next = list.findChild<QPushButton *>("rrBookmarkListNext");
+        QVERIFY(next && next->isEnabled());
+        next->click();
+        QVERIFY(!loaded.contains("0"));
+        QVERIFY(!noteLabel("Saved note 0"));
+        list.annotationDetails = {};
+        BookmarkRow plain;
+        plain.position = "plain";
+        plain.page = 0;
+        plain.chapter = "Chapter";
+        plain.excerpt = "A passage";
+        list.showAnnotations({ plain });
+        QCoreApplication::processEvents();
+        row = list.findChild<QWidget *>("rrAnnotation0");
+        QVERIFY(row && row->isVisible());
+        QVERIFY(row->height() < withNote);
+        for (auto *label : list.findChildren<QLabel *>())
+            QVERIFY(!label->isVisible() || !label->text().startsWith("Saved note "));
+        // Pending whole-book numbers do not make an otherwise valid row inert.
+        plain.page = -1;
+        plain.pagePending = true;
+        list.showAnnotations({ plain });
+        auto *button = list.findChild<QPushButton *>("rrAnnotation0");
+        QVERIFY(button && button->isEnabled());
+        QString selected;
+        list.selected = [&](const QString &id) { selected = id; };
+        button->click();
+        QCOMPARE(selected, QString("plain"));
+    }
+
     void marksSortingAndAnnotationRows_data() { variants(); }
 
     void marksSortingAndAnnotationRows()
@@ -3212,7 +3297,8 @@ private slots:
         QCOMPARE(selected, QString("first"));
         QCOMPARE(row()->detailLabel()->text(), a.excerpt);
         QVERIFY(row()->titleLabel()->font().pixelSize() < row()->detailLabel()->font().pixelSize());
-        QVERIFY(row()->detailLabel()->y() - row()->titleLabel()->geometry().bottom() >= ui::px(12));
+        // A small gap separates the chapter from the excerpt.
+        QVERIFY(row()->detailLabel()->y() - row()->titleLabel()->geometry().bottom() >= ui::px(6));
         QVERIFY(row()->detailLabel()->wordWrap());
         QVERIFY(row()->detailLabel()->height()
                 > 2 * QFontMetrics(row()->detailLabel()->font()).height());
@@ -3306,7 +3392,8 @@ private slots:
         bookmark->click();
         QCOMPARE(selected, QString("first"));
         QVERIFY(bookmark->detailLabel()->wordWrap());
-        QCOMPARE(bookmark->height(), annotationHeight - (int(ui::px(12)) - int(ui::px(4))));
+        // Annotation rows leave 6 pixels below the chapter, bookmarks 4.
+        QCOMPARE(bookmark->height(), annotationHeight - (int(ui::px(6)) - int(ui::px(4))));
         QCOMPARE(bookmark->titleLabel()->font().pixelSize(), int(ui::px(24)));
         QVERIFY(bookmark->detailLabel()->y() - bookmark->titleLabel()->geometry().bottom()
                 >= ui::px(4));

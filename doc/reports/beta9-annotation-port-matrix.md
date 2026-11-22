@@ -45,3 +45,26 @@ Next implementation unit: shared row support + storage/session note metadata and
 its existing upstream tests, then BookmarkList/NoteEditor and Reader consumers.
 Sleep/exit changes that are required for editor ownership belong to that consumer
 integration; unrelated standby behavior and the deferred freeze are not reopened.
+
+
+## Implemented foundation checkpoint (CI pending)
+
+Whole upstream files restored: rows.h/cpp, highlight_store.h/cpp,
+highlight_session.h/cpp, bookmark_list.h/cpp (8 files). No parallel note storage.
+Reader annotationRows/bookmarkRows functions and annotationDetails callback now
+use whole upstream bodies against existing ReaderSession APIs. All other Reader
+annotation lifecycle/gesture behavior remains unchanged at this checkpoint.
+
+Restored upstream compact-note assertions/setNote tests in highlight_session,
+retaining fork test harness scheduling/diagnostic repairs. List tests are whole
+upstream methods. Updated the two model ListRow secondary-color assertions to
+upstream's plain light ink / secondary dark ink policy. Added annotationNoteRows:
+hydrated note bounds, clearing on paging/reuse, no stale note text, smaller row
+without note, selectable pending page number (density/theme variants).
+Focused CI builds/runs highlight-store and choice/list UI tests as well as the
+previous checks; they were not all selected in the preceding package.
+
+Full NoteEditor and quick-annotation Reader integration remain OPEN. The model
+setNote API and saved/editor-owned retry support are prerequisites, not a claim
+that the reader already exposes an editable-note action. This package adds
+correct previews of notes already stored/imported and shared list/model support.

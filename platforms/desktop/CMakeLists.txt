@@ -521,6 +521,7 @@ if(BUILD_TESTING)
             listPressFeedback
             optionAndSwatchPressFeedback
             annotationSwatchLabelsFit
+            annotationNoteRows
             marksSortingAndAnnotationRows
             annotationDetailsOnlyLoadVisiblePage
             hidingSelectionMenuKeepsDamageCompact

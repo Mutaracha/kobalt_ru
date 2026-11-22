@@ -739,6 +739,8 @@ QVector<kobalt::BookmarkRow> Reader::bookmarkRows() const
             if (link.page >= 0 && row.page >= 0 && link.page <= row.page)
                 row.chapter = link.title;
         row.excerpt = kobalt::excerptAfterChapter(row.excerpt, row.chapter);
+        row.pagePending = session->state().contains("book_fraction")
+                && session->state().value("rough_pages").toInt() <= 0;
         row.pinName = list[i].name;
         row.pinIcon = list[i].icon;
         rows.append(row);

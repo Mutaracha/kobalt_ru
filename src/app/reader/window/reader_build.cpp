@@ -1080,8 +1080,22 @@ void Reader::buildOverlays()
             return false;
         rows->clear();
         rows->reserve(excerpts.size());
-        for (const auto &excerpt : excerpts)
-            rows->append({ excerpt.id, excerpt.chapter, excerpt.text, {}, -1, false });
+        const auto locations = annotationRows();
+        for (const auto &excerpt : excerpts) {
+            auto chapter = excerpt.chapter;
+            if (chapter.isEmpty()) {
+                for (const auto &row : locations) {
+                    if (row.position != excerpt.id)
+                        continue;
+                    for (const auto &link : session->chapters())
+                        if (link.page >= 0 && row.page >= link.page)
+                            chapter = link.title;
+                    break;
+                }
+            }
+            rows->append({ excerpt.id, chapter, excerpt.text, {}, -1, false });
+            rows->last().note = excerpt.note;
+        }
         return true;
     };
     bookmarkList->loadingCancelled = [session = QPointer<HighlightSession>(highlights.get())] {
