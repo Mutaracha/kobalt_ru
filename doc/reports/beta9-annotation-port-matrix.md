@@ -115,3 +115,9 @@ annotationNotes integration test excluding the not-yet-ported initial drag/reope
 block and using existing Cancel caption in its assertion. Focused CI adds note
 editor, palette label, annotationNotes, annotations/selection/grip checks.
 Quick annotations and delayed menu reopen remain open. Native/Qt5/device pending.
+
+Initial NoteEditor CI 45036473875 / runtime 86cd111f: Qt5/offline/package passed,
+native CMake configuration rejected new ui.noteEditorPassageLines without an area
+label. Added noteEditor.* to the existing annotations test area and explicit
+one-line descriptions for the new tests; no test removed or assertion relaxed.
+Follow-up native verification required before handoff.

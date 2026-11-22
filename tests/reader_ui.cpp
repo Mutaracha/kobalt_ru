@@ -3140,6 +3140,7 @@ private slots:
         }
     }
 
+    // Checks that short and long passage quotes use whole lines above the note text box.
     void noteEditorPassageLines()
     {
         ui::setDensity(300);
@@ -3174,6 +3175,7 @@ private slots:
         QCOMPARE(lineCount(longPassage), 3);
     }
 
+    // Checks save locking, retained draft on error, retry and keyboard cleanup after save.
     void noteEditorSaveState()
     {
         ui::setDensity(300);

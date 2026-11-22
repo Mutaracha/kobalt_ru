@@ -8019,6 +8019,7 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         QVERIFY(!fixture.visible("rrAnnotationModeNotice"));
     }
 
+    // Checks note creation, failed-save recovery, saved menus, range adjustment and clearing.
     void annotationNotes()
     {
         Fixture fixture(false);
