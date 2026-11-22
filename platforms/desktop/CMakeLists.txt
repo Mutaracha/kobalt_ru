@@ -755,6 +755,11 @@ if(BUILD_TESTING)
     # `light`, `fast` and `integration` must not appear in one because the lane
     # presets filter on them.
     set(kobalt_test_areas
+        "diagnostics:^desktop\\.(engineMonitor|engineMonitorSlowdown)$"
+        "reading:^desktop\\.standaloneOpeningPassageFollowsRequest$"
+        "brightness:^model\\.android-light$"
+        "keyboard:^lifecycle\\.lazyPanelKeyboards$"
+        "input:^lifecycle\\.chapterPagesUpdateWithoutReopening$"
         "progress:^desktop\\.(activity|activityLocale|activityUnitForms|activityAuthorCaption)$"
         "storage:^lifecycle\\.(closeWritesPositionBeforeNativeTime|preSleepCloseAcknowledgedAfterWake|retryFailedSaveAfterWake)$"
         "reading:^session\\.fb2-session$"

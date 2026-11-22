@@ -717,6 +717,7 @@ private slots:
         directory.reset();
     }
 
+    // Refresh chapter page labels in place; reject mismatched result vectors.
     void chapterPagesUpdateWithoutReopening()
     {
         ChapterContents panel(nullptr);
@@ -734,6 +735,7 @@ private slots:
         QCOMPARE(page->text(), QStringLiteral("13"));
     }
 
+    // Construct each keyboard only on its first request, then reuse it.
     void lazyPanelKeyboards()
     {
         struct Keyboard final : KeyboardController {

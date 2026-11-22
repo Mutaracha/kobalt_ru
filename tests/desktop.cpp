@@ -12915,6 +12915,7 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
 
     // Checks that a controller recovers an interrupted earlier session and records each opened book under its source key.
     // Cancelling and replacing an opening keeps only the latest request's passage.
+    // Monitor events retain stages, resource samples and pause/clear semantics.
     void engineMonitor()
     {
         desktop::EngineMonitor monitor;
@@ -12990,6 +12991,7 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         detached({ { "event", "render-start" }, { "render_id", 99 } });
     }
 
+    // Emulated engine delay is scoped, cancellable and disabled on hide.
     void engineMonitorSlowdown()
     {
         const auto restore = qScopeGuard([] { setEngineSlowdownEnabled(false); });
