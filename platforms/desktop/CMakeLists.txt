@@ -671,10 +671,10 @@ if(BUILD_TESTING)
             target_compile_definitions(kobalt-${name}-tests PRIVATE
                 KOBALT_TEST_ASSET_ROOT="${KOBALT_ASSETS}" KOBALT_FONT_DIRECTORY="${KOBALT_ASSETS}/fonts"
                 KOBALT_INSTALLED_FONTS)
-            if(check MATCHES "^(vertical_spacing|large_toc|links|bookmark_session)$")
+            if(check MATCHES "^(vertical_spacing|large_toc|links|chapter_parity|bookmark_session)$")
                 target_compile_definitions(kobalt-${name}-tests PRIVATE KOBALT_TEST_ZIP="${KOBALT_TEST_ZIP}")
             endif()
-            if(check MATCHES "^(location_round_trip|reader_session)$")
+            if(check MATCHES "^(search|reading_book|location_round_trip|reader_session|reader)$")
                 target_compile_definitions(kobalt-${name}-tests PRIVATE
                     KOBALT_TEST_FIXTURES="${KOBALT_ROOT}/tests/fixtures")
             endif()
@@ -697,7 +697,7 @@ if(BUILD_TESTING)
             if(check STREQUAL "reader")
                 target_sources(kobalt-${name}-tests PRIVATE "${KOBALT_ROOT}/platforms/kobo/common/engine_positions.cpp")
             endif()
-            if(check MATCHES "^(reader|document_cache)$")
+            if(check MATCHES "^(reader|document_cache|page_estimate)$")
                 target_compile_definitions(kobalt-${name}-tests PRIVATE
                     KOBALT_TEST_VARIABLE_FONT_DIRECTORY="${KOBALT_ROOT}/tests/fixtures")
             endif()
