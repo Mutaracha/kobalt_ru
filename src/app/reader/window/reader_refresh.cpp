@@ -466,8 +466,7 @@ void Reader::showPageImage(const QImage &nextImage)
                         && (services.softwarePageAnimations
                                     ? pageTurn::selected(preferences) != pageTurn::Style::Off
                                     : preferences.value("page_animations").toBool(false))
-                        && pageAnimationsEnabled(services.animationSupport(),
-                                                 session->state().value("dark_mode").toBool(false))
+                        && pageAnimationsAvailable(services.animationSupport())
                 ? session->turnDirection()
                 : 0;
     }

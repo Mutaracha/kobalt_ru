@@ -1268,6 +1268,7 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
     });
     marginSlider = appearance.marginSlider;
     verticalMarginSlider = appearance.verticalMarginSlider;
+    buildTextPresets();
     appearancePreview = new kobalt::reader::AppearancePreview(this);
     appearancePreview->followPanel(menu, [this] { syncAppearancePreview(); });
     connect(panels, &QStackedWidget::currentChanged, this, [this] { syncAppearancePreview(); });
