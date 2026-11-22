@@ -52,7 +52,10 @@ upstream. Сохранены только fork sleep ribbon/newline/text fitting
 локальных offline/source gates PASS. CI `45045654719`: Qt5 package/contents PASS;
 native compile выявил старый KosyncHttpState fixture без lastAuthentication.
 Восстановлены целиком upstream state + mock transport, проверки не ослаблены;
-повторная native/Qt5 сборка нужна.
+повторная native/Qt5 сборка нужна. CI `45046276278` нашёл ещё две
+compile dependencies новых тестов: rendering_mode.h и upstream test-only
+KOBALT_CONFIG_DIR=/unused для home-screen target. Обе восстановлены из upstream
+без изменения production sleep owner и без исключения тестов.
 [Обновлённый inventory](doc/reports/beta9-inventory.md): 1083 identical / 248
 changed / 155 fork-only / 52 upstream-only. Текущая KOSync/sleep/storage группа
 не закрывает оставшиеся platform/Reader consumers; полный semantic gate OPEN.

@@ -1,3 +1,4 @@
+#include "reading/rendering_mode.h"
 #include "library/cover_thumbnails.h"
 #include <QSemaphore>
 #include "app/reader/views/annotation_exporter.h"
