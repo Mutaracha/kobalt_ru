@@ -1239,7 +1239,8 @@ bool Reader::eventFilter(QObject *watched, QEvent *event)
     // disabled colors. Keep the selected orientation visible until it changes.
     auto *rotationButton = controlInput ? qobject_cast<QPushButton *>(watched) : nullptr;
     if (controlInput && rotationButton
-        && (rotationButtons.contains(rotationButton) || rotationButton == autoRotateOption)
+        && (rotationButtons.contains(rotationButton) || rotationButton == autoRotateOption
+            || rotationButton == lockRotationOption)
         && rotationControlsBlocked()) {
         event->accept();
         return true;

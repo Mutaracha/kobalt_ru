@@ -74,7 +74,7 @@ public:
                       *variableWeightSlider = nullptr, *spacingSlider = nullptr,
                       *marginSlider = nullptr, *verticalMarginSlider = nullptr;
     QVector<QPushButton *> alignmentButtons, hyphenButtons, rotationButtons;
-    QPushButton *autoRotateOption = nullptr;
+    QPushButton *autoRotateOption = nullptr, *lockRotationOption = nullptr;
     ui::DescribedOption *comicsOption = nullptr;
     // Header and footer: the Layout row that opens its view, and the view's
     // presets and controls, built only when the layout has its rows.

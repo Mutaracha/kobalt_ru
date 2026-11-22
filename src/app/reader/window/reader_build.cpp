@@ -1238,6 +1238,7 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
     hyphenButtons = appearance.hyphenButtons;
     rotationButtons = appearance.rotationButtons;
     autoRotateOption = appearance.autoRotateOption;
+    lockRotationOption = appearance.lockRotationOption;
     connect(fontButton, &QPushButton::clicked, this, [this] {
         if (choices->isVisible() && choosingTypography) {
             choices->hide();
@@ -1358,8 +1359,10 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
                                  { "updates_enabled", updatesEnabled() },
                                  { "resize_pending", resizePending } },
                                false);
-            this->orientation->configure(
-                    kobalt::qt::object({ { "orientation", value }, { "auto_rotate", false } }));
+            auto settings = orientation->settings();
+            settings["orientation"] = value;
+            settings["auto_rotate"] = false;
+            orientation->configure(settings);
             kobalt::diagnostic("reader-orientation-dispatched",
                                { { "target_orientation", value },
                                  { "width", width() },
@@ -1383,6 +1386,14 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
                     this->orientation->setAutomatic(true)
                             ? QString()
                             : strings::get("reader.the_orientation_sensor_is_unavailable"));
+            refresh();
+        });
+    if (lockRotationOption)
+        connect(lockRotationOption, &QPushButton::clicked, this, [this] {
+            if (!rotationControlsBlocked()) {
+                orientation->toggleLock();
+                appearanceEdit.clearError();
+            }
             refresh();
         });
     headerFooterRow = appearance.headerFooterRow;
