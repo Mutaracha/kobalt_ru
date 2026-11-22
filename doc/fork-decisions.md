@@ -245,3 +245,12 @@ assets/*.strings and doc/reports/033d0be2-device-review.md.
   одобрен, дополнен подготовкой FB2 и анализом отказов beta.8 → beta.9.
 - Validation: docs-only; runtime не менялся. Очередь в FB2_FORK_PLAN.md,
   причины отказов и gates — doc/reports/beta9-upgrade-retrospective.md.
+
+
+## Annotation note editor strings
+
+User explicitly approved the five RU note-editor strings through the session
+choice: «Добавить заметку», «Изменить заметку», «Напишите заметку», «Не удалось
+сохранить заметку. Ваш текст сохранён в редакторе.», «Заметка слишком длинная для
+сохранения.». EN stays pinned upstream. Other new annotation wording is not
+implicitly approved; existing common.cancel labels cancellation in this port.

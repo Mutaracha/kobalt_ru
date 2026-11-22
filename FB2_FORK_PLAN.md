@@ -35,6 +35,18 @@ Qt6 skipped; full suite/Android NOT RUN. Пользователь принял �
 lazy Settings и кнопки; последующий freeze рассматривается отдельно, не закрыт.
 Пресеты 9633d3fd приняты отдельно.
 
+**Редактор заметок — in progress / CI pending:** upstream NoteEditor h/cpp целиком,
+Reader saved/draft actions и save completion/error callbacks, note popover;
+upstream card grid для дополнительных действий с сохранением fork section headers
+и подписей palette. Quick annotation/drag reopen timer — отдельная следующая группа,
+не включена скрытно. Helper handle exclusions перенесён вместе с dot/hit regions,
+чтобы области handles не перекрывали кнопки нового popover. EPUB Hybrid unchanged.
+Пять новых RU строк приняты пользователем через выбор; EN из pinned upstream.
+Для отмены изменений используется существующий common.cancel, не новая RU copy.
+Тесты: upstream passage lines, новый save/error/retry/close state, note integration
+на базе upstream (без блока ещё не перенесённых drag/reopen gestures), прежние
+annotation/selection/grip и palette label проверки включены в focused CI.
+
 **Пакет 254 — implemented / CI verified, device pending:** upstream shared ListRow и
 SegmentedRow, HighlightStore/HighlightSession, BookmarkList восстановлены целиком.
 Подключены upstream annotationRows/bookmarkRows и hydration callback — note preview,

@@ -88,3 +88,30 @@ interaction suites (desktop.annotation* is not in this regex).
 Intermediate 29487359 / CI 45033710524: Qt5 passed, native failed the restored
 compact-note assertion. Whole upstream SQLite consumer in 4e014dc5 resolves the
 missing projection; the assertion is retained and the follow-up run passes.
+
+
+## Note editor integration checkpoint (CI pending)
+
+NoteEditor.h/cpp restored whole from pinned beta9. Reader openNoteEditor,
+showSavedAnnotationAt, showSavedAppearance and action-card implementation restored
+with contextual boundaries: quick-mode settle/reopen calls excluded until the
+separate gesture port; existing fork section headings/labeled palette retained;
+existing common.cancel used where upstream introduces Discard (no unapproved new
+copy). Draft Add/Edit note actions use upstream save-passage-first sequencing.
+Upstream saved/saveFailed callbacks deliver editor completion/error, preserving
+its text and shared model retry contract. No second note pipeline.
+
+Upstream handle hit/dot region helper and syncPopoverExclusions restored so card
+buttons own their area while only drawn dots pass through over the card. This is
+a note-menu input dependency, not a claimed fix of the deferred Settings freeze.
+
+Five new strings explicitly approved by the user in-session: Добавить заметку;
+Изменить заметку; Напишите заметку; Не удалось сохранить заметку. Ваш текст
+сохранён в редакторе.; Заметка слишком длинная для сохранения. English unchanged
+from upstream. No other new annotation wording imported implicitly.
+
+Tests: upstream noteEditorPassageLines, standalone noteEditorSaveState; upstream
+annotationNotes integration test excluding the not-yet-ported initial drag/reopen
+block and using existing Cancel caption in its assertion. Focused CI adds note
+editor, palette label, annotationNotes, annotations/selection/grip checks.
+Quick annotations and delayed menu reopen remain open. Native/Qt5/device pending.

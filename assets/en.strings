@@ -1825,3 +1825,10 @@
 "activity.hour_unit_one" = "hour";
 "activity.hour_unit_few" = "hours";
 "activity.hour_unit_many" = "hours";
+
+/* Upstream note editor; RU approved in session. */
+"annotations.add_note" = "Add note";
+"annotations.edit_note" = "Edit note";
+"annotations.note_placeholder" = "Write a note";
+"annotations.note_save_failed" = "Could not save the note. Your text is kept.";
+"annotations.note_too_long" = "This note is too long to save.";

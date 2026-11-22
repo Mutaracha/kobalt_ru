@@ -1,3 +1,4 @@
+#include <QTextEdit>
 #include "app/reader/panels/activity_view.h"
 #include "reading/rendering_mode.h"
 #include "app/reader/views/fork_navigation.h"
@@ -8016,6 +8017,162 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         QVERIFY(fixture.selectWord(page, fixture.wordPoint()));
         QTRY_VERIFY(fixture.visible("rrDictionary"));
         QVERIFY(!fixture.visible("rrAnnotationModeNotice"));
+    }
+
+    void annotationNotes()
+    {
+        Fixture fixture(false);
+        QVERIFY(fixture.prepared);
+        QSignalSpy opened(&fixture.window, &desktop::Window::bookOpened);
+        fixture.window.openBook(book);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 10000);
+        QTRY_VERIFY(!fixture.state().value("busy").toBool());
+        openPrologueBody(fixture);
+        auto *page = static_cast<ReadingPage *>(fixture.widget("rrPage"));
+        const auto word = fixture.wordPoint(3);
+        QVERIFY(word.x() >= 0);
+        QVERIFY(fixture.press("rrPage"));
+        QVERIFY(fixture.press("rrAnnotate"));
+        QTRY_VERIFY(!fixture.visible("rrControlsTop"));
+        const auto storedNote = [&] {
+            const auto rows = fixture.stored("highlights.json", "highlights");
+            return rows.size() == 1 ? rows.first().toObject().value("note").toString() : QString();
+        };
+        const auto editorText = [&] {
+            return qobject_cast<QTextEdit *>(fixture.widget("rrNoteText"));
+        };
+        // Other panels own hidden keyboards with the same name.
+        const auto keyboardShown = [&] {
+            for (auto *panel :
+                 fixture.window.readerWindow()->findChildren<QWidget *>("widgetKeyboard"))
+                if (panel->isVisible())
+                    return true;
+            return false;
+        };
+
+        // Handle drag/reopen timing belongs to the later upstream gesture group.
+        // This regression exercises the complete note editor/storage consumer path.
+        // Add note on a new selection saves the highlight, then opens the editor.
+        QVERIFY(fixture.selectWord(page, word));
+        QTRY_VERIFY(!page->annotationHandleRect(true).isEmpty());
+        // The menu opens when the finger lifts.
+        QTRY_VERIFY(fixture.visible("rrAnnotationAddNote"));
+        QVERIFY(fixture.press("rrAnnotationAddNote"));
+        QTRY_VERIFY(fixture.visible("rrNoteEditor") && editorText());
+        QCOMPARE(fixture.stored("highlights.json", "highlights").size(), 1);
+        QVERIFY(keyboardShown());
+        QVERIFY(editorText()->toPlainText().isEmpty());
+        QVERIFY(!qobject_cast<QLabel *>(fixture.widget("rrNoteQuote"))->text().isEmpty());
+
+        // Cancel leaves the highlight without a note.
+        QVERIFY(fixture.press("rrNoteCancel"));
+        QTRY_VERIFY(!fixture.visible("rrNoteEditor"));
+        QVERIFY(!keyboardShown());
+        QVERIFY(storedNote().isEmpty());
+
+        // A highlight without a note keeps its choices and offers Add note.
+        QVERIFY(fixture.selectWord(page, word));
+        QTRY_VERIFY(fixture.visible("rrAnnotationAddNote"));
+        QVERIFY(fixture.visible("rrAnnotationApply") && fixture.visible("rrAnnotationEdit")
+                && fixture.visible("rrAnnotationRemove"));
+        QVERIFY(!fixture.visible("rrAnnotationEditNote"));
+        QVERIFY(fixture.press("rrAnnotationAddNote"));
+        QTRY_VERIFY(fixture.visible("rrNoteEditor") && editorText());
+        const QString note = QStringLiteral("Named on a whim.\nCompare chapter 3.");
+        editorText()->setPlainText(note);
+        const auto changeSql = [&](const QString &statement) {
+            return storage::profileTransaction(fixture.paths.directory, [&](QSqlDatabase &db) {
+                return QSqlQuery(db).exec(statement);
+            });
+        };
+        QVERIFY(changeSql("CREATE TRIGGER refuse_note BEFORE INSERT ON entries "
+                          "BEGIN SELECT RAISE(ABORT,'test'); END"));
+        QVERIFY(fixture.press("rrNoteSave"));
+        QTRY_VERIFY(fixture.visible("rrNoteError"));
+        QCOMPARE(editorText()->toPlainText(), note);
+        QVERIFY(!editorText()->isReadOnly());
+        QVERIFY(storedNote().isEmpty());
+        QVERIFY(changeSql("DROP TRIGGER refuse_note"));
+        QVERIFY(fixture.press("rrNoteSave"));
+        QTRY_VERIFY(!fixture.visible("rrNoteEditor"));
+        QTRY_COMPARE(storedNote(), note);
+
+        // A noted highlight shows its note and one row of actions.
+        QVERIFY(fixture.selectWord(page, word));
+        QTRY_VERIFY(fixture.visible("rrAnnotationEditNote"));
+        QVERIFY(fixture.visible("rrAnnotationAppearance") && fixture.visible("rrAnnotationEdit")
+                && fixture.visible("rrAnnotationRemove"));
+        QVERIFY(!fixture.visible("rrAnnotationPalette") && !fixture.visible("rrAnnotationStyles"));
+        QCOMPARE(qobject_cast<QLabel *>(fixture.widget("rrAnnotationNoteText"))->text(), note);
+        const auto top = [&](const char *name) {
+            return fixture.widget(name)->mapTo(&fixture.window, QPoint()).y();
+        };
+        for (const auto *name :
+             { "rrAnnotationAppearance", "rrAnnotationEdit", "rrAnnotationRemove" })
+            QCOMPARE(top(name), top("rrAnnotationEditNote"));
+
+        // Color opens the choices. Discard drops them and returns to the note.
+        QVERIFY(fixture.press("rrAnnotationAppearance"));
+        QTRY_VERIFY(fixture.visible("rrAnnotationDiscard"));
+        QVERIFY(fixture.visible("rrAnnotationStyles") && fixture.visible("rrAnnotationApply"));
+        QVERIFY(!fixture.visible("rrAnnotationEditNote"));
+        QVERIFY(fixture.press("rrAnnotationStyle_dotted"));
+        QVERIFY(fixture.press("rrAnnotationDiscard"));
+        QTRY_VERIFY(fixture.visible("rrAnnotationEditNote"));
+        QCOMPARE(fixture.stored("highlights.json", "highlights")
+                         .first()
+                         .toObject()
+                         .value("style")
+                         .toString(),
+                 QStringLiteral("shaded"));
+        QVERIFY(fixture.press("rrAnnotationAppearance"));
+        QTRY_VERIFY(fixture.visible("rrAnnotationApply"));
+        QVERIFY(fixture.press("rrAnnotationStyle_dotted"));
+        QVERIFY(fixture.press("rrAnnotationApply"));
+        QTRY_COMPARE(fixture.stored("highlights.json", "highlights")
+                             .first()
+                             .toObject()
+                             .value("style")
+                             .toString(),
+                     QStringLiteral("dotted"));
+        QCOMPARE(storedNote(), note);
+
+        // Adjusting the range offers the note after Apply changes, and Discard
+        // in place of Clear selection.
+        QVERIFY(fixture.selectWord(page, word));
+        QTRY_VERIFY(fixture.visible("rrAnnotationEdit"));
+        QVERIFY(fixture.press("rrAnnotationEdit"));
+        QTRY_VERIFY(!page->annotationHandleRect(true).isEmpty());
+        QVERIFY(fixture.click(page, word));
+        QTRY_VERIFY(fixture.visible("rrAnnotationEditNote"));
+        const auto left = [&](const char *name) {
+            return fixture.widget(name)->mapTo(&fixture.window, QPoint()).x();
+        };
+        QVERIFY(left("rrAnnotationSave") < left("rrAnnotationEditNote"));
+        QVERIFY(left("rrAnnotationEditNote") < left("rrAnnotationCancel"));
+        QCOMPARE(qobject_cast<QAbstractButton *>(fixture.widget("rrAnnotationCancel"))->text(),
+                 strings::get("common.cancel"));
+        QVERIFY(fixture.press("rrAnnotationEditNote"));
+        QTRY_VERIFY(fixture.visible("rrNoteEditor") && editorText());
+        QCOMPARE(editorText()->toPlainText(), note);
+        QVERIFY(fixture.press("rrNoteCancel"));
+        QTRY_VERIFY(!fixture.visible("rrNoteEditor"));
+        QCOMPARE(storedNote(), note);
+
+        // Edit note opens the saved text. Saving an empty note removes it.
+        QVERIFY(fixture.selectWord(page, word));
+        QTRY_VERIFY(fixture.visible("rrAnnotationEditNote"));
+        QVERIFY(fixture.press("rrAnnotationEditNote"));
+        QTRY_VERIFY(fixture.visible("rrNoteEditor") && editorText());
+        QCOMPARE(editorText()->toPlainText(), note);
+        editorText()->clear();
+        QVERIFY(fixture.press("rrNoteSave"));
+        QTRY_VERIFY(!fixture.visible("rrNoteEditor"));
+        QTRY_VERIFY(storedNote().isEmpty());
+        QCOMPARE(fixture.stored("highlights.json", "highlights").size(), 1);
+        QVERIFY(fixture.selectWord(page, word));
+        QTRY_VERIFY(fixture.visible("rrAnnotationAddNote"));
+        QVERIFY(!fixture.visible("rrAnnotationEditNote"));
     }
 
     void annotations()

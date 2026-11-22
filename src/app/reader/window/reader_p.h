@@ -38,6 +38,7 @@
 #include "app/reader/settings/acknowledgments.h"
 #include "app/reader/panels/light_panel.h"
 #include "app/reader/panels/bookmark_list.h"
+#include "app/reader/panels/note_editor.h"
 #include "app/reader/panels/dictionary_panel.h"
 #include "app/reader/panels/link_panel.h"
 #include "app/reader/panels/search_panel.h"
@@ -208,6 +209,10 @@ private:
     void finishAnnotationPresentation();
     void editAnnotation(const QString &id, bool navigate = true);
     void showSavedAnnotationAt(const QString &id, QRect anchor, bool navigate);
+    void showSavedAppearance(const QString &id, QRect anchor, bool navigate, bool colorStep);
+    void openNoteEditor(const QString &id);
+    void syncPopoverExclusions();
+    QPointer<kobalt::NoteEditor> noteEditor;
     void showSavedAnnotation(const QString &id, QRect anchor, bool navigate = false);
     void showAnnotationMatches(QVector<QString> ids, QRect anchor, int page = 0);
     void removeAnnotation(const QString &id);
@@ -225,7 +230,7 @@ private:
                               bool compactActions = true, const QString &paletteColor = {},
                               std::function<void(QString)> colorChanged = {},
                               const QString &selectedStyle = {},
-                              std::function<void(QString)> styleChanged = {});
+                              std::function<void(QString)> styleChanged = {}, const QString &note = {});
 
     bool colorAnnotations() const { return services.colorDisplay && services.colorDisplay(); }
 

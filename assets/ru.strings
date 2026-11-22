@@ -1879,3 +1879,10 @@
 "activity.hour_unit_one" = "час";
 "activity.hour_unit_few" = "часа";
 "activity.hour_unit_many" = "часов";
+
+/* Upstream note editor; RU approved in session. */
+"annotations.add_note" = "Добавить заметку";
+"annotations.edit_note" = "Изменить заметку";
+"annotations.note_placeholder" = "Напишите заметку";
+"annotations.note_save_failed" = "Не удалось сохранить заметку. Ваш текст сохранён в редакторе.";
+"annotations.note_too_long" = "Заметка слишком длинная для сохранения.";

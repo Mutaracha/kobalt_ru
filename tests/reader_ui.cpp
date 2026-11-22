@@ -1,3 +1,4 @@
+#include "app/reader/panels/note_editor.h"
 #include "app/reader/panels/choice_screen.h"
 #include "ui/input/hold_timer.h"
 #include "render/page_turn_paint.h"
@@ -3137,6 +3138,79 @@ private slots:
             QVERIFY2(label, "The swatch label is missing");
             QVERIFY2(!inked(image.height() - 1), "The swatch cuts off its label");
         }
+    }
+
+    void noteEditorPassageLines()
+    {
+        ui::setDensity(300);
+        QWidget host;
+        host.resize(1072, 1448);
+        host.show();
+        QFont font = ui::interfaceFont();
+        font.setPixelSize(ui::metrics::search::excerptText);
+        const auto lineCount = [&](const QString &text) {
+            // The previous editor's card is deleted later; let it go first.
+            QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+            NoteEditor editor(&host, {}, QStringLiteral("Add note"),
+                              { text, QStringLiteral("Prologue"), QStringLiteral("shaded"),
+                                QStringLiteral("yellow"), font },
+                              QString());
+            QCoreApplication::processEvents();
+            auto *quote = host.findChild<QLabel *>("rrNoteQuote");
+            auto *box = host.findChild<QWidget *>("rrNoteText");
+            if (!quote || !box)
+                return -1;
+            const int pitch = qMax(int(ui::px(44)), QFontMetrics(quote->font()).lineSpacing());
+            // The passage ends before the text box, so nothing below it is cut.
+            const int quoteBottom = quote->mapTo(&host, QPoint(0, quote->height())).y();
+            if (quoteBottom > box->mapTo(&host, QPoint()).y())
+                return -2;
+            return quote->height() % pitch ? -3 : quote->height() / pitch;
+        };
+        QCOMPARE(lineCount(QStringLiteral("had")), 1);
+        QString longPassage;
+        for (int i = 0; i < 40; ++i)
+            longPassage += QStringLiteral("the remarkable optimism of someone who had never ");
+        QCOMPARE(lineCount(longPassage), 3);
+    }
+
+    void noteEditorSaveState()
+    {
+        ui::setDensity(300);
+        QWidget host;
+        host.resize(1072, 1448);
+        host.show();
+        NoteEditor editor(&host, ui::makeWidgetKeyboard, "Add note",
+                          { "Passage", "Chapter", "shaded", "gray", ui::interfaceFont() }, "draft");
+        auto *text = host.findChild<QTextEdit *>("rrNoteText");
+        auto *save = host.findChild<QPushButton *>("rrNoteSave");
+        auto *cancel = host.findChild<QPushButton *>("rrNoteCancel");
+        QVERIFY(text && save && cancel);
+        int saves = 0, closes = 0;
+        QString requested;
+        editor.closed = [&] { ++closes; };
+        editor.saveRequested = [&](const QString &value) { ++saves; requested = value; };
+        text->setPlainText("first\nsecond");
+        save->click();
+        QCOMPARE(saves, 1);
+        QCOMPARE(requested, QString("first\nsecond"));
+        QVERIFY(editor.saving() && text->isReadOnly());
+        QVERIFY(!save->isEnabled() && !cancel->isEnabled());
+        save->click();
+        cancel->click();
+        QCOMPARE(saves, 1);
+        QCOMPARE(closes, 0);
+        editor.setError("test save failure");
+        QVERIFY(!editor.saving() && !text->isReadOnly());
+        QCOMPARE(editor.text(), requested);
+        QVERIFY(save->isEnabled() && cancel->isEnabled());
+        QVERIFY(host.findChild<QLabel *>("rrNoteError")->isVisible());
+        save->click();
+        QCOMPARE(saves, 2);
+        editor.saved();
+        QCOMPARE(closes, 1);
+        QVERIFY(!host.findChild<QWidget *>("rrNoteEditor")->isVisible());
+        QVERIFY(host.property("reader_keyboard_bounds").toRect().isEmpty());
     }
 
     void annotationNoteRows_data() { variants(); }

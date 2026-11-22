@@ -1,3 +1,8 @@
+#include "ui/controls/icons.h"
+#include "ui/controls/text.h"
+#include "ui/style/private_text.h"
+#include <QLabel>
+#include <QSet>
 #include "ui/controls/highlight_palette.h"
 #include "reader_p.h"
 
@@ -173,8 +178,19 @@ void Reader::paintAnnotationDraft()
     page->annotate(annotationDraft->geometry().rectangles, savedHighlightRects, {},
                    annotationDraft->geometry().vertical);
     page->setAnnotationHandles(annotationDraft->geometry());
-    annotationPopover->setInputExclusions(page->annotationHandleHitRegion().translated(
-            page->mapTo(this, QPoint()) - annotationPopover->pos()));
+    syncPopoverExclusions();
+}
+
+void Reader::syncPopoverExclusions()
+{
+    // Handles keep their full press area outside the card. Over the card only
+    // the drawn dots pass presses on, so the card's controls stay usable.
+    const QPoint offset = page->mapTo(this, QPoint()) - annotationPopover->pos();
+    auto *card = annotationPopover->card();
+    const QRegion cardArea(QRect(card->mapTo(annotationPopover, QPoint()), card->size()));
+    annotationPopover->setInputExclusions(
+            page->annotationHandleHitRegion().translated(offset).subtracted(cardArea)
+            | page->annotationHandleDotRegion().translated(offset));
 }
 
 void Reader::buildAnnotations()
@@ -264,7 +280,7 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
                                   bool compactActions, const QString &paletteColor,
                                   std::function<void(QString)> colorChanged,
                                   const QString &selectedStyle,
-                                  std::function<void(QString)> styleChanged)
+                                  std::function<void(QString)> styleChanged, const QString &note)
 {
     paintAnnotationDraft();
     annotationPopover->hide();
@@ -279,6 +295,38 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
     if (!highlights->writable() && !highlights->error().isEmpty())
         card->message(strings::get("annotations.load_failed"), "rrAnnotationLoadError");
     int desiredWidth = metrics::links::popupWidth;
+    // The choices have no section captions, so that the card covers less of
+    // the page. A saved note comes first.
+    ui::PrivateTextLabel *noteText = nullptr;
+    if (!note.isEmpty()) {
+        auto *noteRow = new ui::Panel(card);
+        // The action buttons below draw the divider.
+        noteRow->setObjectName("rrAnnotationNote");
+        auto *layout = new QHBoxLayout(noteRow);
+        layout->setContentsMargins(metrics::chrome::inset, ui::px(20), metrics::chrome::inset,
+                                   ui::px(20));
+        layout->setSpacing(ui::px(18));
+        auto *icon = new QLabel(noteRow);
+        const int side = ui::px(32);
+        icon->setPixmap(
+                ui::controlIcon(ui::ControlIcon::Note, palette().color(QPalette::WindowText))
+                        .pixmap(side, side));
+        icon->setFixedSize(side, side);
+        layout->addWidget(icon, 0, Qt::AlignTop);
+        auto *text = new ui::PrivateTextLabel(noteRow);
+        text->setObjectName("rrAnnotationNoteText");
+        text->setTextFormat(Qt::PlainText);
+        text->setWordWrap(true);
+        text->setMaximumLines(3);
+        text->setFont(ui::interfaceFont(ui::px(23)));
+        ui::readerStyle(text, ui::styles::font(ui::px(23)));
+        text->setText(note);
+        text->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+        noteText = text;
+        layout->addWidget(text, 1);
+        rows->addWidget(noteRow);
+        desiredWidth = qMax(desiredWidth, ui::px(700));
+    }
     const auto section = [card, rows](const char *name, const char *key, bool divider = false) {
         auto *header = new ui::Panel(card);
         header->setDividers(ui::Edges(Qt::BottomEdge)
@@ -306,9 +354,14 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
     }
     auto menuActions = actions;
     if (!annotationDraft->range().start.isEmpty()) {
-        menuActions.append({ "rrAnnotationCancel", ui::ControlIcon::ClearSelection,
-                             strings::get("annotations.cancel_selection"),
-                             [this] { clearAnnotationDraft(); } });
+        // While a saved highlight is adjusted, this drops the changes and
+        // keeps the saved highlight, as Discard does in the Color step.
+        const bool adjusting = !annotationDraft->editingId().isEmpty();
+        menuActions.append(
+                { "rrAnnotationCancel",
+                  adjusting ? ui::ControlIcon::Undo : ui::ControlIcon::ClearSelection,
+                  strings::get(adjusting ? "common.cancel" : "annotations.cancel_selection"),
+                  [this] { clearAnnotationDraft(); } });
     }
     if (compactActions && annotationMode && minimalAnnotationMode()) {
         menuActions.append({ "rrAnnotationCloseMode", ui::ControlIcon::Close,
@@ -321,20 +374,28 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
                    (height() - 2 * int(metrics::notice::sideClearance) - paletteHeight)
                            / qMax(1, int(menuActions.size())),
                    int(metrics::links::actionHeight));
-    const bool compact = compactActions && menuActions.size() <= 4;
+    const bool compact = compactActions && menuActions.size() <= 6;
     if (styleChanged)
         section("rrAnnotationActionsSection", "annotations.actions_section", true);
     QGridLayout *buttons = nullptr;
-    const int columns = menuActions.size() == 4 ? 2 : menuActions.size();
+    int columns = menuActions.size();
     if (compact) {
         int labelWidth = 0;
         const auto font = ui::interfaceFont(ui::px(23));
         for (const auto &action : menuActions)
             labelWidth = qMax(labelWidth, ui::interfaceTextWidth(action.label, font));
         // Qt can elide at the rounded text advance. Leave room for fractional glyph widths.
-        desiredWidth = qMax(desiredWidth,
-                            columns * (labelWidth + ui::px(4) + 2 * ui::px(16))
-                                    + 2 * int(metrics::control::border));
+        const auto stripWidth = [&](int count) {
+            return count * (labelWidth + ui::px(4) + 2 * ui::px(16))
+                    + 2 * int(metrics::control::border);
+        };
+        // Four actions share one row when their labels fit, and two rows
+        // otherwise. Five or six use rows of three.
+        if (columns > 4)
+            columns = 3;
+        else if (columns == 4 && stripWidth(4) > width() - 2 * int(metrics::notice::sideClearance))
+            columns = 2;
+        desiredWidth = qMax(desiredWidth, stripWidth(columns));
         auto *strip = new QWidget(card);
         strip->setFixedHeight(ui::px(104) * ((menuActions.size() + columns - 1) / columns));
         buttons = new QGridLayout(strip);
@@ -353,9 +414,7 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
             button->setIconVisible(true);
             button->setIconAboveLabel(true);
             button->setChevron(false);
-            ui::Edges edges;
-            if (!styleChanged || buttons->count() >= columns)
-                edges |= Qt::TopEdge;
+            ui::Edges edges(Qt::TopEdge);
             if ((buttons->count() + 1) % columns != 0)
                 edges |= Qt::RightEdge;
             button->setRule(edges);
@@ -392,8 +451,23 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
             widget->show();
         }
     rows->activate();
-    card->fitToWidth(qMin(desiredWidth, width() - 2 * int(metrics::notice::sideClearance)));
+    const int cardWidth = qMin(desiredWidth, width() - 2 * int(metrics::notice::sideClearance));
+    card->fitToWidth(cardWidth);
+    if (noteText) {
+        // The wrapped height of the note is known once the card has its width.
+        const int lineHeight = ui::interfaceLineHeight(noteText->font());
+        const int lines = qBound(
+                1,
+                (ui::wrappedInterfaceTextHeight(note, noteText->font(), qMax(1, noteText->width()))
+                 + lineHeight - 1)
+                        / qMax(1, lineHeight),
+                3);
+        noteText->setFixedHeight(lines * lineHeight);
+        rows->activate();
+        card->fitToWidth(cardWidth);
+    }
     annotationPopover->anchorTo(anchor);
+    syncPopoverExclusions();
     for (auto *widget : annotationPopover->findChildren<QWidget *>()) {
         widget->setPalette(palette());
         platform::textRefresh(widget);
@@ -809,6 +883,41 @@ void Reader::showAnnotationActions()
                                                               ? "annotations.mark_text"
                                                               : "annotations.apply_changes"),
                                          [this] { prepareAnnotation(); } } };
+    if (annotationDraft->editingId().isEmpty()) {
+        // Add note saves the highlight first, then writes the note on it.
+        actions.append({ "rrAnnotationAddNote", ui::ControlIcon::Note,
+                         strings::get("annotations.add_note"), [this] {
+                             QSet<QString> before;
+                             for (const auto &item : highlights->highlights())
+                                 before.insert(item.id);
+                             prepareAnnotation(false, [this, before] {
+                                 syncAnnotations();
+                                 for (const auto &item : highlights->highlights())
+                                     if (!before.contains(item.id)) {
+                                         openNoteEditor(item.id);
+                                         return;
+                                     }
+                             });
+                         } });
+    }
+    if (!annotationDraft->editingId().isEmpty()) {
+        // Adjusting a saved highlight: the note action applies the new range,
+        // then opens the note, so the order matches a new selection.
+        const auto id = annotationDraft->editingId();
+        bool noted = false;
+        for (const auto &item : highlights->highlights())
+            if (item.id == id)
+                noted = hasHighlightNote(item);
+        actions.append({ noted ? "rrAnnotationEditNote" : "rrAnnotationAddNote",
+                         ui::ControlIcon::Note,
+                         strings::get(noted ? "annotations.edit_note" : "annotations.add_note"),
+                         [this, id] {
+                             prepareAnnotation(false, [this, id] {
+                                 syncAnnotations();
+                                 openNoteEditor(id);
+                             });
+                         } });
+    }
     annotationActionsFor(
             actions, bounds, true, annotationColor,
             [this](QString color) {
@@ -938,8 +1047,7 @@ void Reader::syncAnnotationControls()
     page->setAnnotationInputEnabled(readingOnly || dictionaryPanel->isVisible()
                                     || selectionEnabled);
     page->setAnnotationHandles(annotationDraft->geometry());
-    annotationPopover->setInputExclusions(page->annotationHandleHitRegion().translated(
-            page->mapTo(this, QPoint()) - annotationPopover->pos()));
+    syncPopoverExclusions();
 }
 
 void Reader::syncMarkupRequest()
@@ -1280,48 +1388,43 @@ void Reader::showSavedAnnotationAt(const QString &id, QRect anchor, bool navigat
 {
     if (!features::enabled(preferences, features::Annotations))
         return;
-    for (const auto &item : highlights->highlights()) {
-        if (item.id == id) {
-            annotationColor = item.color;
-            annotationStyle = highlightDisplayStyle(item.style);
-            break;
-        }
+    const Highlight *item = nullptr;
+    for (const auto &row : highlights->highlights())
+        if (row.id == id)
+            item = &row;
+    if (!item)
+        return;
+    if (!hasHighlightNote(*item)) {
+        showSavedAppearance(id, anchor, navigate, false);
+        return;
     }
+    // A highlight with a note shows the note and its actions. Its color and
+    // style wait behind Color.
+    Highlight detail;
+    if (!highlights->detail(id, &detail)) {
+        annotationActionsFor({}, anchor);
+        return;
+    }
+    annotationColor = item->color;
+    annotationStyle = highlightDisplayStyle(item->style);
     annotationActionsFor(
-            { { "rrAnnotationApply", ui::ControlIcon::SaveHighlight,
-                strings::get("annotations.apply_changes"),
-                [this, id, anchor] {
-                    if (highlights->updateAppearance(
-                                id, colorAnnotations() ? annotationColor : QString(),
-                                annotationStyle)) {
-                        annotationSelectedColor = annotationColor;
-                        annotationSelectedStyle = annotationStyle;
-                        annotationPopover->hide();
-                        annotationFrame.clear();
-                        syncAnnotations();
-                    } else {
-                        auto *picker = dynamic_cast<ui::HighlightStylePicker *>(
-                                annotationPopover->findChild<QWidget *>("rrAnnotationStyles"));
-                        if (picker) {
-                            picker->setError(strings::get("annotations.save_failed"),
-                                             annotationStyle);
-                            auto *card = annotationPopover->card();
-                            card->rows()->activate();
-                            card->fitToWidth(card->width());
-                            annotationPopover->anchorTo(anchor);
-                        }
-                    }
+            { { "rrAnnotationEditNote", ui::ControlIcon::Note,
+                strings::get("annotations.edit_note"), [this, id] { openNoteEditor(id); } },
+              { "rrAnnotationAppearance", ui::ControlIcon::Styling,
+                strings::get(colorAnnotations() ? "annotations.color" : "annotations.style"),
+                [this, id, anchor, navigate] {
+                    // Rebuilding the card deletes this button, so wait until its
+                    // click has been delivered.
+                    qt::later(0, this, [this, id, anchor, navigate] {
+                        showSavedAppearance(id, anchor, navigate, true);
+                    });
                 } },
               { "rrAnnotationEdit", ui::ControlIcon::EditHighlight,
                 strings::get("annotations.edit"),
                 [this, id, navigate, anchor] {
                     annotationPopover->hide();
                     annotationActionAnchor = anchor;
-                    const auto color = annotationColor, style = annotationStyle;
                     editAnnotation(id, navigate);
-                    annotationColor = color;
-                    annotationStyle = style;
-                    annotationColorChosen = annotationStyleChosen = true;
                 } },
               { "rrAnnotationRemove", ui::ControlIcon::RemoveHighlight,
                 strings::get("annotations.remove"),
@@ -1329,7 +1432,73 @@ void Reader::showSavedAnnotationAt(const QString &id, QRect anchor, bool navigat
                     annotationPopover->hide();
                     removeAnnotation(id);
                 } } },
-            anchor, true, annotationColor,
+            anchor, true, {}, {}, {}, {}, detail.note);
+}
+
+void Reader::showSavedAppearance(const QString &id, QRect anchor, bool navigate, bool colorStep)
+{
+    for (const auto &item : highlights->highlights()) {
+        if (item.id == id) {
+            annotationColor = item.color;
+            annotationStyle = highlightDisplayStyle(item.style);
+            break;
+        }
+    }
+    QVector<AnnotationAction> actions{
+        { "rrAnnotationApply", ui::ControlIcon::SaveHighlight,
+          strings::get("annotations.apply_changes"),
+          [this, id, anchor] {
+              if (highlights->updateAppearance(id, colorAnnotations() ? annotationColor : QString(),
+                                               annotationStyle)) {
+                  annotationSelectedColor = annotationColor;
+                  annotationSelectedStyle = annotationStyle;
+                  annotationPopover->hide();
+                  annotationFrame.clear();
+                  syncAnnotations();
+              } else {
+                  auto *picker = dynamic_cast<ui::HighlightStylePicker *>(
+                          annotationPopover->findChild<QWidget *>("rrAnnotationStyles"));
+                  if (picker) {
+                      picker->setError(strings::get("annotations.save_failed"), annotationStyle);
+                      auto *card = annotationPopover->card();
+                      card->rows()->activate();
+                      card->fitToWidth(card->width());
+                      annotationPopover->anchorTo(anchor);
+                  }
+              }
+          } }
+    };
+    if (colorStep) {
+        // Discard leaves the choices unsaved and returns to the note.
+        actions.append({ "rrAnnotationDiscard", ui::ControlIcon::Undo,
+                         strings::get("common.cancel"), [this, id, anchor, navigate] {
+                             // Rebuilding the card deletes this button.
+                             qt::later(0, this, [this, id, anchor, navigate] {
+                                 showSavedAnnotationAt(id, anchor, navigate);
+                             });
+                         } });
+    } else {
+        actions.append({ "rrAnnotationAddNote", ui::ControlIcon::Note,
+                         strings::get("annotations.add_note"),
+                         [this, id] { openNoteEditor(id); } });
+        actions.append({ "rrAnnotationEdit", ui::ControlIcon::EditHighlight,
+                         strings::get("annotations.edit"), [this, id, navigate, anchor] {
+                             annotationPopover->hide();
+                             annotationActionAnchor = anchor;
+                             const auto color = annotationColor, style = annotationStyle;
+                             editAnnotation(id, navigate);
+                             annotationColor = color;
+                             annotationStyle = style;
+                             annotationColorChosen = annotationStyleChosen = true;
+                         } });
+        actions.append({ "rrAnnotationRemove", ui::ControlIcon::RemoveHighlight,
+                         strings::get("annotations.remove"), [this, id] {
+                             annotationPopover->hide();
+                             removeAnnotation(id);
+                         } });
+    }
+    annotationActionsFor(
+            actions, anchor, true, annotationColor,
             [this](QString color) {
                 annotationColor = color;
                 syncAnnotationAppearance();
@@ -1340,6 +1509,42 @@ void Reader::showSavedAnnotationAt(const QString &id, QRect anchor, bool navigat
                 syncAnnotationAppearance();
             });
     syncAnnotationAppearance();
+}
+
+void Reader::openNoteEditor(const QString &id)
+{
+    if (noteEditor)
+        delete noteEditor.data();
+    Highlight detail;
+    if (!highlights->detail(id, &detail)) {
+        annotationActionsFor({}, topControls->geometry());
+        return;
+    }
+    annotationPopover->hide();
+    bookmarkList->setExcerptFont(bookFace());
+    const NotePassage passage{ detail.text, detail.chapter, highlightDisplayStyle(detail.style),
+                               colorAnnotations() ? highlightDisplayColor(detail.color)
+                                                  : QStringLiteral("gray"),
+                               bookmarkList->excerptFont() };
+    noteEditor = new NoteEditor(
+            this, services.keyboard,
+            strings::get(detail.note.isEmpty() ? "annotations.add_note" : "annotations.edit_note"),
+            passage, detail.note);
+    noteEditor->saveRequested = [this, id](const QString &text) {
+        if (text.size() > HighlightStore::maxNoteUnits)
+            noteEditor->setError(strings::get("annotations.note_too_long"));
+        else if (!highlights->setNote(id, text, true))
+            noteEditor->setError(strings::get("annotations.note_save_failed"));
+        else if (!highlights->saving())
+            noteEditor->saved();
+    };
+    noteEditor->closed = [this] {
+        if (noteEditor)
+            noteEditor->deleteLater();
+        noteEditor.clear();
+        annotationFrame.clear();
+        syncAnnotations();
+    };
 }
 
 void Reader::showAnnotationMatches(QVector<QString> ids, QRect anchor, int listPage)

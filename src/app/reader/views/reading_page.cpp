@@ -439,10 +439,9 @@ QRect ReadingPage::annotationHandleRect(bool start) const
                  QSize(2 * radius + 1, 2 * radius + 1));
 }
 
-QRegion ReadingPage::annotationHandleHitRegion() const
+QRegion ReadingPage::annotationHandleRegion(int radius) const
 {
     QRegion region;
-    const int radius = metrics::selection::handleHitRadius;
     for (const auto &handle : annotationHandles) {
         if (handle.visible) {
             const QPoint center = handle.center + QPoint(0, topHeight());
@@ -452,6 +451,16 @@ QRegion ReadingPage::annotationHandleHitRegion() const
         }
     }
     return region;
+}
+
+QRegion ReadingPage::annotationHandleDotRegion() const
+{
+    return annotationHandleRegion(metrics::selection::handleRadius);
+}
+
+QRegion ReadingPage::annotationHandleHitRegion() const
+{
+    return annotationHandleRegion(metrics::selection::handleHitRadius);
 }
 
 void ReadingPage::setAnnotationHandles(const AnnotationGeometry &geometry)
