@@ -1,8 +1,11 @@
 # Текущая граница выравнивания beta.9
 
-Baseline: upstream `be472588`, fork runtime `8f1fdf4d` (focused CI 44932175305 PASS; preset/version fixes device pending).
-Полный актуальный inventory ещё planned; историческая карта beta.8 ниже не
-является доказательством завершённости beta.9 consumer migration.
+Baseline: upstream `be472588`, fork runtime `34811f2f` / Qt5 build 266,
+CI 45048708215 SUCCESS (native + Qt5/offline/package/contents), device pending.
+[Актуальный inventory и открытые consumers](reports/beta9-inventory.md),
+[combined checklist](validation/beta9-kosync-sleep.md). KOSync и sleep/storage
+consumer group перенесены/CI verified; полный semantic gate ещё не закрыт.
+Историческая карта beta.8 ниже не является доказательством завершённости beta.9.
 
 - Vendor `src/engine/blaze/crengine` не менялся при cleanup.
 - Удалена старая external engine patch series; build recipe/cache key не менялись.

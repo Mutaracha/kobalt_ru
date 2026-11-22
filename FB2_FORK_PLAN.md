@@ -24,16 +24,13 @@ layout, adoption, fallback) базовой версии и не пишем со�
 Существующие narrow hooks, включая comics frameImage, сохраняются по назначению.
 FB2 whole-book остаётся безопасным поведением до отдельного проверенного решения.
 
-**Текущий проверенный runtime:** `77564e9e11d2049cf82cfd5355704ae93e1cffa8`,
-[CI 44815357384](https://github.com/Mutaracha/kobalt_ru/actions/runs/44815357384) **PASS**: focused native и Kobo Qt5/offline/package/contents.
-[Общий пакет theme + lazy Settings](https://github.com/Mutaracha/kobalt_ru/actions/runs/44815357384/artifacts/14669920633).
-Upstream ensureSettings/preparePanels/settled/inputQuiet подключены после
-разделения KOSync model/page; consumers безопасны до создания Settings.
-Проверены lifecycle.lazyPanels (on-demand/background × light/dark), close-unbuilt,
-KOSync lifecycle/model и прежние theme/settings/EPUB/FB2 checks.
-Qt6 skipped; full suite/Android NOT RUN. Пользователь принял чек-лист theme /
-lazy Settings и кнопки; последующий freeze рассматривается отдельно, не закрыт.
-Пресеты 9633d3fd приняты отдельно.
+**Текущий проверенный runtime:** `34811f2f42b64c73a557fa532a453c34851953db`,
+Qt5 build **266**, [CI 45048708215](https://github.com/Mutaracha/kobalt_ru/actions/runs/45048708215)
+**SUCCESS**: native 9m06s; Qt5/offline/package/contents 7m37s.
+[Qt5 package](https://github.com/Mutaracha/kobalt_ru/actions/runs/45048708215/artifacts/14764857536)
+(37408180 bytes). [Combined checklist](doc/validation/beta9-kosync-sleep.md).
+Device/Android/Qt6/full upstream suite NOT RUN. Theme/lazy Settings and presets
+accepted ранее; freeze deferred. Это не свидетельство complete-repository parity.
 
 **Annotation interaction/drag — done / CI verified, device pending:** runtime
 `c81928517f13859cb5baaf7f1927da5b41e19fae`, CI `45043939833` SUCCESS
@@ -41,33 +38,24 @@ lazy Settings и кнопки; последующий freeze рассматри�
 Quick/toggle, auto-open/reopen 1500 ms, pressed handles и Qt5 direct-partial drag /
 one-shot REAGL cleanup; fork palette/headers сохранены. Устройство NOT RUN.
 
-**KOSync + sleep/storage — in progress / CI pending:** по прямому указанию
-пользователя KOSync целиком upstream, без fork policy. Модель, page, coordinator,
-Reader handlers, validation и тесты заменены целиком. Подключены deferred Android
-handoff, resume after native dialogs, whole-book percentage. Три RU validation
-messages утверждены. Sleep/USB lifecycle и assets verification upstream;
-cache namespace `.cache-blaze`, optional damaged assets и persisted verification
-upstream. Сохранены только fork sleep ribbon/newline/text fitting. Quiet preload
-не включён (ранее удалённая policy); EPUB Hybrid algorithms unchanged. Проверки
-локальных offline/source gates PASS. CI `45045654719`: Qt5 package/contents PASS;
-native compile выявил старый KosyncHttpState fixture без lastAuthentication.
-Восстановлены целиком upstream state + mock transport, проверки не ослаблены;
-повторная native/Qt5 сборка нужна. CI `45046276278` нашёл ещё две
-compile dependencies новых тестов: rendering_mode.h и upstream test-only
-KOBALT_CONFIG_DIR=/unused для home-screen target. Обе восстановлены из upstream
-без изменения production sleep owner и без исключения тестов.
-[Обновлённый inventory](doc/reports/beta9-inventory.md): 1083 identical / 248
-changed / 155 fork-only / 52 upstream-only. Текущая KOSync/sleep/storage группа
-не закрывает оставшиеся platform/Reader consumers; полный semantic gate OPEN.
-Сохранён fork diagnostic flag appearance_controls_built, который проверяет
-desktop.lazyAppearance; это instrumentation, не отдельная save policy.
-CI `45047454711`/54cd91ad: Qt5 package/contents PASS (5m01s), native
-compiled and executed 484 checks, failed only profile-storage invalid Rendering
-sanitization and kosyncNetwork's old password-consumption helper. Restored whole
-upstream cleanPreferences (retaining fork legacy-note migration) and all
-verifyKosync helpers. No EPUB algorithm changes; no assertions removed.
-Дополнительно зарегистрирован upstream kosyncDialogResume в CTest (сам тест
-перенесён целиком), без пропуска при focused selection.
+**KOSync + sleep/storage — done / CI verified, device pending:** по прямому
+указанию пользователя KOSync whole upstream: модель, page, coordinator, Reader
+handlers, network/login retries, final exchanges и соответствующие тесты/helpers.
+Whole-book percentage, deferred Android API и native modal-input resume подключены.
+Три RU validation messages утверждены. Sleep/USB lifecycle и asset verification
+upstream; `.cache-blaze`, optional-assets handling и boot/remount gates перенесены.
+Сохранены fork ribbon/newline/text fitting, note migration и lazy-Appearance report
+flag; нет второго save pipeline. Upstream cleanPreferences восстановлен целиком
+с note-migration hook, EPUB algorithms не менялись. CI 45048708215 SUCCESS.
+
+**Итоговый semantic inventory — in progress, не закрыт:**
+[актуальная карта](doc/reports/beta9-inventory.md) и TSV охватывают все nonidentical
+production/build/assets/tests paths. Остаются не только UI отличия: независимые
+platform/Reader consumers (Wi-Fi-idle patches, sync-exclusion, quiet preload,
+status/debug/percentage/chapter-navigation и platform-specific helpers/tests).
+Их нельзя объявить косметикой или закрыть фактом успешного CI этой группы.
+Следующее действие — disposition/целостный перенос оставшихся consumer groups,
+без новых fork features; EPUB Hybrid и freeze остаются исключениями.
 
 **Редактор заметок — implemented / CI verified, device pending:** upstream NoteEditor h/cpp целиком,
 Reader saved/draft actions и save completion/error callbacks, note popover;

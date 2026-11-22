@@ -1,6 +1,6 @@
 # beta9 inventory — post KOSync/sleep checkpoint
 
-Runtime source: `d8c94b3423ca1d0c9678e8104ae2df6232a11929`;
+Runtime source: `34811f2f42b64c73a557fa532a453c34851953db`;
 pinned upstream: `be47258850ffdc3295257475afdf8b8f6cb53176`.
 All Git-tracked fork paths compared against the upstream archive; scratch build
 outputs and the dirty root are not inputs. Counts include docs/uploads:
@@ -30,7 +30,8 @@ A byte/path inventory is not a claim that every retained difference is justified
   home sleep owner, native lifecycle, last-read helper, asset verification,
   reader storage and custom pin guard restored whole upstream. Boot/remount
   verification and release/restore callbacks wired into both Kobo adapters.
-  Sleep captures/details and wallpaper refresh follow upstream. Fork-only
+  The upstream preferences sanitizer is restored with the existing note-migration
+  hook. Sleep captures/details and wallpaper refresh follow upstream. Fork-only
   two-line ribbon/fit-to-width text is presentation, not a storage policy.
 
 ## Protected boundaries checked against c8192851
