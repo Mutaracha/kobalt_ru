@@ -1,0 +1,388 @@
+ .clang-format-ignore                               |     8 +-
+ .github/workflows/ci.yml                           |    20 -
+ .github/workflows/kobo-qt5-device.yml              |   303 +
+ AGENTS.md                                          |   178 +-
+ FB2_FORK_PLAN.md                                   |   840 ++
+ README.md                                          |     4 +-
+ assets/CMakeLists.txt                              |     3 +
+ assets/acknowledgments.json                        |    11 +
+ assets/en.strings                                  |  1098 +-
+ assets/hyph/Russian_EnUS.pattern                   | 11526 +++++++++++++++++++
+ assets/icons/phosphor/dark-theme.svg               |     1 +
+ assets/icons/phosphor/device-rotate.svg            |     1 -
+ assets/icons/phosphor/manifest.json                |     4 -
+ assets/manifest.json                               |     5 +
+ assets/notices/Fluent-MIT                          |    21 +
+ assets/notices/Hyphenation-patterns                |     7 +
+ assets/notices/NickelFix-MIT                       |    21 +
+ assets/ru.strings                                  |  1899 +++
+ doc/acknowledgements.md                            |     7 +-
+ doc/beta8-device-check.md                          |   226 +
+ doc/beta9-strings-review.md                        |   181 +
+ doc/building.md                                    |    36 +-
+ doc/engines.md                                     |    67 -
+ doc/engines/compatibility.md                       |   125 -
+ doc/engines/contract.md                            |   221 -
+ doc/engines/inventory.md                           |   143 -
+ doc/engines/koblaze-upstream-beta9.md              |    42 +
+ doc/engines/koblaze.md                             |    35 -
+ doc/engines/migration.md                           |   305 -
+ doc/fb2-footnotes.md                               |    25 +
+ doc/fork-decisions.md                              |   293 +
+ doc/fork-delta.md                                  |   440 +
+ doc/fork-kobalt_ru.md                              |   175 +
+ doc/fork-update-workflow.md                        |   102 +
+ doc/forum-description.ru.bbcode.txt                |    61 +
+ doc/power-mechanisms.md                            |     7 +-
+ doc/qt6-one-off.md                                 |    34 +
+ doc/reader.md                                      |     2 +-
+ doc/reader/android.md                              |     6 -
+ doc/reader/annotations.md                          |    30 +-
+ doc/reader/desktop.md                              |    10 -
+ doc/reader/dictionaries.md                         |     4 +-
+ doc/reader/display.md                              |     4 +-
+ doc/reader/installation.md                         |     5 +-
+ doc/reader/interface.md                            |     8 +-
+ doc/reader/navigation.md                           |    10 +-
+ doc/reader/opening.md                              |    18 +-
+ doc/reader/progress.md                             |    29 +-
+ doc/reader/settings.md                             |    32 +-
+ doc/reader/sleep.md                                |    14 +-
+ doc/reader/sync.md                                 |    10 +-
+ doc/reader/typography.md                           |     6 +-
+ doc/reader/viewport.md                             |     2 -
+ doc/release-evaluation.md                          |   101 +-
+ doc/reports/033d0be2-device-review.md              |   158 +
+ doc/reports/77564e9-device-issues.md               |   154 +
+ doc/reports/beta9-annotation-port-matrix.md        |   184 +
+ doc/reports/beta9-delta/README.md                  |    96 +
+ doc/reports/beta9-delta/changes.stat               |   440 +
+ doc/reports/beta9-delta/files.tsv                  |   440 +
+ doc/reports/beta9-delta/summary.json               |    26 +
+ doc/reports/beta9-engine-adapter.md                |   148 +
+ doc/reports/beta9-engine-contracts.md              |   202 +
+ doc/reports/beta9-inventory.md                     |    62 +
+ doc/reports/beta9-inventory.tsv                    |   291 +
+ doc/reports/beta9-physical-buttons.md              |    47 +
+ doc/reports/beta9-port-map.tsv                     |   194 +
+ doc/reports/beta9-preflight.md                     |   113 +
+ doc/reports/beta9-source-locations.md              |    39 +
+ doc/reports/beta9-stage1-blaze.md                  |    65 +
+ doc/reports/beta9-stage2-adapter.md                |    38 +
+ doc/reports/beta9-upgrade-retrospective.md         |    95 +
+ doc/reports/beta9-wireless.md                      |    70 +
+ doc/reports/beta9-worker-contracts.md              |    50 +
+ doc/reports/cfb8f51c-device-followup.md            |   122 +
+ doc/reports/fb2-hybrid-preparation.md              |    58 +
+ doc/reports/fb2-post-refactor.md                   |   101 +
+ doc/reports/fb2-preview-position.md                |   113 +
+ doc/reports/fb2-reliability-koreader.md            |    94 +
+ doc/reports/upstream-cleanup-stage1.md             |    71 +
+ doc/reports/upstream-panels-alignment.md           |   206 +
+ doc/storage.md                                     |   212 +-
+ doc/sync-data.md                                   |    15 +-
+ doc/validation.md                                  |    62 +-
+ doc/validation/033d0be2-followup.md                |    68 +
+ doc/validation/annotations.md                      |     8 -
+ doc/validation/beta9-annotation-foundation.md      |    55 +
+ doc/validation/beta9-device.md                     |   129 +
+ doc/validation/beta9-kosync-sleep.md               |    78 +
+ doc/validation/beta9-note-editor.md                |    59 +
+ doc/validation/brightness.md                       |     2 -
+ doc/validation/chrome.md                           |     8 +-
+ doc/validation/diagnostics.md                      |    22 +-
+ doc/validation/dictionary.md                       |     2 +-
+ doc/validation/display.md                          |     4 +-
+ doc/validation/evaluation.md                       |    12 +-
+ doc/validation/fonts.md                            |     6 +-
+ doc/validation/gallery.md                          |     2 -
+ doc/validation/images.md                           |     2 -
+ doc/validation/input.md                            |     2 -
+ doc/validation/kobo.md                             |    14 +-
+ doc/validation/layout.md                           |    56 +-
+ doc/validation/library.md                          |     2 +-
+ doc/validation/links.md                            |    28 +-
+ doc/validation/progress.md                         |    14 +-
+ doc/validation/reading.md                          |    47 +-
+ doc/validation/settings.md                         |    26 +-
+ doc/validation/sleep.md                            |    18 +-
+ doc/validation/storage.md                          |    23 +-
+ doc/validation/upstream-panels-device.md           |    43 +
+ doc/validation/upstream-presets-device.md          |    34 +
+ doc/validation/viewport.md                         |     4 -
+ platforms/android/CMakeLists.txt                   |    10 +-
+ platforms/android/app/AndroidManifest.xml.in       |     2 +-
+ .../app/src/org/kobalt/android/BooxRefresh.java    |   170 +-
+ .../app/src/org/kobalt/android/KobaltActivity.java |     2 +-
+ platforms/android/main.cpp                         |     2 +
+ platforms/android/services.cpp                     |     5 +-
+ platforms/checks/reader-properties.allow           |     3 +-
+ platforms/ci/check-source-archive.sh               |     6 +-
+ platforms/ci/cleanup-runs.sh                       |    38 +
+ platforms/ci/native-tests.sh                       |    28 +-
+ platforms/ci/source-archive.sh                     |     2 +-
+ platforms/ci/test.sh                               |    15 +-
+ platforms/ci/test_upstream_delta.py                |    62 +
+ platforms/ci/upstream_delta.py                     |    87 +
+ platforms/desktop/CMakeLists.txt                   |   169 +-
+ platforms/desktop/CMakePresets.json                |    41 -
+ platforms/desktop/main.cpp                         |     2 +
+ platforms/kobo/CMakeLists.txt                      |    11 +-
+ platforms/kobo/build.sh                            |     4 +-
+ platforms/kobo/common/book_menu.cpp                |    46 +-
+ platforms/kobo/common/book_menu.h                  |     2 -
+ platforms/kobo/common/page_button_mapping.h        |    10 +
+ platforms/kobo/common/progress_policy.h            |    10 +-
+ platforms/kobo/common/reader_coordinator.cpp       |   723 +-
+ platforms/kobo/common/reader_coordinator.h         |    68 +-
+ platforms/kobo/common/startup_recovery.c           |     5 +-
+ platforms/kobo/display/page_animation.cpp          |     3 +-
+ platforms/kobo/display/page_transition.h           |     2 +-
+ platforms/kobo/install-eval.cmake                  |     7 -
+ platforms/kobo/nickel-qt5/native_publication.cpp   |     5 +-
+ platforms/kobo/nickel-qt5/native_ui.cpp            |    16 +-
+ platforms/kobo/nickel-qt5/reader_controller.cpp    |    32 +-
+ platforms/kobo/nickel-qt5/refresh.cpp              |    26 +-
+ platforms/kobo/nickel-qt6/native_publication.cpp   |     7 +-
+ platforms/kobo/nickel-qt6/reader_controller.cpp    |    35 +-
+ platforms/kobo/sources.cmake                       |     4 +-
+ platforms/shared-inputs.cmake                      |     4 +-
+ platforms/strings-test.cmake                       |    41 +-
+ platforms/strings.cmake                            |    52 +-
+ src/app/about/about_page.cpp                       |     2 +
+ src/app/about/fork_about.cpp                       |    28 +
+ src/app/about/fork_about.h                         |     8 +
+ src/app/about/fork_debug.cpp                       |   160 +
+ src/app/about/fork_debug.h                         |     8 +
+ src/app/library/library_view.cpp                   |     7 +-
+ src/app/reader/interface.cpp                       |     5 +-
+ src/app/reader/panels/activity_view.cpp            |    45 +-
+ src/app/reader/panels/chapter_contents.cpp         |    27 +-
+ src/app/reader/panels/chapter_graph.cpp            |     4 +-
+ src/app/reader/panels/dictionary_panel.cpp         |    10 +-
+ src/app/reader/panels/dictionary_panel.h           |     5 +-
+ src/app/reader/panels/light_panel.cpp              |    22 +-
+ src/app/reader/panels/search_panel.cpp             |     2 +-
+ src/app/reader/settings/appearance_panel.cpp       |    59 +-
+ src/app/reader/settings/appearance_panel.h         |     3 +-
+ src/app/reader/settings/fork_settings.cpp          |    24 +
+ src/app/reader/settings/fork_settings.h            |    12 +
+ src/app/reader/settings/header_footer_panel.cpp    |    28 +-
+ src/app/reader/settings/header_footer_panel.h      |     4 -
+ src/app/reader/settings/settings_panel.cpp         |   502 +-
+ src/app/reader/settings/settings_panel.h           |    45 +-
+ src/app/reader/views/fork_navigation.cpp           |    67 +
+ src/app/reader/views/fork_navigation.h             |     5 +
+ src/app/reader/views/navigation.cpp                |    36 +-
+ src/app/reader/views/navigation.h                  |    12 +-
+ src/app/reader/views/opening.cpp                   |   104 +-
+ src/app/reader/views/opening.h                     |    10 +-
+ src/app/reader/views/reading_page.cpp              |    69 +-
+ src/app/reader/views/reading_page.h                |    27 +-
+ src/app/reader/views/reading_page_progress.cpp     |    79 +
+ src/app/reader/views/sleep_designs.cpp             |    10 +-
+ src/app/reader/views/sleep_ribbon_text.cpp         |    26 +
+ src/app/reader/views/sleep_screen.cpp              |    20 +-
+ src/app/reader/views/sleep_screen.h                |     2 +
+ src/app/reader/window/fork_reader_actions.cpp      |    74 +
+ src/app/reader/window/reader.cpp                   |   222 +-
+ src/app/reader/window/reader_annotations.cpp       |    25 +-
+ src/app/reader/window/reader_build.cpp             |   339 +-
+ src/app/reader/window/reader_debug.cpp             |   212 -
+ src/app/reader/window/reader_dialogs.cpp           |   101 +-
+ src/app/reader/window/reader_p.h                   |   132 +-
+ src/app/reader/window/reader_refresh.cpp           |   114 +-
+ src/app/reader/window/reader_settings.cpp          |   159 +-
+ src/app/reader/window/reader_text_presets.cpp      |    17 +-
+ src/app/reader_interface.h                         |     4 -
+ src/app/reader_window.h                            |    12 +-
+ src/engine/blaze/adapter/column_view.h             |    76 +-
+ src/engine/blaze/adapter/column_view_comics.cpp    |   123 +
+ src/engine/blaze/adapter/engine_document.cpp       |   413 +-
+ src/engine/blaze/adapter/engine_document.h         |    20 +-
+ .../blaze/adapter/engine_document_comics.cpp       |   162 +
+ src/engine/blaze/adapter/page_draw_buffer.cpp      |   227 +
+ src/engine/blaze/adapter/page_draw_buffer.h        |    35 +
+ src/engine/blaze/adapter/reader_alignment.cpp      |     3 +
+ src/engine/blaze/adapter/reader_beautifier.cpp     |     5 +-
+ src/engine/blaze/adapter/reader_comics.cpp         |   122 +
+ src/engine/blaze/adapter/reader_comics.h           |    22 +
+ src/engine/blaze/adapter/reader_fb2.cpp            |   243 +
+ src/engine/blaze/adapter/reader_fb2.h              |    20 +
+ src/engine/blaze/adapter/reader_fork_styles.cpp    |    49 +
+ src/engine/blaze/adapter/reader_fork_styles.h      |    10 +
+ src/engine/blaze/adapter/reader_links.cpp          |    37 +-
+ src/engine/blaze/adapter/reader_page_layout.cpp    |     2 +-
+ src/engine/blaze/adapter/reader_source.cpp         |   171 +-
+ src/engine/blaze/adapter/reader_source.h           |     2 +
+ src/engine/blaze/adapter/reader_styles.h.in        |     5 +
+ src/engine/engine.h                                |     4 +
+ src/library/library_database.cpp                   |    20 +-
+ src/platform/api/page_animation_support.h          |     8 -
+ src/platform/api/reader_host_services.h            |     8 +-
+ src/platform/api/reader_orientation.cpp            |    61 +-
+ src/platform/api/reader_orientation.h              |    11 +-
+ src/publication/fb2.h                              |    60 +
+ src/publication/fb2_resources.cpp                  |    55 +
+ src/publication/fb2_resources.h                    |    13 +
+ src/publication/image_request_trace.h              |    37 +
+ src/publication/local_resources.cpp                |     8 +-
+ src/publication/publication.cpp                    |     9 +-
+ src/publication/publication.h                      |    16 +-
+ src/publication/publication_fb2.cpp                |    58 +
+ src/publication/resource_cache.cpp                 |     9 +
+ src/publication/resource_cache.h                   |     7 +
+ src/reading/appearance_settings.cpp                |    13 +
+ src/reading/appearance_settings.h                  |    14 +-
+ src/reading/chapter.h                              |    17 +
+ src/reading/features.h                             |     9 +-
+ src/reading/fork_text_preset_names.h               |    26 +
+ src/reading/header_footer.cpp                      |    75 +-
+ src/reading/header_footer.h                        |    81 +-
+ src/reading/opening_job.cpp                        |     5 +-
+ src/reading/page_navigation.h                      |     5 +
+ src/reading/reader_session.cpp                     |     3 +-
+ src/reading/reader_session.h                       |     1 +
+ src/reading/style_sample.cpp                       |     2 +-
+ src/reading/text_presets.cpp                       |     3 -
+ src/support/build_info.h.in                        |     5 +
+ src/support/debug_language.cpp                     |    94 +
+ src/support/debug_language.h                       |    17 +
+ src/support/locale.cpp                             |    58 +
+ src/support/locale.h                               |    16 +
+ src/support/string_locale.h                        |    84 +
+ src/support/string_table.h                         |    24 +
+ src/support/strings.h                              |    50 +-
+ src/ui/controls/brand_wordmark.h                   |   223 -
+ src/ui/controls/buttons.cpp                        |    13 +-
+ src/ui/controls/buttons.h                          |    10 +-
+ src/ui/controls/fork_icon_geometry.cpp             |    36 +
+ src/ui/controls/fork_icon_geometry.h               |     8 +
+ src/ui/controls/highlight_palette.h                |    60 +-
+ src/ui/controls/icons.cpp                          |    37 +-
+ src/ui/controls/icons.h                            |    11 +-
+ src/ui/controls/options.cpp                        |    66 +-
+ src/ui/controls/options.h                          |    10 +-
+ src/ui/controls/panels.cpp                         |    27 -
+ src/ui/controls/panels.h                           |     3 -
+ src/ui/controls/return_title_text.h                |    68 +
+ src/ui/style/fonts.cpp                             |    11 +-
+ src/ui/style/private_text.cpp                      |   118 +-
+ test & diagnostic/033d0be2/diagnostics comics.zip  |   Bin 0 -> 143275 bytes
+ test & diagnostic/033d0be2/diagnostics epub.zip    |   Bin 0 -> 448543 bytes
+ test & diagnostic/033d0be2/diagnostics fb2.zip     |   Bin 0 -> 564110 bytes
+ test & diagnostic/033d0be2/screenshot.zip          |   Bin 0 -> 8463729 bytes
+ ...3\320\271 \321\201\320\262\320\265\321\202.fb2" |  3376 ++++++
+ test & diagnostic/116024c/README.md                |    13 +
+ test & diagnostic/116024c/events.zip               |   Bin 0 -> 319995 bytes
+ test & diagnostic/116024c/screen_001.png           |   Bin 0 -> 233970 bytes
+ test & diagnostic/116024c/screen_002.png           |   Bin 0 -> 167087 bytes
+ test & diagnostic/116024c/screen_003.png           |   Bin 0 -> 239870 bytes
+ test & diagnostic/116024c/screen_004.png           |   Bin 0 -> 236091 bytes
+ test & diagnostic/116024c/screen_005.png           |   Bin 0 -> 358528 bytes
+ test & diagnostic/116024c/screen_006.png           |   Bin 0 -> 264885 bytes
+ test & diagnostic/116024c/screen_007.png           |   Bin 0 -> 252577 bytes
+ test & diagnostic/116024c/screen_008.png           |   Bin 0 -> 175452 bytes
+ test & diagnostic/116024c/screen_009.png           |   Bin 0 -> 91536 bytes
+ test & diagnostic/1a56b68/diagnostics 1a56b68.zip  |   Bin 0 -> 181046 bytes
+ test & diagnostic/1b09118/README.md                |    28 +
+ test & diagnostic/1b09118/events.zip               |   Bin 0 -> 191640 bytes
+ test & diagnostic/1b09118/screen_001.png           |   Bin 0 -> 168092 bytes
+ test & diagnostic/1b09118/screen_002.png           |   Bin 0 -> 170369 bytes
+ test & diagnostic/1b09118/screen_003.png           |   Bin 0 -> 171130 bytes
+ test & diagnostic/1b09118/screen_004.png           |   Bin 0 -> 171040 bytes
+ .../61dbfaa/Sin City vol 4.kepub.epub              |   Bin 0 -> 169365 bytes
+ test & diagnostic/77564e9/Adventure.ttf            |   Bin 0 -> 119608 bytes
+ test & diagnostic/77564e9/Oranienbaum-Regular.ttf  |   Bin 0 -> 107668 bytes
+ test & diagnostic/77564e9/README.md                |    13 +
+ test & diagnostic/77564e9/ViaodaLibre-Regular.ttf  |   Bin 0 -> 192176 bytes
+ .../77564e9/diagnostics epub hibrid.zip            |   Bin 0 -> 131913 bytes
+ test & diagnostic/77564e9/diagnostics epub.zip     |   Bin 0 -> 396714 bytes
+ test & diagnostic/77564e9/diagnostics freeze.zip   |   Bin 0 -> 1804818 bytes
+ test & diagnostic/77564e9/screen_001.png           |   Bin 0 -> 669325 bytes
+ test & diagnostic/77564e9/screen_002.png           |   Bin 0 -> 666537 bytes
+ test & diagnostic/77564e9/screen_005.png           |   Bin 0 -> 153645 bytes
+ test & diagnostic/77564e9/screen_006.png           |   Bin 0 -> 387073 bytes
+ test & diagnostic/77564e9/screen_007.png           |   Bin 0 -> 83617 bytes
+ test & diagnostic/77564e9/screen_008.png           |   Bin 0 -> 272619 bytes
+ test & diagnostic/README.md                        |    28 +
+ test & diagnostic/SHA256SUMS                       |     3 +
+ test & diagnostic/cfb8f51c/events.zip              |   Bin 0 -> 108455 bytes
+ test & diagnostic/cfb8f51c/screen_001.png          |   Bin 0 -> 84112 bytes
+ test & diagnostic/cfb8f51c/screen_002.png          |   Bin 0 -> 89752 bytes
+ test & diagnostic/diagnostics 61dbfaa.zip          |   Bin 0 -> 2877502 bytes
+ test & diagnostic/diagnostics a170389.zip          |   Bin 0 -> 1732696 bytes
+ .../fb2-post-refactor/screen_002-11.png            |   Bin 0 -> 252390 bytes
+ .../fb2-post-refactor/screen_003-9.png             |   Bin 0 -> 175415 bytes
+ test & diagnostic/reading-menu-counter/README.md   |    26 +
+ .../reading-menu-counter/screen_001-15.png         |   Bin 0 -> 182047 bytes
+ .../reading-menu-counter/screen_001-16.png         |   Bin 0 -> 249005 bytes
+ .../reading-menu-counter/screen_001-17.png         |   Bin 0 -> 247937 bytes
+ .../reading-menu-counter/screen_001-18.png         |   Bin 0 -> 245744 bytes
+ .../reading-menu-counter/screen_001-19.png         |   Bin 0 -> 255571 bytes
+ .../reading-menu-counter/screen_002-12.png         |   Bin 0 -> 244043 bytes
+ .../reading-menu-counter/screen_002-13.png         |   Bin 0 -> 249483 bytes
+ tests/desktop.cpp                                  |  7215 ++++--------
+ tests/desktop_perf.h                               |    26 +-
+ .../fixtures/fonts/fira-sans/FiraSans-Regular.ttf  |   Bin 0 -> 456996 bytes
+ tests/fixtures/fonts/fira-sans/OFL.txt             |    93 +
+ tests/fixtures/fonts/fira-sans/README.md           |     8 +
+ tests/kobo_shutdown.cpp                            |    75 +-
+ tests/manual/README.md                             |    12 +
+ tests/manual/books/comics/README.md                |    20 +
+ tests/manual/books/comics/spice-single-page.epub   |   Bin 0 -> 631670 bytes
+ ...2\320\276\321\200\320\276\320\273\320\270.epub" |   Bin 0 -> 3685621 bytes
+ tests/manual/materials.sha256                      |     1 +
+ tests/model/alternate_layout.cpp                   |    38 +-
+ tests/model/annotation_draft.cpp                   |    53 +-
+ tests/model/appearance_settings.cpp                |   172 +-
+ tests/model/beautifier.cpp                         |    81 -
+ tests/model/chapter_progress.cpp                   |     8 +
+ tests/model/columns.cpp                            |    31 -
+ tests/model/comics.cpp                             |   403 +
+ tests/model/dictionary_store.cpp                   |    46 -
+ tests/model/document_cache.cpp                     |    40 +-
+ tests/model/engine_contract.cpp                    |    23 +
+ tests/model/engine_contracts.cpp                   |    39 +
+ tests/model/engine_worker.cpp                      |    37 +
+ tests/model/fallback_styles.cpp                    |    64 -
+ tests/model/fb2.cpp                                |   619 +
+ tests/model/fb2_session.cpp                        |   157 +
+ tests/model/figure_layout.cpp                      |   235 +-
+ tests/model/header_footer.cpp                      |   138 +-
+ tests/model/highlight_session.cpp                  |     9 +-
+ tests/model/large_toc.cpp                          |    18 -
+ tests/model/library.cpp                            |    32 -
+ tests/model/links.cpp                              |   243 +-
+ tests/model/local_resources.cpp                    |    83 +
+ tests/model/location_round_trip.cpp                |    73 +
+ tests/model/multilingual.cpp                       |    51 -
+ tests/model/native_dialog_overlay.cpp              |    56 -
+ tests/model/nickel_book_menu.cpp                   |    40 +-
+ tests/model/page_animation.cpp                     |    47 +-
+ tests/model/page_transition_native.cpp             |    19 +-
+ tests/model/publisher_markup.cpp                   |     6 +-
+ tests/model/reader.cpp                             |   523 +-
+ tests/model/reader_orientation.cpp                 |    43 +-
+ tests/model/reader_session.cpp                     |     8 +-
+ tests/model/reading_book.cpp                       |   386 +-
+ tests/model/reading_progress.cpp                   |     5 +
+ tests/model/resource_cache.cpp                     |    55 +
+ tests/model/search.cpp                             |    67 -
+ tests/model/strings_locale.cpp                     |   276 +
+ tests/model/style_sample_cache.cpp                 |     1 +
+ tests/model/text_presets.cpp                       |    35 +-
+ tests/model/ui.cpp                                 |   514 +-
+ tests/model/vertical_writing.cpp                   |    58 +-
+ tests/model/word_selection.cpp                     |    74 -
+ tests/pewter/keyboard.cpp                          |    28 +-
+ tests/pewter/nickel.cpp                            |    11 -
+ tests/pewter/nickel.h                              |     8 -
+ tests/pewter/progress.cpp                          |    37 +
+ tests/pewter/refresh_qt5.cpp                       |    25 +-
+ tests/reader_lifecycle.cpp                         |  2908 ++---
+ tests/reader_ui.cpp                                |   247 +-
+ tests/support/anchor_preview.h                     |    26 +
+ tests/support/reader_source_index_probe.h          |   209 +-
+ tests/support/screenshot_gallery.h                 |    42 +-
+ 387 files changed, 35688 insertions(+), 15275 deletions(-)

@@ -1,6 +1,10 @@
 # Текущая граница выравнивания beta.9
 
-**Основной журнал для обновления на beta.10:**
+**Текущий checkpoint:** [delta-current](reports/beta9-delta-current/README.md),
+`ec9eee6c`, 387 tracked расхождений; native/Qt5 CI45053881024 pending.
+Reader quiet/debug/status consumers остаются OPEN.
+
+**Исторический вход для обновления на beta.10:**
 [beta9 delta ledger / handoff](reports/beta9-delta/README.md).
 Зафиксированы upstream `be47258850ffdc3295257475afdf8b8f6cb53176` и fork
 `3cc7ee19c59a34cdba9651d534192a0a3c79cc9e`; 439 неидентичных tracked путей

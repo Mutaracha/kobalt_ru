@@ -838,3 +838,10 @@ adapter boundary: doc/reports/beta9-engine-adapter.md. Device handoff нет.
 Это evidence/ownership log, не вторая очередь задач. Сначала закрывать открытые
 consumers выравнивания; после выхода beta.10 зафиксировать release SHA и сравнить
 beta.9→beta.10 отдельно от старой fork delta. REVIEW не означает одобрение.
+
+**Продолжение implementation alignment:**
+[delta-current](doc/reports/beta9-delta-current/README.md), runtime `ec9eee6c`:
+Reader lazy/search/chapter consumers, Android/standalone opening lifecycle,
+diagnostics/scenario/desktop reporting, новые upstream engine tests, opaque-copy
+и dead native-save helper cleanup. Полный gate OPEN, CI45053881024 pending.
+[Оставшиеся тексты](doc/beta9-remaining-strings-review.md) не применены до согласования.
