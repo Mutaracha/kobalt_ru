@@ -236,7 +236,7 @@ Reader::Reader(std::unique_ptr<kobalt::ReadingBook> openedBook,
     setObjectName("rrReader");
     setAttribute(Qt::WA_DeleteOnClose);
     // Member timers belong to the window, so a check of its children finds them.
-    for (auto *timer : { &kosyncOpeningGrace, &renderNoticeTimer, &resizeTimer, &annotationModeHide,
+    for (auto *timer : { &kosyncOpeningGrace, &renderNoticeTimer, &resizeTimer, &annotationModeHide, &annotationReopen,
                          &brightnessHide, &lightFeedback })
         timer->setParent(this);
     presentation = services.presentation(this);
@@ -1672,6 +1672,7 @@ void Reader::buildSettings(QWidget *parent)
     pageNavigationButton = settings->pageNavigationButton;
     tapZonesButton = settings->tapZonesButton;
     tappableLinksButton = settings->tappableLinksButton;
+    annotationInteractionButton = settings->annotationInteractionButton;
     navigationBarButton = settings->navigationBarButton;
     chapterGroupsButton = settings->chapterGroupsButton;
     menuViewButton = settings->menuViewButton;
@@ -1824,6 +1825,7 @@ void Reader::buildSettings(QWidget *parent)
             [this](bool enabled) { applyBoldReading(enabled); });
     connect(sleepScreenButton, &QPushButton::clicked, this, [this] { openSleepScreen(); });
     connect(sessionTimeoutButton, &QPushButton::clicked, this, [this] { openSessionTimeout(); });
+    connect(annotationInteractionButton, &QPushButton::clicked, this, [this] { openAnnotationInteraction(); });
     connect(tappableLinksButton, &QPushButton::clicked, this, [this] { openTappableLinks(); });
     connect(tapZonesButton, &QPushButton::clicked, this, [this] { openTapZones(); });
     connect(chapterGroupsButton, &QPushButton::clicked, this, [this] { openChapterGroups(); });
@@ -1951,6 +1953,9 @@ void Reader::buildNotices()
     annotationModeNotice = new ui::AnnotationModeNotice(this);
     annotationModeNotice->setObjectName("rrAnnotationModeNotice");
     annotationModeNotice->hide();
+    annotationReopen.setSingleShot(true);
+    annotationReopen.setInterval(metrics::selection::reopenMilliseconds);
+    connect(&annotationReopen, &QTimer::timeout, this, [this] { reopenAnnotationActions(); });
     annotationModeHide.setSingleShot(true);
     annotationModeHide.setInterval(metrics::lightSwipe::hideMilliseconds);
     connect(&annotationModeHide, &QTimer::timeout, annotationModeNotice, &QWidget::hide);
@@ -2090,7 +2095,7 @@ void Reader::connectPageInput()
     page->annotationDragMoved = [this](QPoint point) { moveAnnotationDrag(point); };
     page->annotationDragFinished = [this](bool cancelled) { finishAnnotationDrag(cancelled); };
     page->annotationRequested = [this] {
-        if (!features::enabled(preferences, features::Annotations) || annotationMode || !isEnabled()
+        if (!features::enabled(preferences, features::Annotations) || annotationMode || quickAnnotations() || !isEnabled()
             || !isVisible() || lifecycleHidden || closing || exitPending || exportRunning
             || services.suspended() || book->deviceTransition() || session->busy()
             || appearanceEdit.panelOpen() || appearanceEdit.applying() || settingsVisible()

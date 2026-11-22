@@ -133,6 +133,8 @@ public:
     QRegion annotationHandleHitRegion() const;
     QRegion annotationHandleDotRegion() const;
     QRegion annotationHandleRegion(int radius) const;
+    int pressedHandle = -1;
+    void setPressedHandle(int handle);
     // Boundary -1 starts a new drag; 0 and 1 move the source start and end.
     std::function<bool(QPoint, int)> annotationDragStarted;
     std::function<void(QPoint)> annotationDragMoved;

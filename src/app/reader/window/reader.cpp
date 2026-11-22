@@ -937,7 +937,7 @@ QVector<QWidget *> Reader::popups() const
              navigationBarPopup.data(),
              chapterGroupsPopup.data(),
              menuViewPopup.data(),
-             tappableLinksPopup.data(),
+             tappableLinksPopup.data(), annotationInteractionPopup.data(),
              marksActions.data(),
              removeDialog.data(),
              annotationExporter ? annotationExporter->dialog() : nullptr,
@@ -2127,6 +2127,8 @@ void Reader::activateNavigation(kobalt::NavigationDestination destination)
         return;
     }
     if (destination == Nav::Annotate) {
+        if (quickAnnotations())
+            return;
         bookmarkList->hide();
         toolbarComposition.annotate->click();
         syncNavigation();

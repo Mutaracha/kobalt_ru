@@ -1,9 +1,9 @@
+#include "ui/controls/highlight_palette.h"
 #include "ui/controls/icons.h"
 #include "ui/controls/text.h"
 #include "ui/style/private_text.h"
 #include <QLabel>
 #include <QSet>
-#include "ui/controls/highlight_palette.h"
 #include "reader_p.h"
 
 #include "ui/style/styles.h"
@@ -11,6 +11,7 @@
 #include "platform/api/kobo_refresh.h"
 #include "support/qt_font.h"
 #include "support/strings.h"
+#include "support/diagnostics.h"
 #include "storage/annotation_export.h"
 
 #include <QHBoxLayout>
@@ -198,7 +199,8 @@ void Reader::buildAnnotations()
     annotationPopover = new ui::ModalOverlay(this);
     annotationPopover->setObjectName("rrAnnotationPopover");
     annotationPopover->dismissed = [this] {
-        if (!annotationMode) {
+        // Quick annotation mode keeps no draft without its menu.
+        if (!annotationMode || quickAnnotations()) {
             clearAnnotationDraft();
             return;
         }
@@ -213,7 +215,7 @@ void Reader::buildAnnotations()
     annotationPopover->hide();
 }
 
-void Reader::enterAnnotations()
+void Reader::enterAnnotations(bool notice)
 {
     if (!features::enabled(preferences, features::Annotations))
         return;
@@ -222,22 +224,25 @@ void Reader::enterAnnotations()
         return;
     }
     const bool changed = !annotationMode;
-    dismissLookup();
+    // A quick entry happens inside a hold; keep that gesture.
+    dismissLookup(!notice);
     dismissControls();
     annotationMode = true;
     page->setAnnotationInputEnabled(true);
     syncMarkupRequest();
     syncAnnotations();
-    if (changed)
+    if (changed && notice)
         showAnnotationModeNotice();
 }
 
-void Reader::leaveAnnotations()
+void Reader::leaveAnnotations(bool notice)
 {
     const bool changed = annotationMode;
     const bool discardSelection =
             !annotationDraft->range().start.isEmpty() || !annotationDraft->editingId().isEmpty();
     annotationMode = false;
+    annotationReopen.stop();
+    setAnnotationDragRefresh(false);
     annotationDrag.forgetAwaitedRelease();
     annotationDraft->clear();
     page->setAnnotationHandles({});
@@ -256,11 +261,30 @@ void Reader::leaveAnnotations()
     toolbarComposition.annotate->setChecked(false);
     annotationPopover->hide();
     page->annotate({}, savedHighlightRects);
-    if (changed)
+    if (changed && notice)
         dismissControls();
     refresh();
-    if (changed)
+    if (changed && notice)
         showAnnotationModeNotice();
+}
+
+bool Reader::quickAnnotations() const
+{
+    return features::enabled(preferences, features::Annotations)
+            && preferences.value("annotation_interaction").toString() == QLatin1String("quick");
+}
+
+void Reader::settleQuickAnnotations()
+{
+    // Wait for the current event: a new hold clears the old draft before it
+    // starts its own.
+    qt::later(0, this, [this] {
+        if (!quickAnnotations() || !annotationMode || annotationSaving || annotationDrag.active()
+            || annotationPopover->isVisible() || noteEditor || removeDialog
+            || !annotationDraft->range().start.isEmpty() || !annotationDraft->editingId().isEmpty())
+            return;
+        leaveAnnotations(false);
+    });
 }
 
 void Reader::showAnnotationModeNotice()
@@ -282,6 +306,7 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
                                   const QString &selectedStyle,
                                   std::function<void(QString)> styleChanged, const QString &note)
 {
+    annotationReopen.stop();
     paintAnnotationDraft();
     annotationPopover->hide();
     auto *card = annotationPopover->card();
@@ -363,7 +388,7 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
                   strings::get(adjusting ? "common.cancel" : "annotations.cancel_selection"),
                   [this] { clearAnnotationDraft(); } });
     }
-    if (compactActions && annotationMode && minimalAnnotationMode()) {
+    if (compactActions && annotationMode && minimalAnnotationMode() && !quickAnnotations()) {
         menuActions.append({ "rrAnnotationCloseMode", ui::ControlIcon::Close,
                              strings::get("annotations.close"), [this] { leaveAnnotations(); } });
     }
@@ -482,6 +507,8 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
 
 void Reader::clearAnnotationDraft()
 {
+    annotationReopen.stop();
+    setAnnotationDragRefresh(false);
     dismissLookup(true);
     annotationDrag.forgetAwaitedRelease();
     annotationDraft->clear();
@@ -496,6 +523,7 @@ void Reader::clearAnnotationDraft()
     syncMarkupRequest();
     annotationFrame.clear();
     syncAnnotations();
+    settleQuickAnnotations();
 }
 
 void Reader::annotationTap(QPoint point)
@@ -514,6 +542,11 @@ bool Reader::beginAnnotationDrag(QPoint point, int boundary)
             && (annotationDraft->range().start.isEmpty() || annotationDraft->range().end.isEmpty()))
         || (topControls->isVisible() && !annotationMenuSelectionEnabled()))
         return false;
+    // Quick annotation mode enters annotation mode for each held selection,
+    // so that the hold can drag across words, pages and saved highlights.
+    annotationReopen.stop();
+    if (boundary < 0 && quickAnnotations() && !annotationMode)
+        enterAnnotations(false);
     if (topControls->isVisible())
         dismissControls();
     dismissLookup(true);
@@ -563,8 +596,12 @@ void Reader::loadAnnotationDragEdges()
                 start ? guard->annotationDraft->endpoints().endPolicy : !token.punctuation,
                 [guard] {
                     guard->annotationDrag.endBeforeRelease();
+                    // A lookup handle opens its menu at once. An annotation
+                    // handle reopens the menu after a pause.
                     if (guard->annotationDrag.released && !guard->annotationMode)
                         guard->showAnnotationActions();
+                    else if (guard->annotationDrag.released)
+                        guard->annotationReopen.start();
                 },
                 [guard, direction] {
                     // An adjacent saved highlight is a boundary, never an overlapping draft.
@@ -619,12 +656,38 @@ void Reader::moveAnnotationDrag(QPoint point)
     // range after release without enabling annotation mode.
     if (!annotationDrag.active() || (!annotationMode && !annotationDrag.handle))
         return;
+    setAnnotationDragRefresh(true);
     annotationDrag.point = point;
     requestAnnotationDrag();
 }
 
+void Reader::reopenAnnotationActions()
+{
+    if (!annotationMode || annotationSaving || annotationDrag.active()
+        || annotationDraft->range().start.isEmpty() || annotationPopover->isVisible() || noteEditor
+        || removeDialog || lifecycleHidden || closing || services.suspended() || session->busy()
+        || topControls->isVisible())
+        return;
+    // One full cleanup refresh replaces the fast drawing of the drag with the
+    // reading waveform, then the menu returns over a clean selection.
+    requestFlash("annotation-adjusted");
+    showAnnotationActions();
+    update();
+}
+
+void Reader::setAnnotationDragRefresh(bool dragging)
+{
+    if (property("reader_annotation_drag").toBool() == dragging)
+        return;
+    setProperty("reader_annotation_drag", dragging);
+    // The next flush redraws the dragged area with the text waveform.
+    if (!dragging)
+        page->update();
+}
+
 void Reader::finishAnnotationDrag(bool cancelled)
 {
+    setAnnotationDragRefresh(false);
     if (!annotationDrag.active()) {
         if (annotationDrag.takeAwaitedRelease() && !cancelled && !annotationMode)
             lookupSelection();
@@ -664,6 +727,8 @@ void Reader::requestAnnotationDrag()
                     guard->annotationDrag.endBeforeRelease();
                     if (guard->annotationDrag.released && !guard->annotationMode)
                         guard->lookupSelection();
+                    else if (guard->annotationDrag.released)
+                        guard->annotationReopen.start();
                 };
                 resolveAnnotationTokens(
                         start ? token : annotationDraft->endpoints().start,
@@ -724,6 +789,16 @@ void Reader::requestAnnotationDrag()
                                 guard->showAnnotationActions();
                             else
                                 guard->lookupSelection();
+                        } else if (!guard->annotationDraft->range().start.isEmpty()) {
+                            // A new selection opens the menu once the finger
+                            // lifts, so it never appears while the finger
+                            // moves. After a handle adjustment the menu waits
+                            // for a pause, in case the finger grabs a handle
+                            // again.
+                            if (guard->annotationDrag.handle)
+                                guard->annotationReopen.start();
+                            else
+                                guard->showAnnotationActions();
                         }
                     }
                 };
@@ -883,6 +958,7 @@ void Reader::showAnnotationActions()
                                                               ? "annotations.mark_text"
                                                               : "annotations.apply_changes"),
                                          [this] { prepareAnnotation(); } } };
+    const bool quickDraft = quickAnnotations() && annotationDraft->editingId().isEmpty();
     if (annotationDraft->editingId().isEmpty()) {
         // Add note saves the highlight first, then writes the note on it.
         actions.append({ "rrAnnotationAddNote", ui::ControlIcon::Note,
@@ -917,6 +993,29 @@ void Reader::showAnnotationActions()
                                  openNoteEditor(id);
                              });
                          } });
+    }
+    if (quickDraft) {
+        // Quick annotation mode also offers the actions of an ordinary
+        // selection. Both leave annotation mode first, as the hold had not
+        // entered it in toggleable mode.
+        actions.append({ "rrSelectionLookup", ui::ControlIcon::Dictionary,
+                         strings::get("reader.link_dictionary"), [this] {
+                             annotationPopover->hide();
+                             annotationMode = false;
+                             annotationColor = annotationSelectedColor;
+                             annotationStyle = annotationSelectedStyle;
+                             annotationColorChosen = annotationStyleChosen = false;
+                             syncMarkupRequest();
+                             lookupSelection();
+                         } });
+        const auto target = selectionLinkPoint();
+        if (target.x() >= 0)
+            actions.append({ "rrSelectionLink", ui::ControlIcon::Link,
+                             strings::get("reader.follow_link"), [this, target] {
+                                 clearAnnotationDraft();
+                                 leaveAnnotations(false);
+                                 openLink(target);
+                             } });
     }
     annotationActionsFor(
             actions, bounds, true, annotationColor,
@@ -998,6 +1097,7 @@ void Reader::saveAnnotation(bool leave, std::function<void()> after)
                 } else {
                     guard->syncAnnotations();
                 }
+                guard->settleQuickAnnotations();
             },
             annotationDraft->range().chosenEnd, annotationDraft->endpoints().endPolicy,
             annotationDraft->range().chosenStart, annotationDraft->endpoints().startPolicy,
@@ -1074,6 +1174,9 @@ void Reader::syncMarkupRequest()
 
 void Reader::preparePresentation(std::function<void(bool)> finished)
 {
+    DiagnosticOperation setup("reader-presentation-setup");
+    auto waiting = std::make_shared<DiagnosticOperation>("reader-presentation-wait");
+    finished = [waiting, finished = std::move(finished)](bool ready) { finished(ready); };
     prepareKosyncPresentation([this, finished = std::move(finished)](bool ready) mutable {
         if (!ready) {
             finished(false);
@@ -1084,14 +1187,18 @@ void Reader::preparePresentation(std::function<void(bool)> finished)
                 finished(false);
                 return;
             }
-            book->markNativeReading();
-            saveWifiPower([this, finished] { finished(!closing && !lifecycleHidden); });
+            const auto present = [this, finished] {
+                book->markNativeReading();
+                saveWifiPower([this, finished] { finished(!closing && !lifecycleHidden); });
+            };
+            present();
         });
     });
 }
 
 void Reader::prepareAnnotationPresentation(std::function<void(bool)> finished)
 {
+    DiagnosticOperation setup("reader-annotation-presentation");
     syncMarkupRequest();
     if (annotationRequest.saved.isEmpty()) {
         finished(true);
@@ -1455,6 +1562,7 @@ void Reader::showSavedAppearance(const QString &id, QRect anchor, bool navigate,
                   annotationPopover->hide();
                   annotationFrame.clear();
                   syncAnnotations();
+                  settleQuickAnnotations();
               } else {
                   auto *picker = dynamic_cast<ui::HighlightStylePicker *>(
                           annotationPopover->findChild<QWidget *>("rrAnnotationStyles"));
@@ -1544,6 +1652,7 @@ void Reader::openNoteEditor(const QString &id)
         noteEditor.clear();
         annotationFrame.clear();
         syncAnnotations();
+        settleQuickAnnotations();
     };
 }
 
@@ -1644,6 +1753,7 @@ void Reader::removeAnnotation(const QString &id)
             highlights->remove(id);
             // The session's changed callback updates the list and markup once.
         }
+        settleQuickAnnotations();
     };
     connect(choice->secondaryButton(), &QPushButton::clicked, this, [finish] { finish(false); });
     connect(choice->primaryButton(), &QPushButton::clicked, this, [finish] { finish(true); });

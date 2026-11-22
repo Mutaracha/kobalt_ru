@@ -35,6 +35,18 @@ Qt6 skipped; full suite/Android NOT RUN. Пользователь принял �
 lazy Settings и кнопки; последующий freeze рассматривается отдельно, не закрыт.
 Пресеты 9633d3fd приняты отдельно.
 
+**Annotation interaction/drag — in progress / CI pending:** перенесены upstream
+quick/toggle настройка (default toggle), shared preference cleaning, временный
+quick-mode lifecycle и show/settle actions; таймер повторного меню после drag,
+pressed handle geometry и Qt5 direct-partial drag + однократная text cleanup
+waveform из upstream. Это не общая замена refresh policy: comics/page turn/dark
+branches сохраняются; cleanup только для реального drag. Новые шесть RU строк
+явно приняты пользователем; EN upstream. Fork section captions/palette labels,
+common.cancel и прежний dictionary caption сохраняются. NoteEditor whole upstream.
+Обновлены upstream gesture/notes/quick tours с fork geometry assertions, добавлены
+preference gates и ABI flush drag tests. KOSync/sleep/storage и итоговый semantic
+inventory ещё не завершены. Freeze deferred; EPUB Hybrid/Libra2 unchanged.
+
 **Редактор заметок — implemented / CI verified, device pending:** upstream NoteEditor h/cpp целиком,
 Reader saved/draft actions и save completion/error callbacks, note popover;
 upstream card grid для дополнительных действий с сохранением fork section headers

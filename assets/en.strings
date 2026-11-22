@@ -1832,3 +1832,10 @@
 "annotations.note_placeholder" = "Write a note";
 "annotations.note_save_failed" = "Could not save the note. Your text is kept.";
 "annotations.note_too_long" = "This note is too long to save.";
+
+"settings.annotation_interaction" = "Highlighting";
+"settings.annotation_interaction_description" = "Choose how to start a highlight.";
+"settings.annotation_interaction_toggle" = "Toggleable annotation mode";
+"settings.annotation_interaction_toggle_description" = "Turn on Annotate in the reading menu, then hold text to highlight it. Outside the mode, holding text looks it up in a dictionary of your choice.";
+"settings.annotation_interaction_quick" = "Quick annotation mode";
+"settings.annotation_interaction_quick_description" = "Hold text to highlight it, add a note or look it up. The Annotate button is hidden.";

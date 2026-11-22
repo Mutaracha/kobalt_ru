@@ -138,3 +138,27 @@ The selected note editor and desktop note/annotation/selection/grip integration
 checks pass together with previous selected regressions. Qt6 skipped; full suite,
 Android and physical device not run. Quick-mode/menu-reopen and remaining shared
 implementations are still open; this is not a completed all-file semantic audit.
+
+
+## Quick/toggle and drag consumer group — CI pending
+
+Reader annotation implementation now follows pinned upstream as a whole except
+retained section headers/labeled palette, common.cancel and existing dictionary
+caption. Upstream quick preference, Settings selector, feature normalization,
+navigation/button gating, temporary-mode settle callbacks, delayed reopen timer
+and pressed-handle geometry restored together. Six new RU selector strings were
+explicitly approved in session; English comes verbatim from pinned beta9. Section
+caption reuses existing features.annotations (no extra unapproved wording).
+
+Qt5 refresh imports upstream drag-only direct/partial submission and one text
+waveform cleanup over accumulated drag damage; it does not overwrite the fork's
+comics refresh or page-turn policy. The upstream reopen cleanup request is guarded
+by a valid released selection and active reader, not unconditional idle flashing.
+Qt5 ABI tests now assert direct step and exactly one REAGL/full cleanup. Device
+waveform/ghosting behavior remains unverified and must be checked separately.
+
+Whole upstream annotationNotes/Selection/Grip/quick tours updated; selection tour
+retains the fork caption/section geometry assertions instead of expecting their
+absence. preference tests cover valid/invalid and feature-hidden quick state.
+The prior package's explicit-tap limitation is superseded, not silently kept in
+the new tests. Remaining KOSync, sleep/storage and full semantic inventory OPEN.

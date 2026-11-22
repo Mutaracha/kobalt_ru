@@ -740,7 +740,7 @@ void Reader::syncReadingControls()
                       ui::IconRendition::Action });
     }
     toolbarComposition.annotate->setVisible(
-            !settingsOpen && !zen && features::enabled(preferences, features::Annotations));
+            !settingsOpen && !zen && features::enabled(preferences, features::Annotations) && !quickAnnotations());
     toolbarComposition.bookmarks->setVisible(!settingsOpen && !zen
                                              && (bookmarksShown || annotationsShown || wordsShown));
     toolbarComposition.formattingWarning->setVisible(!settingsOpen && !zen

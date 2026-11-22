@@ -7126,6 +7126,91 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         QVERIFY(!toggle->isChecked());
     }
 
+    // Checks quick-mode settings, selection actions and leaving the temporary mode.
+    void quickAnnotations()
+    {
+        Fixture fixture(false);
+        QVERIFY(fixture.prepared);
+        QSignalSpy opened(&fixture.window, &desktop::Window::bookOpened);
+        fixture.window.openBook(book);
+        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 10000);
+        QTRY_VERIFY(!fixture.state().value("busy").toBool());
+        openPrologueBody(fixture);
+        auto *page = static_cast<ReadingPage *>(fixture.widget("rrPage"));
+        auto *annotate = qobject_cast<QAbstractButton *>(fixture.widget("rrAnnotate"));
+        QVERIFY(annotate);
+
+        // Toggleable annotation mode is the default.
+        QVERIFY(fixture.press("rrPage"));
+        QTRY_VERIFY(fixture.visible("rrSettings"));
+        QVERIFY(fixture.visible("rrAnnotate"));
+        QVERIFY(fixture.press("rrSettings"));
+        QVERIFY(fixture.press("rrSettingsControls"));
+        QTRY_VERIFY(fixture.visible("rrAnnotationInteraction"));
+        QVERIFY(fixture.press("rrAnnotationInteraction"));
+        QTRY_VERIFY(fixture.visible("rrAnnotationInteraction_quick"));
+        QVERIFY(qobject_cast<QAbstractButton *>(fixture.widget("rrAnnotationInteraction_toggle"))
+                        ->isChecked());
+        QVERIFY(fixture.press("rrAnnotationInteraction_quick"));
+        QTRY_VERIFY(!fixture.visible("rrAnnotationInteractionPopup"));
+        QCOMPARE(storage::readJson(fixture.paths.preferences()).value("annotation_interaction"),
+                 QJsonValue("quick"));
+        QVERIFY(fixture.press("rrSettingsClose"));
+        QTRY_VERIFY(!fixture.visible("rrGeneralSettings"));
+        if (!fixture.visible("rrSettings"))
+            QVERIFY(fixture.press("rrPage"));
+        QTRY_VERIFY(fixture.visible("rrSettings"));
+        QVERIFY(!fixture.visible("rrAnnotate"));
+        QVERIFY(fixture.press("rrPage"));
+        QTRY_VERIFY(!fixture.visible("rrControlsTop"));
+
+        // Hold and drag selects several words, and release opens the menu.
+        const QPoint first = fixture.wordPoint(0), fourth = fixture.wordPoint(3);
+        QVERIFY(first.x() >= 0 && fourth.x() >= 0);
+        QVERIFY(fixture.drag(page, first, fourth, true));
+        QTRY_VERIFY(fixture.visible("rrAnnotationSave"));
+        for (const auto *name :
+             { "rrAnnotationAddNote", "rrSelectionLookup", "rrAnnotationCancel" })
+            QVERIFY(fixture.visible(name));
+        QVERIFY(!fixture.visible("rrAnnotationModeNotice"));
+        QVERIFY(!fixture.visible("rrDictionary"));
+        QVERIFY(fixture.press("rrAnnotationSave"));
+        QTRY_COMPARE(fixture.stored("highlights.json", "highlights").size(), 1);
+        QVERIFY(fixture.stored("highlights.json", "highlights")
+                        .first()
+                        .toObject()
+                        .value("text")
+                        .toString()
+                        .contains(' '));
+        // Saving ends the selection and leaves annotation mode.
+        QTRY_VERIFY(!annotate->isChecked() && !fixture.visible("rrAnnotationPopover"));
+
+        // Clear selection also leaves the mode.
+        const QPoint later = fixture.wordPoint(7);
+        QVERIFY(later.x() >= 0);
+        QVERIFY(fixture.selectWord(page, later));
+        QTRY_VERIFY(fixture.visible("rrAnnotationCancel"));
+        QVERIFY(annotate->isChecked());
+        QVERIFY(fixture.press("rrAnnotationCancel"));
+        QTRY_VERIFY(!annotate->isChecked());
+
+        // Look up opens the dictionary for the selection, outside annotation mode.
+        QVERIFY(fixture.selectWord(page, later));
+        QTRY_VERIFY(fixture.visible("rrSelectionLookup"));
+        QVERIFY(fixture.press("rrSelectionLookup"));
+        QTRY_VERIFY(fixture.visible("rrDictionary"));
+        QVERIFY(!annotate->isChecked());
+        QVERIFY(fixture.press("rrDictionaryClose"));
+        QTRY_VERIFY(!fixture.visible("rrDictionary"));
+        QCOMPARE(fixture.stored("highlights.json", "highlights").size(), 1);
+
+        // Holding the saved highlight opens its actions.
+        QVERIFY(fixture.selectWord(page, first));
+        QTRY_VERIFY(fixture.visible("rrAnnotationApply"));
+        QVERIFY(fixture.click(page, QPoint(10, page->height() / 2)));
+        QTRY_VERIFY(!fixture.visible("rrAnnotationPopover") && !annotate->isChecked());
+    }
+
     void annotationSelection_data()
     {
         QTest::addColumn<bool>("dark");
@@ -7235,6 +7320,7 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         };
         QCOMPARE(frame(shaded).right() + 1, frame(underline).left());
         QCOMPARE(frame(underline).right() + 1, frame(dotted).left());
+        // A new selection offers Add note between Mark text and Clear selection.
         auto *addNote = fixture.widget("rrAnnotationAddNote");
         QVERIFY(addNote && addNote->isVisible());
         QCOMPARE(frame(save).right() + 1, frame(addNote).left());
@@ -7319,7 +7405,9 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         QVERIFY(cardBounds.bottom() <= selection.top() || cardBounds.top() >= selection.bottom());
         QVERIFY(fixture.stored("highlights.json", "highlights").isEmpty());
         QVERIFY(fixture.press("rrAnnotationStyle_underline"));
-        const QRect check(shaded->width() - ui::px(40), ui::px(10), ui::px(24), ui::px(24));
+        // The check sits right of the centered sample, centered on it.
+        const QRect check(shaded->width() / 2 + ui::px(38) + ui::px(10),
+                          shaded->height() / 2 - ui::px(10), ui::px(20), ui::px(20));
         QVERIFY(selectedSample.copy(check) != shaded->grab().toImage().copy(check));
         const auto selectedUnderline = underline->grab().toImage();
         QCOMPARE(selectedUnderline.pixelColor(selectedUnderline.width() / 2,
@@ -8054,14 +8142,31 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
             return false;
         };
 
-        // Handle drag/reopen timing belongs to the later upstream gesture group.
-        // This regression exercises the complete note editor/storage consumer path.
+        // With the menu open, a press near a handle, outside its dot and the
+        // card, still drags it. A handle adjustment leaves the menu closed.
+        QVERIFY(fixture.selectWord(page, word));
+        QTRY_VERIFY(fixture.visible("rrAnnotationAddNote"));
+        const QRect endBefore = page->annotationHandleRect(false);
+        QVERIFY(!endBefore.isEmpty());
+        const QPoint nearEnd = endBefore.center() - QPoint(0, int(ui::px(32)));
+        const QPoint farther = fixture.wordPoint(6);
+        QVERIFY(farther.x() >= 0);
+        QVERIFY(fixture.drag(page, nearEnd, farther));
+        QTRY_VERIFY(page->annotationHandleRect(false).center().x() != endBefore.center().x()
+                    || page->annotationHandleRect(false).center().y() != endBefore.center().y());
+        QVERIFY(!fixture.visible("rrAnnotationPopover"));
+        // After a pause the menu reopens, with one full cleanup refresh.
+        auto *reader = fixture.window.readerWindow();
+        reader->setProperty("reader_full_flash", false);
+        QTRY_VERIFY_WITH_TIMEOUT(fixture.visible("rrAnnotationCancel"), 5000);
+        QVERIFY(reader->property("reader_full_flash").toBool());
+        QVERIFY(fixture.press("rrAnnotationCancel"));
+        QTRY_VERIFY(page->annotationHandleRect(true).isEmpty());
+
         // Add note on a new selection saves the highlight, then opens the editor.
         QVERIFY(fixture.selectWord(page, word));
         QTRY_VERIFY(!page->annotationHandleRect(true).isEmpty());
-        // The current toggle-based gesture keeps a fresh selection after
-        // release; tapping it opens its actions (quick/reopen port is separate).
-        QVERIFY(fixture.click(page, word));
+        // The menu opens when the finger lifts.
         QTRY_VERIFY(fixture.visible("rrAnnotationAddNote"));
         QVERIFY(fixture.press("rrAnnotationAddNote"));
         QTRY_VERIFY(fixture.visible("rrNoteEditor") && editorText());
@@ -8223,6 +8328,10 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         QTRY_VERIFY(!page->annotationHandleRect(false).isEmpty());
         const QRect draftStart = page->annotationHandleRect(true),
                     draftEnd = page->annotationHandleRect(false);
+        // The menu opens on release; a tap outside it closes it and keeps the draft.
+        QTRY_VERIFY(fixture.visible("rrAnnotationPopover"));
+        QVERIFY(fixture.click(page, QPoint(10, page->height() / 2)));
+        QTRY_VERIFY(!fixture.visible("rrAnnotationPopover"));
         QVERIFY(fixture.click(page, QPoint(page->width() / 2, page->height() / 2)));
         QTRY_VERIFY(fixture.visible("rrControlsTop"));
         QVERIFY(fixture.press("rrPage"));

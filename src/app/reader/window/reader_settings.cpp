@@ -458,6 +458,7 @@ void Reader::openSettings()
     showPageNavigation();
     showTapZones();
     showTappableLinks();
+    showAnnotationInteraction();
     minimalAnnotationOption->setChecked(minimalAnnotationMode());
     showNavigationBarButtons();
     showChapterGroups();

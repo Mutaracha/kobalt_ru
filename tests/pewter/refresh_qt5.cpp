@@ -285,5 +285,35 @@ int main(int argc, char **argv)
                         && updates[0][3] == uint32_t(bounds.height()) && updates[0][5] == 0,
                 "MTK's one update for a masked paint is not partial over its rows");
     }
+    // A selection drag uses the direct waveform in partial mode. The flush
+    // after it redraws the dragged area once with the text waveform.
+    reader.setProperty("reader_refresh_backend", "mxc_epdc_fb");
+    reader.setProperty("reader_dark", false);
+    for (bool legacy : { true, false }) {
+        setReaderRefreshWindow(&reader);
+        const QRect step(40, 60, 80, 40), next(50, 200, 40, 20);
+        const quint32 automaticPartial = (1U << 4) | (1U << 2);
+        auto submit = [&](const QRect &rect) {
+            if (legacy)
+                flushReader32(&store, rect, reader.windowHandle(), {},
+                              { { rect, automaticPartial } });
+            else
+                flushReader(&store, rect, reader.windowHandle(), {},
+                            { { rect, automaticPartial } });
+        };
+        reader.setProperty("reader_annotation_drag", true);
+        policies.clear();
+        submit(step);
+        require(policies.size() == 1 && policies[0] == ((1U << 5) | (1U << 2)),
+                "A drag step did not use the direct waveform in partial mode");
+        reader.setProperty("reader_annotation_drag", false);
+        policies.clear();
+        submit(next);
+        require(policies.size() == 2 && policies[0] == ((1U << 10) | (1U << 3)),
+                "The flush after a drag did not redraw it with REAGL in full mode");
+        policies.clear();
+        submit(next);
+        require(policies.size() == 1, "The drag cleanup repeated");
+    }
     std::puts("PASS: Qt5 flush ABIs preserve sweeps and keep MTK tab feedback partial");
 }

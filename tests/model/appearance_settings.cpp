@@ -280,6 +280,17 @@ int main()
                         && hidden.value("dark_mode").toBool(!dark) == dark,
                 "Hiding the theme switch changed the selected theme");
     }
+    for (const auto *mode : { "toggle", "quick" }) {
+        const auto clean = appearance::cleanPreferences({{"annotation_interaction", mode}});
+        require(clean.value("annotation_interaction").toString() == QLatin1String(mode),
+                "Valid annotation interaction was removed");
+    }
+    require(!appearance::cleanPreferences({{"annotation_interaction", "invalid"}})
+                     .contains("annotation_interaction"), "Invalid annotation interaction survived");
+    QJsonObject hiddenAnnotations{{"disable_annotations", true}, {"annotation_interaction", "quick"}};
+    features::normalize(hiddenAnnotations);
+    require(!hiddenAnnotations.contains("annotation_interaction"),
+            "Disabled annotations retained quick mode");
     // Only Libra2 landscape polarity differs from upstream; portrait stays shared.
     const Qt::ScreenOrientation poses[] = {Qt::PortraitOrientation, Qt::LandscapeOrientation,
             Qt::InvertedPortraitOrientation, Qt::InvertedLandscapeOrientation};

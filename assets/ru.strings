@@ -1886,3 +1886,10 @@
 "annotations.note_placeholder" = "Напишите заметку";
 "annotations.note_save_failed" = "Не удалось сохранить заметку. Ваш текст сохранён в редакторе.";
 "annotations.note_too_long" = "Заметка слишком длинная для сохранения.";
+
+"settings.annotation_interaction" = "Выделение текста";
+"settings.annotation_interaction_description" = "Выберите, как начинать выделение текста.";
+"settings.annotation_interaction_toggle" = "Переключаемый режим аннотаций";
+"settings.annotation_interaction_toggle_description" = "Включите режим аннотаций в меню чтения, затем удерживайте текст для выделения. Вне этого режима удержание текста открывает поиск в выбранном словаре.";
+"settings.annotation_interaction_quick" = "Быстрый режим аннотаций";
+"settings.annotation_interaction_quick_description" = "Удерживайте текст, чтобы выделить его, добавить заметку или найти в словаре. Кнопка аннотаций скрыта.";

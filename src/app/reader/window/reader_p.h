@@ -181,8 +181,8 @@ private:
     ImageViewer *imageViewer = nullptr;
     quint64 imageRequest = 0;
     void buildAnnotations();
-    void enterAnnotations();
-    void leaveAnnotations();
+    void enterAnnotations(bool notice = true);
+    void leaveAnnotations(bool notice = true);
     void showAnnotationModeNotice();
     void annotationTap(QPoint point);
     void loadAnnotationDragEdges();
@@ -212,6 +212,15 @@ private:
     void showSavedAppearance(const QString &id, QRect anchor, bool navigate, bool colorStep);
     void openNoteEditor(const QString &id);
     void syncPopoverExclusions();
+    bool quickAnnotations() const;
+    void settleQuickAnnotations();
+    void reopenAnnotationActions();
+    void setAnnotationDragRefresh(bool dragging);
+    void showAnnotationInteraction();
+    void openAnnotationInteraction();
+    QPointer<kobalt::ui::ModalOverlay> annotationInteractionPopup;
+    kobalt::ui::CaptionButton *annotationInteractionButton = nullptr;
+    QTimer annotationReopen;
     QPointer<kobalt::NoteEditor> noteEditor;
     void showSavedAnnotation(const QString &id, QRect anchor, bool navigate = false);
     void showAnnotationMatches(QVector<QString> ids, QRect anchor, int page = 0);

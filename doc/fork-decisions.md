@@ -254,3 +254,14 @@ choice: «Добавить заметку», «Изменить заметку»
 сохранить заметку. Ваш текст сохранён в редакторе.», «Заметка слишком длинная для
 сохранения.». EN stays pinned upstream. Other new annotation wording is not
 implicitly approved; existing common.cancel labels cancellation in this port.
+
+
+## Upstream annotation interaction selector — approved translation
+
+User approved six RU strings in the session choice: Выделение текста; Выберите,
+как начинать выделение текста.; Переключаемый режим аннотаций; Включите режим
+аннотаций в меню чтения, затем удерживайте текст для выделения. Вне этого режима
+удержание текста открывает поиск в выбранном словаре.; Быстрый режим аннотаций;
+Удерживайте текст, чтобы выделить его, добавить заметку или найти в словаре.
+Кнопка аннотаций скрыта. EN remains pinned upstream. Toggle remains the default;
+this is upstream alignment, not permission for an additional fork interaction mode.
