@@ -1,59 +1,32 @@
-# beta9 inventory — post wireless / sync-exclusion checkpoint
+# beta9 inventory — завершение shared consumer alignment
 
-Current implementation snapshot: `e04c5d8446d6dc71cf13c01d65767b39054b59a6`;
-pinned upstream: `be47258850ffdc3295257475afdf8b8f6cb53176`.
+Runtime `80ee8d791c32d51c80cff194fd21418c3a571c66`; upstream `be47258850ffdc3295257475afdf8b8f6cb53176`.
+[Полная воспроизводимая дельта](beta9-delta-current/README.md):
+344 nonidentical tracked путей, 1203 identical,
+0 upstream-only. [TSV](beta9-inventory.tsv): 195 runtime/build/assets/tests
+путей. Документация/evidence отдельно учтена в полном отчёте.
 
-Current exhaustive [delta + verification](beta9-delta-current/README.md):
-389 nonidentical tracked paths;215 different/165 fork-only/9 upstream-only,
-1159 identical. [TSV](beta9-inventory.tsv) is the 232-path runtime/build/assets/test
-subset, not semantic approval. Historical [beta9→beta10 input](beta9-delta/README.md)
-is retained separately. Full alignment OPEN; latest implementation CI45055269191
-SUCCESS. Latest verified handoff: build280 /e04c5d84, native and Qt5 PASS.
+Shared consumer implementations перенесены; CI45060819419 / build289 native + Qt5 PASS.
+Это не физическая device acceptance, не beta10, не EPUB Hybrid rewrite.
 
-## Closed implementation groups
+## Заключительная группа
 
-- Annotations: shared rows/store/database/list and NoteEditor whole upstream;
-  Reader annotation actions/quick mode/drag/reopen restored with captioned fork
-  palette, section headings and approved Cancel/Dictionary wording. Qt5 drag
-  branch follows upstream; retained comics/page-turn policy is not overwritten.
-- KOSync: every src/sync implementation and public header, page, schedule sheet,
-  notice, Reader KOSync handlers and corresponding model tests match upstream
-  byte-for-byte. Upstream Reader checkpoint/save (retaining the fork lazy-Appearance test report
-  flag `appearance_controls_built`) plus API consumers support
-  whole-book percentage, failed-login retry, final-exchange upload tracking,
-  modal-input resume and durable Android handoff. New RU errors explicitly
-  approved. No independent fork KOSync policy or second writer remains.
-- Sleep/storage: shared sleep preferences/snapshot pipeline already matches;
-  home sleep owner, native lifecycle, last-read helper, asset verification,
-  reader storage and custom pin guard restored whole upstream. Boot/remount
-  verification and release/restore callbacks wired into both Kobo adapters.
-  The upstream preferences sanitizer is restored with the existing note-migration
-  hook. Sleep captures/details and wallpaper refresh follow upstream. Fork-only
-  two-line ribbon/fit-to-width text is presentation, not a storage policy.
+Reader/coordinator quiet/preload/activation и Settings/Debug/status/percentages
+больше не остаются запланированными consumers: код, интерфейсы, helpers и focused
+regressions перенесены. Fork progress удалён целиком; используется beta9 bottom
+on/off. Сохранённые дельты и ограничения перечислены в полном отчёте.
 
-## Protected boundaries checked against c8192851
+Все `src/sync` реализации/headers, Reader KOSync, shared header/footer model/panel,
+Reader dialogs, opening interfaces, coordinator header и private font loader
+совпадают с pinned upstream; coordinator cpp отличается только locale hook.
 
-No changes to reader_slices.cpp, reader_session.cpp, page_button_mapping.h or
-highlight_palette.h in the KOSync/storage group. The session delta from upstream
-remains the comics frameImage hook. EPUB Hybrid algorithms are not rewritten.
-No freeze remedy or physical-device waveform/keyboard acceptance is claimed.
+## Проверка границ
 
-## Remaining full-repository gate
+Algorithms EPUB Hybrid, frame/session behavior вне approved comics hook,
+Libra2 mapping и waveform не переписаны в этой группе. Сам факт одинакового файла
+или зелёной сборки не доказывает отсутствия device дефектов. Консервативный REVIEW
+в exhaustive TSV предназначен для следующего pinned update, не blanket sign-off.
 
-The exhaustive immutable-tree [current beta9 → beta10 handoff ledger](beta9-delta-current/README.md)
-is the current divergence log: all 389 nonidentical tracked paths, both Git OIDs,
-modes, conservative review status and next-update action. The 232-row TSV above
-is only the legacy runtime/build/assets/test subset, not a semantic sign-off.
-
-Wi-Fi-idle/vendor/sync exclusion were already verified. Search/chapter/lazy
-consumers, Android/standalone opening, diagnostic/resource/desktop reporting,
-new upstream engine tests and dead native-save helper cleanup are imported.
-Build278 on8486d267 passes native and Qt5; Android/Qt6 are not executed by that
-workflow. Exact rotation lock and close-timeout now have their upstream consumers
-and tests in e04c5d84, with CI45055269191 SUCCESS.
-
-Remaining implementation gate: Reader quiet/preload; Debug/Settings/status and
-percentage/header-footer consumers. Approved62 strings are applied; their mere
-presence is not completion of those consumers. Per-file mixed hunks remain REVIEW
-until justified by decisions. Protected EPUB algorithms and deferred freeze are
-not implicitly fixed by any package checkpoint.
+Исторические checkpoints и disproven dead-writer hypothesis сохранены в
+[исходном handoff](beta9-delta/README.md) и Git history. Не переносить их старые
+OPEN статусы на текущие уже восстановленные consumers.

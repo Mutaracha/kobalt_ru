@@ -1,25 +1,23 @@
 {
   "upstream": "be47258850ffdc3295257475afdf8b8f6cb53176",
-  "fork": "e04c5d8446d6dc71cf13c01d65767b39054b59a6",
+  "fork": "80ee8d791c32d51c80cff194fd21418c3a571c66",
   "counts": {
-    "different": 215,
-    "fork-only": 165,
-    "identical": 1159,
-    "upstream-only": 9
+    "different": 180,
+    "fork-only": 164,
+    "identical": 1203
   },
   "groups": {
-    "android-integration": 6,
-    "assets-localization": 12,
-    "build-platform": 16,
-    "documentation-evidence": 155,
+    "android-integration": 4,
+    "assets-localization": 10,
+    "build-platform": 12,
+    "documentation-evidence": 149,
     "engine-fb2-comics-hybrid": 21,
-    "kobo-integration": 19,
+    "kobo-integration": 15,
     "locale-publication-support": 18,
-    "progress-bar": 1,
-    "reader-consumers": 38,
-    "shared-runtime-other": 41,
-    "tests-fixtures": 62
+    "reader-consumers": 28,
+    "shared-runtime-other": 28,
+    "tests-fixtures": 59
   },
-  "nonidentical": 389,
+  "nonidentical": 344,
   "classification": "Conservative ownership hints; REVIEW is not semantic acceptance. Includes all tracked paths, modes and gitlinks."
 }

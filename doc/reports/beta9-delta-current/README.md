@@ -1,75 +1,89 @@
-# beta9 delta — текущий checkpoint выравнивания
+# beta9 delta — финальные shared consumers и удаление fork progress
 
-Upstream `be47258850ffdc3295257475afdf8b8f6cb53176` → fork
-`e04c5d8446d6dc71cf13c01d65767b39054b59a6`.
-[Исторический вход и правила beta.10](../beta9-delta/README.md) сохранены неизменными.
+Pinned upstream `be47258850ffdc3295257475afdf8b8f6cb53176` → runtime `80ee8d791c32d51c80cff194fd21418c3a571c66`.
+[Исторический вход beta9](../beta9-delta/README.md) не изменён.
 
-[Все файлы](files.tsv), [точные счётчики](summary.json), [diff stat](changes.stat).
-389 неидентичных tracked путей: 215 different, 165 fork-only, 9 upstream-only;
-1159 идентичны. Добавленные checkpoint reports тоже входят в эти числа;
-число изменившихся путей не равно числу исправленных багов.
-155 записей — документация/evidence. REVIEW остаётся консервативным статусом,
-не автоматическим одобрением оставшихся hunks.
+[Все tracked пути](files.tsv), [счётчики](summary.json), [stat](changes.stat).
+**344 nonidentical**: 180 different,
+164 fork-only, 0 upstream-only;
+1203 identical. 149 записей — документация/evidence;
+195 — runtime/build/assets/tests. Числа не являются количеством багов.
+Проверено точное равенство множества TSV путей `git diff --no-renames --name-only -z`.
+`REVIEW` — намеренно консервативная подсказка для следующего обновления,
+а не утверждение, что каждый отличный файл должен быть заменён автоматически.
 
-## Изменения после исходного журнала
+## Закрытые реализации последней группы
 
-| Пункт журнала | Реализация / граница |
-|---|---|
-| B9-03/04 | `4cd2e6ca`, `5f01dece`: upstream lazy Search/Dictionary keyboard lifecycle, search text-readiness/chapter captions, Dictionaries stale/showEvent; whole chapter-choice page update API + Reader callers; goToChapter(index) вместо позиции, shared anchors не сливаются. Сохранены fork save-action glyph, CLDR и row presentation. Search chapter caption использует существующий `%1: %2`, без новых строк. |
-| B9-07 | `82db52a8`: upstream Android Activity/JNI request generations и delivery, LibraryOpen, ScreenBrightness/Light gesture persistence; Gradle тесты зарегистрированы; standalone BookOpen request сохраняет passage при замене открытия. Сохранены locale hooks и BOOX waveform implementation/close lifecycle. Specific system-brightness label согласован и подключён в8486d267. Android APK не проверен. |
-| B9-08 | `15c4d2bf`, `9643d168`: whole upstream diagnostic worker/API (включая startup failure handling), scenario resource reporting/player, comparator/config/scenarios, desktop monitor + app/menu consumers, upstream monitor/scenario/model tests. Нет второй fork diagnostic очереди. |
-| B9-09 | `223e87b1`: полные upstream chapter_parity + scenarios, fast_shaping/surfaces, layout_interrupt, page_estimate, text_sample и4 fixtures; source/test dependencies и fixture definitions перенесены. Production EPUB Hybrid алгоритмы не менялись ради этих тестов. |
-| B9-06 | `a342b680`: поиск всех production includes/callers показал, что fork NativeReadingSave/NativeReadingTime/saveNativeEvents — мёртвые helpers, использовавшиеся только из своих isolated tests, а не второй live writer. Helpers и их dead-only tests удалены; живые native session/time/progress implementations не переписаны. Whole upstream NativeSaveTrace + его самостоятельный test восстановлены. В pinned upstream этот trace тоже не имеет production callers: это не новая инструментализация реальных saves. Раннее предположение журнала о параллельном runtime writer не подтвердилось. FB2 progress_policy/native_publication hooks остаются отдельно. |
-| Qt6 copy | `a342b680`: whole upstream opaque-copy helper, display-format consumer, NickelFix ownership guard и pewter test. Это оптимизация opaque pixel composition, не смена waveform. Qt6 runtime пока не проверен. |
-| Sleep positions | `82db52a8`: resetNativeUnread и standalone reset сохраняют upstream sleep_positions, добавлена regression assertion. |
+- Reader `start/activate/releaseQuiet`, отложенные host observers/clock/preferences,
+  sleep-image preparation и lazy Settings/Appearance/FieldChooser/Acknowledgments —
+  pinned upstream. Coordinator целиком upstream с единственным RU-locale hook;
+  Qt5/Qt6 controllers возвращают upstream preload и asset availability gates.
+  Ранний format gate дополнен существующими FB2 форматами, не вторым opener.
+  Прогрев последней книги остаётся upstream EPUB-only: FB2 partial-layout не включён.
+- Header/footer model/panel — byte-identical pinned upstream: debug fields,
+  Book status timer/turn/layout timings, decimal percentages, chooser filtering.
+  Settings/Debug wiring, lazy confirmations, cache actions и percentage draft/apply
+  восстановлены вместе с API и consumers, не только строками.
+- Fork progress renderer **удалён**, как и chapter fractions/ticks, `progressTop`,
+  `progress_top`, position property, Top/Bottom captions и mirrored-tick test.
+  Geometry/paintFooter и model/tests — штатные beta9. Остаётся upstream on/off
+  нижней полосы. Comics скрывает chrome без изменения сохранённых значений;
+  draft preview использует актуальную геометрию, не старый paint cache.
+- Shared RadioList hidden rows и icon fallback, font coverage/optional-book-face
+  registration, logo-only splash/outlined wordmark, library preference merge,
+  low-density text-preset matching, native unmapped-progress policy, sanitizer/
+  source archive helpers возвращены из pinned upstream. Никакой второй KOSync
+  policy, font loader или save pipeline не добавлено.
+- Chapter contents сохраняет только CLDR summary; размещение номера/страницы
+  upstream. Dictionary My Words использует upstream CheckCellButton. Search
+  chapter caption переиспользует утверждённый `%1: %2` key.
 
-## Продолжение после согласования строк
+## Сохранённые границы — не недостающие shared consumers
 
--8486d267: применены62 утверждённых RU строки с EN дословно upstream;
-  подключён system-brightness consumer; stale opening-cover test заменён upstream.
--957618b9: whole upstream ReaderOrientation model/header/test, exact-lock controls
-  Appearance/Reader assignment/callback/input guard/refresh, LockOpen geometry.
-  Fork comics/progress controls и icon/presentation сохранены.
--e04c5d84: upstream finishExit deadline/failExit recovery, TimedOut modal variant,
-  close-save input guards и popup ownership, private sleep snapshot off-state;
-  upstream slowCloseSave/closeWithoutWaitingForHost/sleepCancelsPendingExit tests
-  и data/CTest registrations. Нет replay уже начатого native write после timeout.
+- FB2 source/resources/notes/metadata и per-book comics pairing/viewport/frameImage.
+- RU/CLDR, locale entry points, утверждённые captions и существующий string reuse.
+- About fork/UTC, IBM Plex Sans UI/Instrument Serif brand, toolbar dark/comics,
+  общая checkbox presentation, annotation palette labels/section headers,
+  sleep ribbon/newline/text fitting и независимый invert-page-swipes.
+- Центрированные session minutes сохранены; отменённая page-count/time-to-end
+  menu strip **не возвращена**. Quiet/frontlight diagnostics не возвращены.
+- Принятые Libra2 mapping и Kobo/BOOX waveform остаются исключениями; не
+  переносятся новые dark-mode/cleaning waveform изменения под видом alignment.
+- EPUB Hybrid algorithms (slices/background layout/adoption/fallback) не менялись;
+  FB2 Hybrid не включён. Freeze deferred до нового воспроизводимого примера.
 
-## Проверки и ошибки
+## Проверки
 
-- Source allowlist PASS; локальная offline suite PASS с CMAKE_GENERATOR=Ninja.
-  Один запуск с Makefiles упал на существующем timestamp/reconfigure test;
-  assertions не менялись и тест не удалён.
-- CI45053027010 на9643d168: Qt5 SUCCESS, native configure FAIL — новым tests
-  не хватало area labels. `ec9eee6c` добавляет конкретные area labels, не catch-all
-  и не исключение тестов. Последующие runtime/tests также входят в новый запуск.
-- CI45053881024 наec9eee6c: Qt5 SUCCESS; native497 tests — единственный
-  failure desktop.settingsOpeningCover: старый test обращался к openingCanvas
-  после того, как upstream lifecycle уже освободил его. В8486d267 тест заменён
-  целиком pinned upstream вариантом: проверка live controls до opened, затем
-  QPointer/assertion на освобождение surface/dialog. Assertions не отключены.
-- Текущая проверка e04c5d84: **CI45055269191 / build280 SUCCESS**.
-  Native job11m57s; Qt5/package job7m41s.
-  Device artifact14767806860 (37426810 bytes), native14768081201.
-  https://github.com/Mutaracha/kobalt_ru/actions/runs/45055269191/artifacts/14767806860
-  Промежуточный8486d267 / build278: CI45055083027 SUCCESS (native + Qt5).
-  Device artifact14767726086,37424719 bytes; native14766924758.
-  Этот промежуточный run superseded полностью зелёным build280.
-- Device/Qt6/Android не проверены; физический drain/ghosting/freeze не исправлены
-  на основании одних source/offline checks.
+**Финальная [CI45060819419 / build289](https://github.com/Mutaracha/kobalt_ru/actions/runs/45060819419): PASS.**
+Runtime `80ee8d79`: focused native regression suite PASS и Qt5 package build,
+contents validation и offline release checks PASS. Qt6 пропущен по политике workflow;
+Android и physical-device acceptance не выполнены.
+Отчёт фиксирует runtime до следующего documentation-only checkpoint: сами эти
+обновлённые отчёты не входят в сравниваемый Git tree.
 
-## Что ещё не закрыто
+Восстановлены upstream quiet-window, background panel preparation, deferred tiles,
+choice-resize/teardown, BookStatus, count-without-turn, field-sheet hide,
+Debug mode, percentage format, logo splash, ReadingBook и library-merge regressions.
+Fork appearanceChromeDraft/comicsQuickToggle/darkThemeToggle явно зарегистрированы
+в CTest/area mapping и focused workflow; удалённый progressStripMirrors не запускается.
 
-B9-02 quiet/preload + связанные Reader lifecycle consumers; B9-05 debug/status,
-percentage/header-footer и часть Settings consumers. Rotation lock и close-timeout
-перенесены и проверены native/Qt5 CI280. [62 строки](../../beta9-remaining-strings-review.md)
-согласованы пользователем целиком и применены; это больше не wording blocker. Нельзя объявить это выравнивание
-завершённым или намеренной fork delta до переноса callers/tests и проверки.
+Промежуточный79851d78 / CI45057846487 FAIL: не перенесены зависимости
+`RadioList::setLeftOut` и `paintBrandSplash`; они восстановлены целиком до этого
+checkpoint. Ошибка не маскируется снятием checks или возвратом fork renderer.
+bb86ce8b / CI45058361740: Qt5 PASS, native compile FAIL из-за отсутствующего
+`KOBALT_TEST_FIXTURES` для целого upstream ReadingBook test; восстановлены fixture
+definitions в41c2c934, тесты не урезаны.622e6563 повторяет этот compiler failure
+до исправления.443c05ae дополнительно возвращает whole upstream settingsRendering,
+settingsStandby и savedWords сценарии под их восстановленные implementations.
+443c05ae / CI45059361797 / build288: Qt5 PASS; native 514/515 PASS,
+единственный FAIL — model.style-sample-cache: transient `whole_book_failed`
+влиял на ключ. В80ee8d79 он исключён из sample settings вместе с остальными
+frame diagnostics; исходный тест сохранён без ослабления.
+Последующие superseded queued runs могут быть CANCELLED, не SUCCESS.
+Native workflow — focused regression suite, не весь upstream desktop/Android matrix.
 
-Принятые границы остаются: FB2/comics/RU/brand/Libra2/waveform сохраняются,
-EPUB Hybrid algorithms frozen; beta.10 progress-bar replacement PLANNED,
-старый renderer полностью удаляется при замене. Не возвращать удалённую полосу
-page-count/time-to-end меню и quiet/frontlight diagnostics.
-
-Воспроизведение: тот же platforms/ci/upstream_delta.py с --fork e04c5d84 и
---output в отдельный каталог. Все новые данные берутся из Git objects, не root.
+Воспроизведение:
+```sh
+python platforms/ci/upstream_delta.py --upstream be47258850ffdc3295257475afdf8b8f6cb53176 \
+  --fork 80ee8d791c32d51c80cff194fd21418c3a571c66 --output /tmp/beta9-delta
+```

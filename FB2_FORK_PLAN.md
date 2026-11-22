@@ -6,17 +6,23 @@
 
 ## Активная очередь — выравнивание с upstream перед следующим обновлением
 
-**in progress: подготовка кода; cleanup и upstream presets — CI verified; пресеты device accepted.**
+**Текущий checkpoint `80ee8d79`:** shared implementation alignment выполнен;
+CI45060819419 / build289 native + Qt5 PASS. Fork progress полностью удалён: stock beta9
+bottom on/off, без ticks/position/Top. Beta10 не импортируется. [Точная дельта](doc/reports/beta9-delta-current/README.md).
+Статусы прежних групп ниже — история этапов, а не очередные незавершённые consumers.
+
+
+**Shared implementation alignment завершён; CI45060819419 / build289 native + Qt5 PASS.**
 Baseline форка `4e3a33b9`, upstream beta.9 `be472588`.
 [Разбор отказов beta.8 → beta.9 и протокол обновления](doc/reports/beta9-upgrade-retrospective.md).
 Решение: [UPSTREAM-NEXT](doc/fork-decisions.md#upstream-next--граница-подготовки-следующего-обновления).
 
 | Блок | Статус | Следующий результат / gate |
 |---|---|---|
-| Уборка артефактов и incidental diff | in progress | Удалены список и 26 старых engine patches: consumers отсутствуют, build использует in-tree Blaze. Cache recipe/filter оставлены byte-identical, чтобы не менять dependency key. Прочий incidental diff ещё не сводился; CI 44800640114 PASS. |
-| Общие реализации beta.9 | in progress: пресеты device accepted; panel/theme device checklist accepted; freeze deferred до нового примера | Контекстно свести пресеты, chapter lookup, аннотации/keyboard, KOSync, sleep/storage. Использовать upstream lazy panels вместо собственной оптимизации; проверить shared helper/API и protected fork behavior. |
-| Актуальная карта дельты | planned | Обновить fork-delta по фактическим файлам; для каждого retained delta указать причину и gate, upstream-only файлы проверить отдельно. |
-| Замена полосы прогресса beta.10 | planned; после текущего выравнивания | Полностью заменить fork progress bar на upstream `4a9576ae017684d290dd2311f4f5195e5e043274`, удалить старую реализацию/parallel wiring и заменённые тесты; не поддерживать два пути. Новые строки требуют согласования. [D04](doc/fork-decisions.md#d04--прогресс-и-меню-чтения). Сейчас runtime полосы не меняется. |
+| Уборка артефактов и incidental diff | implemented | Мёртвые helpers/patch lists удалены; shared fonts/storage/build helpers возвращены upstream. Финальные compile/test gates ниже. |
+| Общие реализации beta.9 | done; native + Qt5 CI PASS | Reader/coordinator quiet/preload, Settings/Debug/status/percentages и их dependencies/tests перенесены. Presets и прежняя theme-приёмка не заменяют проверку нового runtime. |
+| Актуальная карта дельты | updated | 344 nonidentical / 1203 identical / 0 upstream-only; immutable TSV с OID/modes, retained boundaries и воспроизведением. |
+| Удаление fork progress | done; native + Qt5 CI PASS | Последнее D04: renderer/ticks/position/Top удалены сейчас; pinned beta9 bottom on/off. Beta10 не импортирован. |
 | Подготовка FB2 Hybrid | in progress: source analysis | [Граница и матрица](doc/reports/fb2-hybrid-preparation.md) описаны по коду. Далее corpus, sections/notes/resources/anchors и проверяемый whole-book fallback. Реализация и включение partial layout не разрешены автоматически. |
 | Следующее обновление | planned; blocked до фиксации нового upstream SHA для runtime-переноса | Использовать протокол отчёта; сначала завершить cleanup и составить dependency/consumer/test matrix. Beta.10 ещё не анализировалась. |
 
@@ -26,7 +32,9 @@ layout, adoption, fallback) базовой версии и не пишем со�
 Существующие narrow hooks, включая comics frameImage, сохраняются по назначению.
 FB2 whole-book остаётся безопасным поведением до отдельного проверенного решения.
 
-**Текущий проверенный runtime:** `34811f2f42b64c73a557fa532a453c34851953db`,
+## Исторический журнал этапов (старые OPEN/pending статусы заменены checkpoint выше)
+
+**Проверенный на том этапе runtime:** `34811f2f42b64c73a557fa532a453c34851953db`,
 Qt5 build **266**, [CI 45048708215](https://github.com/Mutaracha/kobalt_ru/actions/runs/45048708215)
 **SUCCESS**: native 9m06s; Qt5/offline/package/contents 7m37s.
 [Qt5 package](https://github.com/Mutaracha/kobalt_ru/actions/runs/45048708215/artifacts/14764857536)

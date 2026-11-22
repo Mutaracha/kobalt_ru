@@ -1,8 +1,12 @@
 # Текущая граница выравнивания beta.9
 
-**Текущий checkpoint:** [delta-current](reports/beta9-delta-current/README.md),
-`e04c5d84`, 389 tracked расхождений; native/Qt5 CI45055269191 / build280 SUCCESS.
-Reader quiet/debug/status consumers остаются OPEN.
+**Текущий runtime:** [delta-current](reports/beta9-delta-current/README.md),
+`80ee8d79`, 344 tracked расхождений / 1203 identical;
+shared Reader/coordinator/Settings/status/percentage consumers перенесены.
+Финальная CI45060819419 / build289: native + Qt5 PASS. Это не physical-device acceptance.
+
+**Прогресс:** fork renderer/chapter ticks/position setting/Top удалены;
+штатная нижняя on/off полоса pinned beta9. Beta10 сейчас не импортируется.
 
 **Исторический вход для обновления на beta.10:**
 [beta9 delta ledger / handoff](reports/beta9-delta/README.md).
@@ -12,15 +16,9 @@ Reader quiet/debug/status consumers остаются OPEN.
 читает Git trees и не зависит от грязного checkout. Новые checkpoint сохранять
 отдельно; исторический beta.9 вход не перетирать результатами beta.10.
 
-Последний проверенный runtime `2c5d2c55`, Qt5 build268 / CI45050356339 SUCCESS
-(native + Qt5/package), device pending. KOSync, общий sleep/storage и Wi-Fi idle /
-sync-exclusion implementation groups перенесены. **Полное выравнивание OPEN:**
-наличие согласованных fork UI/FB2 features не оправдывает все mixed hunks.
-Неразобранные Reader/platform/test consumers перечислены в журнале B9-02—B9-09.
-
-Полоса прогресса: план полной замены на beta.10 commit
-`4a9576ae017684d290dd2311f4f5195e5e043274`, без поддержки старого renderer;
-сейчас не реализовано. EPUB Hybrid алгоритмы не менять, freeze deferred.
+Предыдущий проверенный runtime `e04c5d84` / build280 — исторический checkpoint,
+не доказательство сборки последующих изменений. Текущие проверки и retained
+boundaries — в delta-current. EPUB Hybrid algorithms не менялись, freeze deferred.
 [Решения](fork-decisions.md), [единственная очередь](../FB2_FORK_PLAN.md),
 [предыдущий inventory](reports/beta9-inventory.md).
 
@@ -60,7 +58,7 @@ sync-exclusion implementation groups перенесены. **Полное выр
 | About/debug | Дополнительная строка fork + UTC build time; скрытый выбор языка. Stock version/commit сохранены. | `app/about/fork_about.*`, `fork_debug.*`; вызов из about_page, build_info и build definitions. |
 | Comics | Per-book/default off, эффективное подавление полей/chrome без потери значений, preview, landscape пары, отдельные wide/center страницы, центровка/поворот portrait center, hit bounds и resource readiness. | `reader_comics.*`, `column_view_comics.cpp`, `engine_document_comics.cpp`; состояние/общая отрисовка и позиционирование подключены в ColumnView/EngineDocument, publication/resources/session/UI. |
 | Меню чтения | Быстрые dark/comics кнопки; comics state ink + filled checked bubble, запрет действия при busy без серого мигания; скрываются только кнопки. Полоса book-time/page-count полностью удалена в cba1e229 по новому решению пользователя; замена deferred. | `fork_reader_actions.cpp`, `views/fork_navigation.*`, короткие toolbar wiring/refresh/navigation hooks, features/settings. Ни режим, ни Layout control не отключаются скрытием. |
-| Прогресс | Выключено/Внизу/Вверху, top выше header, зеркальные chapter ticks, legacy enabled→Bottom. | `reading_page_progress.cpp`, reading_page geometry, header_footer model/panel, chapter fractions и session/navigation refresh. |
+| Прогресс (историческая beta8 дельта, удалена) | После последнего D04 только stock beta9 bottom on/off; нет ticks/Top/position setting. | Отдельный fork renderer и его wiring/tests удалены. |
 | Shared UI | Settings-row presentation, compact checkbox Light/Layout, корректный общий baseline RU tabs, return-title typography, fork glyphs. | `fork_settings.*`, options/buttons, `return_title_text.h`, navigation, `fork_icon_geometry.*`. Не дублировать экраны Settings. |
 | Сон | Подгонка длинных надписей, две строки remaining в ribbon, fit оценок widgets; общая standby-логика beta.8 не заменяется. | `sleep_ribbon_text.cpp`, узкие изменения sleep_screen/sleep_designs. |
 | Lazy Appearance | Upstream beta9 lazy Settings/Appearance, preparePanels/settled/inputQuiet; поздние children получают актуальную palette/refresh. Собственной второй оптимизации нет. | `fork_reader_actions.cpp`, reader window state/build/refresh/settings. Не новая оптимизация в этом рефакторинге. |
