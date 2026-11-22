@@ -9984,15 +9984,22 @@ printf '[{"file":"%s.png","scene":"%s"}]' "$3" "$KOBALT_GALLERY_CAPTURE" > "$2/p
         for (int pass = 0; pass < 3; ++pass) {
             const bool showCover = pass == 1 ? !initialCover : initialCover;
             fixture.window.openBook(book);
-            QTRY_COMPARE_WITH_TIMEOUT(opened.count(), pass + 1, 30000);
-            QTRY_VERIFY(!fixture.state().value("busy").toBool());
             auto *start = fixture.window.findChild<standalone::StartScreen *>();
-            auto *opening = start->openingCanvas()->content->findChild<QDialog *>("rrOpening");
+            QPointer<QWidget> surface(start->openingCanvas());
+            QVERIFY(surface);
+            QPointer<QDialog> opening =
+                    start->openingCanvas()->content->findChild<QDialog *>("rrOpening");
             QVERIFY(opening);
             auto *brand = opening->findChild<QLabel *>("rrOpeningBrand");
             auto *cover = opening->findChild<QWidget *>("rrOpeningCover");
+            QImage sample(32, 32, QImage::Format_RGB32);
+            sample.fill(Qt::black);
+            start->setCover(sample);
             QCOMPARE(brand->isHidden(), showCover);
             QCOMPARE(cover->isHidden(), !showCover);
+            QTRY_COMPARE_WITH_TIMEOUT(opened.count(), pass + 1, 30000);
+            QTRY_VERIFY(!fixture.state().value("busy").toBool());
+            QVERIFY(!start->openingCanvas() && !surface && !opening);
             QVERIFY(fixture.press("rrPage"));
             QVERIFY(fixture.press("rrSettings"));
             QVERIFY(fixture.press("rrSettingsSystem"));

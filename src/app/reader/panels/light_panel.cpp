@@ -63,8 +63,12 @@ LightPanel::LightPanel(LightControls &light, QWidget *parent)
     rows->setContentsMargins(metrics::panel::contentMargins);
     rows->setSpacing(metrics::control::rowGap);
     automaticBrightness = new ui::DescribedOption(
-            strings::get("light_panel.automatic_brightness"),
-            strings::get("light_panel.automatic_brightness_description"), this);
+            strings::get(light.hasSystemBrightness() ? "light_panel.system_brightness"
+                                                     : "light_panel.automatic_brightness"),
+            strings::get(light.hasSystemBrightness()
+                                 ? "light_panel.system_brightness_description"
+                                 : "light_panel.automatic_brightness_description"),
+            this);
     automaticBrightness->setObjectName("rrAutomaticBrightness");
     automaticWarmth =
             new ui::DescribedOption(strings::get("light_panel.automatic_warmth"),
