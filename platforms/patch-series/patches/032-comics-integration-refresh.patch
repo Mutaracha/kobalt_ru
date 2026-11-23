@@ -1,0 +1,453 @@
+diff --git a/assets/en.strings b/assets/en.strings
+index d63855aca5e39f9b12edf58267324fffe4070655..bff23aba2b9328336d5bb5c107323b5a0b88906e 100644
+--- a/assets/en.strings
++++ b/assets/en.strings
+@@ -2119,3 +2119,7 @@
+ "sleep.follow_orientation" = "Follow reading orientation";
+ "sleep.rotation_enabled" = "Your sleep screen will now also use landscape.";
+ "sleep.rotation_disabled" = "Your sleep screen will only use portrait.";
++
++"reader.comics_reading_mode" = "Comics reading mode";
++
++"reader.comics_reading_mode_description" = "Hides margins, headers and footers, ignoring the current layout settings.";
+diff --git a/assets/ru.strings b/assets/ru.strings
+index edb3ec4a65a69562a9be53e81a49395c7ff605f5..6b66a12a77b0629c3d4475abac7a1e9a66479825 100644
+--- a/assets/ru.strings
++++ b/assets/ru.strings
+@@ -1807,3 +1807,7 @@
+ "zen.pages_turned" = "Перелистано страниц";
+ "zen.reading_stats" = "Статистика чтения";
+ "zen.this_session" = "Этот сеанс";
++
++"reader.comics_reading_mode" = "Режим чтения комиксов";
++
++"reader.comics_reading_mode_description" = "Убирает поля и колонтитулы, игнорируя текущие настройки раскладки.";
+diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
+index 6ab2191914eada78bb44223a8a693ece0a492035..7e20f04f7d7d6e4ddb45a7574f023587d26bafc5 100644
+--- a/platforms/desktop/CMakeLists.txt
++++ b/platforms/desktop/CMakeLists.txt
+@@ -816,7 +816,7 @@ if(BUILD_TESTING)
+     kobalt_regressions(engine fb2_engine comics_layout comics)
+     kobalt_regressions(engine epub_compatibility large_toc vertical_spacing source_index location_round_trip engine_contract text_sample page_estimate layout_interrupt spine_window chapter_slices chapter_parity fast_surfaces fast_shaping columns advanced_text paragraph_spacing beautifier alignment indentation page_layout vertical_writing mathml line_breaking
+         css_class_index compiled_hyphenation fallback_styles svg_limits image_proportions figure_layout whitespace links search word_selection reader publisher_markup local_reader document_word_count document_cache alternate_layout)
+-    kobalt_regressions(component ui acknowledgments kosync_ui)
++    kobalt_regressions(component ui acknowledgments kosync_ui comics_ui)
+     kobalt_regressions(component ru_control_ui)
+     target_sources(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}/platforms/kobo/display/page_animation.cpp")
+     target_include_directories(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}" "${source}")
+@@ -844,7 +844,7 @@ if(BUILD_TESTING)
+     # presets filter on them.
+     set(kobalt_test_areas
+         "reading:^engine[.](fb2-engine|comics-layout|comics)$"
+-        "settings:^component[.]ru-control-ui$"
++        "settings:^component[.](ru-control-ui|comics-ui)$"
+         "gallery:^(build\\.screenshotBooks|desktop\\.(gallery.*|phoneFrame|primaryViews))$"
+         "evaluation:^(build\\.(loadLock|eval-device-outcomes)|desktop\\.(scenarioCacheRemoval|scenarioResultFile|timingEvents|fastLocateText|deviceChecks)|platform\\.scenario-sleep|lifecycle\\.benchmarkNoticeAfterRun)$"
+         "kosync:^(lifecycle\\.(kosync.*|wifi.*)|desktop\\.(fastKosyncChoice|kosyncChoice|syncChoiceView)|model\\.(kosync|sync-coordinator)|component\\.kosync-ui|platform\\.native-sync-network)$"
+diff --git a/platforms/kobo/nickel-qt5/refresh.cpp b/platforms/kobo/nickel-qt5/refresh.cpp
+index c6798cae60862c395a007c1f74ebba994e881a11..56d5368bff81c400114678473ce162d585d0ea1a 100644
+--- a/platforms/kobo/nickel-qt5/refresh.cpp
++++ b/platforms/kobo/nickel-qt5/refresh.cpp
+@@ -612,7 +612,9 @@ void pageRefresh(QWidget *widget, bool clean, bool)
+     const bool dark = widget->window()->property("reader_dark").toBool();
+     // Keep the full native policy even when the widget exposes only low flags.
+     pageWidget = widget;
+-    pagePolicy = clean ? repairPolicy(dark) : ordinaryPolicy(dark);
++    const bool graphics = widget->property("kobalt_graphics_refresh").toBool();
++    // Graphics waveform is scoped to submitted damage, not a forced whole-screen flash.
++    pagePolicy = clean || graphics ? repairPolicy(dark) : ordinaryPolicy(dark);
+     for (int attribute = 129; attribute <= 141; ++attribute)
+         widget->setAttribute(
+                 static_cast<Qt::WidgetAttribute>(attribute),
+diff --git a/src/app/reader/settings/appearance_panel.cpp b/src/app/reader/settings/appearance_panel.cpp
+index 4cdf49b76b12e5f943f9044494947e420b0d0632..9de702b2aa73191eaef2147b21392c955e29efc1 100644
+--- a/src/app/reader/settings/appearance_panel.cpp
++++ b/src/app/reader/settings/appearance_panel.cpp
+@@ -393,6 +393,11 @@ AppearancePanel::AppearancePanel(const AppearanceLayout &layout,
+                                   maximumLineSpacing, 1, {}, {}, "%");
+     spacingSlider->setMarkers({ 100, 110, 120, 130, 140, 150, 175, 200, 250, 300 },
+                               ui::SettingSlider::MarkerMode::Stops);
++    comicsOption = new ui::DescribedOption(strings::get("reader.comics_reading_mode"),
++            strings::get("reader.comics_reading_mode_description"), pageLayout);
++    comicsOption->setObjectName("rrComicsReadingMode");
++    ui::stylePanelCheckbox(comicsOption);
++    pageRows->addWidget(comicsOption);
+     marginSlider = kobalt::ui::sliderRow(pageLayout, pageRows, "rrMargins", "rrMarginsValue",
+                                          strings::get("reader.margins"), "rrNarrower", "rrWider", 0,
+                                          120, 3, {});
+diff --git a/src/app/reader/settings/appearance_panel.h b/src/app/reader/settings/appearance_panel.h
+index 6335239ce5b41c86e1ede72db94abb8674dea54a..b166a0347624834c915f4d7b2e222892e5d5312a 100644
+--- a/src/app/reader/settings/appearance_panel.h
++++ b/src/app/reader/settings/appearance_panel.h
+@@ -80,6 +80,7 @@ public:
+                       *marginSlider = nullptr, *verticalMarginSlider = nullptr;
+     QVector<QPushButton *> alignmentButtons, hyphenButtons, rotationButtons;
+     QPushButton *autoRotateOption = nullptr, *lockRotationOption = nullptr;
++    ui::DescribedOption *comicsOption = nullptr;
+     // Header and footer: the Layout row that opens its view, and the view's
+     // presets and controls, built only when the layout has its rows.
+     ui::DropdownButton *headerFooterRow = nullptr;
+diff --git a/src/app/reader/views/reading_page.cpp b/src/app/reader/views/reading_page.cpp
+index 92c50e8f4a535dc45ade0ba72731e03390889288..e9cb63843da12ac8fe1f42013f59a83bf00685eb 100644
+--- a/src/app/reader/views/reading_page.cpp
++++ b/src/app/reader/views/reading_page.cpp
+@@ -857,6 +857,7 @@ void ReadingPage::refreshStrips()
+ 
+ void ReadingPage::refreshContent(bool reading, bool now)
+ {
++    setProperty("kobalt_graphics_refresh", comicsMode);
+     const auto colors = palette();
+     const bool geometryChanged = renderedSize != size() || renderedTop != topHeight()
+             || renderedBottom != bottomHeight();
+@@ -1431,6 +1432,16 @@ QColor ReadingPage::pagePaper() const
+     return ui::themeColors(ui::darkTheme(this)).paper;
+ }
+ 
++QImage ReadingPage::headerImage()
++{
++    return renderStrip(topHeight(), [this](QPainter &p) { paintHeader(p); });
++}
++
++QImage ReadingPage::footerImage()
++{
++    return renderStrip(bottomHeight(), [this](QPainter &p) { paintFooter(p); });
++}
++
+ QImage ReadingPage::renderStrip(int height, const std::function<void(QPainter &)> &draw)
+ {
+     if (!height)
+diff --git a/src/app/reader/views/reading_page.h b/src/app/reader/views/reading_page.h
+index 8361348b36fb4bba477215dec418e671e03566c4..10371e91627ac99d3b7059eb88185a92d2cd5cd1 100644
+--- a/src/app/reader/views/reading_page.h
++++ b/src/app/reader/views/reading_page.h
+@@ -65,7 +65,9 @@ public:
+ 
+     bool viewportTransition() const { return changingViewport; }
+ 
+-    const QImage &headerImage() const { return headerPixels; }
++    // Draft appearance can differ from the applied page and its paint caches.
++    // Render chrome from current fields without repainting the reading screen.
++    QImage headerImage();
+ 
+     // Leaves the header and footer bands blank without changing the page's
+     // layout. Zen mode's reading menu uses it while it is open.
+@@ -73,7 +75,7 @@ public:
+ 
+     bool stripsHidden() const { return stripsBlank; }
+ 
+-    const QImage &footerImage() const { return footerPixels; }
++    QImage footerImage();
+ 
+     // What the header and footer show. `notice`, such as an error, replaces
+     // the footer's slots while it is set. It never adds a footer, because
+@@ -84,14 +86,15 @@ public:
+     qreal progressFraction = 0;
+     // Chapter starts on the progress bar, from 0 to 1.
+     QVector<double> progressTicks;
++    bool comicsMode = false;
+ 
+-    bool showHeader() const { return chrome.header(); }
++    bool showHeader() const { return !comicsMode && chrome.header(); }
+ 
+-    bool showFooter() const { return chrome.footer(); }
++    bool showFooter() const { return !comicsMode && chrome.footer(); }
+ 
+     bool progressAtTop() const
+     {
+-        return headerfooter::progressEdge(chrome) == headerfooter::BarEdge::Top;
++        return !comicsMode && headerfooter::progressEdge(chrome) == headerfooter::BarEdge::Top;
+     }
+ 
+     // Chapter starts to draw, when the layout asks for ticks.
+@@ -99,7 +102,7 @@ public:
+ 
+     bool progressAtBottom() const
+     {
+-        return headerfooter::progressEdge(chrome) == headerfooter::BarEdge::Bottom;
++        return !comicsMode && headerfooter::progressEdge(chrome) == headerfooter::BarEdge::Bottom;
+     }
+ 
+     int headerTextPixels() const
+diff --git a/src/app/reader/window/reader_build.cpp b/src/app/reader/window/reader_build.cpp
+index 0e09f527d1c97de8d11df980ba2b2c3a8b419e9a..d94abf8b6b5cbe3d6a4a643613423e9e21828bdf 100644
+--- a/src/app/reader/window/reader_build.cpp
++++ b/src/app/reader/window/reader_build.cpp
+@@ -1,3 +1,4 @@
++#include <QScopedValueRollback>
+ #include <algorithm>
+ #include "render/page_content.h"
+ #include "ui/controls/text.h"
+@@ -1240,6 +1241,19 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
+         weightControls += slider->stepButtons();
+     }
+     spacingSlider = appearance.spacingSlider;
++    auto *comicsOption = appearance.comicsOption;
++    connect(comicsOption, &QCheckBox::clicked, this, [this](bool enabled) {
++        QSize viewport;
++        {
++            QScopedValueRollback<bool> mode(page->comicsMode);
++            page->comicsMode = enabled;
++            viewport = bodySize();
++        }
++        mutateAppearance([enabled, viewport](ReaderSession &preview) {
++            preview.editAppearance(kobalt::appearance::Patch(
++                    kobalt::qt::object({ { kobalt::appearance::comicsModeKey, enabled } })), viewport);
++        });
++    });
+     marginSlider = appearance.marginSlider;
+     verticalMarginSlider = appearance.verticalMarginSlider;
+     buildTextPresets();
+diff --git a/src/app/reader/window/reader_refresh.cpp b/src/app/reader/window/reader_refresh.cpp
+index 26988feabeb8b813b7e43f18c5a1a38ff6c90138..a8cd809fa7f14339036cd427db103846985e05b7 100644
+--- a/src/app/reader/window/reader_refresh.cpp
++++ b/src/app/reader/window/reader_refresh.cpp
+@@ -1,5 +1,6 @@
+ #include "reading/header_footer.h"
+ #include "render/page_content.h"
++#include <QScopedValueRollback>
+ #include "ui/controls/rows.h"
+ #include "ui/controls/text.h"
+ #include "ui/panel_timing.h"
+@@ -332,6 +333,13 @@ bool Reader::syncFontPicker()
+ // footer's place until it clears.
+ void Reader::showChapterText()
+ {
++    const bool comics =
++            session->requestedAppearance().fields().value(appearance::comicsModeKey).toBool(false);
++    if (page->comicsMode != comics) {
++        page->comicsMode = comics;
++        header->setVisible(page->showHeader());
++        resizeText();
++    }
+     page->cleanRefresh(false);
+     page->notice = !session->error().isEmpty() ? session->error() : session->imageWarning();
+     const auto values = chromeValues(ChromeFields::Reading);
+@@ -398,8 +406,13 @@ void Reader::syncAppearancePreview()
+     if (previewPageKind != kind) {
+         previewPageKind = kind;
+         previewPageKey = previewPageRequested = 0;
+-        previewPage = {};
++        previewPage = { };
+     }
++    // Compose draft chrome using draft geometry, not the applied book mode.
++    const bool comics =
++            settings->requestedAppearance().fields().value(appearance::comicsModeKey).toBool(false);
++    QScopedValueRollback<bool> mode(page->comicsMode);
++    page->comicsMode = comics;
+     const int side = kobalt::readingPixels(marginSlider->value());
+     const int vertical = kobalt::readingPixels(verticalMarginSlider->value());
+     kobalt::reader::AppearancePreview::Content content;
+@@ -407,13 +420,11 @@ void Reader::syncAppearancePreview()
+     content.bodyTop = page->topHeight();
+     content.bodyHeight = bodySize().height();
+     if (!textOpen) {
+-        content.header =
+-                page->showHeader() || page->progressAtTop() ? page->headerImage() : QImage();
+-        content.footer =
+-                page->showFooter() || page->progressAtBottom() ? page->footerImage() : QImage();
++        content.header = page->headerImage();
++        content.footer = page->footerImage();
+     }
+-    content.horizontalMargin = side;
+-    content.verticalMargin = vertical;
++    content.horizontalMargin = comics ? 0 : side;
++    content.verticalMargin = comics ? 0 : vertical;
+     content.axis = appearancePreviewAxis;
+     content.text = textOpen;
+     content.sample = sample;
+@@ -591,6 +602,12 @@ void Reader::syncAppearanceControls(bool pickingFont)
+         syncTextPresets();
+         return;
+     }
++    if (auto *option = findChild<QCheckBox *>("rrComicsReadingMode")) {
++        option->setChecked(settings->requestedAppearance()
++                                   .fields()
++                                   .value(appearance::comicsModeKey)
++                                   .toBool(false));
++    }
+     if (!sizeSlider->interacting()) {
+         const int halfPoints = kobalt::pixelHalfPoints(settings->fontSize());
+         sizeSlider->setValue(halfPoints);
+diff --git a/src/app/reader/window/reader_settings.cpp b/src/app/reader/window/reader_settings.cpp
+index 7134983479027ec4bce10daa982dae4771b84db7..f2479b6c05dd6dae1ac5a4d8bb27db2ffd83b2f3 100644
+--- a/src/app/reader/window/reader_settings.cpp
++++ b/src/app/reader/window/reader_settings.cpp
+@@ -1,3 +1,4 @@
++#include <QScopedValueRollback>
+ #include <QKeyEvent>
+ #include "reading/remaining_time.h"
+ #include "render/page_content.h"
+@@ -1463,6 +1464,12 @@ void Reader::resizeText()
+ {
+     if (!isVisible() || closing)
+         return;
++    const auto *draft =
++            appearanceEdit.edited() && appearanceEdit.ready() ? appearanceEdit.preview() : session;
++    const bool draftComics =
++            draft->requestedAppearance().fields().value(appearance::comicsModeKey).toBool(false);
++    QScopedValueRollback<bool> previewMode(page->comicsMode);
++    page->comicsMode = draftComics;
+     const QSize viewport = bodySize();
+     kobalt::diagnostic(
+             "reader-resize-text",
+@@ -1671,6 +1678,12 @@ void Reader::finishPreviewWrite(const QJsonObject &next, bool saved)
+     }
+     preferences = next;
+     appearanceEdit.clearError();
++    if (appearanceEdit.ready())
++        page->comicsMode = appearanceEdit.preview()
++                                   ->requestedAppearance()
++                                   .fields()
++                                   .value(appearance::comicsModeKey)
++                                   .toBool(false);
+     const QSize viewport = bodySize();
+     if (appearanceEdit.ready())
+         session->requestAppearance(appearanceEdit.preview()->requestedAppearance(), viewport);
+diff --git a/src/reading/appearance_settings.cpp b/src/reading/appearance_settings.cpp
+index 51e0c1fceefa8d799663653723b0d0f490fcaf14..5ad0e361cf2c696c8d30b8da3815795f869bcad9 100644
+--- a/src/reading/appearance_settings.cpp
++++ b/src/reading/appearance_settings.cpp
+@@ -100,6 +100,7 @@ QJsonObject globalPreferences(QJsonObject preferences)
+     preferences.remove("smooth_images");
+     preferences.remove("heavier_interface_text");
+     preferences.remove("native_hide_status_bar");
++    preferences.remove(comicsModeKey); // Per-book only.
+     preferences.remove("light_dark_mode_shortcut");
+     preferences.remove("columns");
+     preferences.remove("column_spacing");
+diff --git a/src/reading/opening_job.cpp b/src/reading/opening_job.cpp
+index 972fcecd973734825c7a35f6c6b77280a55a3c7f..3e2fd35a85e2a44051b6774d04fddcce8c3ba220 100644
+--- a/src/reading/opening_job.cpp
++++ b/src/reading/opening_job.cpp
+@@ -202,6 +202,7 @@ void inspectSource(OpeningJob &job, OpeningState &state)
+ void mergeSavedState(OpeningJob &job, OpeningState &state)
+ {
+     auto &saved = job.saved;
++    const bool comics = saved.value(appearance::comicsModeKey).toBool(false);
+     const auto bionic = saved.value("bold_reading");
+     const auto dark = saved.value("dark_mode");
+     appearance::migrateLegacyNotes(saved);
+@@ -219,6 +220,7 @@ void mergeSavedState(OpeningJob &job, OpeningState &state)
+     const auto widowsOrphans = saved.value("widows_orphans");
+     if (!state.savedMatches)
+         saved = {};
++    saved[appearance::comicsModeKey] = comics;
+     saved["bold_reading"] = bionic;
+     saved["dark_mode"] = dark;
+     saved["hide_nonlinear_fragments"] = hideNonlinear;
+diff --git a/src/reading/reader_session.cpp b/src/reading/reader_session.cpp
+index 782ea0bb20cca512f5a4848459c4ff0574fa151b..5176160aed0a2566e70147122151b8a75e1370ef 100644
+--- a/src/reading/reader_session.cpp
++++ b/src/reading/reader_session.cpp
+@@ -723,7 +723,7 @@ ReaderFrame capture(Engine &engine, const PositionCodec &positions, bool neighbo
+         step.start();
+     };
+     ReaderFrame result;
+-    result.image = engine.image(engine.page());
++    result.image = engine.frameImage();
+     result.formattingWarning = pageFormattingWarning(result.image);
+     took("image_ms");
+     result.markup = captureFrameMarkup(engine, markup, markupGeneration, result.image.cacheKey());
+diff --git a/tests/model/appearance_settings.cpp b/tests/model/appearance_settings.cpp
+index 27192396dde13a429f139caee658d60f2bf1c758..7bfa6dad10a74c33a9b3a958f767e4b9895999c1 100644
+--- a/tests/model/appearance_settings.cpp
++++ b/tests/model/appearance_settings.cpp
+@@ -1278,6 +1278,26 @@ int main()
+         appearance::migrateLegacyNotes(twice);
+         require(twice == normalized, "notes migration is idempotent");
+     }
++    {
++        const auto on = qt::object({ { appearance::comicsModeKey, true } });
++        const auto off = qt::object({ { appearance::comicsModeKey, false } });
++        require(!appearance::same(on, off), "comics mode must invalidate retained layout");
++        const auto requested = appearance::Requested::fromResolvedState(on);
++        require(requested.fields().value(appearance::comicsModeKey).toBool(), "requested mode lost");
++        require(!requested.edited(appearance::Patch(off)).fields()
++                         .value(appearance::comicsModeKey).toBool(true), "explicit false lost");
++        require(!appearance::globalPreferences(on).contains(appearance::comicsModeKey)
++                        && !appearance::bookDefaults(on).contains(appearance::comicsModeKey),
++                "per-book comics leaked to another book");
++        OpeningJob job;
++        job.saved = on;
++        job.saved["position"] = "old-source";
++        OpeningState state;
++        state.savedMatches = false;
++        mergeSavedState(job, state);
++        require(job.saved.value(appearance::comicsModeKey).toBool()
++                        && !job.saved.contains("position"), "content mismatch lost mode or kept old position");
++    }
+     std::puts("PASS: appearance keys, copy, comparison and typography defaults");
+     return 0;
+ }
+diff --git a/tests/model/comics_ui.cpp b/tests/model/comics_ui.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..69bccbec2ed04f9aae0096a411b56c789e9c88b2
+--- /dev/null
++++ b/tests/model/comics_ui.cpp
+@@ -0,0 +1,43 @@
++#include "check.h"
++#include "app/reader/views/reading_page.h"
++#include "app/reader/settings/appearance_panel.h"
++#include "ui/style/theme.h"
++#include <QApplication>
++#include <QVariant>
++#include <cstdio>
++
++using namespace kobalt;
++int main(int argc, char **argv)
++{
++    QApplication app(argc, argv);
++    ReadingPage page(nullptr, [] {});
++    page.resize(800, 600);
++    page.setPalette(ui::readerPalette(page.palette(), false));
++    page.chrome = headerfooter::presetLayout(headerfooter::Preset::Default);
++    page.chrome.headerEnabled = true;
++    page.chrome.footerEnabled = true;
++    page.chrome.progressBar = true;
++    const auto savedChrome = page.chrome;
++    page.comicsMode = true;
++    page.refreshContent();
++    require(page.topHeight() == 0 && page.bottomHeight() == 0
++                    && page.headerImage().isNull() && page.footerImage().isNull(),
++            "comics retained reading chrome or margins");
++    require(page.property("kobalt_graphics_refresh").toBool(), "graphics refresh property missing");
++    // A draft can turn off comics before the applied page is repainted.
++    page.comicsMode = false;
++    require(!page.headerImage().isNull() && !page.footerImage().isNull(),
++            "draft preview reused stale hidden chrome");
++    require(page.chrome.headerEnabled == savedChrome.headerEnabled
++                    && page.chrome.footerEnabled == savedChrome.footerEnabled
++                    && page.chrome.progressBar == savedChrome.progressBar,
++            "comics overwrote saved chrome");
++    page.refreshContent();
++    require(!page.property("kobalt_graphics_refresh").toBool(), "graphics policy leaked after exit");
++    reader::AppearanceSheet sheet(nullptr);
++    reader::AppearancePanel controls(sheet.controls(), {});
++    require(controls.comicsOption && controls.comicsOption->objectName() == "rrComicsReadingMode",
++            "comics setting missing from Layout controls");
++    require(!controls.comicsOption->isChecked(), "comics enabled globally by default");
++    std::puts("PASS: comics setting, chrome draft geometry and graphics refresh lifecycle");
++}
+diff --git a/tests/pewter/refresh_qt5.cpp b/tests/pewter/refresh_qt5.cpp
+index 68e5ad1c20a0575bfe470c93d104b1827db3a3e5..0b36bebc06ffcb908b3d5ac80eb37bd6c9cdc6ae 100644
+--- a/tests/pewter/refresh_qt5.cpp
++++ b/tests/pewter/refresh_qt5.cpp
+@@ -111,6 +111,18 @@ int main(int argc, char **argv)
+     *pixels = QImage(reader.size(), QImage::Format_RGB32);
+     pixels->fill(Qt::white);
+     store.endPaint();
++    setReaderRefreshWindow(&reader);
++    for (bool dark : {false, true}) {
++        reader.setProperty("reader_dark", dark);
++        reader.setProperty("kobalt_graphics_refresh", true);
++        pageRefresh(&reader, false, false);
++        require(reader.testAttribute(static_cast<Qt::WidgetAttribute>(131)),
++                "graphics mode did not select full-quality refresh policy");
++        reader.setProperty("kobalt_graphics_refresh", false);
++        pageRefresh(&reader, false, false);
++        require(!reader.testAttribute(static_cast<Qt::WidgetAttribute>(131)),
++                "graphics policy leaked into ordinary i.MX reading");
++    }
+     const QRect damage(10, 20, 280, 360);
+     for (bool legacy : { true, false })
+         for (bool dark : { false, true }) {

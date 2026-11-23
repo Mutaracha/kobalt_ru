@@ -48,21 +48,24 @@
       "status": "prepared",
       "scope": "First comics layer: effective geometry, bounded OPF center-page metadata, bitmap classification and ColumnView spread geometry; preserves beta10 chapter-start grouping",
       "path": "platforms/patch-series/patches/030-comics-layout.patch",
-      "sha256": "7095153f31e79326d6c6c09813e957a806e05950a0c25c123df246539cbaf8c7",
-      "validation": "Clean apply and Python series checks locally; native comics-layout/columns/chapter-parity and Qt5 CI pending. Engine/session/UI enablement follows in 031/032."
+      "sha256": "da80606259f94554c42c6806a37103e01e1fb4a9898ce0baa8a10c568cba0be1",
+      "validation": "Clean sequential apply and Python checks locally; native runtime/Qt5 package CI pending."
     },
     {
       "id": "031-comics-engine",
       "status": "prepared",
       "scope": "Engine rendering, source markers, visible image requests, preview/cache lifecycle and full synthetic comic fixtures",
       "path": "platforms/patch-series/patches/031-comics-engine.patch",
-      "sha256": "fab7970cf30626650fbde8270f3d6d9af14836fd37bb1cc05df3d30312bacc8d",
+      "sha256": "7e9d0f0c8e067b7fbd8b1e61b91cf9f4a3891fb840b2f63ffc4800fe0c110e14",
       "validation": "Clean sequential apply and Python checks locally; native runtime/Qt5 package CI pending."
     },
     {
       "id": "032-comics-integration-refresh",
-      "status": "planned",
-      "scope": "Comics appearance/session/UI wiring and graphics refresh; toolbar composition remains in 040"
+      "status": "prepared",
+      "scope": "Comics appearance/session/UI wiring and graphics refresh; toolbar composition remains in 040",
+      "path": "platforms/patch-series/patches/032-comics-integration-refresh.patch",
+      "sha256": "38893a695b4ca0549f758d2b8a65abc84de5fbdbd261ca878fcba5aa31ae0c72",
+      "validation": "Clean sequential apply and Python checks locally; native runtime/Qt5 package CI pending."
     },
     {
       "id": "040-reader-controls",

@@ -1269,6 +1269,19 @@ index 7c475482a229878985006c60d6a4999fa03deb5c..cce55f637cf388e683832caa8892ebab
                                                      "font_pixels",
                                                      "line_spacing",
                                                      "paragraph_spacing",
+diff --git a/tests/model/appearance_settings.cpp b/tests/model/appearance_settings.cpp
+index d02450faf44d0cca6c00f57da3dd60eef1f01b19..27192396dde13a429f139caee658d60f2bf1c758 100644
+--- a/tests/model/appearance_settings.cpp
++++ b/tests/model/appearance_settings.cpp
+@@ -557,7 +557,7 @@ int main()
+             "Dictionary UI preferences invalidated the book layout");
+     // Appearance settings decide the layout. The list must stay complete, because a
+     // missing key would let a retained layout survive a changed setting.
+-    require(appearance::keys.size() == 39, "The appearance keys changed without this check");
++    require(appearance::keys.size() == 40, "The appearance keys changed without this check");
+     require(appearance::bookDefaults({}).value("paragraph_indent").toInt() == -1,
+             "Paragraph indentation no longer defaults to Publisher");
+     for (int percent : { -1, 0, 100, 300 }) {
 diff --git a/tests/model/comics.cpp b/tests/model/comics.cpp
 new file mode 100644
 index 0000000000000000000000000000000000000000..1890ff55de2094d9be45537a406dd681cafae0cd

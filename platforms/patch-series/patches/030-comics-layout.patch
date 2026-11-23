@@ -472,7 +472,7 @@ index 0000000000000000000000000000000000000000..b7a88fe77ae31392eaba694a791fd485
 +} // namespace kobalt
 diff --git a/tests/model/comics_layout.cpp b/tests/model/comics_layout.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..d25010e45e73cc369e089194188ff0ab01fa1e45
+index 0000000000000000000000000000000000000000..331b0368dcdfcdaccbfba5ce66040ee8c10b8404
 --- /dev/null
 +++ b/tests/model/comics_layout.cpp
 @@ -0,0 +1,84 @@
@@ -502,8 +502,8 @@ index 0000000000000000000000000000000000000000..d25010e45e73cc369e089194188ff0ab
 +    require(test::writeBook(root.path(), "metadata.epub", files), "write OPF fixture");
 +    QFile file(root.filePath("metadata.epub"));
 +    require(file.open(QIODevice::ReadOnly), "read OPF fixture");
-+    const auto bytes = file.readAll();
-+    auto stream = LVCreateMemoryStream(bytes.constData(), bytes.size(), false, LVOM_READ);
++    auto bytes = file.readAll();
++    auto stream = LVCreateMemoryStream(bytes.data(), bytes.size(), false, LVOM_READ);
 +    const auto container = LVOpenArchieve(stream);
 +    require(!container.isNull(), "metadata archive");
 +    return singleComicPages(container);

@@ -74,8 +74,14 @@ class SeriesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='series-regression-', dir=build) as tmp:
             destination = Path(tmp)
             apply_to(ROOT, ROOT / 'platforms/patch-series/series.json', destination, ready_only=True)
-            self.assertEqual((destination / 'assets/ru.strings').read_bytes(),
-                             (ROOT / 'platforms/control-beta10/ru.strings').read_bytes())
+            # Later ordered patches may append new translated UI strings; the reviewed
+            # 010 overlay must remain intact, rather than suppressing those additions.
+            self.assertTrue((destination / 'assets/ru.strings').read_bytes().startswith(
+                            (ROOT / 'platforms/control-beta10/ru.strings').read_bytes()))
+            for language in ('en', 'ru'):
+                strings = (destination / f'assets/{language}.strings').read_text()
+                self.assertEqual(strings.count('"reader.comics_reading_mode" ='), 1)
+                self.assertEqual(strings.count('"reader.comics_reading_mode_description" ='), 1)
             self.assertTrue((destination / 'src/publication/fb2_resources.cpp').is_file())
             # The mixed RU/EN pattern is explicitly excluded from the full port.
             self.assertFalse((destination / 'assets/hyph/Russian_EnUS.pattern').exists())
@@ -94,6 +100,15 @@ class SeriesTests(unittest.TestCase):
             self.assertIn('void rebuildComicSpreads();', column_view)
             self.assertNotIn('Position restore(', column_view)
             self.assertTrue((destination / 'src/engine/blaze/adapter/reader_comics.cpp').is_file())
+            shared_buffer = (destination / 'src/engine/blaze/adapter/page_draw_buffer.h').read_text()
+            self.assertIn('_rowsize = image.bytesPerLine();', shared_buffer)
+            self.assertIn('OnTableDrawn()', shared_buffer)
+            self.assertIn('frameImage()', (destination / 'src/reading/reader_session.cpp').read_text())
+            refresh = (destination / 'platforms/kobo/nickel-qt5/refresh.cpp').read_text()
+            self.assertIn('clean || graphics ? repairPolicy(dark) : ordinaryPolicy(dark)', refresh)
+            self.assertNotIn('rrComicsToggle',
+                             (destination / 'src/app/reader/window/reader_build.cpp').read_text())
+
 
             self.assertIn('appearance::migrateLegacyNotes(saved);',
                           (destination / 'src/reading/opening_job.cpp').read_text())
@@ -113,7 +128,7 @@ class SeriesTests(unittest.TestCase):
         result = subprocess.run(['bash', '-n'], input=script, text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('--no-tests=error', script)
-        self.assertIn('build/prepared-prefix/build/kobo-qt5/Kobalt-qt5.zip', workflow)
+        self.assertIn('build/prepared-prefix/build/kobo-qt5/Kobalt-qt5-diagnostic.zip', workflow)
         self.assertIn('name: Beta10-series-prefix-qt5', workflow)
         self.assertIn('test-only-prefix-not-full-fork', workflow)
 

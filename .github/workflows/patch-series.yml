@@ -81,16 +81,17 @@ jobs:
               if [[ "$SDK" == linux ]]; then
                 cd platforms/desktop
                 cmake --preset linux -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
-                cmake --build --preset linux --parallel 4 --target kobalt-local-resources-tests kobalt-zip-resource-tests kobalt-plain-archive-tests kobalt-fb2-engine-tests kobalt-nickel-book-menu-tests kobalt-appearance-settings-tests kobalt-comics-layout-tests kobalt-comics-tests kobalt-resource-cache-tests kobalt-columns-tests kobalt-chapter-parity-tests
+                cmake --build --preset linux --parallel 4 --target kobalt-local-resources-tests kobalt-zip-resource-tests kobalt-plain-archive-tests kobalt-fb2-engine-tests kobalt-nickel-book-menu-tests kobalt-appearance-settings-tests kobalt-comics-layout-tests kobalt-comics-tests kobalt-resource-cache-tests kobalt-comics-ui-tests kobalt-columns-tests kobalt-chapter-parity-tests
                 for test in local-resources zip-resource plain-archive fb2-engine; do
                   QT_QPA_PLATFORM=offscreen "/work/build/desktop-linux/kobalt-$test-tests"
                 done
-                QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^((model|platform)\.(nickel-book-menu|appearance-settings|resource-cache)|engine\.(comics-layout|comics|columns|chapter-parity))$"
+                QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^((model|platform)\.(nickel-book-menu|appearance-settings|resource-cache)|engine\.(comics-layout|comics|columns|chapter-parity)|component\.comics-ui)$"
               else
                 cd platforms/kobo
-                cmake --preset qt5 -DKOBALT_COMMIT=1796a32 -DKOBALT_COMMIT_MODIFIED=ON -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
+                cmake --preset qt5 -DKOBALT_COMMIT=1796a32 -DKOBALT_COMMIT_MODIFIED=ON -DKOBALT_VERBOSE_DIAGNOSTICS=ON -DKOBALT_BUILD_TESTS=ON -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
                 cmake --build --preset qt5 --parallel 4
-                cmake --build --preset qt5 --target check-package
+                cmake --build --preset qt5 --target check-package kobalt-qt5-refresh-tests
+                ctest --test-dir /work/build/kobo-qt5 --output-on-failure --no-tests=error -R "^pewter[.]qt5-refresh$"
               fi
             ' 2>&1 | tee "$log"
           result=${PIPESTATUS[0]}
@@ -106,7 +107,7 @@ jobs:
         if: matrix.sdk == 'qt5'
         run: |
           mkdir -p build/prefix-device-artifact
-          cp build/prepared-prefix/build/kobo-qt5/Kobalt-qt5.zip build/prefix-device-artifact/Beta10-series-prefix-qt5.zip
+          cp build/prepared-prefix/build/kobo-qt5/Kobalt-qt5-diagnostic.zip build/prefix-device-artifact/Beta10-series-prefix-qt5.zip
           cp build/applied-prefix.json build/prefix-device-artifact/applied-prefix.json
           printf '%s\n' "$GITHUB_SHA" > build/prefix-device-artifact/source-commit.txt
           cp platforms/patch-series/DEVICE-TEST.md build/prefix-device-artifact/README.md
