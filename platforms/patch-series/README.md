@@ -23,9 +23,9 @@
 | 021 | FB2 raw resources: stream/lease/cancellation | Native + Qt5 CI PASS |
 | 022 | FB2 engine: raw/resource input, CSS/семантика, preview, cache | Native + Qt5/package CI PASS; устройство ещё не принято |
 | 023 | Kobo raw-FB2 routing Qt5/Qt6, миграция настройки примечаний | Native + Qt5/package CI PASS; устройство ещё не принято |
-| 030 | Комиксы: effective geometry, OPF center metadata, ColumnView spread geometry | Подготовлен; CI ожидается, пользовательский режим ещё не включён |
-| 031 | Комиксы: EngineDocument/source/render/cache/preview и synthetic fixtures | План |
-| 032 | Комиксы: appearance/session/UI и graphics refresh | План |
+| 030 | Комиксы: effective geometry, OPF center metadata, ColumnView spread geometry | Native + Qt5/package/qemu refresh CI PASS |
+| 031 | Комиксы: EngineDocument/source/render/cache/preview и synthetic fixtures | Native + Qt5 CI PASS |
+| 032 | Комиксы: appearance/session/UI и graphics refresh | Native/UI + Qt5/package/qemu refresh CI PASS |
 | 040 | Согласованные reader toolbar/навигация/presentation; только отсутствующее upstream | План |
 | 050 | Оставшиеся согласованные About/brand/UI/annotations/locale hooks | План; не дублировать 010 |
 | 060 | Итоговые CI/package/provenance для полной серии | План |
@@ -60,7 +60,7 @@ Upstream invert-swipes сначала сравнить с форком: сохр
 python3 platforms/patch-series/apply.py --output build/full-beta10-stack
 ```
 
-Сейчас команда **намеренно отказывает**: 010–023 проверены в CI, но 030–060 ещё не адаптированы. Это защита
+Сейчас команда **намеренно отказывает**: 010–032 проверены в CI, но 040–060 ещё не адаптированы. Это защита
 от выдачи незавершённого export за готовый полный форк. После готовности всей серии
 будет создаваться новый export из git archive закреплённого upstream. Перед каждым
 патчем выполняется apply --check, промежуточный каталог временный; существующий
@@ -103,8 +103,7 @@ beta10 ZIP64 directory reader вместо восстановления стар
 022 добавляет raw/resource engine path и форматные стили, но не полные platform inputs.
 023 добавляет Kobo raw-FB2 routing и миграцию настройки сносок.
 FB2.ZIP не входит в перенос: ранее формат не поддерживался и не отображается в системной библиотеке.
-Пункт 024 удалён как ошибочное расширение объёма работ. Следующие патчи — 030–060,
-после проверок FB2. Разделение FB2 на
+Пункт 024 удалён как ошибочное расширение объёма работ. 030–032 также перенесены и проверены в CI; следующие патчи — 040–060. Разделение FB2 на
 020–023 отражает порядок переноса слоёв, а не независимые пользовательские модули.
 См. [текущий отчёт](../../doc/reports/patch-series/fb2-publication-resources.md).
 Проверки включают обычный EPUB. Финальная приёмка — полная серия + native/Qt5
@@ -135,3 +134,9 @@ Workflow `Ordered patch series` теперь сохраняет проверен
 тестовый prefix package ещё не публиковался; не подменять его legacy-пакетом.
 
 [030 — выполненный первый слой комиксов и границы 031/032](../../doc/reports/patch-series/comics-layout.md).
+
+[031/032: реализованный объём, тесты и CI](../../doc/reports/patch-series/comics-engine-integration.md).
+
+Проверенный пакет с FB2 и comics Layout setting: [CI 45278312375](https://github.com/Mutaracha/kobalt_ru/actions/runs/45278312375),
+артефакт `Beta10-series-prefix-qt5`, исходный коммит `08c66e4d`. Это prefix 010–032,
+не legacy package и пока не полный форк. Toolbar из 040 ещё отсутствует.

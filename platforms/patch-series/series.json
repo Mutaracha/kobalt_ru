@@ -45,27 +45,27 @@
     },
     {
       "id": "030-comics-layout",
-      "status": "prepared",
+      "status": "ready",
       "scope": "First comics layer: effective geometry, bounded OPF center-page metadata, bitmap classification and ColumnView spread geometry; preserves beta10 chapter-start grouping",
       "path": "platforms/patch-series/patches/030-comics-layout.patch",
       "sha256": "da80606259f94554c42c6806a37103e01e1fb4a9898ce0baa8a10c568cba0be1",
-      "validation": "Clean sequential apply and Python checks locally; native runtime/Qt5 package CI pending."
+      "validation": "CI 45278312375 on 08c66e4d: native FB2/comics/layout/UI/resources/appearance/columns/chapter-parity tests PASS; Qt5 build/check-package and qemu pewter.qt5-refresh PASS. Beta10-series-prefix-qt5 artifact published. Physical device and Qt6 firmware/Android acceptance pending."
     },
     {
       "id": "031-comics-engine",
-      "status": "prepared",
+      "status": "ready",
       "scope": "Engine rendering, source markers, visible image requests, preview/cache lifecycle and full synthetic comic fixtures",
       "path": "platforms/patch-series/patches/031-comics-engine.patch",
       "sha256": "7e9d0f0c8e067b7fbd8b1e61b91cf9f4a3891fb840b2f63ffc4800fe0c110e14",
-      "validation": "Clean sequential apply and Python checks locally; native runtime/Qt5 package CI pending."
+      "validation": "CI 45278312375 on 08c66e4d: native FB2/comics/layout/UI/resources/appearance/columns/chapter-parity tests PASS; Qt5 build/check-package and qemu pewter.qt5-refresh PASS. Beta10-series-prefix-qt5 artifact published. Physical device and Qt6 firmware/Android acceptance pending."
     },
     {
       "id": "032-comics-integration-refresh",
-      "status": "prepared",
+      "status": "ready",
       "scope": "Comics appearance/session/UI wiring and graphics refresh; toolbar composition remains in 040",
       "path": "platforms/patch-series/patches/032-comics-integration-refresh.patch",
       "sha256": "48d220afe45d76d52dc84d661a8babcefcfbf49b9189eb0d23144cce0f818836",
-      "validation": "Clean sequential apply and Python checks locally; native runtime/Qt5 package CI pending."
+      "validation": "CI 45278312375 on 08c66e4d: native FB2/comics/layout/UI/resources/appearance/columns/chapter-parity tests PASS; Qt5 build/check-package and qemu pewter.qt5-refresh PASS. Beta10-series-prefix-qt5 artifact published. Physical device and Qt6 firmware/Android acceptance pending."
     },
     {
       "id": "040-reader-controls",

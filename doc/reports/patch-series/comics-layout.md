@@ -1,6 +1,7 @@
 # 030 — первый слой комиксов поверх 010–023
 
-Статус: prepared, native/Qt5 CI ещё не принят. **Это не включённый пользовательский режим комиксов.**
+Статус: ready по CI 45278312375 (08c66e4d). Сам по себе 030 — слой геометрии;
+пользовательский режим подключён следующими 031/032, проверенными в том же CI.
 
 ## Реальный патч
 
@@ -37,3 +38,10 @@ OPF/layout unit test не заменяет pixel/RTL/anchor/spread runtime tests
 Это зависимые последовательные слои одного полного стека, не автономные пользовательские
 модули. Hybrid/opening acceleration и устаревший Libra2 mapping не возвращаются.
 Russian_EnUS.pattern остаётся исключённым.
+
+
+## Завершение группы 030–032
+
+CI 45278312375: prefix application, native comics/layout/UI/resources/appearance,
+обычные columns/chapter-parity, Qt5 build/package и qemu refresh PASS.
+[Объём 031/032 и аппаратные ограничения](comics-engine-integration.md).
