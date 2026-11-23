@@ -84,3 +84,13 @@ INDEX_FILE/COMMON_DIR не используются. Regression test прове�
 После native/Qt5 результатов исправить обнаруженные проблемы и продолжить 022
 поверх этих двух патчей. Не выносить общие helpers в отдельные библиотеки ради
 автономности: применять единую последовательность, совместно проверять полный стек.
+
+## Последующий результат CI
+
+[Ordered patch series 45259254139](https://github.com/Mutaracha/kobalt_ru/actions/runs/45259254139),
+source `92a8a766`: check-ready-prefix, compile-prepared-prefix (linux) и
+compile-prepared-prefix (qt5) — **SUCCESS**. Native local-resources/zip-resource/
+plain-archive выполнены; Qt5 compilation/check-package прошли. Поэтому 020/021
+повышены до ready на уровне этих слоёв. Это не проверка более позднего 022 и не
+приёмка полного FB2 на устройстве. Ранее написанные pending/«пока отсутствует 022»
+выше описывают состояние на момент подготовки 020/021, а не текущую серию.

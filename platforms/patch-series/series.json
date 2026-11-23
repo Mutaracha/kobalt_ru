@@ -13,24 +13,32 @@
     },
     {
       "id": "020-fb2-publication",
-      "status": "prepared",
+      "status": "ready",
       "path": "platforms/patch-series/patches/020-fb2-publication.patch",
       "sha256": "7b23b0686c30ae8350c5929aaf25f173e2c54eae2e47477d7a3ca27d28511ffb",
       "scope": "FB2 recognition and inspection, preserving original beta10 ZIP64; first part of FB2, not complete reader support",
-      "validation": "clean-apply-and-string-checks; native-and-Qt5-pending"
+      "validation": "CI 45259254139: native local-resources/zip-resource/plain-archive and Qt5 build/check-package PASS; full-format/device acceptance pending"
     },
     {
       "id": "021-fb2-resources",
-      "status": "prepared",
+      "status": "ready",
       "path": "platforms/patch-series/patches/021-fb2-resources.patch",
       "sha256": "22326310d21cf60731f1aac14d96c4cf2a16014a8986c982616d84074cb4ecbb",
       "scope": "Raw FB2 streaming through local resources, cancellation/revocation and ZIP name collision regression checks",
-      "validation": "clean-apply-and-string-checks; native-and-Qt5-pending"
+      "validation": "CI 45259254139: native local-resources/zip-resource/plain-archive and Qt5 build/check-package PASS; full-format/device acceptance pending"
     },
     {
-      "id": "022-fb2-engine-inputs",
+      "id": "022-fb2-engine",
+      "status": "prepared",
+      "path": "platforms/patch-series/patches/022-fb2-engine.patch",
+      "sha256": "b0e4042a39988fad2e9d6fac57339fffcf5b45af007dba7926b012231348c72f",
+      "scope": "Raw FB2 engine/resource inputs, format stylesheet/semantics, preview and parsed-cache lifecycle; preserves beta10 ZIP64 and chapter-spread behavior",
+      "validation": "clean apply and structural checks; new native/Qt5 CI pending"
+    },
+    {
+      "id": "023-fb2-platform-inputs",
       "status": "planned",
-      "scope": "Remaining FB2 engine, metadata/cover, styles/footnotes and desktop/Kobo/Android opening inputs; full-format acceptance remains pending"
+      "scope": "Remaining FB2.ZIP, metadata/library/platform opening inputs and note-setting migration; full-format/device acceptance remains pending"
     },
     {
       "id": "030-comics",

@@ -19,9 +19,10 @@
 | № | Содержание | Состояние |
 |---|---|---|
 | 010 | RU, уже включённые шрифты/локальное отображение/тест RU/EN | Патч существует, чистое применение проверено |
-| 020 | FB2 publication: распознавание, inspection, fingerprint | Патч подготовлен; native/Qt5 CI ожидается |
-| 021 | FB2 raw resources: stream/lease/cancellation | Патч подготовлен; native/Qt5 CI ожидается |
-| 022 | Остальные FB2 engine/input/metadata/cover/стили/сноски | План; полноценный FB2 ещё не перенесён |
+| 020 | FB2 publication: распознавание, inspection, fingerprint | Native + Qt5 CI PASS |
+| 021 | FB2 raw resources: stream/lease/cancellation | Native + Qt5 CI PASS |
+| 022 | FB2 engine: raw/resource input, CSS/семантика, preview, cache | Подготовлен, новая CI-проверка ожидается |
+| 023 | FB2.ZIP, library/platform inputs, настройки примечаний | План; полноценный платформенный FB2 ещё не перенесён |
 | 030 | Комиксы: изображения, layout, settings/session и graphics refresh | План |
 | 040 | Согласованные reader toolbar/навигация/presentation; только отсутствующее upstream | План |
 | 050 | Оставшиеся согласованные About/brand/UI/annotations/locale hooks | План; не дублировать 010 |
@@ -57,7 +58,7 @@ Upstream invert-swipes сначала сравнить с форком: сохр
 python3 platforms/patch-series/apply.py --output build/full-beta10-stack
 ```
 
-Сейчас команда **намеренно отказывает**: 020/021 имеют статус `prepared`, а 022–060 ещё не адаптированы. Это защита
+Сейчас команда **намеренно отказывает**: 022 имеет статус `prepared`, а 023–060 ещё не адаптированы. Это защита
 от выдачи незавершённого export за готовый полный форк. После готовности всей серии
 будет создаваться новый export из git archive закреплённого upstream. Перед каждым
 патчем выполняется apply --check, промежуточный каталог временный; существующий
@@ -97,8 +98,11 @@ hunks**. `also_touched_by_010_ru` предупреждает о пересече
 
 020/021 уже адаптированы поверх **результата 010**. В частности, сохранён новый
 beta10 ZIP64 directory reader вместо восстановления старого 32-bit ZIP parser.
-Следующий этап — 022: engine и platform inputs, затем 030–060. Разделение FB2 на
-020–022 отражает порядок переноса слоёв, а не независимые пользовательские модули.
+022 добавляет raw/resource engine path и форматные стили, но не полные platform inputs.
+Следующий этап — 023: FB2.ZIP, библиотека/платформы, затем 030–060. Разделение FB2 на
+020–023 отражает порядок переноса слоёв, а не независимые пользовательские модули.
 См. [текущий отчёт](../../doc/reports/patch-series/fb2-publication-resources.md).
 Проверки включают обычный EPUB. Финальная приёмка — полная серия + native/Qt5
 package + устройство; Qt6/Android, если не проверены, отдельно помечаются.
+
+[Адаптация движка 022 и её границы](../../doc/reports/patch-series/fb2-engine.md).

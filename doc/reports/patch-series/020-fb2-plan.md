@@ -1,7 +1,7 @@
 # 020 — FB2 поверх beta10 + 010-ru
 
-Статус: **020-publication и 021-resources подготовлены; 022-engine-inputs ещё не перенесён**.
-Полная поддержка FB2, FB2.ZIP, metadata/cover и платформенных открытий ещё не готова.
+Статус: **020-publication/021-resources прошли CI; 022-engine подготовлен; 023-platform-inputs впереди**.
+Полная платформенная поддержка FB2/FB2.ZIP ещё не готова. Metadata/cover через raw engine проверяются в 022.
 [Отчёт по выполненной части](fb2-publication-resources.md).
 
 ## Порядок работы с кодом
@@ -43,3 +43,5 @@
   links/publisher_markup/fallback_styles/beautifier и desktop интеграцию.
 - Native + Qt5 compile/package; затем полный стек и пользовательское устройство.
   Успешное apply не заменяет ни сборку, ни проверку платформ.
+
+[Детали выполненной части 022](fb2-engine.md).

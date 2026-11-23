@@ -72,8 +72,8 @@ jobs:
               if [[ "$SDK" == linux ]]; then
                 cd platforms/desktop
                 cmake --preset linux -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
-                cmake --build --preset linux --parallel 4 --target kobalt-local-resources-tests kobalt-zip-resource-tests kobalt-plain-archive-tests
-                for test in local-resources zip-resource plain-archive; do
+                cmake --build --preset linux --parallel 4 --target kobalt-local-resources-tests kobalt-zip-resource-tests kobalt-plain-archive-tests kobalt-fb2-engine-tests
+                for test in local-resources zip-resource plain-archive fb2-engine; do
                   QT_QPA_PLATFORM=offscreen "/work/build/desktop-linux/kobalt-$test-tests"
                 done
               else
