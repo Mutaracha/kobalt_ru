@@ -111,3 +111,22 @@ lookup/assertion corrections; `[native-only]` commits skip that job.
 Those earlier failed runs are not passes and are not device evidence. The final
 native PASS above is after these harness corrections, with the actual runtime
 ink-box/fitting/statistics code unchanged from the packaged revision.
+
+## Повторные снимки устройства и уточнение подписи
+
+Получены 11 повторных снимков; оригиналы сохранены в
+`test & diagnostic/control-beta10-round2/`. Они документируют проверку
+подписей «РАСКЛАДКА»/«ОТЛАДКА», уменьшенных цифр статистики, переноса
+подписи инверсии и превью сна. Это не безусловная пользовательская приёмка
+размера 80%. Полноэкранный сон технически невозможно снять; пользователь
+сообщает, что он выглядит так же, как превью. Это сообщение пользователя,
+не прямое полноэкранное растровое доказательство; повторно снимки не требуются.
+
+По прямому согласованию заменена только строка `buttons.invert_landscape`:
+«Инвертировать кнопки в альбомной ориентации.» Перенос RU `wrapLabel`
+сохранён, включая маленькие экраны. EN и геометрия не менялись.
+Manifest обновлён; все 36 хешей export, проверка ключей/аргументов/ссылок
+и strings generation/rebuild (Ninja) PASS. Первая попытка strings fixture
+с Makefiles дала известный timestamp-dependent сбой; отдельный Ninja scratch
+прошёл. Новый пакет Qt5 для этой строки пока не собран; прежние ссылки на
+пакет относятся к прежней длинной подписи.

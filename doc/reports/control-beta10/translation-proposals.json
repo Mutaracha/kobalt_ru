@@ -112,7 +112,7 @@
     {
       "key": "buttons.invert_landscape",
       "en": "Invert page buttons in landscape",
-      "proposed_ru": "Инвертировать кнопки перелистывания в альбомной ориентации",
+      "proposed_ru": "Инвертировать кнопки в альбомной ориентации.",
       "reason": "missing"
     },
     {

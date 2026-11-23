@@ -23,7 +23,7 @@ EN взят из upstream 1796a32. `%N` сохранены; CLDR/полная я
 | bookmarks.numbered_entry | Bookmark %1 | Закладка %1 |
 | bookmarks.pin_title | Pin Bookmark | Закрепить закладку |
 | bookmarks.remove_screen_detail | Screen %1 · %2 | Экран %1 · %2 |
-| buttons.invert_landscape | Invert page buttons in landscape | Инвертировать кнопки перелистывания в альбомной ориентации |
+| buttons.invert_landscape | Invert page buttons in landscape | Инвертировать кнопки в альбомной ориентации. |
 | buttons.invert_landscape_hint | Turn this on if the buttons are reversed when you hold your device sideways. | Включите, если при повороте устройства набок кнопки работают наоборот. |
 | chapter_contents.additional_actions | Additional actions | Дополнительные действия |
 | chapter_contents.both | Start and end | Начало и конец |

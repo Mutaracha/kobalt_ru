@@ -932,3 +932,11 @@ native14768081201. [Текущая дельта](doc/reports/beta9-delta-current
 Ранее pending записи этого checkpoint superseded. Device/Qt6/Android pending;
 полный implementation gate остаётся OPEN (quiet/preload, Debug/status/percentage
 Settings/header-footer consumers и semantic review mixed hunks).
+
+### Повторная проверка beta10 RU
+
+Сохранены 11 повторных снимков устройства в `test & diagnostic/control-beta10-round2/`.
+Согласованная короткая подпись инверсии применена, перенос сохранён.
+Export hashes/locale validation/strings Ninja PASS; новый Qt5 пакет не собран.
+Полноэкранный сон — пользовательское визуальное сравнение с превью,
+не снимок. Подробности: `doc/reports/control-beta10/screenshot-review.md`.

@@ -7912,7 +7912,7 @@ index 00000000..8013379f
 +
 diff --git a/assets/ru.strings b/assets/ru.strings
 new file mode 100644
-index 00000000..4ad6974a
+index 00000000..15a1637c
 --- /dev/null
 +++ b/assets/ru.strings
 @@ -0,0 +1,1809 @@
@@ -8238,7 +8238,7 @@ index 00000000..4ad6974a
 +"bookmarks.unpin" = "Открепить закладку";
 +"buttons.description" = "Выберите действие каждой кнопки перелистывания при чтении.";
 +"buttons.hardware_title" = "Физические кнопки";
-+"buttons.invert_landscape" = "Инвертировать кнопки перелистывания в альбомной ориентации";
++"buttons.invert_landscape" = "Инвертировать кнопки в альбомной ориентации.";
 +"buttons.invert_landscape_hint" = "Включите, если при повороте устройства набок кнопки работают наоборот.";
 +"buttons.lower" = "Нижняя кнопка";
 +"buttons.navigation_hint" = "В меню, списках и предпросмотре страниц кнопки сохраняют обычные направления.";
