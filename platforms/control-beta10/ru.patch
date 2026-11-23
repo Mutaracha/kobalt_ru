@@ -10701,10 +10701,10 @@ index dca6151c..dd104d00 100644
          if (family.isEmpty())
 diff --git a/tests/model/ru_control_ui.cpp b/tests/model/ru_control_ui.cpp
 new file mode 100644
-index 00000000..4299212b
+index 00000000..643c5295
 --- /dev/null
 +++ b/tests/model/ru_control_ui.cpp
-@@ -0,0 +1,134 @@
+@@ -0,0 +1,135 @@
 +#include "check.h"
 +#include "reader_inputs.h"
 +#include "support/percentage_text.h"
@@ -10814,7 +10814,8 @@ index 00000000..4299212b
 +        host.resize(1180, 1568);
 +        reader::SettingsPanel settings(&host, {});
 +        settings.showButtonControls(pageButtons::paging(), {}, {});
-+        const auto *invert = host.findChild<ui::DescribedOption *>("rrInvertLandscapeButtons");
++        const auto *invert = dynamic_cast<ui::DescribedOption *>(
++                host.findChild<QCheckBox *>("rrInvertLandscapeButtons"));
 +        require(invert && invert->presentation().wrapLabel == (language == strings::Locale::Russian),
 +                "Hardware inversion title wrapping did not follow the UI locale");
 +    }

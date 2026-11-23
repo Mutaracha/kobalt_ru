@@ -81,3 +81,10 @@ one-line test comment; this is test integration, not evidence of a passing test.
 Blob log downloads are blocked in Arena; the workflow now exposes a single
 multiline failure-tail annotation via the GitHub API. First per-line annotation
 attempt was truncated by GitHub's annotation limit. New native/Qt5 checks pending.
+
+Qt5 compile/link/check-package on 9228e406: PASS (CI45238612205).
+Native compile reached the new test, not an application failure. Corrected its
+QObject lookup: DescribedOption has no Q_OBJECT, so use findChild<QCheckBox*>()
+then dynamic_cast, not Qt's findChild<DescribedOption*>(). Native rerun pending.
+Failure-tail annotation bounded to 18×200 characters to fit GitHub's 4 KB limit.
+No application changes in this test-harness correction; Qt5 package is reused.

@@ -74,7 +74,7 @@ jobs:
           set -e
           if [[ "$result" != 0 ]]; then
             # Annotations stay readable via GitHub API when blob log downloads are blocked.
-            message=$(tail -n 55 "$log")
+            message=$(tail -n 18 "$log" | cut -c 1-200)
             message=${message//'%'/'%25'}
             message=${message//$'\n'/'%0A'}
             echo "::error::$message"
