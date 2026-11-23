@@ -381,6 +381,49 @@ int main(int argc, char **argv)
     }
 
     {
+        // Settings rail uses Button's stacked icon path, not BottomNavigation.
+        using namespace kobalt::ui;
+        const int previousDensity = density();
+        for (int ppi : {212, 300}) {
+            setDensity(ppi);
+            for (bool selected : {false, true}) {
+                Button tab;
+                tab.setText(QString::fromUtf8("ОТЛАДКА"));
+                tab.setFont(interfaceFont(metrics::chrome::tabText));
+                tab.setCheckable(true);
+                tab.setChecked(selected);
+                tab.setIconAboveLabel(true);
+                tab.setIconLabelGap(metrics::chrome::tabGap);
+                tab.setIconSize(QSize(metrics::chrome::tabIcon, metrics::chrome::tabIcon));
+                buttonIcon(&tab, ControlIcon::Debug);
+                readerStyle(&tab, styles::tab(false));
+                tab.resize(px(250), metrics::chrome::railRowHeight);
+                tab.ensurePolished();
+                const auto commonInk = interfaceInkBounds(QStringLiteral("H"), tab.font());
+                const auto ink = interfaceInkBounds(tab.text(), tab.font());
+                const int iconTop = (tab.height() - tab.iconSize().height()
+                                     - metrics::chrome::tabGap - commonInk.height()) / 2;
+                const int top = iconTop + tab.iconSize().height() + metrics::chrome::tabGap
+                        + ink.top() - commonInk.top();
+                const auto actual = tab.grab().toImage().convertToFormat(QImage::Format_RGB32);
+                const auto actual = tab.grab().toImage().convertToFormat(QImage::Format_RGB32);
+                // Count painted rows, so a metric-only assertion cannot miss clipping.
+                int first = -1, last = -1;
+                const QRgb paper = actual.pixel(actual.width()/2, top - 1);
+                for (int y = top; y < top + ink.height(); ++y)
+                    for (int x = px(3); x < actual.width() - px(3); ++x)
+                        if (actual.pixel(x,y) != paper) {
+                            if (first < 0) first = y;
+                            last = y;
+                            break;
+                        }
+                require(first >= 0 && last - first + 1 == ink.height(),
+                        "Settings Debug rail label clips Cyrillic ink");
+            }
+        }
+        setDensity(previousDensity);
+    }
+    {
         // The two Russian labels containing Д need more ink height than H.
         // Render actual tabs and compare the label's rows to unclipped glyphs.
         using namespace kobalt::ui;

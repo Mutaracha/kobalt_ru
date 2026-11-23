@@ -1,3 +1,14 @@
+## Текущая проверка Debug rail / языка
+
+Исправление Cyrillic ink box для stacked icon Button (боковая вкладка Debug),
+с raster-проверкой 212/300 PPI и selected/unselected. Это не первая action row.
+Диагностика2 из c7592dc8: после Settings13:48:49 GUI thread продолжает получать
+TouchBegin/End и MousePress/Release до sleep13:49:23.705, wake13:49:25.058;
+повторный Settings13:49:39.704. Нет событий открытия/закрытия language modal в
+старом binary: нельзя доказать stuck modal или I/O deadlock. Добавлены только
+точечные show/dismiss/write-start/write-end events; механизм chooser не изменён.
+CI нового runtime pending. Нужна device-проверка надписи, зависание не закрыто.
+
 ## Текущее упрощение retained delta
 
 По указанию пользователя: upstream beta9 dark/i.MX animation eligibility и BOOX

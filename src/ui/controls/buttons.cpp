@@ -95,14 +95,20 @@ void Button::paintEvent(QPaintEvent *)
             if (iconAboveLabel) {
                 // Capitals' height is the label's ink, so the icon and that
                 // ink centre as one group, as in the bottom tabs.
-                const int capital = interfaceInkBounds(QStringLiteral("H"), font()).height();
+                const auto commonInk = interfaceInkBounds(QStringLiteral("H"), font());
+                const auto labelInk = interfaceInkBounds(text(), font());
+                const int capital = commonInk.height();
                 const int top = (height() - iconSize().height() - gap - capital) / 2;
                 const QRect area((width() - iconSize().width()) / 2, top, iconSize().width(),
                                  iconSize().height());
                 icon().paint(&painter, area, Qt::AlignCenter,
                              isEnabled() ? QIcon::Normal : QIcon::Disabled,
                              (iconShowsStateWithoutFill() ? isChecked() : active) ? QIcon::On : QIcon::Off);
-                drawOpticalText(painter, QRect(0, area.bottom() + 1 + gap, width(), capital),
+                // Keep the common baseline, but give Cyrillic descenders and
+                // accents their full ink box (the private renderer clips to it).
+                drawOpticalText(painter,
+                                QRect(0, area.bottom() + 1 + gap + labelInk.top() - commonInk.top(),
+                                      width(), labelInk.height()),
                                 text(), true);
                 return;
             }

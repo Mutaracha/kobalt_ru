@@ -4,6 +4,7 @@
 #include "ui/style/metrics.h"
 #include "support/debug_language.h"
 #include "support/strings.h"
+#include "support/diagnostics.h"
 #include <QApplication>
 #include <QPointer>
 #include <QPushButton>
@@ -63,6 +64,7 @@ private:
         // action layout must measure its text/padding at the current scale.
         card->adaptiveActions({ cancel });
         const auto dismiss = [this, popup] {
+            diagnostic("debug-language-dialog", { { "phase", "dismiss" } });
             popup->hide();
             popup->deleteLater();
             dialog.clear();
@@ -70,6 +72,7 @@ private:
         connect(cancel, &QPushButton::clicked, this, dismiss);
         popup->dismissed = dismiss;
         choices->chosen = [this, choices, message, popup, cancel](int index) {
+            diagnostic("debug-language-dialog", { { "phase", "write-start" } });
             choices->setEnabled(false);
             cancel->setEnabled(false);
             popup->dismissed = {}; // Do not submit another choice until this write completes.
@@ -78,6 +81,8 @@ private:
                                              : DebugLanguage::Automatic;
             writeDebugLanguageAsync(
                     directory, language, this, [this, choices, message, popup, cancel](bool saved) {
+                        diagnostic("debug-language-dialog",
+                                   { { "phase", "write-end" }, { "saved", saved } });
                         if (!dialog || dialog != popup)
                             return;
                         message->setText(strings::get(saved ? "debug.language_saved"
@@ -87,6 +92,7 @@ private:
                         cancel->setText(strings::get("common.ok"));
                         cancel->setEnabled(true);
                         popup->dismissed = [this, popup] {
+                            diagnostic("debug-language-dialog", { { "phase", "dismiss" } });
                             popup->hide();
                             popup->deleteLater();
                             dialog.clear();
@@ -98,6 +104,7 @@ private:
         popup->show();
         popup->raise();
         popup->setFocus();
+        diagnostic("debug-language-dialog", { { "phase", "show" } });
     }
 
     QPushButton *button;
