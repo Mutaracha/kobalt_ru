@@ -18,4 +18,10 @@ Native C++ runtime tests, Qt5 compilation/package and device behavior remain pen
 
 ## Remaining FB2 scope
 
-024-fb2-archive-library is explicitly planned before comics: FB2.ZIP recognition/resource selection and library/metadata/desktop/Android input audit. Old fork library sources had no independent changes; this does not by itself establish full-format acceptance. Do not label raw-FB2 routing as compressed FB2 support. No opening acceleration, Hybrid fix, comics or device key mapping is included here.
+FB2.ZIP is out of scope, not an unported fork feature: the old fork did not support it through the system library. The planned 024 archive stage was an erroneous scope expansion and has been removed. No system-library workaround or new archive format support is requested. Desktop/Android integration and device behavior still require verification, not a new archive implementation. No opening acceleration, Hybrid fix, comics or device key mapping is included here.
+
+## CI repair
+
+CI 45267840438 failed before compilation in both SDK jobs: single quotes around the new ctest regex prematurely closed the Docker shell argument. Use double quotes inside that argument. Test selection also includes the actual `platform.nickel-book-menu` group (not `model`). `--no-tests=error` prevents an empty selection from looking successful. A Python regression runs `bash -n` on the actual workflow script.
+
+The separate legacy Kobo workflow built its Qt5 device package successfully, but its native regression job failed compiling `tests/model/ui.cpp`: duplicate `const auto actual` declarations. Remove the duplicate only, preserving the image/clipping assertion. That workflow builds the current legacy checkout, not the beta10 patch export; success there does not validate the new series.

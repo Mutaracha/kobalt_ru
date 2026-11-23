@@ -2,6 +2,7 @@ import copy
 import hashlib
 import json
 import re
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
@@ -92,6 +93,16 @@ class SeriesTests(unittest.TestCase):
                 self.assertIn('FB2 uses Kobalt', native)
             self.assertIn('files[QString::fromLatin1(Publication::singleFb2ResourceName)]',
                           (destination / 'tests/model/local_resources.cpp').read_text())
+
+    def test_compile_workflow_shell_syntax(self):
+        workflow = (ROOT / '.github/workflows/patch-series.yml').read_text()
+        marker = '          set -euo pipefail\n'
+        self.assertEqual(workflow.count(marker), 1)
+        script = marker + workflow.split(marker, 1)[1]
+        script = '\n'.join(line[10:] for line in script.splitlines())
+        result = subprocess.run(['bash', '-n'], input=script, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('--no-tests=error', script)
 
     def test_pin_required(self):
         self.data['upstream'] = 'main'

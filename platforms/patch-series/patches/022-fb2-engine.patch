@@ -871,10 +871,10 @@ index 877b4ccccefdab655c6496ed5994d3c5a9c17b9a..3635ea55a9e20f9e32142d23b9f73bc3
 +constexpr auto readerFb2Css = R"rrcss(@READER_FB2_CSS@)rrcss";
 diff --git a/tests/model/fb2_engine.cpp b/tests/model/fb2_engine.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..1fb927f68479bb66a649449ae8f75a92c67dc53b
+index 0000000000000000000000000000000000000000..496968440278edb0bd2fd5153206b201715d3c12
 --- /dev/null
 +++ b/tests/model/fb2_engine.cpp
-@@ -0,0 +1,162 @@
+@@ -0,0 +1,168 @@
 +// Covers raw FB2 engine loading, resources, EPUB reuse, reflow, preview and cache lifecycle.
 +#include "book_fixtures.h"
 +#include "check.h"
@@ -1000,7 +1000,13 @@ index 0000000000000000000000000000000000000000..1fb927f68479bb66a649449ae8f75a92
 +{
 +    QTemporaryDir root;
 +    require(root.isValid(), "cache temporary directory");
-+    const auto bytes = utf8FictionBook();
++    auto bytes = utf8FictionBook();
++    // ParseDocument deliberately skips cache lookup for sources <= 64 KiB
++    // (DOCUMENT_CACHING_MIN_SIZE). Pad XML, not rendered text, to test reuse
++    // without changing that upstream policy or making layout expensive.
++    bytes.replace("</FictionBook>", QByteArray("<!--") + QByteArray(128 * 1024, 'x')
++                  + "--></FictionBook>");
++    require(bytes.size() > 64 * 1024, "cache fixture must cross lookup threshold");
 +    const auto cachePath = root.filePath("cache");
 +    const auto configure = [&](EngineDocument &document) {
 +        document.setDocumentCache(cachePath, QByteArray(64, 'c'), "fb2-engine-test", bytes.size());

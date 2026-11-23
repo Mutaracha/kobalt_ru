@@ -406,7 +406,6 @@ int main(int argc, char **argv)
                 const int top = iconTop + tab.iconSize().height() + metrics::chrome::tabGap
                         + ink.top() - commonInk.top();
                 const auto actual = tab.grab().toImage().convertToFormat(QImage::Format_RGB32);
-                const auto actual = tab.grab().toImage().convertToFormat(QImage::Format_RGB32);
                 // Count painted rows, so a metric-only assertion cannot miss clipping.
                 int first = -1, last = -1;
                 const QRgb paper = actual.pixel(actual.width()/2, top - 1);

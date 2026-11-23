@@ -1,7 +1,7 @@
 # 020 — FB2 поверх beta10 + 010-ru
 
-Статус: **020-publication/021-resources прошли CI; 022-engine подготовлен; 023-platform-inputs впереди**.
-Полная платформенная поддержка FB2/FB2.ZIP ещё не готова. Metadata/cover через raw engine проверяются в 022.
+Статус: **020-publication/021-resources прошли CI; 022-engine подготовлен; 023-platform-inputs подготовлен**.
+Платформенная приёмка raw FB2 ещё не завершена. FB2.ZIP исключён: это не поддерживавшаяся ранее доработка, и системная библиотека его не показывает. Metadata/cover через raw engine проверяются в 022.
 [Отчёт по выполненной части](fb2-publication-resources.md).
 
 ## Порядок работы с кодом
@@ -9,7 +9,7 @@
 1. Publication: `src/publication/fb2.h`, `publication_fb2.cpp`,
    `fb2_resources.cpp/.h`, наши hunks `publication.cpp/.h`, `local_resources`,
    `resource_cache`. Сохранить raw-byte распознавание legacy encoding, проверку
-   FictionBook root и форматные границы; FB2.ZIP не должен означать любой ZIP.
+   FictionBook root и форматные границы; произвольный ZIP не становится FB2.
 2. Engine source/document: `reader_fb2.cpp/.h`, форматные hunks `reader_source`,
    `engine_document`. В `reader_fb2.cpp` уже вместе находятся язык документа,
    alignment/beautifier и примечания: **не разделять искусственно ради автономности**.
@@ -33,7 +33,7 @@
 
 - Чистая последовательность upstream → 010 → 020, отсутствие случайного изменения
   исходного EN/RU-контракта процентов и локали; generation/source references.
-- FB2 и FB2.ZIP: title/author/cover, ресурсы и изображения, кодировки UTF-8/1251,
+- Raw FB2: title/author/cover, ресурсы и изображения, кодировки UTF-8/1251,
   имя файла/тип документа, обычное/повторное открытие, сохранённая позиция.
 - Note links туда/назад, примечания on/off, notes/comments и длинные примечания.
 - Обычный EPUB (в том числе upstream opening/Hybrid), protected/unsupported input

@@ -29,7 +29,7 @@ CI ещё требуется. 020/021 отдельно прошли CI4525925413
 - Старый ZIP32 memory archive parser: beta10 ZIP64/ZipResource путь сохранён.
 - Comics PageDrawBuffer/ColumnView/helpers/frameImage — это 030, не часть 022.
 - Старые opener accelerations, flash/refresh policy, Hybrid algorithms или Libra2 mapping.
-- Platform open routing, library file filters/metadata, FB2.ZIP и legacy note-setting
+- Platform open routing, library file filters/metadata и legacy note-setting
   migration: это оставшийся 023. Нельзя объявлять платформенный FB2 готовым только
   на основании прямого engine test.
 
@@ -71,3 +71,13 @@ Qt5 build/check-package и check-ready-prefix — PASS. Linux остановил
 в тот же список; отдельный regression assertion проверяет регистрацию после
 применения патчей. Новая CI должна скомпилировать и выполнить тест; до этого
 статус 022 остаётся prepared. Ошибка не обходится исключением теста из сборки.
+
+
+## Повторная CI: причины и исправления
+
+CI 45267339459: Qt5/package PASS; native compile PASS и три resource/archive теста PASS.
+FB2 runtime остановился на cache-reuse assertion: исходный короткий fixture меньше
+64 KiB, а upstream ParseDocument намеренно не ищет в cache такие документы.
+Исправлен fixture: XML comment увеличивает только cache-тест до >128 KiB,
+не раздувая rendered text. Порог production не менялся, assertion сохранён.
+Повторный runtime ещё требуется; 022 остаётся prepared.
