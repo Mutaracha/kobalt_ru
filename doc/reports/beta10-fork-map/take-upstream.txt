@@ -285,6 +285,7 @@ platforms/android/app/res/mipmap-anydpi-v26/ic_launcher.xml
 platforms/android/app/res/mipmap-anydpi-v33/ic_launcher.xml
 platforms/android/app/res/values/colors.xml
 platforms/android/app/src/org/kobalt/android/BooxDevice.java
+platforms/android/app/src/org/kobalt/android/BooxRefresh.java
 platforms/android/app/src/org/kobalt/android/KosyncBootReceiver.java
 platforms/android/app/src/org/kobalt/android/KosyncWork.java
 platforms/android/app/src/org/kobalt/android/PickerDelivery.java
@@ -448,9 +449,11 @@ platforms/kobo/display/image_format.h
 platforms/kobo/display/keyboard_refresh.h
 platforms/kobo/display/navigation_refresh.h
 platforms/kobo/display/opaque_copy.h
+platforms/kobo/display/page_animation.cpp
 platforms/kobo/display/page_animation.h
 platforms/kobo/display/page_animation_hook.cpp
 platforms/kobo/display/page_animation_hook.h
+platforms/kobo/display/page_transition.h
 platforms/kobo/display/panel_damage.h
 platforms/kobo/display/refresh_policy.h
 platforms/kobo/display/screen_density.cpp
@@ -861,6 +864,7 @@ src/platform/api/kobo_refresh.h
 src/platform/api/light_controls.h
 src/platform/api/loopback.h
 src/platform/api/native_image.h
+src/platform/api/page_animation_support.h
 src/platform/api/page_buttons.h
 src/platform/api/position_codec.h
 src/platform/api/reader_host_services.h
@@ -926,6 +930,7 @@ src/reading/rendering_mode.cpp
 src/reading/rendering_mode.h
 src/reading/session_timeout.h
 src/reading/sleep_screen.h
+src/reading/style_sample.cpp
 src/reading/style_sample.h
 src/reading/style_sample_cache.cpp
 src/reading/style_sample_cache.h
@@ -1132,10 +1137,12 @@ tests/model/nickel_reading_pace_cache.cpp
 tests/model/nickel_save_trace.cpp
 tests/model/nickel_session_calls.cpp
 tests/model/nickel_session_volume.cpp
+tests/model/page_animation.cpp
 tests/model/page_estimate.cpp
 tests/model/page_layout.cpp
 tests/model/page_pixels.cpp
 tests/model/page_refresh_regions.cpp
+tests/model/page_transition_native.cpp
 tests/model/paragraph_spacing.cpp
 tests/model/plain_archive.cpp
 tests/model/preview_store.cpp
@@ -1156,6 +1163,7 @@ tests/model/spine_window.cpp
 tests/model/standby_diagnostics.cpp
 tests/model/standby_input.cpp
 tests/model/storage_assets.cpp
+tests/model/style_sample_cache.cpp
 tests/model/svg_limits.cpp
 tests/model/sync_coordinator.cpp
 tests/model/system_fonts.cpp
@@ -1174,6 +1182,7 @@ tests/pewter/nickel_qt5.cpp
 tests/pewter/nickel_qt6.cpp
 tests/pewter/pewter.cpp
 tests/pewter/pewter.h
+tests/pewter/refresh_qt5.cpp
 tests/pewter/tile_cover.cpp
 tests/pewter/wifi_idle.cpp
 tests/pewter/wifi_idle_log.cpp

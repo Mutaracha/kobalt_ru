@@ -6,7 +6,8 @@ F09 исключение whole_book_failed из sample key удалено; со�
 строка теста тоже снята, весь style_sample_cache test теперь upstream.
 Первый book-open flash восстановлен как в beta9. Оставшиеся opening hooks —
 FB2, comics и locale, не альтернативный ускоритель. Audit: карта F07–F09/opening.
-CI нового runtime pending; physical device/BOOX acceptance не заявляются.
+Runtime6a82161b, CI45178305853/build293 native + Qt5/package PASS;
+physical device/BOOX acceptance не заявляются.
 F07 пока не удалён: пользователь запросил места проверки ribbon/fitting.
 
 ## Дополнение к очереди beta10: Libra2

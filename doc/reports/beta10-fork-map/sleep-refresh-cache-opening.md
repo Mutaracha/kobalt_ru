@@ -1,5 +1,9 @@
 # Подробности F07–F09 и открытие книг
 
+**Актуализация2b33d231/6a82161b:** dark/i.MX animation, BOOX и F09 возвращены к upstream
+beta9, первый book-open flash восстановлен. Описания удалённых дельт ниже —
+историческое объяснение, не инструкции сохранять их при beta10. F07 пока сохранён.
+
 Сравнение: upstream beta9 `be47258850ffdc3295257475afdf8b8f6cb53176` →
 fork `393c612d8991441ef5b1e812f9b9b6bbc2ed68b0` (runtime `cb705bdd`).
 Это описание существующего кода, не новые изменения display/engine.
@@ -44,9 +48,9 @@ native-ui hook в пользу upstream. Не переносить локаль�
 и не применять обе коррекции одновременно. Название/API опции здесь не выдумываются:
 beta10 в рамках этого исследования ещё не сверялась.
 
-## F08b. Kobo display/refresh — две независимые retained дельты
+## F08b. Kobo display/refresh — что удалено и что осталось
 
-### Анимация в dark mode на старом i.MX
+### Анимация в dark mode на старом i.MX — локальное отличие удалено
 
 В upstream beta9 `pageAnimationsEnabled(support, dark)` запрещает sweep в тёмном
 режиме при `PageAnimationSupport::Uncertain` (старый i.MX backend), сохраняя
@@ -76,7 +80,7 @@ request. Для обычного текста остаётся обычная po
 зелёными model-тестами. Перестановки include/dragArea в diff не являются отдельными
 пользовательскими доработками.
 
-## F08c. BOOX — отложенная очистка после отрисовки
+## F08c. BOOX — delayed cleaning удалён, ниже история
 
 Файл: `platforms/android/app/src/org/kobalt/android/BooxRefresh.java`.
 
@@ -103,7 +107,7 @@ request. Для обычного текста остаётся обычная po
 сверить upstream API/cleaning semantics прежде переноса, проверить menu/page bursts,
 resume/orientation/surface replacement, отсутствие зависаний и поздних refresh.
 
-## F09. Кэш образцов оформления — ровно одна добавленная фильтрация
+## F09. Кэш образцов оформления — фильтрация удалена, ниже история
 
 Файл `src/reading/style_sample.cpp`, `styleSampleSettings()`.
 
@@ -111,7 +115,7 @@ resume/orientation/surface replacement, отсутствие зависаний 
 вид sample. Это позволяет переиспользовать образцы при перелистывании и изменении
 служебного состояния. Большинство исключений — уже upstream beta9.
 
-**Наша дельта относительно beta9 — добавить `whole_book_failed` в существующий
+**Прежняя дельта относительно beta9 — добавить `whole_book_failed` в существующий
 список исключений.** Это индикатор результата фоновой полной раскладки, а не выбор
 шрифта, размера или интервала. Даже появление поля со значением false не должно
 менять ключ у того же оформления. Иначе теряется cache hit и запускается лишнее
@@ -150,9 +154,9 @@ fork-only механизма ускоренного EPUB opener не сохра�
   не новая оптимизация стадии parsing/layout.
 - `reader_session.cpp` отличается include и `image(page) → frameImage()` для
   comics; основная session/background machinery — upstream.
-- **Не все opening-related строки совпадают:** в `Reader::showEvent()` форк не
-  вызывает upstream `requestFlash("book-open")` на первом показе. Это сохранённая
-  display/first-paint дельта, а не ускорение парсинга. В `reader_source.cpp` и
+- **Первый показ теперь upstream:** `requestFlash("book-open")` восстановлен.
+  Единственная оставшаяся дельта reader.cpp — диагностическое поле
+  appearance_controls_built при сохранении state. В `reader_source.cpp` и
   `engine_document.cpp` также есть FB2/comics/cache-policy integration, поэтому
   целые эти файлы не объявляются идентичными.
 
@@ -162,3 +166,46 @@ upstream» и не «любой cache/preload теперь отсутствуе�
 книге измеряется отдельно: retained/cache hit, cold parse, first frame и quiet UI
 нельзя смешивать в одно число. FB2 partial-layout/Hybrid не включён; EPUB Hybrid
 counter остаётся deferred до beta10 по решению пользователя.
+
+
+## Где проверять F07 перед решением об удалении
+
+- **Геометрия ribbon и её fitting:** дизайн «Закладка». Также «Страница книги»
+  или «PNG поверх текста», если выбран индикатор «Закладка»; «Свой вариант» с
+  таким status layer. Не «Карточка» и не «Только обложка» без индикатора.
+- Выбрать книгу с известным оставшимся временем, проверить RU и EN. В ribbon
+  проверить две строки времени, батарею и отсутствие наложений; затем случай без
+  remaining, где батарея тоже должна оставаться на своём месте.
+- **Общий fitting sleep designs:** удобнее проверять «Подпись», «Виджеты», «Ночь»,
+  «Кольцо», «Рамка», «Линии», «Письмо» с длинным названием/автором/подписью и
+  длительным remaining. Общий text helper вызывается также через baselineText и
+  battery helper; не весь текст любого дизайна проходит через него (у многострочных
+  блоков есть свои layout helpers). Это не изменение текста книги.
+- Превью полезно для геометрии, но финально проверить настоящий сон в portrait и
+  landscape. Само отсутствие clipping с активным fitting не доказывает, что он
+  не нужен: для решения об удалении нужно сравнение с upstream rendering без него.
+- Пользователь пока только запросил места проверки, удаления F07 не поручал.
+
+## Повторный аудит старых ускорений после cleanup
+
+Собственного opener/preload/quiet pipeline не осталось. Первый book-open flash
+теперь upstream. Оставлены только FB2 resource probe и допустимое .fb2 cache имя,
+FB2 CSS/semantic hooks и совместимость notes; comics setting/frame/layout/cache
+identity и locale hooks — необходимые отдельные функции форка, не ускорители.
+Их удаление сломало бы ранее принятые возможности.
+
+В `engine_document.cpp` saveDocumentCache(reason) возвращает подробную причину
+отказа и принимает правильное FB2 cache имя; проверка stale/dirty и updateCache
+сохраняют upstream логику. Не удалять FB2 cache name acceptance как «оптимизацию»:
+без неё FB2 не сможет сохранять кэш под своим реальным именем. Версии CSS/layout/
+comics cache keys — защита совместимости, не альтернативный ускоренный cache.
+Диагностика appearance_controls_built не управляет построением UI. Скорость
+открытия после выравнивания пользователь оценил как значительно лучшую;
+собственных speed claims/benchmark без измерений не добавляется.
+
+
+CI промежуточного2b33d231/build292: focused native PASS, Qt5 package check FAIL;
+в `tests/pewter/refresh_qt5.cpp` ещё оставались fork assertions, требовавшие sweep
+в dark i.MX. В6a82161b весь этот тест возвращён к pinned upstream, включая проверку
+обычного single update и damage bounds в dark. Это возврат теста вместе с policy,
+не отключение Qt5 проверки. Итоговый CI указан в плане/основной карте.

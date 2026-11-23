@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 UPSTREAM = 'be47258850ffdc3295257475afdf8b8f6cb53176'
-FORK = 'cb705bdd4fd72b8c1f48535204f54c4eb3264ede'
+FORK = '6a82161b0545cbf95b7272bf6b90282b4a21374d'
 
 def tree(ref):
     result = {}

@@ -311,3 +311,12 @@ queue; no device acceptance is implied. EPUB Hybrid algorithms remain excluded.
 На обновлении проверить orientation × inversion; при покрытии сценария использовать
 upstream и убрать локальную коррекцию. Не сохранять две инверсии одновременно.
 [Текущая дельта и проверки](reports/beta10-fork-map/sleep-refresh-cache-opening.md#f08a-libra2--проверить-заменяющую-опцию-beta10).
+
+## B9-DELTA-REDUCTION — upstream policies вместо непроверенных поправок
+
+По указанию пользователя: вернуть upstream beta9 ограничения анимации dark/i.MX,
+BOOX refresh и sample-cache settings filter. Не сохранять эти три изменения как
+feature при beta10. Старую first-open flash suppression тоже удалить; FB2/comics/
+locale inputs оставить как необходимые функции, а не отдельную оптимизацию.
+F07 ribbon/fitting пока не удалять: пользователь запросил места для проверки.
+Текущий runtime2b33d231; CI результат в плане.

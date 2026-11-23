@@ -3,16 +3,16 @@
 ## Зафиксированные базы и полнота
 
 - Чистый upstream beta9: `be47258850ffdc3295257475afdf8b8f6cb53176`.
-- Форк: `cb705bdd4fd72b8c1f48535204f54c4eb3264ede` — общий стиль первого пункта и перенос language UI в settings включены.
+- Форк: `6a82161b0545cbf95b7272bf6b90282b4a21374d` — upstream animation/BOOX/sample filter и book-open flash восстановлены.
 - Предыдущий проверенный binary: `ac21d582`, CI45067475543/build290 native + Qt5 PASS. Пользователь подтвердил открытие своих тестовых книг на устройстве; EPUB counter отдельно deferred.
-- CI текущего runtime: [45152988058/build291](https://github.com/Mutaracha/kobalt_ru/actions/runs/45152988058), **native + Qt5/package PASS**. Предыдущая кнопка проверена пользователем; исправленная высота ещё не принята на устройстве. Документационный коммит с картой не меняет binary.
+- CI текущего runtime: [45178305853/build293](https://github.com/Mutaracha/kobalt_ru/actions/runs/45178305853), **native + Qt5/package PASS**. Предыдущая кнопка проверена пользователем; исправленная высота ещё не принята на устройстве. Документационный коммит с картой не меняет binary.
 
-Сравниваются Git trees, не грязный checkout. **1556 путей: 1203 identical, 180 different, 173 fork-only, 0 upstream-only.** Это не число доработок или багов. Из 353 отличий: **194 runtime/build/assets/tests**, **159 reference** (документация, исходные загрузки пользователя, README и инструкции). Предыдущая версия карты входит в reference-пути; это дополнение и текущая регенерация добавлены после сравниваемого checkpoint.
+Сравниваются Git trees, не грязный checkout. **1558 путей: 1212 identical, 171 different, 175 fork-only, 0 upstream-only.** Это не число доработок или багов. Из 346 отличий: **185 runtime/build/assets/tests**, **161 reference** (документация, исходные загрузки пользователя, README и инструкции). Предыдущая версия карты входит в reference-пути; это дополнение и текущая регенерация добавлены после сравниваемого checkpoint.
 
 - [Карта всех путей с OID, mode, kind и действием](all-files.tsv) — исчерпывающая основа.
-- [1203 неизменённых файла](take-upstream.txt) — брать из beta10 без слияния наших правок.
-- [Все 194 изменённых runtime/build/assets/tests пути](modified-files.md) — без сокращений и пропущенных тестов.
-- [159 reference-путей](reference-files.tsv) — история и руководства, не runtime-доработки.
+- [1212 неизменённых файлов](take-upstream.txt) — брать из beta10 без слияния наших правок.
+- [Все 185 изменённых runtime/build/assets/tests путей](modified-files.md) — без сокращений и пропущенных тестов.
+- [161 reference-путь](reference-files.tsv) — история и руководства, не runtime-доработки.
 - [Машинные счётчики](summary.json); [скрипт воспроизведения](reproduce.py).
 
 Ниже перечислены смысловые доработки и основные точки интеграции. Один shared файл может обслуживать несколько строк; исчерпывающий список находится в приложениях. Не считать весь отличный файл нашей реализацией: переносить только нужные hunks поверх beta10.
@@ -87,22 +87,25 @@ selectors, DOM markers, CSS, семантика FB2, checked-state иконок,
 
 **Сохранять:** принятые sleep captions/newline/ribbon/text fitting; shared save/standby/wake machinery брать upstream. **Проверки:** cover и другие designs, длинные RU строки, orientation, sleep/wake с сохранением позиции. `tests/reader_lifecycle.cpp`, `tests/model/ui.cpp`; общий persistence не считать fork-only реализацией.
 
-### F08. Kobo: Libra2 buttons и display/refresh; BOOX
+### F08. Kobo: Libra2 и refresh комиксов
 
-Файлы: `platforms/kobo/common/page_button_mapping.h`, `nickel-qt5/native_ui.cpp`; `platforms/kobo/display/page_animation.cpp`, `page_transition.h`, `nickel-qt5/refresh.cpp`; `src/platform/api/page_animation_support.h`; `platforms/android/app/src/org/kobalt/android/BooxRefresh.java`.
+**Libra2:** `platforms/kobo/common/page_button_mapping.h`, `nickel-qt5/native_ui.cpp`.
+На beta10 проверить объявленную upstream опцию и при эквивалентности удалить нашу
+коррекцию, не применять обе одновременно. Проверять orientation × inversion.
 
-**Beta10 / Libra2:** по сообщению пользователя разработчик добавил отдельную
-опцию, заменяющую нашу коррекцию. Сначала проверить её реализацию и все ориентации/
-инверсию на Libra2; при эквивалентности убрать fork mapping, не применять обе
-коррекции. Название/поведение опции ещё не сверены с beta10.
+**Остаётся:** `platforms/kobo/nickel-qt5/refresh.cpp` — graphics/comics repair policy
+на damage области и comic-refresh-submit diagnostics. Это не whole-screen flash.
 
-**Display/BOOX:** это отдельные платформенные дельты, не часть button mapping. Сверить новые upstream изменения по hunks; не перезаписать утверждённые mapping/waveform. **Проверки на устройстве:** Libra2 все ориентации и инверсия, dark/light, full/partial refresh, анимации и ghosting; BOOX отдельно. Тесты `native_dialog_overlay.cpp`, `page_animation.cpp`, `page_transition_native.cpp`, `tests/pewter/refresh_qt5.cpp` и `nickel*`. CI не заменяет waveform acceptance.
+**Удалено в2b33d231:** отмена upstream dark/i.MX animation gate; специфическая
+BOOX delayed cleaning реализация. Animation support/transition/arm и BOOX теперь
+byte-identical pinned beta9. BOOX — Android-ридеры Onyx, не Kobo; его штатная
+upstream поддержка не удалена. Тесты анимации тоже восстановлены из upstream.
 
-### F09. Cache образцов оформления: transient diagnostics
+### F09. Sample cache transient filter — удалено
 
-`src/reading/style_sample.cpp`: служебный `whole_book_failed` исключён из sample settings/cache key наряду с frame diagnostics. Исходный `tests/model/style_sample_cache.cpp` сохранён, PASS build289.
-
-**Beta10:** проверить upstream реализацию и необходимость двухстрочной дельты; не переносить повторно, если upstream уже исключает это поле. Не связывать с собственным исправлением Hybrid — алгоритм Hybrid этим не менялся.
+`src/reading/style_sample.cpp` и `tests/model/style_sample_cache.cpp` теперь
+byte-identical beta9. Исключение whole_book_failed больше не переносить в beta10.
+Это не изменение book parsed cache и не попытка исправить Hybrid counter.
 
 ### F10. Build, регистрация ресурсов/тестов, provenance
 
@@ -138,7 +141,7 @@ selectors, DOM markers, CSS, семантика FB2, checked-state иконок,
 python doc/reports/beta10-fork-map/reproduce.py /tmp/beta10-fork-map
 # semantic diff одного файла:
 git diff --no-renames be47258850ffdc3295257475afdf8b8f6cb53176 \
-  cb705bdd4fd72b8c1f48535204f54c4eb3264ede -- src/reading/reader_session.cpp
+  6a82161b0545cbf95b7272bf6b90282b4a21374d -- src/reading/reader_session.cpp
 ```
 
 Скрипт сравнивает mode/kind/OID и проверяет точное множество nonidentical через `git diff --no-renames --name-only -z`. TSV содержит все пути, включая Unicode, без git quote-экранирования. Группировка по назначению — навигационная подсказка, не разрешение переносить модуль целиком.

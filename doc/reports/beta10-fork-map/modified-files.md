@@ -5,7 +5,6 @@
 | Файл | Статус |
 |---|---|
 | `platforms/android/CMakeLists.txt` | different |
-| `platforms/android/app/src/org/kobalt/android/BooxRefresh.java` | different |
 | `platforms/android/app/src/org/kobalt/android/KobaltActivity.java` | different |
 | `platforms/android/main.cpp` | different |
 
@@ -39,7 +38,6 @@
 | `platforms/shared-inputs.cmake` | different |
 | `platforms/strings-test.cmake` | different |
 | `platforms/strings.cmake` | different |
-| `src/platform/api/page_animation_support.h` | different |
 
 ## fb2-comics-engine-integration
 | Файл | Статус |
@@ -85,8 +83,6 @@
 | `platforms/kobo/common/book_menu.h` | different |
 | `platforms/kobo/common/page_button_mapping.h` | fork-only |
 | `platforms/kobo/common/reader_coordinator.cpp` | different |
-| `platforms/kobo/display/page_animation.cpp` | different |
-| `platforms/kobo/display/page_transition.h` | different |
 | `platforms/kobo/nickel-qt5/native_publication.cpp` | different |
 | `platforms/kobo/nickel-qt5/native_ui.cpp` | different |
 | `platforms/kobo/nickel-qt5/reader_controller.cpp` | different |
@@ -148,7 +144,6 @@
 | `src/reading/page_navigation.h` | different |
 | `src/reading/reader_session.cpp` | different |
 | `src/reading/reader_session.h` | different |
-| `src/reading/style_sample.cpp` | different |
 
 ## shared-ui-presentation
 | Файл | Статус |
@@ -209,8 +204,6 @@
 | `tests/model/multilingual.cpp` | different |
 | `tests/model/native_dialog_overlay.cpp` | different |
 | `tests/model/nickel_book_menu.cpp` | different |
-| `tests/model/page_animation.cpp` | different |
-| `tests/model/page_transition_native.cpp` | different |
 | `tests/model/publisher_markup.cpp` | different |
 | `tests/model/reader.cpp` | different |
 | `tests/model/reader_session.cpp` | different |
@@ -219,7 +212,6 @@
 | `tests/model/resource_cache.cpp` | different |
 | `tests/model/search.cpp` | different |
 | `tests/model/strings_locale.cpp` | fork-only |
-| `tests/model/style_sample_cache.cpp` | different |
 | `tests/model/text_presets.cpp` | different |
 | `tests/model/ui.cpp` | different |
 | `tests/model/vertical_writing.cpp` | different |
@@ -228,7 +220,6 @@
 | `tests/pewter/nickel.cpp` | different |
 | `tests/pewter/nickel.h` | different |
 | `tests/pewter/progress.cpp` | different |
-| `tests/pewter/refresh_qt5.cpp` | different |
 | `tests/reader_lifecycle.cpp` | different |
 | `tests/reader_ui.cpp` | different |
 | `tests/support/anchor_preview.h` | fork-only |

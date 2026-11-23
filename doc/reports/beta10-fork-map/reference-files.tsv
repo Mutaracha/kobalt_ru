@@ -40,6 +40,8 @@ doc/reports/beta10-fork-map/all-files.tsv	fork-only
 doc/reports/beta10-fork-map/modified-files.md	fork-only
 doc/reports/beta10-fork-map/reference-files.tsv	fork-only
 doc/reports/beta10-fork-map/reproduce.py	fork-only
+doc/reports/beta10-fork-map/sleep-refresh-cache-opening.md	fork-only
+doc/reports/beta10-fork-map/styles-and-presentation.md	fork-only
 doc/reports/beta10-fork-map/summary.json	fork-only
 doc/reports/beta10-fork-map/take-upstream.txt	fork-only
 doc/reports/beta9-annotation-port-matrix.md	fork-only
