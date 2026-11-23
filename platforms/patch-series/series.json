@@ -31,9 +31,9 @@
       "id": "022-fb2-engine",
       "status": "prepared",
       "path": "platforms/patch-series/patches/022-fb2-engine.patch",
-      "sha256": "b0e4042a39988fad2e9d6fac57339fffcf5b45af007dba7926b012231348c72f",
+      "sha256": "9fc7b5932a363b7d944cb4cd67316cd6e8f6a1b9164ef8dadf998a5aa976bf22",
       "scope": "Raw FB2 engine/resource inputs, format stylesheet/semantics, preview and parsed-cache lifecycle; preserves beta10 ZIP64 and chapter-spread behavior",
-      "validation": "clean apply and structural checks; new native/Qt5 CI pending"
+      "validation": "CI 45261059977: Qt5 build/check-package PASS; native test compile failed (missing KOBALT_TEST_ZIP). Fixture registration fixed; new CI pending."
     },
     {
       "id": "023-fb2-platform-inputs",

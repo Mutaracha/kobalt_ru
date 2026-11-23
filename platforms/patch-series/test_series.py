@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import json
+import re
 from pathlib import Path
 import tempfile
 import unittest
@@ -75,6 +76,14 @@ class SeriesTests(unittest.TestCase):
             self.assertEqual((destination / 'assets/ru.strings').read_bytes(),
                              (ROOT / 'platforms/control-beta10/ru.strings').read_bytes())
             self.assertTrue((destination / 'src/publication/fb2_resources.cpp').is_file())
+            cmake = (destination / 'platforms/desktop/CMakeLists.txt').read_text()
+            # book_fixtures.h expands this macro while compiling fb2_engine.cpp.
+            zip_targets = re.search(
+                r'if\(check MATCHES "\^\(([^"\n]+)\)\$"\)\s*'
+                r'target_compile_definitions\(kobalt-\$\{name\}-tests PRIVATE KOBALT_TEST_ZIP=',
+                cmake)
+            self.assertIsNotNone(zip_targets, 'Missing ZIP fixture target definitions')
+            self.assertIn('fb2_engine', zip_targets.group(1).split('|'))
             self.assertIn('files[QString::fromLatin1(Publication::singleFb2ResourceName)]',
                           (destination / 'tests/model/local_resources.cpp').read_text())
 

@@ -1,7 +1,16 @@
 diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
-index 70ae6e6c0a5025ebc2864e70a2e96d73d66356df..dd58c7fddfe3a59f6e1370cc9ee5731a2c9154fd 100644
+index 70ae6e6c0a5025ebc2864e70a2e96d73d66356df..19af4bfd573b693ddfa793e56a47e5ceca3496e0 100644
 --- a/platforms/desktop/CMakeLists.txt
 +++ b/platforms/desktop/CMakeLists.txt
+@@ -747,7 +747,7 @@ if(BUILD_TESTING)
+             target_compile_definitions(kobalt-${name}-tests PRIVATE
+                 KOBALT_TEST_ASSET_ROOT="${KOBALT_ASSETS}" KOBALT_FONT_DIRECTORY="${KOBALT_ASSETS}/fonts"
+                 KOBALT_INSTALLED_FONTS)
+-            if(check MATCHES "^(vertical_spacing|large_toc|links|chapter_parity|page_estimate|bookmark_session|document_cache)$")
++            if(check MATCHES "^(fb2_engine|vertical_spacing|large_toc|links|chapter_parity|page_estimate|bookmark_session|document_cache)$")
+                 target_compile_definitions(kobalt-${name}-tests PRIVATE KOBALT_TEST_ZIP="${KOBALT_TEST_ZIP}")
+             endif()
+             if(check MATCHES "^(search|reading_book)$")
 @@ -813,6 +813,7 @@ if(BUILD_TESTING)
      kobalt_regressions(model font_axes touch_rotation)
      kobalt_regressions(platform reader_orientation font_sources system_fonts nickel_dictionary_selection
