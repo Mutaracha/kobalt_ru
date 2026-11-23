@@ -1,27 +1,16 @@
-## Контроль beta10 — device follow-up in progress
+## Контроль original beta10 + RU — in progress (новый пакет), device pending
 
-По скриншоту пользователя добавлены в isolated patch: Cyrillic ink-box stacked
-label из ca50dd3 и адаптация RU common.percent к beta10 (%1, не %1%).
-[Причины и статус](doc/reports/control-beta10/device-followup.md).
-204 предложения EN → RU отправляются в Git на согласование, не применены.
-MTCORSVA вместо Instrument Serif / Caveat вместо Kalam разрешены только для RU;
-blocked: файлов нет в указанной папке/новом upload. Других шрифтов не подставлять.
-Локально CMake generation/rebuild PASS с Ninja, percent guard +/- PASS;
-Qt5/package новой ревизии pending, device acceptance pending.
-Следующее: CI нового patch, файлы/права шрифтов, согласование текста.
-
-## Контроль original beta10 + RU — done (build), device pending
-
-Пользователь запросил upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`
-с переводом нашей ветки, Russian default, без Debug language UI и без других
-fork изменений. Подготовлен отдельный source export + точный 14-file patch,
-не замена runtime всего форка. [Состав, ограничения, проверки](doc/reports/control-beta10/README.md).
-Локальные CMake strings checks PASS; Qt5 compile/link/package CI45212880701 PASS
-(runtime/source overlay 8b1111a3). Artifact `Kobalt-beta10-original-ru-qt5-control`,
-ID14838120646. Следующее: согласование оставшихся строк и device-проверка. 194 новых и 10 несовместимых строк оставлены EN до
-согласования; CLDR не портирован. Полная RU приёмка не заявлена.
-Шрифты/drawing не изменены; fallback Instrument Serif и ink-box — отдельная
-device-проверка/согласование перед любыми исправлениями.
+База строго upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`,
+изолированный export + RU patch. Приняты все 204 перевода, применены.
+Шрифты взяты только как assets из `9d20cd4729c4fa5fbd5370ef7c1ec39519d74a04`:
+MTCORSVA для RU serif, Caveat Regular/Bold для RU playful default;
+English defaults не меняются. Medium/SemiBold сохранены как оригиналы, не bundled.
+Ink-box «ОТЛАДКА» и percent fix сохранены. Debug language UI отсутствует.
+[Точный состав и проверки](doc/reports/control-beta10/README.md).
+Локальные strings/manifest проверки PASS; новый Qt5 compile/package pending.
+Предыдущая ревизия с двумя исправлениями CI45221686704 PASS, но не проверяет
+текущие fonts/translations. Следующее: CI нового пакета, скриншоты пользователя.
+CLDR не портирован, физическая/визуальная приёмка не заявлена.
 
 ## Текущая проверка Debug rail / языка
 

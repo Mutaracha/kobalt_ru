@@ -11,3 +11,12 @@
 User reported the combined Settings/buttons checklist passed before the separate
 freeze report. Hybrid verification confirms EPUB partial opening and whole-book
 background build/adoption; it does not enable partial FB2.
+
+## Fonts supplied in adjacent branch commit 9d20cd4
+
+`MTCORSVA.TTF` and the four `Caveat/*.ttf` files were imported byte-for-byte
+from `9d20cd4729c4fa5fbd5370ef7c1ec39519d74a04`, without its other tree changes.
+User approved RU-only Corsiva/Instrument Serif and Caveat/Kalam replacements.
+Family/style and Cyrillic coverage inspected with fontTools. Caveat is OFL 1.1;
+MTCORSVA has a proprietary Monotype notice (not an application-license grant).
+Only Corsiva and Caveat Regular/Bold are bundled for this control test.

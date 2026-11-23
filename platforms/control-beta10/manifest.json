@@ -7,8 +7,43 @@
       "upstream_sha256": "35e0ddfb11b235a411430c846710bd65e6b273c93d4b2a7954d979968766b282"
     },
     {
+      "path": "assets/acknowledgments.json",
+      "sha256": "9d75b1d2dc3e604f9c3a1062c28e5eb111b32de2b3aa08ca127ab8d6ba2eec9b",
+      "upstream_sha256": "a55084eb78102c4c1f8d4484df845dd8f3141f8d5e8dc4d6af17b6c6c8111e9a"
+    },
+    {
+      "path": "assets/fonts/Caveat-Bold.ttf",
+      "sha256": "b42cc772f3528d9150c29d6051e2ed3fd472ad4e584c73fe1500ee628d6b1ac0",
+      "upstream_sha256": null
+    },
+    {
+      "path": "assets/fonts/Caveat-Regular.ttf",
+      "sha256": "271ee7c4a60b1be2ba13a66990e7475c76c982ac6e906c9db25139976282f6b8",
+      "upstream_sha256": null
+    },
+    {
+      "path": "assets/fonts/MTCORSVA.TTF",
+      "sha256": "a6f6dacb871be365ad93fe1aab09332f768cd2aa35fdfca8e0053a38f5a2662b",
+      "upstream_sha256": null
+    },
+    {
+      "path": "assets/manifest.json",
+      "sha256": "ecec67523e1e8c547fb90b6eea49940b587701840eac4a21a3af6d30353ee2ff",
+      "upstream_sha256": "922e66d57e9bcb338149a6ef5b45b2bc816aac6bd346470b0b0d8dc29e17f7e6"
+    },
+    {
+      "path": "assets/notices/Caveat-OFL",
+      "sha256": "1f9d81d094273d82f3898a1ee8b598a717d050ecbf5ff7bede105b704880157b",
+      "upstream_sha256": null
+    },
+    {
+      "path": "assets/notices/Monotype-Corsiva",
+      "sha256": "fbd86135c4d2bddf78d21c0e86e2156ddef852f9fc9e48fec1bec5ecac2ab4ae",
+      "upstream_sha256": null
+    },
+    {
       "path": "assets/ru.strings",
-      "sha256": "2a65756d3b006ffabf3eb7460d5b55ddbaa80e539b1a27e6f270f1391de90e29",
+      "sha256": "bbab3c6f88c96ea504336e82fef6db7098f524173a5d16d03bd5eae60cb87049",
       "upstream_sha256": null
     },
     {
@@ -52,6 +87,21 @@
       "upstream_sha256": "09d44b931a6cb4eb5462c73580f80018806fcc3c7941d04b074761fca5b1265a"
     },
     {
+      "path": "src/app/reader/settings/interface_style.h",
+      "sha256": "3356d4f0e37828a30a73abc852ac1c9195ea5180ba1192107e8dc2c474cca090",
+      "upstream_sha256": "649db71b47d2d38ece90ab2a1c8e5902237791517b72ec7da650508ab2d6404d"
+    },
+    {
+      "path": "src/assets/bundled_fonts.cpp",
+      "sha256": "a7e0f37e505bb967d3bc49a521b026b15db415122207771538c747e1c2d43b20",
+      "upstream_sha256": "83b0a13d689fb603adfe9748964c689d9cfc58c6f44eb7c5a66659ad9f545ac0"
+    },
+    {
+      "path": "src/assets/font_catalog.cpp",
+      "sha256": "cd1c8c85f032d9c4a652a0af047f761f0ea55c45d3be769113fae2a7567aacdd",
+      "upstream_sha256": "c8e98edb658a97e70fa5a3972fbd93723c8f01f6b4ede70b0e2415261c252717"
+    },
+    {
       "path": "src/support/percentage_text.h",
       "sha256": "ab3538df434b7b5328196b9dde437ccedfea8cef711a5b1df782e36835fe7f46",
       "upstream_sha256": "856a6b9eb9985a4354f682412602b688e730a0457a5be98f69b24d4535a38cf2"
@@ -75,6 +125,16 @@
       "path": "src/ui/controls/buttons.cpp",
       "sha256": "a6f7d527ebdb5240b358f2fcfae976167f8ad81fd7cc7cca7bf13628a2604154",
       "upstream_sha256": "bd16ab202d5a57886e1a688708bfe9be1aa12e8639e2f731f082b108f7756f7f"
+    },
+    {
+      "path": "src/ui/style/fonts.cpp",
+      "sha256": "9842cc12b6a27fde9fc79013d219417e89a2941f58f3c969b12364c4a97ad0a4",
+      "upstream_sha256": "5feb84e7dfbfce0a638b8b53aee35c502ca52fd7f8b90494fe8ffe75af3b3259"
+    },
+    {
+      "path": "src/ui/style/private_text.cpp",
+      "sha256": "c3392433c19c130238475ab5f6a18ddb2aa1e87dc5ffe631495189df46e8dad1",
+      "upstream_sha256": "d3c021dfe6205422b1d3691c0d23e30a374356eab3acf420cd61a7cf8b5c9467"
     }
   ]
 }

@@ -1,104 +1,85 @@
-# Контрольная original beta10 + RU
+# Контрольная original beta10 + RU — пакет для скриншотов
 
 База: `1796a32559dbb2912bd565990d1c7a0ca7ac4e52` (upstream).
-Источник перевода: `ca50dd358386e9fccc5122b464f74003caa51e75` (наша ветка).
+Источник прежнего перевода: `ca50dd358386e9fccc5122b464f74003caa51e75`.
+Все 204 предложения перевода приняты пользователем и применены.
+Шрифты получены из `9d20cd4729c4fa5fbd5370ef7c1ec39519d74a04`;
+другой код соседней ветки не переносился.
 
-## Как исключено смешивание с форком
+## Изоляция и точный diff
 
-Сборка выполняется **не из корня форка**: `bash platforms/control-beta10/prepare.sh`
-экспортирует `git archive` точного upstream в игнорируемый `build/control-beta10/`
-и применяет только `platforms/control-beta10/ru.patch`. Это не новая ветка/worktree.
-Корневые `src/`, `assets/` и старые fork workflows не являются входами этой сборки.
-Повторный запуск не перезаписывает существующий экспорт.
+`bash platforms/control-beta10/prepare.sh` экспортирует точный upstream через
+`git archive` в игнорируемый `build/control-beta10/` и применяет только
+`platforms/control-beta10/ru.patch` (включая binary font assets).
+Повторный запуск не перезаписывает экспорт. Это не branch/worktree.
+Корневые src/assets форка и старые fork workflows не входят в сборку.
 
-## Точный runtime/source diff
+Полный точный unified/binary diff: `platforms/control-beta10/ru.patch`.
+Исчерпывающий список **27** отличающихся файлов с исходными/новыми SHA-256:
+`platforms/control-beta10/manifest.json`. Остальные upstream файлы побайтно прежние.
 
-Полный unified diff: `platforms/control-beta10/ru.patch`.
-Контрольные SHA-256 исходных и результирующих файлов: `platforms/control-beta10/manifest.json`.
-Текущая ревизия: **15 файлов** (первый контроль: 14). Полный diff и hashes — выше.
-
-| Файлы | Единственное назначение |
+| Файлы | Назначение |
 |---|---|
-| `assets/ru.strings` | Таблица 1808 ключей; common.percent адаптирован к beta10 (`%1`) |
-| `assets/CMakeLists.txt` | Генерация RU, проверка паритета и зависимости reconfigure |
-| `platforms/strings.cmake` | Общий parser, проверка ключей/аргументов, имя входа в generated header |
-| `platforms/strings-test.cmake` | Ожидание actual input name в header |
-| `src/ui/controls/buttons.cpp` | Согласованный полный Cyrillic ink-box stacked label из ca50dd3 |
-| `src/support/string_table.h` | Общий тип Entry, вынесенный из strings.h |
-| `src/support/string_locale.h` | Выбор таблицы и QLocale; Russian по умолчанию |
-| `src/support/strings.h` | Поиск в выбранной таблице; каноническая diagnostics entries остаётся EN |
-| `src/support/percentage_text.h` | QLocale выбранного интерфейса вместо принудительного EN |
-| `src/app/reader/panels/activity_view.cpp` | QLocale выбранного интерфейса вместо принудительного EN для дат/месяцев |
-| `platforms/desktop/main.cpp`, `platforms/android/main.cpp` | Установка Russian при запуске |
-| `platforms/kobo/nickel-qt5/reader_controller.cpp`, `platforms/kobo/nickel-qt6/reader_controller.cpp` | Установка Russian при initialize |
-| `platforms/kobo/common/reader_coordinator.cpp` | Russian перед читательской сессией |
+| `assets/ru.strings` | 1808 ключей: существующий RU + 204 согласованных beta10 значения; common.percent = `%1` |
+| `assets/CMakeLists.txt`, `platforms/strings.cmake`, `platforms/strings-test.cmake` | RU generation, паритет, input-derived generated header |
+| `src/support/string_table.h`, `string_locale.h`, `strings.h` | Locale/table API, Russian default; diagnostics entries остаётся EN |
+| `src/support/percentage_text.h`, `src/app/reader/panels/activity_view.cpp` | QLocale выбранного интерфейса вместо forced EN |
+| `platforms/desktop/main.cpp`, `platforms/android/main.cpp`, `platforms/kobo/nickel-qt5/reader_controller.cpp`, `platforms/kobo/nickel-qt6/reader_controller.cpp`, `platforms/kobo/common/reader_coordinator.cpp` | RU startup/session wiring |
+| `src/ui/controls/buttons.cpp` | Прежний Cyrillic ink-box stacked label из ca50dd3, отдельно разрешён пользователем |
+| `assets/fonts/MTCORSVA.TTF`, `Caveat-Regular.ttf`, `Caveat-Bold.ttf` | Точные пользовательские font bytes |
+| `assets/manifest.json` | Размеры и SHA-256 трёх новых шрифтов |
+| `assets/notices/Caveat-OFL`, `Monotype-Corsiva`, `assets/acknowledgments.json` | Лицензии/атрибуция шрифтов |
+| `src/ui/style/fonts.cpp`, `private_text.cpp` | RU serif = Monotype Corsiva в Qt и private renderer; загрузка/pinning и warm-up согласованы |
+| `src/app/reader/settings/interface_style.h` | RU playful preset: Caveat вместо Kalam |
+| `src/assets/bundled_fonts.cpp`, `font_catalog.cpp` | Caveat Regular/Bold доступен в RU интерфейсе и UI-разделе font picker |
 
-Русский фиксирован для контрольной сборки: host locale/env/старые language markers
-не меняют его. UI переключателя, включая вкладку «Отладка», не добавлен.
+Никаких FB2/comics, sleep/refresh/Libra2, fork About row, иных icon/geometry,
+engine/storage или Russian_EnUS.pattern не перенесено. Переключателя языка нет,
+host locale/env/markers не меняют фиксированный RU этого контрольного пакета.
 
-Никаких FB2/comics, sleep/refresh/Libra2, About/fork row, иных изменений геометрии/иконок,
-новых шрифтов, Russian_EnUS.pattern, изменений engine/storage не перенесено.
-Все остальные upstream файлы сохраняются побайтно.
+## Шрифты и ограничения
 
-[Текущий device follow-up, причины и статус шрифтов](device-followup.md).
-[Все 204 предложения перевода EN → RU для согласования](translation-proposals.md).
+Только RU: MTCORSVA вместо Instrument Serif; Caveat вместо Kalam в штатной
+предустановке «Игровая». Явный пользовательский выбор шрифта не перезаписывается.
+Чтобы увидеть Caveat, выберите «Игровая»; классический UI не превращается в Caveat.
+English сохраняет Instrument Serif/Kalam. Переключение языка на лету не добавлено.
 
-## Неполнота перевода — не скрывать
+В файлах проверены family/style имена и полный русский алфавит с Ё/Й.
+MTCORSVA содержит семейство **Monotype Corsiva**, Regular; отдельного Italic/Bold
+нет, используется штатный путь синтеза при запросе. В private renderer точная
+семья проверяется **до** общего contains("Mono"), иначе выбрался бы IBM Plex Mono.
+Caveat Regular/Bold имеют одно семейство Caveat; Medium/SemiBold не требуются
+и оставлены только как исходные пользовательские вложения, не runtime assets.
 
-Повторно использованы 1604 существующих RU значения; из них **1603 без изменения текста**,
-а `common.percent` исправлен с `%1%` на `%1` под контракт beta10.
-Для **194** новых ключей и **10** строк с несовместимыми `%N` сохранён upstream EN,
-а не внесён несогласованный новый перевод. Точный список и исходные значения:
-`translation-gaps.json`. EN assets не менялись. Набор ключей и аргументов совпадает.
-Это RU-default контроль, **не полностью русифицированная beta10**.
+Caveat — OFL 1.1, полный notice приложен. Monotype Corsiva — proprietary:
+встроенный notice сохранён, не является OFL/AGPL. Пользователь предоставил файл
+для этого теста; это не подтверждает права на дальнейшее публичное распространение.
+Перед самостоятельным релизом нужно отдельно подтвердить подходящую лицензию.
 
-CLDR plurals из форка пока не портированы: это потребовало бы дополнительных
-ключей/изменения вызывающих мест и согласования строк. Singular/plural logic
-остаётся upstream, поэтому некоторые русские склонения будут неверными.
-Не путать этот минимальный контроль с языковой приёмкой полного форка.
+Все ключи переведены, но upstream singular/plural logic сохранена: полного CLDR
+переноса нет, некоторые склонения требуют отдельной работы. UI-текст принят,
+визуальная приёмка и размещение длинных подписей — по будущим скриншотам.
+[Принятые EN → RU значения](translation-proposals.md), машинный список — JSON рядом.
+`translation-gaps.json` — исторический список пропусков первого пакета, не текущий статус.
 
-## Шрифты/отрисовка — отдельное согласование
+## Проверки и пакет
 
-- Штатные IBM Plex Sans/Mono содержат кириллицу; замена не предлагается.
-- Instrument Serif не содержит кириллицу. Нужна device-проверка fallback;
-  потенциальная замена/добавление шрифта требует отдельного согласования.
-- Fork stacked-icon Button ink-box correction **теперь перенесён** по явному
-  запросу пользователя после device-скриншота. Нужна повторная device-проверка.
-- MTCORSVA/Caveat разрешены только для RU, но файлы отсутствуют: подключение blocked.
+Локально PASS: strings generation/rebuild (Ninja), 1808 EN/RU key/slot parity,
+production references, common.percent contract, все runtime manifest SHA-256,
+применимость patch к pristine beta10. Отдельно проверены font names/glyph coverage.
+Прежний отрицательный `%1%` guard подтверждён. Компиляции локально нет (нет Docker/Qt).
+C/C++ форматировался clang-format без переноса его посторонних изменений `{}`.
 
-## Проверки и сборка
+Workflow `.github/workflows/control-beta10.yml` собирает только экспорт в оригинальном
+pinned Qt5 SDK, проверяет `check-package`, публикует
+`Kobalt-beta10-original-ru-qt5-control`. Результат текущего CI фиксируется отдельно.
+Provenance пакета: upstream `1796a32` + modified ON; точный overlay — commit workflow
+и patch/manifest в artifact. Native полная suite и устройство не запускались.
 
-Локально PASS: CMake strings generation/rebuild self-tests; паритет 1808 EN/RU
-ключей и всех `%N`; валидация production string references; bash syntax.
-CMake установлен в изолированное временное окружение, не является изменением проекта.
-Локально нет Docker/Qt SDK: компиляция, линковка, native Qt tests и device проверка
-не выполнялись. Не считать наличие patch/extracted sources готовым бинарником.
+Предыдущие пакеты: CI45212880701 PASS (первый частичный RU), CI45221686704 PASS
+(ink-box/percent fix). Они **не проверяют** новые fonts/translations текущего пакета.
 
-Отдельный workflow `.github/workflows/control-beta10.yml` собирает **только экспорт**
-с оригинальным pinned Qt5 SDK, без fork name. Задаёт provenance `1796a32` + modified ON;
-проверяет оригинальный `check-package` и публикует
-`Kobalt-beta10-original-ru-qt5-control` вместе с patch/manifest/gaps.
-Это orchestration в нашей ветке, не дополнительный runtime diff.
-Первый контроль (до текущих двух исправлений), CI **PASS**: [run 45212880701](https://github.com/Mutaracha/kobalt_ru/actions/runs/45212880701),
-source/orchestration `8b1111a35c76d1b42384f659c3abb926e7063caa`.
-Успешны Qt5 compile/link, оригинальный `check-package` и artifact upload.
-[Artifact 14838120646](https://github.com/Mutaracha/kobalt_ru/actions/runs/45212880701/artifacts/14838120646):
-`Kobalt-beta10-original-ru-qt5-control`, 44 188 806 байт (Actions archive).
-Внутри — установочный `Kobalt-qt5.zip`, patch, manifest и translation gaps.
-Скачивание artifact в Arena заблокировано доступом к blob host (EOF);
-локальное распаковывание/проверка содержимого архива не заявляются.
-Native Qt test suite и физическое устройство не запускались.
-
-Локальная повторная проверка после подготовки:
-
-```sh
-cmake -DROOT="$PWD/build/control-beta10" -P platforms/control-beta10/validate.cmake
-cmake -DTEST_TMP_ROOT="$PWD/build/control-string-tests" -P build/control-beta10/platforms/strings-test.cmake
-```
-
-Установка использует оригинальный upstream профиль/пути. Отдельный профиль не
-добавлен, чтобы не менять контроль. Перед устройством нужен backup профиля;
-не считать downgrade между версиями безопасным без проверки совместимости.
-
-Текущая ревизия добавляет только ink-box и исправление common.percent; её CI
-проверяется отдельно и результат первого контроля на неё не распространяется.
+Установка использует оригинальные upstream paths/profile. Перед установкой
+сохранить backup профиля; не считать downgrade безопасным без проверки совместимости.
+Для скриншотов нужны: «Экран»/батарея/«Отладка», заголовки/загрузка (Corsiva),
+предустановка «Игровая» (Caveat), длинные новые русские строки.
