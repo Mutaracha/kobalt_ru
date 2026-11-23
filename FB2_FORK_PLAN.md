@@ -3,8 +3,8 @@
 Первый пункт Debug приведён к общему styleListAction: ранее строка была пропущена
 в общей группе styling и получала неверную высоту. Название «Язык интерфейса»;
 окно и markers прежние. Код окна перенесён в settings/debug_language_dialog,
-About больше не владеет механизмом. CI нового runtime ожидается; device clipping
-после исправления ещё не проверен. Расширение F02/F05 карты — documentation-only.
+About больше не владеет механизмом. Runtime `cb705bdd`, CI45152988058/build291: native + Qt5/package PASS;
+обрезание на физическом устройстве после исправления ещё не проверено. Расширение F02/F05 карты — documentation-only.
 
 <!-- beta9 handoff: see doc/reports/beta9-delta/README.md for immutable divergence evidence. -->
 # kobalt_ru — актуальное состояние

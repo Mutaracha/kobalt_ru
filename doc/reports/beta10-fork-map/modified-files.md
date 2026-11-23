@@ -101,8 +101,6 @@
 | `src/app/about/about_page.cpp` | different |
 | `src/app/about/fork_about.cpp` | fork-only |
 | `src/app/about/fork_about.h` | fork-only |
-| `src/app/about/fork_debug.cpp` | fork-only |
-| `src/app/about/fork_debug.h` | fork-only |
 | `src/support/build_info.h.in` | different |
 | `src/support/debug_language.cpp` | fork-only |
 | `src/support/debug_language.h` | fork-only |
@@ -123,6 +121,8 @@
 | `src/app/reader/panels/search_panel.cpp` | different |
 | `src/app/reader/settings/appearance_panel.cpp` | different |
 | `src/app/reader/settings/appearance_panel.h` | different |
+| `src/app/reader/settings/debug_language_dialog.cpp` | fork-only |
+| `src/app/reader/settings/debug_language_dialog.h` | fork-only |
 | `src/app/reader/settings/fork_settings.cpp` | fork-only |
 | `src/app/reader/settings/fork_settings.h` | fork-only |
 | `src/app/reader/settings/settings_panel.cpp` | different |

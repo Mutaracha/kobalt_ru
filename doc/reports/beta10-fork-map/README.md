@@ -3,19 +3,25 @@
 ## Зафиксированные базы и полнота
 
 - Чистый upstream beta9: `be47258850ffdc3295257475afdf8b8f6cb53176`.
-- Форк: `ac21d58295c941c3f197718321398c03da33526e` — перенос входа языка в Debug включён.
-- Последний до него проверенный binary: `80ee8d79`, CI45060819419/build289 native + Qt5 PASS. Пользователь подтвердил открытие своих тестовых книг на устройстве; EPUB counter отдельно deferred.
-- CI нового runtime: [45067475543/build290](https://github.com/Mutaracha/kobalt_ru/actions/runs/45067475543), **native + Qt5/package PASS**; device-приёмка переноса кнопки ещё не выполнена. Документационный коммит с картой не меняет binary.
+- Форк: `cb705bdd4fd72b8c1f48535204f54c4eb3264ede` — общий стиль первого пункта и перенос language UI в settings включены.
+- Предыдущий проверенный binary: `ac21d582`, CI45067475543/build290 native + Qt5 PASS. Пользователь подтвердил открытие своих тестовых книг на устройстве; EPUB counter отдельно deferred.
+- CI текущего runtime: [45152988058/build291](https://github.com/Mutaracha/kobalt_ru/actions/runs/45152988058), **native + Qt5/package PASS**. Предыдущая кнопка проверена пользователем; исправленная высота ещё не принята на устройстве. Документационный коммит с картой не меняет binary.
 
-Сравниваются Git trees, не грязный checkout. **1549 путей: 1203 identical, 180 different, 166 fork-only, 0 upstream-only.** Это не число доработок или багов. Из 346 отличий: **194 runtime/build/assets/tests**, **152 reference** (документация, исходные загрузки пользователя, README и инструкции). Сама эта карта добавлена после сравниваемого checkpoint и в эти числа не входит.
+Сравниваются Git trees, не грязный checkout. **1556 путей: 1203 identical, 180 different, 173 fork-only, 0 upstream-only.** Это не число доработок или багов. Из 353 отличий: **194 runtime/build/assets/tests**, **159 reference** (документация, исходные загрузки пользователя, README и инструкции). Предыдущая версия карты входит в reference-пути; это дополнение и текущая регенерация добавлены после сравниваемого checkpoint.
 
 - [Карта всех путей с OID, mode, kind и действием](all-files.tsv) — исчерпывающая основа.
 - [1203 неизменённых файла](take-upstream.txt) — брать из beta10 без слияния наших правок.
 - [Все 194 изменённых runtime/build/assets/tests пути](modified-files.md) — без сокращений и пропущенных тестов.
-- [152 reference-пути](reference-files.tsv) — история и руководства, не runtime-доработки.
+- [159 reference-путей](reference-files.tsv) — история и руководства, не runtime-доработки.
 - [Машинные счётчики](summary.json); [скрипт воспроизведения](reproduce.py).
 
 Ниже перечислены смысловые доработки и основные точки интеграции. Один shared файл может обслуживать несколько строк; исчерпывающий список находится в приложениях. Не считать весь отличный файл нашей реализацией: переносить только нужные hunks поверх beta10.
+
+## Подробности по запросу пользователя
+
+[Сноски/форматные стили и About/brand/UI/icons — подробная дельта](styles-and-presentation.md):
+selectors, DOM markers, CSS, семантика FB2, checked-state иконок, checkbox geometry,
+реальный About hook и границы общего upstream-кода.
 
 ## Смысловая карта
 
@@ -51,7 +57,7 @@
 
 **Сохранять:** RU resource table, CLDR plural/forms/dates, Kobo locale entry point, приоритет явных markers, отсутствие частичной live retranslation. **Вход языка теперь только первым пунктом Debug**, не в About; прежнее окно English/Русский/Automatic и async markers остаются.
 
-Файлы: `assets/ru.strings`, `en.strings`, `hyph/Russian_EnUS.pattern`; `src/support/locale.cpp`, `.h`, `debug_language.cpp`, `.h`, `string_locale.h`, `string_table.h`, `strings.h`; `platforms/strings.cmake`, `strings-test.cmake`; `src/app/about/fork_debug.cpp`, `.h`, `src/app/reader/settings/settings_panel.cpp`; `platforms/kobo/common/reader_coordinator.cpp`, desktop/Android entry points.
+Файлы: `assets/ru.strings`, `en.strings`, `hyph/Russian_EnUS.pattern`; `src/support/locale.cpp`, `.h`, `debug_language.cpp`, `.h`, `string_locale.h`, `string_table.h`, `strings.h`; `platforms/strings.cmake`, `strings-test.cmake`; `src/app/reader/settings/debug_language_dialog.cpp`, `.h`, `src/app/reader/settings/settings_panel.cpp`; `platforms/kobo/common/reader_coordinator.cpp`, desktop/Android entry points.
 
 Потребители CLDR/подписей: `src/app/library/library_view.cpp`, `panels/activity_view.cpp`, `chapter_contents.cpp`, `chapter_graph.cpp`, `search_panel.cpp`, `light_panel.cpp`, `reader_text_presets.cpp`, `src/reading/fork_text_preset_names.h`, `src/ui/controls/highlight_palette.h`, `reader_annotations.cpp`.
 
@@ -125,7 +131,7 @@
 python doc/reports/beta10-fork-map/reproduce.py /tmp/beta10-fork-map
 # semantic diff одного файла:
 git diff --no-renames be47258850ffdc3295257475afdf8b8f6cb53176 \
-  ac21d58295c941c3f197718321398c03da33526e -- src/reading/reader_session.cpp
+  cb705bdd4fd72b8c1f48535204f54c4eb3264ede -- src/reading/reader_session.cpp
 ```
 
 Скрипт сравнивает mode/kind/OID и проверяет точное множество nonidentical через `git diff --no-renames --name-only -z`. TSV содержит все пути, включая Unicode, без git quote-экранирования. Группировка по назначению — навигационная подсказка, не разрешение переносить модуль целиком.

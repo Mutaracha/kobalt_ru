@@ -35,6 +35,13 @@ doc/reader/viewport.md	different
 doc/release-evaluation.md	different
 doc/reports/033d0be2-device-review.md	fork-only
 doc/reports/77564e9-device-issues.md	fork-only
+doc/reports/beta10-fork-map/README.md	fork-only
+doc/reports/beta10-fork-map/all-files.tsv	fork-only
+doc/reports/beta10-fork-map/modified-files.md	fork-only
+doc/reports/beta10-fork-map/reference-files.tsv	fork-only
+doc/reports/beta10-fork-map/reproduce.py	fork-only
+doc/reports/beta10-fork-map/summary.json	fork-only
+doc/reports/beta10-fork-map/take-upstream.txt	fork-only
 doc/reports/beta9-annotation-port-matrix.md	fork-only
 doc/reports/beta9-delta-current/README.md	fork-only
 doc/reports/beta9-delta-current/changes.stat	fork-only
