@@ -5,5 +5,5 @@ class QPushButton;
 
 namespace kobalt::reader {
 // Connects the Debug-page action to the existing persistent language chooser.
-void installForkLanguageDebug(QPushButton *button, QWidget *host, const QString &directory);
+void installDebugLanguageChooser(QPushButton *button, QWidget *host, const QString &directory);
 } // namespace kobalt::reader

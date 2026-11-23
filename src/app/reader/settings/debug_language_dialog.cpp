@@ -1,4 +1,4 @@
-#include "fork_debug.h"
+#include "debug_language_dialog.h"
 #include "ui/dialogs/modals.h"
 #include "ui/controls/options.h"
 #include "ui/style/metrics.h"
@@ -11,10 +11,10 @@
 
 namespace kobalt::reader {
 namespace {
-class ForkLanguageDebug final : public QObject
+class DebugLanguageDialog final : public QObject
 {
 public:
-    ForkLanguageDebug(QPushButton *button, QWidget *host, QString directory)
+    DebugLanguageDialog(QPushButton *button, QWidget *host, QString directory)
         : QObject(button), button(button), host(host), directory(std::move(directory))
     {
         connect(button, &QPushButton::clicked, this, [this] { showChoices(); });
@@ -107,9 +107,9 @@ private:
 };
 } // namespace
 
-void installForkLanguageDebug(QPushButton *button, QWidget *host, const QString &directory)
+void installDebugLanguageChooser(QPushButton *button, QWidget *host, const QString &directory)
 {
     if (button && host && !directory.isEmpty())
-        new ForkLanguageDebug(button, host, directory);
+        new DebugLanguageDialog(button, host, directory);
 }
 } // namespace kobalt::reader

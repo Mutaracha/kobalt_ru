@@ -9,7 +9,7 @@
 #include "ui/style/theme.h"
 #include "ui/panel_timing.h"
 #include "settings_panel.h"
-#include "app/about/fork_debug.h"
+#include "app/reader/settings/debug_language_dialog.h"
 #include "support/debug_language.h"
 #include "fork_settings.h"
 #include "ui/dialogs/choice_sheet.h"
@@ -1085,7 +1085,7 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
     debugRows->setSpacing(0);
     auto *languageButton = ui::makeCaptionButton(
             debugPage, debugRows, "rrDebugLanguageButton", strings::get("debug.language_title"), [] { });
-    installForkLanguageDebug(languageButton, inputs.window ? inputs.window : parent,
+    installDebugLanguageChooser(languageButton, inputs.window ? inputs.window : parent,
                              QString::fromLatin1(debugLanguageDirectory));
     section(debugPage, debugRows, "rrDebugCacheSection", strings::get("debug.section_caches"));
     evictBookCacheButton = ui::makeCaptionButton(debugPage, debugRows, "rrDebugEvictCache",
@@ -1260,6 +1260,7 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
                           zenAutomaticButton,
                           zenAboutButton,
                           textForNewBooksButton,
+                          languageButton,
                           evictBookCacheButton,
                           clearCachesButton,
                           clearDiagnosticLogButton,

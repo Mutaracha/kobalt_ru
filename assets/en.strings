@@ -1350,7 +1350,7 @@
 "settings.swipes_right_forward" = "Swipe right: next page; swipe left: previous page.";
 "reader.inpage_footnotes" = "Show footnotes at page bottom";
 "settings.inpage_footnotes_description" = "Show recognized notes below the text. Long notes continue on the next page. References keep their usual popup.";
-"debug.language_title" = "Debug interface language";
+"debug.language_title" = "Interface language";
 "debug.language_restart" = "Select a language for the next reader launch. The current interface will not change.";
 "debug.language_automatic" = "Automatic (device language)";
 "debug.language_saved" = "Saved. Exit Kobalt and open a book again to apply the language.";

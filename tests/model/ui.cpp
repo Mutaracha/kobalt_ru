@@ -18,7 +18,7 @@
 #include "app/reader/views/navigation.h"
 #include "app/reader/views/appearance_preview.h"
 #include "app/reader/settings/settings_panel.h"
-#include "app/about/fork_debug.h"
+#include "app/reader/settings/debug_language_dialog.h"
 #include "app/about/about_page.h"
 #include "build_info.h"
 #include "support/debug_language.h"
@@ -4198,7 +4198,7 @@ int main(int argc, char **argv)
         languageButton.setGeometry(120, 100, 800, 60);
         host.show();
         app.processEvents();
-        kobalt::reader::installForkLanguageDebug(&languageButton, &host, diagnostics.path());
+        kobalt::reader::installDebugLanguageChooser(&languageButton, &host, diagnostics.path());
         const auto tap = [&] { languageButton.click(); };
         require(!host.findChild<QWidget *>("rrDebugLanguage"), "Language modal opened without a click");
         tap();
@@ -4326,6 +4326,12 @@ int main(int argc, char **argv)
         require(debugPage && languageButton && languageButton->parentWidget() == debugPage
                         && debugPage->layout()->itemAt(0)->widget() == languageButton,
                 "Language action must be the first row of Debug, not About");
+        require(languageButton->height() == settings.debugVersionButton->height()
+                        && languageButton->minimumHeight() == settings.debugVersionButton->minimumHeight()
+                        && languageButton->styleSheet() == settings.debugVersionButton->styleSheet(),
+                "First Debug language row must use the shared Settings action metrics and style");
+        require(languageButton->height() >= kobalt::ui::interfaceLineHeight(languageButton->font()),
+                "Language action height clips its label");
         // Constructor-time styling must cover every main-page option. Merely
         // using DescribedOption leaves its default Toggle and zero inset.
         auto *notes = settings.inpageFootnotesOption;
