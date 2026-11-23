@@ -32,3 +32,63 @@ jobs:
           python3 platforms/patch-series/inventory.py --output build/patch-inventory
           diff -u doc/reports/patch-series/inventory.tsv build/patch-inventory/inventory.tsv
           diff -u doc/reports/patch-series/summary.json build/patch-inventory/summary.json
+  compile-prepared-prefix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [linux, qt5]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch upstream and prepare test-only prefix
+        run: |
+          git fetch --no-tags https://github.com/nicoverbruggen/kobalt.git 1796a32559dbb2912bd565990d1c7a0ca7ac4e52
+          python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, 'platforms/patch-series')
+          from apply import apply_to
+          out = Path('build/prepared-prefix').resolve()
+          out.mkdir(parents=True)
+          apply_to(Path.cwd(), Path('platforms/patch-series/series.json'), out, ready_only=True)
+          assert (out / 'src/publication/fb2_resources.cpp').is_file()
+          PY
+          cmake -DROOT="$PWD/build/prepared-prefix" -P platforms/control-beta10/validate.cmake
+      - name: Compile prepared prefix (not full-stack acceptance)
+        env:
+          SDK: ${{ matrix.sdk }}
+        run: |
+          set -euo pipefail
+          root="$PWD/build/prepared-prefix"
+          image=$(sh "$root/platforms/sdk-image.sh" "$SDK")
+          docker pull "$image"
+          mkdir -p "$RUNNER_TEMP/prefix-dependencies"
+          log="$RUNNER_TEMP/prefix-build.log"
+          set +e
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -e SDK \
+            -v "$root:/work" -v "$RUNNER_TEMP/prefix-dependencies:/dependency-cache" \
+            -w /work "$image" bash -euc '
+              if [[ "$SDK" == linux ]]; then
+                cd platforms/desktop
+                cmake --preset linux -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
+                cmake --build --preset linux --parallel 4 --target kobalt-local-resources-tests kobalt-zip-resource-tests kobalt-plain-archive-tests
+                for test in local-resources zip-resource plain-archive; do
+                  QT_QPA_PLATFORM=offscreen "/work/build/desktop-linux/kobalt-$test-tests"
+                done
+              else
+                cd platforms/kobo
+                cmake --preset qt5 -DKOBALT_COMMIT=1796a32 -DKOBALT_COMMIT_MODIFIED=ON -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
+                cmake --build --preset qt5 --parallel 4
+                cmake --build --preset qt5 --target check-package
+              fi
+            ' 2>&1 | tee "$log"
+          result=${PIPESTATUS[0]}
+          set -e
+          if [[ "$result" != 0 ]]; then
+            message=$(tail -n 18 "$log" | cut -c 1-200)
+            message=${message//'%'/'%25'}
+            message=${message//$'\n'/'%0A'}
+            echo "::error::$message"
+          fi
+          exit "$result"

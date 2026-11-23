@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import io
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -31,8 +32,8 @@ def load_series(manifest, root):
         if patch.get('status') == 'planned':
             pending = True
             continue
-        if patch.get('status') != 'ready' or pending:
-            raise ValueError('Ready patches must form an ordered prefix')
+        if patch.get('status') not in ('ready', 'prepared') or pending:
+            raise ValueError('Prepared/ready patches must form an ordered prefix')
         path = (root / patch['path']).resolve()
         if not path.is_relative_to(root.resolve()):
             raise ValueError('Patch path escapes repository')
@@ -54,12 +55,18 @@ def apply_to(root, manifest, destination, ready_only=False):
                 raise ValueError('Unsafe archive path')
         tar.extractall(destination)
     for patch in data['patches']:
-        if patch['status'] != 'ready':
+        if patch['status'] not in ('ready', 'prepared'):
             break
         path = (root / patch['path']).resolve()
-        subprocess.run(['git', 'apply', '--check', str(path)], cwd=destination, check=True)
-        subprocess.run(['git', 'apply', '--whitespace=nowarn', str(path)], cwd=destination, check=True)
-        print('Applied ' + patch['id'], flush=True)
+        # The export can live below the parent checkout's ignored build/.
+        # Do not let git discover that parent: subdirectory apply otherwise
+        # silently skips patch paths outside the current prefix.
+        env = {k: v for k, v in os.environ.items()
+               if k not in ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR')}
+        env['GIT_CEILING_DIRECTORIES'] = str(destination.resolve().parent)
+        subprocess.run(['git', 'apply', '--check', str(path)], cwd=destination, env=env, check=True)
+        subprocess.run(['git', 'apply', '--whitespace=nowarn', str(path)], cwd=destination, env=env, check=True)
+        print('Applied ' + patch['id'] + ' [' + patch['status'] + ']', flush=True)
     return data
 
 
@@ -69,7 +76,7 @@ def main():
     parser.add_argument('--manifest', type=Path, default=HERE / 'series.json')
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--output', type=Path, help='new full-stack export directory; refused while any patch is planned')
-    mode.add_argument('--verify-ready', action='store_true', help='temporary prefix check ONLY, not a full-stack build')
+    mode.add_argument('--verify-ready', action='store_true', help='temporary prepared/ready prefix check ONLY, not a full-stack build')
     args = parser.parse_args()
     try:
         data = load_series(args.manifest, args.repo)
@@ -92,7 +99,7 @@ def main():
         else:
             with tempfile.TemporaryDirectory(prefix='kobalt-series-check-') as tmp:
                 apply_to(args.repo, args.manifest, Path(tmp), ready_only=True)
-            print('Ready prefix applies; NOT a full-stack acceptance. Pending: ' + ', '.join(pending))
+            print('Prepared/ready prefix applies; NOT a full-stack acceptance. Pending acceptance: ' + ', '.join(pending))
     except (ValueError, OSError, KeyError, subprocess.CalledProcessError) as exc:
         parser.exit(2, str(exc) + '\n')
 

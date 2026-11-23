@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from apply import apply_to, load_series
+from apply import apply_to, load_series, ROOT
 
 
 class SeriesTests(unittest.TestCase):
@@ -57,6 +57,26 @@ class SeriesTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Full stack not ready'):
                 apply_to(self.root, self.manifest, self.root / 'output')
             git.assert_not_called()
+
+    def test_prepared_is_applyable_but_not_accepted(self):
+        self.data['patches'][0]['status'] = 'prepared'
+        self.load()
+        with patch('apply.subprocess.check_output') as git:
+            with self.assertRaisesRegex(ValueError, 'Full stack not ready'):
+                apply_to(self.root, self.manifest, self.root / 'output')
+            git.assert_not_called()
+
+    def test_nested_export_does_not_skip_patches(self):
+        build = ROOT / 'build'
+        build.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix='series-regression-', dir=build) as tmp:
+            destination = Path(tmp)
+            apply_to(ROOT, ROOT / 'platforms/patch-series/series.json', destination, ready_only=True)
+            self.assertEqual((destination / 'assets/ru.strings').read_bytes(),
+                             (ROOT / 'platforms/control-beta10/ru.strings').read_bytes())
+            self.assertTrue((destination / 'src/publication/fb2_resources.cpp').is_file())
+            self.assertIn('files[QString::fromLatin1(Publication::singleFb2ResourceName)]',
+                          (destination / 'tests/model/local_resources.cpp').read_text())
 
     def test_pin_required(self):
         self.data['upstream'] = 'main'

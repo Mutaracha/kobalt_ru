@@ -1,0 +1,196 @@
+diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
+index 4ff34cc7598204d2e91945b812fc9275bb26feba..70ae6e6c0a5025ebc2864e70a2e96d73d66356df 100644
+--- a/platforms/desktop/CMakeLists.txt
++++ b/platforms/desktop/CMakeLists.txt
+@@ -109,6 +109,7 @@ add_library(kobalt-core OBJECT ${shared} display.cpp ../standalone/native_image.
+     "${source}/support/diagnostics.cpp" "${source}/support/main_thread.cpp"
+     "${source}/publication/publication.cpp" "${source}/publication/zip_resource.cpp"
+     "${source}/publication/publication_fb2.cpp"
++    "${source}/publication/fb2_resources.cpp"
+     "${source}/publication/resource_cache.cpp" "${source}/publication/local_resources.cpp"
+     "${source}/publication/image_policy.cpp"
+     "${source}/publication/native_resources.cpp" "${source}/publication/resource_server.cpp"
+diff --git a/src/publication/fb2_resources.cpp b/src/publication/fb2_resources.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..f0db54a1016cf68649922a05e8efb6063836cf5f
+--- /dev/null
++++ b/src/publication/fb2_resources.cpp
+@@ -0,0 +1,55 @@
++#include "fb2_resources.h"
++#include "support/strings.h"
++#include <QElapsedTimer>
++#include <QFile>
++
++namespace kobalt::fb2 {
++bool transferFile(const QString &path, qint64 expectedSize,
++                  const std::shared_ptr<SourceLease> &lease, const ResourceCache::Sink &sink,
++                  QString *error, qint64 &sinkNs)
++{
++    const auto cancelled = [&lease] { return !lease || lease->revoked(); };
++    auto fail = [&](const char *reason) {
++        if (error && error->isEmpty()) {
++            *error = strings::get(reason);
++        }
++        return false;
++    };
++    if (cancelled()) {
++        return fail("error.reading_session_closed");
++    }
++    QFile file(path);
++    if (!file.open(QIODevice::ReadOnly) || file.size() != expectedSize) {
++        return fail("error.a_book_resource_changed_during_reading");
++    }
++    QElapsedTimer deadline;
++    deadline.start();
++    qint64 transferred = 0;
++    while (transferred < expectedSize) {
++        if (cancelled()) {
++            return fail("error.reading_session_closed");
++        }
++        if (deadline.elapsed() >= 5000) {
++            return fail("error.native_publication_transfer_timed_out");
++        }
++        const auto bytes = file.read(qMin(qint64(ResourceCache::blockBytes), expectedSize - transferred));
++        if (bytes.isEmpty()) {
++            return fail("error.could_not_load_a_book_resource");
++        }
++        QElapsedTimer work;
++        work.start();
++        if (!sink(bytes.constData(), bytes.size())) {
++            return false;
++        }
++        sinkNs += work.nsecsElapsed();
++        transferred += bytes.size();
++        if (file.size() != expectedSize)
++            return fail("error.a_book_resource_changed_during_reading");
++    }
++    if (cancelled())
++        return fail("error.reading_session_closed");
++    if (file.error() != QFile::NoError || file.size() != expectedSize || !file.atEnd())
++        return fail("error.a_book_resource_changed_during_reading");
++    return true;
++}
++} // namespace kobalt::fb2
+diff --git a/src/publication/fb2_resources.h b/src/publication/fb2_resources.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..e55e245f8366f64f61958da592f23670deece986
+--- /dev/null
++++ b/src/publication/fb2_resources.h
+@@ -0,0 +1,13 @@
++#pragma once
++#include "resource_cache.h"
++#include "source_lease.h"
++#include <memory>
++
++namespace kobalt::fb2 {
++// Synchronous worker-only transfer of the single virtual FB2 resource.
++// Keep the lease, bounded chunks, timeout, error precedence and sink accounting
++// identical to the local ZIP path. Does not own or extend the opening lifetime.
++bool transferFile(const QString &path, qint64 expectedSize,
++                  const std::shared_ptr<SourceLease> &lease, const ResourceCache::Sink &sink,
++                  QString *error, qint64 &sinkNs);
++} // namespace kobalt::fb2
+diff --git a/src/publication/local_resources.cpp b/src/publication/local_resources.cpp
+index df5744d50ec366bc72269c17e1ef5a4c6ab82591..c77e3575f34ea6a6953f0b4ad98919a1f572f113 100644
+--- a/src/publication/local_resources.cpp
++++ b/src/publication/local_resources.cpp
+@@ -1,4 +1,5 @@
+ #include "support/diagnostics.h"
++#include "fb2_resources.h"
+ #include "local_resources.h"
+ 
+ #include "image_policy.h"
+@@ -69,6 +70,10 @@ private:
+             const auto placeholder = imagePlaceholder({}, systemFont);
+             return !cancelled() && sink(placeholder.constData(), placeholder.size());
+         }
++        // A real EPUB may contain a member with this spelling. Only a raw
++        // FB2 inspection produces a one-member virtual resource map.
++        if (sizes.size() == 1 && name == QLatin1String(Publication::singleFb2ResourceName))
++            return fb2::transferFile(path, sizes.value(name), lease, sink, error, sinkNs);
+         ZipResource stream;
+         if (!stream.open(path, name, index, ResourceCache::budgetBytes)) {
+             return fail("error.could_not_load_a_book_resource");
+diff --git a/tests/model/local_resources.cpp b/tests/model/local_resources.cpp
+index 4defe30c05077a1c44e71154f6ee3ac7e0f90215..3b86685cf359eeb973080197a21394570cd8e65a 100644
+--- a/tests/model/local_resources.cpp
++++ b/tests/model/local_resources.cpp
+@@ -1,5 +1,6 @@
+ #include "check.h"
+ #include "publication/fb2.h"
++#include "publication/fb2_resources.h"
+ #include "publication/local_resources.h"
+ #include "publication/publication.h"
+ #include "support/strings.h"
+@@ -148,6 +149,7 @@ int main(int argc, char **argv)
+         }
+         return result;
+     };
++    files[QString::fromLatin1(Publication::singleFb2ResourceName)] = "ordinary ZIP member";
+     auto rejected = std::make_shared<std::atomic_bool>(false);
+     for (bool compressed : { false, true }) {
+         write(compressed);
+@@ -160,6 +162,9 @@ int main(int argc, char **argv)
+             auto cache = factory(sizes(), "sans-serif", rejected);
+             require(cache->readBounded("data.bin", ResourceCache::budgetBytes) == files["data.bin"],
+                     "Block read differs");
++            require(cache->readBounded(QString::fromLatin1(Publication::singleFb2ResourceName),
++                                      ResourceCache::budgetBytes) == "ordinary ZIP member",
++                    "FB2 virtual name hijacked an ordinary ZIP member");
+             const auto requests = cache->statistics()["requests"].toInt();
+             require(cache->readBounded("data.bin", ResourceCache::budgetBytes) == files["data.bin"]
+                             && cache->statistics()["requests"].toInt() == requests,
+@@ -259,6 +264,53 @@ int main(int argc, char **argv)
+         require(cache->readBounded("image.png", ResourceCache::budgetBytes).startsWith("<svg"),
+                 "Oversized image source was read instead of replaced");
+     }
++    // Raw-file transfers keep the existing worker lease and bounded-block contract.
++    {
++        const auto rawPath = directory.path() + "/raw.fb2";
++        const auto data = QByteArray("<FictionBook><body><p>")
++                + QByteArray(3 * ResourceCache::blockBytes + 17, 'x')
++                + "</p></body></FictionBook>";
++        QFile file(rawPath);
++        require(file.open(QIODevice::WriteOnly) && file.write(data) == data.size(), "write raw FB2");
++        file.close();
++        Publication publication;
++        QString error;
++        require(publication.inspect(data, &error), qPrintable(error));
++        auto lease = std::make_shared<SourceLease>();
++        qint64 sinkNs = 0;
++        QByteArray received;
++        int calls = 0;
++        const auto sink = [&](const char *bytes, qint64 size) {
++            require(size <= ResourceCache::blockBytes, "FB2 transfer exceeded block bound");
++            ++calls;
++            received.append(bytes, int(size));
++            return true;
++        };
++        require(fb2::transferFile(rawPath, data.size(), lease, sink, &error, sinkNs)
++                        && received == data && calls >= 4, "FB2 bounded transfer");
++        require(!fb2::transferFile(rawPath, data.size() + 1, lease, sink, &error, sinkNs),
++                "FB2 resource size change was accepted");
++        error.clear();
++        calls = 0;
++        require(!fb2::transferFile(rawPath, data.size(), lease,
++                    [&](const char *, qint64) { ++calls; return false; }, &error, sinkNs)
++                        && calls == 1, "FB2 sink cancellation did not stop transfer");
++        auto revoked = std::make_shared<SourceLease>();
++        calls = 0;
++        require(!fb2::transferFile(rawPath, data.size(), revoked,
++                    [&](const char *, qint64) { ++calls; revoked->revoke(); return true; },
++                    &error, sinkNs) && calls == 1, "FB2 mid-transfer revocation ignored");
++        calls = 0;
++        require(!fb2::transferFile(rawPath, data.size(), revoked, sink, &error, sinkNs)
++                        && calls == 0, "FB2 revoked lease reached sink");
++        auto source = native::openLocalPublication(rawPath, &error);
++        require(source && source->active(), "Local publication rejected inspected FB2");
++        auto cache = source->resources(std::make_shared<SourceLease>())(
++                publication.sizes(), {}, std::make_shared<std::atomic_bool>(false));
++        require(cache->readBounded(QString::fromLatin1(Publication::singleFb2ResourceName),
++                                  ResourceCache::budgetBytes) == data,
++                "Local FB2 resource adapter altered raw bytes");
++    }
+     files["META-INF/license.lcpl"] = "{}";
+     write();
+     require(!native::openLocalPublication(path), "Local backend accepted a protected publication");
