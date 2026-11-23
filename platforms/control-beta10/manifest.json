@@ -53,7 +53,7 @@
     },
     {
       "path": "platforms/desktop/CMakeLists.txt",
-      "sha256": "77f458b5acde83b14b13f45c622dec4fc42a73dedf651051af7ff651fd502c7a",
+      "sha256": "36b892b9af15fd16e865f87669e43dda10a5d06a065a9d55657e238674c3a3fd",
       "upstream_sha256": "0e84fe9cb498510424b61f876ae1bb4352c335769084b0812f772ff16b699bc1"
     },
     {
@@ -100,6 +100,11 @@
       "path": "src/app/reader/panels/stats_cell.h",
       "sha256": "c562bd2cb1bab1229fd20fa7c5ef1d61e47a94a828d6c2d5e456766fa33b2e33",
       "upstream_sha256": "bce1622b5b0b32f922449706a9bb36476f08bfe8ff6e4fffa6635fb3e9c1b400"
+    },
+    {
+      "path": "src/app/reader/settings/button_controls.cpp",
+      "sha256": "fcd7aac6a87d2a56c451b19977993b811f8925bd12763e23c3fef10f6d0b7c73",
+      "upstream_sha256": "c03b06655813348f4613cfe661b06a3ce803d454f7232c86481ca619c1c9294d"
     },
     {
       "path": "src/app/reader/settings/interface_style.h",
@@ -173,7 +178,7 @@
     },
     {
       "path": "tests/model/ru_control_ui.cpp",
-      "sha256": "89219a80f6f0a5494d31d96b2d3ae3386fb97de1a91b108381848d9de4378eb7",
+      "sha256": "00e766e84d8829693d29d922c18e7d793377712bd6f20474de105d7913543e63",
       "upstream_sha256": null
     }
   ]

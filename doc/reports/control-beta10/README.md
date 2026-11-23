@@ -15,7 +15,7 @@
 Корневые src/assets форка и старые fork workflows не входят в сборку.
 
 Полный точный unified/binary diff: `platforms/control-beta10/ru.patch`.
-Исчерпывающий список **35** отличающихся файлов с исходными/новыми SHA-256:
+Исчерпывающий список **36** отличающихся файлов с исходными/новыми SHA-256:
 `platforms/control-beta10/manifest.json`. Остальные upstream файлы побайтно прежние.
 
 | Файлы | Назначение |
@@ -118,3 +118,7 @@ policy; его call sites в `navigation.cpp`, `chapter_graph.cpp`, `stats_cell.
 в exact patch как проверки. Workflow отдельно собирает/runs RU и EN процесс,
 публикует synthetic samples. Qt5 package и focused native test текущей ревизии
 проверяются отдельно; предыдущий PASS к ним не относится.
+
+Дополнительно по screen020: в `button_controls.cpp` включён существующий
+wrapLabel только для RU checkbox инверсии кнопок (без mapping changes).
+Native regression зарегистрирован в обязательном settings area desktop harness.

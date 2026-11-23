@@ -4,7 +4,7 @@
 
 Originals: `test & diagnostic/56843a0/screen_001.png` through `screen_060.png`.
 Source commit `4b59de041c4df8ffad16ea5fe037a91fc9cb1dfd`, identified by user as
-runtime56843a0. All 60 inspected as numbered contact sheets; 009 and 041 also
+runtime56843a0. All 60 inspected as numbered contact sheets; 009, 020 and 041 also
 inspected at original size to isolate the geometry/percent defects.
 No device logs, live session, other orientations or UI scaling levels supplied.
 A contact-sheet pass is not a pixel-perfect certification of all 60 screens.
@@ -22,6 +22,7 @@ snapshot storage, refresh, battery data or reading engine changes.
 | 009–014 | Corsiva statistics figures optically oversized relative to units/labels | Scoped RU statistics font = 80% previous requested pixels, used for both measurement and painting, including StatsCell QSS, time figures, records and achievement numbers. Brand titles remain unchanged. 80% is a review candidate, not user-accepted size. |
 | 041 Widgets | «1 ч 31 мин» clipped at right edge of Today tile | Previous sleep single-line fitting was absent in original control. Restored bounded RU fit down to half original pixelSize, then elide at the fitted size; same renderer measures and paints. This applies to the actual full-screen design and gallery, not a gallery-only hack. |
 | 041 Pill/Caption/Night | doubled `2%%` | Eleven more inherited fork templates still owned a literal percent sign although beta10 supplies it in percentArgument/sleepPercentText. Removed suffixes to match beta10 EN contract; added build/native guards. Battery `common.percent` fix from previous package retained. |
+| 020 hardware buttons | Long inversion option title ends with ellipsis | Enabled existing wrapLabel presentation only on the RU inversion checkbox; no button-mapping logic changes. Native test inspects the actual dialog row. |
 | Code audit: Bookmark ribbon | Previous two-row remaining-time fit absent | Restored pattern-derived caption/time split, reserved two detail rows in RU, fixed battery anchor. Legacy other-language remaining text is retained as one line. No sleep lifecycle port. Screenshot set does not show the full ribbon runtime. |
 | Code audit: Widgets remaining row | Caption/time could overlap with longer values | RU time constrained to its own region after the two-line caption, fitted via same helper. English baseline path unchanged. |
 | Code audit: translated rich text | Explicit newline must not become whitespace in translated sleep captions | Escape first, then convert translated newlines to `<br>`; no arbitrary HTML from strings. |
@@ -70,3 +71,13 @@ fit and stable status-region geometry; review portrait/landscape at 212/300 PPI
 and large UI, numeric widths (1/11/111/9999), one/two/long time values and sleep
 charging/off states. If upstream supplies an equivalent fix, drop that hunk
 instead of stacking duplicate geometry/formatting policy.
+
+## CI harness integration note
+
+First Qt5 package on 9df3a64b passed (CI45236979735), while the newly registered
+native test could not configure: the upstream desktop harness requires every
+new test to have a validation-area mapping. Added settings area mapping and
+one-line test comment; this is test integration, not evidence of a passing test.
+Blob log downloads are blocked in Arena; the workflow now exposes a single
+multiline failure-tail annotation via the GitHub API. First per-line annotation
+attempt was truncated by GitHub's annotation limit. New native/Qt5 checks pending.

@@ -9738,7 +9738,7 @@ index fdc2678d..cc88d2bf 100644
      app.setOrganizationName("Kobalt");
      app.setQuitOnLastWindowClosed(false);
 diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
-index 08d4f7ee..50a46bc3 100644
+index 08d4f7ee..6a3a00c0 100644
 --- a/platforms/desktop/CMakeLists.txt
 +++ b/platforms/desktop/CMakeLists.txt
 @@ -814,6 +814,7 @@ if(BUILD_TESTING)
@@ -9749,6 +9749,14 @@ index 08d4f7ee..50a46bc3 100644
      target_sources(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}/platforms/kobo/display/page_animation.cpp")
      target_include_directories(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}" "${source}")
      target_link_libraries(kobalt-ui-tests PRIVATE Qt6::GuiPrivate)
+@@ -839,6 +840,7 @@ if(BUILD_TESTING)
+     # `light`, `fast` and `integration` must not appear in one because the lane
+     # presets filter on them.
+     set(kobalt_test_areas
++        "settings:^component[.]ru-control-ui$"
+         "gallery:^(build\\.screenshotBooks|desktop\\.(gallery.*|phoneFrame|primaryViews))$"
+         "evaluation:^(build\\.(loadLock|eval-device-outcomes)|desktop\\.(scenarioCacheRemoval|scenarioResultFile|timingEvents|fastLocateText|deviceChecks)|platform\\.scenario-sleep|lifecycle\\.benchmarkNoticeAfterRun)$"
+         "kosync:^(lifecycle\\.(kosync.*|wifi.*)|desktop\\.(fastKosyncChoice|kosyncChoice|syncChoiceView)|model\\.(kosync|sync-coordinator)|component\\.kosync-ui|platform\\.native-sync-network)$"
 diff --git a/platforms/desktop/main.cpp b/platforms/desktop/main.cpp
 index ac74bec0..0d4674e6 100644
 --- a/platforms/desktop/main.cpp
@@ -10141,6 +10149,22 @@ index 9d9a32d6..070d354c 100644
                  unitMetrics(ui::interfaceFont(ui::metrics::chapters::unitText));
          caption->setGeometry(ui::metrics::chrome::inset, ui::metrics::chapters::cellPadding, inner,
                               ui::interfaceLineHeight(captionMetrics));
+diff --git a/src/app/reader/settings/button_controls.cpp b/src/app/reader/settings/button_controls.cpp
+index 38dfddfa..4c4aacf2 100644
+--- a/src/app/reader/settings/button_controls.cpp
++++ b/src/app/reader/settings/button_controls.cpp
+@@ -336,6 +336,11 @@ void SettingsPanel::showButtonControls(const pageButtons::Buttons &buttons,
+         auto *invert = checklistOption(card, "rrInvertLandscapeButtons",
+                                        strings::get("buttons.invert_landscape"),
+                                        strings::get("buttons.invert_landscape_hint"), false);
++        if (strings::locale() == strings::Locale::Russian) {
++            auto look = invert->presentation();
++            look.wrapLabel = true;
++            invert->setPresentation(look);
++        }
+         invert->setChecked(draft->value(pageButtons::invertLandscapeKey).toBool());
+         if (landscape && buttons.size() == 2) {
+             if (invert->isChecked())
 diff --git a/src/app/reader/settings/interface_style.h b/src/app/reader/settings/interface_style.h
 index 723c0fca..a52b76b8 100644
 --- a/src/app/reader/settings/interface_style.h
@@ -10677,10 +10701,10 @@ index dca6151c..dd104d00 100644
          if (family.isEmpty())
 diff --git a/tests/model/ru_control_ui.cpp b/tests/model/ru_control_ui.cpp
 new file mode 100644
-index 00000000..497814d0
+index 00000000..4299212b
 --- /dev/null
 +++ b/tests/model/ru_control_ui.cpp
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,134 @@
 +#include "check.h"
 +#include "reader_inputs.h"
 +#include "support/percentage_text.h"
@@ -10688,6 +10712,8 @@ index 00000000..497814d0
 +#include "ui/controls/text.h"
 +#include "app/reader/panels/stats_cell.h"
 +#include "app/reader/settings/interface_style.h"
++#include "app/reader/settings/settings_panel.h"
++#include "ui/controls/options.h"
 +#include "app/reader/views/sleep_screen.h"
 +#include <QApplication>
 +#include <QDir>
@@ -10705,6 +10731,7 @@ index 00000000..497814d0
 +    return count;
 +}
 +
++// Checks RU label rasters, sleep fitting, percent contracts, statistics and EN isolation.
 +int main(int argc, char **argv)
 +{
 +    QApplication app(argc, argv);
@@ -10782,6 +10809,15 @@ index 00000000..497814d0
 +            require(cell.grab().save(output + QString("/stats-%1.png").arg(ppi)), "Cannot save statistics sample");
 +    }
 +    ui::setDensity(ui::designPpi);
++    {
++        QWidget host;
++        host.resize(1180, 1568);
++        reader::SettingsPanel settings(&host, {});
++        settings.showButtonControls(pageButtons::paging(), {}, {});
++        const auto *invert = host.findChild<ui::DescribedOption *>("rrInvertLandscapeButtons");
++        require(invert && invert->presentation().wrapLabel == (language == strings::Locale::Russian),
++                "Hardware inversion title wrapping did not follow the UI locale");
++    }
 +    for (const auto design : { sleep::Design::Widgets, sleep::Design::Bookmark,
 +                              sleep::Design::Caption, sleep::Design::Night }) {
 +        sleep::Snapshot shot;
