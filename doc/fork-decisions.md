@@ -303,3 +303,11 @@ queue; no device acceptance is implied. EPUB Hybrid algorithms remain excluded.
 это не утверждение побайтового равенства всего движка и не доказательство
 воспроизведения дефекта в чистой upstream-сборке.
 Доказательства и границы: [отчёт](reports/beta9-hybrid-counter.md).
+
+## B10-LIBRA2-OPTION — проверка замены локального mapping
+
+По сообщению пользователя upstream beta10 содержит отдельную опцию, которая
+должна заменить наше исправление Libra2. До сверки beta10 имя/API не утверждаются.
+На обновлении проверить orientation × inversion; при покрытии сценария использовать
+upstream и убрать локальную коррекцию. Не сохранять две инверсии одновременно.
+[Текущая дельта и проверки](reports/beta10-fork-map/sleep-refresh-cache-opening.md#f08a-libra2--проверить-заменяющую-опцию-beta10).

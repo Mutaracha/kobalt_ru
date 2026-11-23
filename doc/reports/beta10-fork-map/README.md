@@ -23,6 +23,8 @@
 selectors, DOM markers, CSS, семантика FB2, checked-state иконок, checkbox geometry,
 реальный About hook и границы общего upstream-кода.
 
+[Сон, Kobo/BOOX refresh, sample cache и открытие книг — подробности](sleep-refresh-cache-opening.md).
+
 ## Смысловая карта
 
 ### F01. FB2: открытие, ресурсы, метаданные и платформенные входы
@@ -89,7 +91,12 @@ selectors, DOM markers, CSS, семантика FB2, checked-state иконок,
 
 Файлы: `platforms/kobo/common/page_button_mapping.h`, `nickel-qt5/native_ui.cpp`; `platforms/kobo/display/page_animation.cpp`, `page_transition.h`, `nickel-qt5/refresh.cpp`; `src/platform/api/page_animation_support.h`; `platforms/android/app/src/org/kobalt/android/BooxRefresh.java`.
 
-**Beta10:** это защищённые платформенные исключения, не случайная устаревшая дельта. Сверить новые upstream изменения по hunks; не перезаписать утверждённые mapping/waveform. **Проверки на устройстве:** Libra2 все ориентации и инверсия, dark/light, full/partial refresh, анимации и ghosting; BOOX отдельно. Тесты `native_dialog_overlay.cpp`, `page_animation.cpp`, `page_transition_native.cpp`, `tests/pewter/refresh_qt5.cpp` и `nickel*`. CI не заменяет waveform acceptance.
+**Beta10 / Libra2:** по сообщению пользователя разработчик добавил отдельную
+опцию, заменяющую нашу коррекцию. Сначала проверить её реализацию и все ориентации/
+инверсию на Libra2; при эквивалентности убрать fork mapping, не применять обе
+коррекции. Название/поведение опции ещё не сверены с beta10.
+
+**Display/BOOX:** это отдельные платформенные дельты, не часть button mapping. Сверить новые upstream изменения по hunks; не перезаписать утверждённые mapping/waveform. **Проверки на устройстве:** Libra2 все ориентации и инверсия, dark/light, full/partial refresh, анимации и ghosting; BOOX отдельно. Тесты `native_dialog_overlay.cpp`, `page_animation.cpp`, `page_transition_native.cpp`, `tests/pewter/refresh_qt5.cpp` и `nickel*`. CI не заменяет waveform acceptance.
 
 ### F09. Cache образцов оформления: transient diagnostics
 
