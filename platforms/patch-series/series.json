@@ -64,7 +64,7 @@
       "status": "prepared",
       "scope": "Comics appearance/session/UI wiring and graphics refresh; toolbar composition remains in 040",
       "path": "platforms/patch-series/patches/032-comics-integration-refresh.patch",
-      "sha256": "38893a695b4ca0549f758d2b8a65abc84de5fbdbd261ca878fcba5aa31ae0c72",
+      "sha256": "48d220afe45d76d52dc84d661a8babcefcfbf49b9189eb0d23144cce0f818836",
       "validation": "Clean sequential apply and Python checks locally; native runtime/Qt5 package CI pending."
     },
     {
