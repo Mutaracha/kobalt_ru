@@ -1,0 +1,3 @@
+
+# An embedded source patch preserves upstream license whitespace verbatim.
+platforms/control-beta10/ru.patch -whitespace

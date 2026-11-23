@@ -1,0 +1,42 @@
+cmake_minimum_required(VERSION 3.22)
+if(NOT DEFINED ROOT)
+    message(FATAL_ERROR "ROOT must point to the prepared beta10 control export")
+endif()
+include("${ROOT}/platforms/strings.cmake")
+kobalt_check_string_parity("${ROOT}/assets/en.strings" "${ROOT}/assets/ru.strings")
+# beta10 percentArgument() supplies the sign; old fork RU must not append it again.
+kobalt_parse_strings("${ROOT}/assets/en.strings" en)
+kobalt_parse_strings("${ROOT}/assets/ru.strings" ru)
+foreach(language IN ITEMS en ru)
+    if(NOT "${${language}_value_common.percent}" STREQUAL "\"%1\"")
+        message(FATAL_ERROR "beta10 common.percent must wrap the already formatted percent without adding a sign (${language})")
+    endif()
+endforeach()
+file(GLOB_RECURSE sources "${ROOT}/src/*.cpp" "${ROOT}/src/*.h")
+file(MAKE_DIRECTORY "${ROOT}/build/control-validation")
+kobalt_generate_strings("${ROOT}/assets/en.strings" "${ROOT}/build/control-validation/kobalt_strings.inc" ${sources})
+kobalt_generate_strings("${ROOT}/assets/ru.strings" "${ROOT}/build/control-validation/kobalt_strings_ru.inc")
+message(STATUS "Control beta10: EN/RU keys, placeholders and production references passed")
+file(READ "${ROOT}/assets/manifest.json" manifest)
+string(JSON count LENGTH "${manifest}" files)
+math(EXPR last "${count} - 1")
+foreach(index RANGE ${last})
+    string(JSON path GET "${manifest}" files ${index} path)
+    string(JSON expected GET "${manifest}" files ${index} sha256)
+    file(SHA256 "${ROOT}/assets/${path}" actual)
+    if(NOT actual STREQUAL expected)
+        message(FATAL_ERROR "Control asset checksum mismatch: ${path}")
+    endif()
+endforeach()
+message(STATUS "Control beta10: runtime asset manifest hashes passed")
+
+# beta10 moved percent signs into formatted arguments at these call sites.
+# Slot parity alone cannot detect the old fork's doubled literal sign.
+foreach(key IN ITEMS chapter_graph.book_progress chapter_graph.chapter_progress
+        header_footer.field_description.battery_warning kosync.percent kosync.resume_description
+        reader.brightness reader.warmth sleep.battery_charged sleep.percent_read
+        sleep.percent_through sleep.state_with_battery)
+    if("${ru_value_${key}}" MATCHES "%[1-9][0-9]?%")
+        message(FATAL_ERROR "Obsolete literal percent suffix in RU ${key}")
+    endif()
+endforeach()

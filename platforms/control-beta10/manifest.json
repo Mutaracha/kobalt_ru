@@ -1,0 +1,185 @@
+{
+  "upstream": "1796a32559dbb2912bd565990d1c7a0ca7ac4e52",
+  "files": [
+    {
+      "path": "assets/CMakeLists.txt",
+      "sha256": "6b9a5760ef9ff9c1c9897b442c407f4077befd9ec6ef5c89db033a7478e774b5",
+      "upstream_sha256": "35e0ddfb11b235a411430c846710bd65e6b273c93d4b2a7954d979968766b282"
+    },
+    {
+      "path": "assets/acknowledgments.json",
+      "sha256": "9d75b1d2dc3e604f9c3a1062c28e5eb111b32de2b3aa08ca127ab8d6ba2eec9b",
+      "upstream_sha256": "a55084eb78102c4c1f8d4484df845dd8f3141f8d5e8dc4d6af17b6c6c8111e9a"
+    },
+    {
+      "path": "assets/fonts/Caveat-Bold.ttf",
+      "sha256": "b42cc772f3528d9150c29d6051e2ed3fd472ad4e584c73fe1500ee628d6b1ac0",
+      "upstream_sha256": null
+    },
+    {
+      "path": "assets/fonts/Caveat-Regular.ttf",
+      "sha256": "271ee7c4a60b1be2ba13a66990e7475c76c982ac6e906c9db25139976282f6b8",
+      "upstream_sha256": null
+    },
+    {
+      "path": "assets/fonts/MTCORSVA.TTF",
+      "sha256": "a6f6dacb871be365ad93fe1aab09332f768cd2aa35fdfca8e0053a38f5a2662b",
+      "upstream_sha256": null
+    },
+    {
+      "path": "assets/manifest.json",
+      "sha256": "ecec67523e1e8c547fb90b6eea49940b587701840eac4a21a3af6d30353ee2ff",
+      "upstream_sha256": "922e66d57e9bcb338149a6ef5b45b2bc816aac6bd346470b0b0d8dc29e17f7e6"
+    },
+    {
+      "path": "assets/notices/Caveat-OFL",
+      "sha256": "1f9d81d094273d82f3898a1ee8b598a717d050ecbf5ff7bede105b704880157b",
+      "upstream_sha256": null
+    },
+    {
+      "path": "assets/notices/Monotype-Corsiva",
+      "sha256": "a63dd87f11bbe930f3af05ac7186d524547cdc8b2904eb66a9522f1ef1feacda",
+      "upstream_sha256": null
+    },
+    {
+      "path": "assets/ru.strings",
+      "sha256": "7bee1c2dd030a7590d05788cbff7bcbfb0244328f4550e32964954e065dbba6b",
+      "upstream_sha256": null
+    },
+    {
+      "path": "platforms/android/main.cpp",
+      "sha256": "3f5a7fe713cb014a80e33105119d7156e3e420f9ee01cd48d32bcedb56988ae3",
+      "upstream_sha256": "f4b6532fb27f8bc556e3c5b7f5934e13e047081f0ab265bb4d5ac84aa7417d26"
+    },
+    {
+      "path": "platforms/desktop/CMakeLists.txt",
+      "sha256": "36b892b9af15fd16e865f87669e43dda10a5d06a065a9d55657e238674c3a3fd",
+      "upstream_sha256": "0e84fe9cb498510424b61f876ae1bb4352c335769084b0812f772ff16b699bc1"
+    },
+    {
+      "path": "platforms/desktop/main.cpp",
+      "sha256": "5a9289d053db0d7ed15d4bb03f28b8f4fd7cdcc5b7afb204ccd2997533b86419",
+      "upstream_sha256": "a4edd36ab17aa0123d924d08355f7e2d622a752c1a3c753b21ba07d9074cac17"
+    },
+    {
+      "path": "platforms/kobo/common/reader_coordinator.cpp",
+      "sha256": "bc1ee790bde59f360284a6fdadcb9558d805786107dfdc870657537633d53665",
+      "upstream_sha256": "85ea5f5fbc49aa05c6be59f7944da19eb97e0fcb158b9c90a1a9a57dbc590d1f"
+    },
+    {
+      "path": "platforms/kobo/nickel-qt5/reader_controller.cpp",
+      "sha256": "37eaf0fc5cad97798e0c6528d76e3f92522d5a1a7b6f3809ba2f3861e7207e39",
+      "upstream_sha256": "4a8b88f8481e5909ad7ba86ae8f58b7f72261afbd1ebea12497a3c15082cacbd"
+    },
+    {
+      "path": "platforms/kobo/nickel-qt6/reader_controller.cpp",
+      "sha256": "c29276fffd74c0d1359d30905b0584606577de1569d2098b8899216dff88c221",
+      "upstream_sha256": "5b82d596fd684e1acd4db195d011a4f2806e8e8c4ef6a383176cdd98409bb4d9"
+    },
+    {
+      "path": "platforms/strings-test.cmake",
+      "sha256": "9eeb8d912423e9d2739701ba0ff897c49c4d2d8d8c6e8d5e9122cf9169716856",
+      "upstream_sha256": "8fb9b290b123e0e1a69b0d4e3501cfd1e970c9a5c3dca1a4d99edf686bedc262"
+    },
+    {
+      "path": "platforms/strings.cmake",
+      "sha256": "8490c6a57f6c7059800ec0aa682b4be512c4186e6045c5ce13ac4905ddb2d94b",
+      "upstream_sha256": "5bf499ace9fe9b35733839a8cdc3f12a382b045b61a29c04858f26816e194d6b"
+    },
+    {
+      "path": "src/app/reader/panels/activity_view.cpp",
+      "sha256": "adbf33509e724a91739cdc18720f554ef4b46ffb892b3cbef6939d5d451b18c6",
+      "upstream_sha256": "09d44b931a6cb4eb5462c73580f80018806fcc3c7941d04b074761fca5b1265a"
+    },
+    {
+      "path": "src/app/reader/panels/chapter_graph.cpp",
+      "sha256": "13d907b0d40be8d22bc3aa854b834dcff50a90f1e6a69a3f3cddaa2188711d6b",
+      "upstream_sha256": "bc36537c52251ff225318d3697220c4fc29612a590aaca3a5433b9565f4574b8"
+    },
+    {
+      "path": "src/app/reader/panels/stats_cell.h",
+      "sha256": "c562bd2cb1bab1229fd20fa7c5ef1d61e47a94a828d6c2d5e456766fa33b2e33",
+      "upstream_sha256": "bce1622b5b0b32f922449706a9bb36476f08bfe8ff6e4fffa6635fb3e9c1b400"
+    },
+    {
+      "path": "src/app/reader/settings/button_controls.cpp",
+      "sha256": "fcd7aac6a87d2a56c451b19977993b811f8925bd12763e23c3fef10f6d0b7c73",
+      "upstream_sha256": "c03b06655813348f4613cfe661b06a3ce803d454f7232c86481ca619c1c9294d"
+    },
+    {
+      "path": "src/app/reader/settings/interface_style.h",
+      "sha256": "3356d4f0e37828a30a73abc852ac1c9195ea5180ba1192107e8dc2c474cca090",
+      "upstream_sha256": "649db71b47d2d38ece90ab2a1c8e5902237791517b72ec7da650508ab2d6404d"
+    },
+    {
+      "path": "src/app/reader/views/navigation.cpp",
+      "sha256": "d84be9f4b8177b1105762edfb39c926f4bfaafef60c7d82870e150f5599bd43e",
+      "upstream_sha256": "3ab47d78d75a769a9e0268d86bbc5247ea8e1af94d31a23ec28ec7aee054b896"
+    },
+    {
+      "path": "src/app/reader/views/sleep_designs.cpp",
+      "sha256": "a607b11f5f26ecfd14b754e306cf90c248d031e5d1a5af05b764e177b455f589",
+      "upstream_sha256": "de47f364edbe1d60ccf006c4d8f60a4b6061a3978f9469b08acebeb12ac0ec05"
+    },
+    {
+      "path": "src/app/reader/views/sleep_screen.cpp",
+      "sha256": "82f752360ca16481f617ec1cc5bb0ee0e305ec415a55f88397b005261b565358",
+      "upstream_sha256": "595d72a06a9a4b8ce390f93ccc4820efd2ebe706bae7fef4e6c304c86f8e6829"
+    },
+    {
+      "path": "src/assets/bundled_fonts.cpp",
+      "sha256": "a7e0f37e505bb967d3bc49a521b026b15db415122207771538c747e1c2d43b20",
+      "upstream_sha256": "83b0a13d689fb603adfe9748964c689d9cfc58c6f44eb7c5a66659ad9f545ac0"
+    },
+    {
+      "path": "src/assets/font_catalog.cpp",
+      "sha256": "cd1c8c85f032d9c4a652a0af047f761f0ea55c45d3be769113fae2a7567aacdd",
+      "upstream_sha256": "c8e98edb658a97e70fa5a3972fbd93723c8f01f6b4ede70b0e2415261c252717"
+    },
+    {
+      "path": "src/support/percentage_text.h",
+      "sha256": "ab3538df434b7b5328196b9dde437ccedfea8cef711a5b1df782e36835fe7f46",
+      "upstream_sha256": "856a6b9eb9985a4354f682412602b688e730a0457a5be98f69b24d4535a38cf2"
+    },
+    {
+      "path": "src/support/string_locale.h",
+      "sha256": "4fefa89c9e70bf4f994667199eb3201899fe6cdcd90c9bd763caa0ceb6a45432",
+      "upstream_sha256": null
+    },
+    {
+      "path": "src/support/string_table.h",
+      "sha256": "1de2477848360ec82f38d2d6bb6f8adaeb71c91e76a6248271d41cc841a927cd",
+      "upstream_sha256": null
+    },
+    {
+      "path": "src/support/strings.h",
+      "sha256": "c0bd2355567fd704f9d2f270e3febfa01a34293c43b954f9eb358184bfb0990b",
+      "upstream_sha256": "c966790512fbf30f4e6d4d8926b772f05428893442d0a8b86dee5543cc40215a"
+    },
+    {
+      "path": "src/ui/controls/buttons.cpp",
+      "sha256": "562cebb4821b22a876b95771a9458acaa3639b8e8e954451b1c478c5586c99eb",
+      "upstream_sha256": "bd16ab202d5a57886e1a688708bfe9be1aa12e8639e2f731f082b108f7756f7f"
+    },
+    {
+      "path": "src/ui/style/fonts.cpp",
+      "sha256": "9842cc12b6a27fde9fc79013d219417e89a2941f58f3c969b12364c4a97ad0a4",
+      "upstream_sha256": "5feb84e7dfbfce0a638b8b53aee35c502ca52fd7f8b90494fe8ffe75af3b3259"
+    },
+    {
+      "path": "src/ui/style/locale_text.h",
+      "sha256": "91b59262c5b58ebe029852c1a70a61d1d7525c360169d6b5db96e6665404d339",
+      "upstream_sha256": null
+    },
+    {
+      "path": "src/ui/style/private_text.cpp",
+      "sha256": "c3392433c19c130238475ab5f6a18ddb2aa1e87dc5ffe631495189df46e8dad1",
+      "upstream_sha256": "d3c021dfe6205422b1d3691c0d23e30a374356eab3acf420cd61a7cf8b5c9467"
+    },
+    {
+      "path": "tests/model/ru_control_ui.cpp",
+      "sha256": "7fc88faf6d50882efb44c7fa5dd6de335688b132a626819ce5eb8f4c377e9d0b",
+      "upstream_sha256": null
+    }
+  ]
+}

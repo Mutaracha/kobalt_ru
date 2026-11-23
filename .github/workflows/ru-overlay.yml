@@ -1,0 +1,30 @@
+name: Russian overlay checks
+on:
+  push:
+    paths:
+      - 'platforms/control-beta10/**'
+      - '.github/workflows/ru-overlay.yml'
+  pull_request:
+    paths:
+      - 'platforms/control-beta10/**'
+      - '.github/workflows/ru-overlay.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch pinned upstream object
+        run: git fetch --no-tags https://github.com/nicoverbruggen/kobalt.git 1796a32559dbb2912bd565990d1c7a0ca7ac4e52
+      - name: Auditor regression tests
+        run: python3 -m unittest discover -s platforms/control-beta10 -p 'test_*.py' -v
+      - name: Verify pristine apply and all output hashes
+        run: python3 platforms/control-beta10/verify.py
+      - name: Prepare isolated source
+        run: bash platforms/control-beta10/prepare.sh
+      - name: Validate generated strings and asset contracts
+        run: cmake -DROOT="$PWD/build/control-beta10" -P platforms/control-beta10/validate.cmake
+      - name: Detect English drift
+        run: python3 platforms/control-beta10/audit_strings.py --english build/control-beta10/assets/en.strings --report build/translation-audit.md
