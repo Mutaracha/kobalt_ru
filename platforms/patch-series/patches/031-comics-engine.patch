@@ -1,0 +1,1755 @@
+diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
+index b769a47a338c5c7081674ff3944a3737fdea1a16..6ab2191914eada78bb44223a8a693ece0a492035 100644
+--- a/platforms/desktop/CMakeLists.txt
++++ b/platforms/desktop/CMakeLists.txt
+@@ -747,7 +747,7 @@ if(BUILD_TESTING)
+             target_compile_definitions(kobalt-${name}-tests PRIVATE
+                 KOBALT_TEST_ASSET_ROOT="${KOBALT_ASSETS}" KOBALT_FONT_DIRECTORY="${KOBALT_ASSETS}/fonts"
+                 KOBALT_INSTALLED_FONTS)
+-            if(check MATCHES "^(comics_layout|fb2_engine|vertical_spacing|large_toc|links|chapter_parity|page_estimate|bookmark_session|document_cache)$")
++            if(check MATCHES "^(comics|comics_layout|fb2_engine|vertical_spacing|large_toc|links|chapter_parity|page_estimate|bookmark_session|document_cache)$")
+                 target_compile_definitions(kobalt-${name}-tests PRIVATE KOBALT_TEST_ZIP="${KOBALT_TEST_ZIP}")
+             endif()
+             if(check MATCHES "^(search|reading_book)$")
+@@ -813,7 +813,7 @@ if(BUILD_TESTING)
+     kobalt_regressions(model font_axes touch_rotation)
+     kobalt_regressions(platform reader_orientation font_sources system_fonts nickel_dictionary_selection
+         nickel_reading_pace_cache nickel_save_trace nickel_account nickel_session_calls nickel_session_volume nickel_book_menu nickel_font_scale native_progress native_sync_network native_dialog_overlay native_lifecycle standby_input standby_diagnostics usb_removal page_transition_native page_animation)
+-    kobalt_regressions(engine fb2_engine comics_layout)
++    kobalt_regressions(engine fb2_engine comics_layout comics)
+     kobalt_regressions(engine epub_compatibility large_toc vertical_spacing source_index location_round_trip engine_contract text_sample page_estimate layout_interrupt spine_window chapter_slices chapter_parity fast_surfaces fast_shaping columns advanced_text paragraph_spacing beautifier alignment indentation page_layout vertical_writing mathml line_breaking
+         css_class_index compiled_hyphenation fallback_styles svg_limits image_proportions figure_layout whitespace links search word_selection reader publisher_markup local_reader document_word_count document_cache alternate_layout)
+     kobalt_regressions(component ui acknowledgments kosync_ui)
+@@ -843,7 +843,7 @@ if(BUILD_TESTING)
+     # `light`, `fast` and `integration` must not appear in one because the lane
+     # presets filter on them.
+     set(kobalt_test_areas
+-        "reading:^engine[.](fb2-engine|comics-layout)$"
++        "reading:^engine[.](fb2-engine|comics-layout|comics)$"
+         "settings:^component[.]ru-control-ui$"
+         "gallery:^(build\\.screenshotBooks|desktop\\.(gallery.*|phoneFrame|primaryViews))$"
+         "evaluation:^(build\\.(loadLock|eval-device-outcomes)|desktop\\.(scenarioCacheRemoval|scenarioResultFile|timingEvents|fastLocateText|deviceChecks)|platform\\.scenario-sleep|lifecycle\\.benchmarkNoticeAfterRun)$"
+diff --git a/src/engine/blaze/adapter/engine_document.cpp b/src/engine/blaze/adapter/engine_document.cpp
+index db1a76fcdd9f389793863bf7c62f7704739d3767..c474b0ef3ac351d0e95afb7ebb2c9efb37d1d5a2 100644
+--- a/src/engine/blaze/adapter/engine_document.cpp
++++ b/src/engine/blaze/adapter/engine_document.cpp
+@@ -1,3 +1,6 @@
++#include "page_draw_buffer.h"
++#include "reader_comics.h"
++#include "reader_fb2.h"
+ #include "reader_fork_styles.h"
+ #include "column_view.h"
+ #include "assets/bundled_fonts.h"
+@@ -68,257 +71,6 @@ lString32 cre(const QString &s)
+     return Utf8ToUnicode(s.toUtf8().constData());
+ }
+ 
+-bool equationImage(const LVImageSourceRef &image)
+-{
+-    for (auto *node = image->GetSourceNode(); node; node = node->getParentNode()) {
+-        if (!node->isElement())
+-            continue;
+-        if (!node->getAttributeValue("data-tex").empty()
+-            || node->getAttributeValue("role") == U"math")
+-            return true;
+-    }
+-    return false;
+-}
+-
+-// Transform neutral ink before alpha compositing, so transparent pixels keep
+-// the actual page background. Delegate vector sizing to avoid an extra raster scale.
+-class EquationImage : public LVImageSource, private LVImageDecoderCallback
+-{
+-public:
+-    explicit EquationImage(LVImageSourceRef source) : source(source) { }
+-
+-    ldomDocument *GetSourceDocument() override { return source->GetSourceDocument(); }
+-
+-    ldomNode *GetSourceNode() override { return source->GetSourceNode(); }
+-
+-    LVStream *GetSourceStream() override { return source->GetSourceStream(); }
+-
+-    void Compact() override { source->Compact(); }
+-
+-    int GetWidth() const override { return source->GetWidth(); }
+-
+-    int GetHeight() const override { return source->GetHeight(); }
+-
+-    bool IsScalable() const override { return source->IsScalable(); }
+-
+-    bool Decode(LVImageDecoderCallback *target) override
+-    {
+-        if (!target)
+-            return source->Decode(nullptr);
+-        callback = target;
+-        int width = GetWidth(), height = GetHeight();
+-        if (IsScalable())
+-            target->GetTargetSize(width, height);
+-        row.resize(width);
+-        return source->Decode(this);
+-    }
+-
+-private:
+-    bool GetTargetSize(int &width, int &height) const override
+-    {
+-        return callback->GetTargetSize(width, height);
+-    }
+-
+-    void OnStartDecode(LVImageSource *) override { callback->OnStartDecode(this); }
+-
+-    bool OnLineDecoded(LVImageSource *, int y, lUInt32 *pixels) override
+-    {
+-        for (size_t x = 0; x < row.size(); ++x) {
+-            const auto pixel = pixels[x];
+-            const bool neutral = qRed(pixel) == qGreen(pixel) && qRed(pixel) == qBlue(pixel);
+-            row[x] = neutral ? pixel ^ 0x00ffffffU : pixel;
+-        }
+-        return callback->OnLineDecoded(this, y, row.data());
+-    }
+-
+-    void OnEndDecode(LVImageSource *, bool errors) override { callback->OnEndDecode(this, errors); }
+-
+-    LVImageSourceRef source;
+-    LVImageDecoderCallback *callback = nullptr;
+-    std::vector<lUInt32> row;
+-};
+-
+-// A white border and mostly white paper distinguish illustrations from dark artwork.
+-// Check every visible source pixel so even a small colour accent prevents inversion.
+-class IllustrationProbe : public LVImageDecoderCallback
+-{
+-public:
+-    IllustrationProbe(int width, int height) : width(width), height(height) { }
+-
+-    bool eligible(LVImageSourceRef source)
+-    {
+-        return source->Decode(this) && !failed && lines == height && neutral && total
+-                && white * 2 >= total && border && whiteBorder * 10 >= border * 8;
+-    }
+-
+-private:
+-    bool GetTargetSize(int &w, int &h) const override
+-    {
+-        w = width;
+-        h = height;
+-        return true;
+-    }
+-
+-    void OnStartDecode(LVImageSource *) override { }
+-
+-    bool OnLineDecoded(LVImageSource *, int y, lUInt32 *pixels) override
+-    {
+-        ++lines;
+-        for (int x = 0; x < width; ++x) {
+-            const auto pixel = pixels[x];
+-            // CREngine uses an inverted alpha channel. Invisible RGB is irrelevant.
+-            const int transparency = pixel >> 24;
+-            if (transparency != 255
+-                && (qRed(pixel) != qGreen(pixel) || qRed(pixel) != qBlue(pixel)))
+-                neutral = false;
+-            const bool paper = transparency == 255
+-                    || (qRed(pixel) >= 245 && qGreen(pixel) >= 245 && qBlue(pixel) >= 245);
+-            ++total;
+-            white += paper;
+-            if (x == 0 || y == 0 || x == width - 1 || y == height - 1) {
+-                ++border;
+-                whiteBorder += paper;
+-            }
+-        }
+-        return true;
+-    }
+-
+-    void OnEndDecode(LVImageSource *, bool errors) override { failed = errors; }
+-
+-    int width, height, lines = 0;
+-    quint64 total = 0, white = 0, border = 0, whiteBorder = 0;
+-    bool neutral = true, failed = false;
+-};
+-
+-class PageDrawBuffer : public LVColorDrawBuf
+-{
+-public:
+-    PageDrawBuffer(QImage &image, bool dark, bool smooth, bool normalizeTextColors,
+-                   QMap<std::tuple<quintptr, int, int>, bool> *inversion = nullptr, int x = 0,
+-                   int width = -1)
+-        : LVColorDrawBuf(width < 0 ? image.width() : width, image.height(), image.bits() + 4 * x,
+-                         32),
+-          pageSize(GetWidth(), image.height()),
+-          dark(dark),
+-          normalizeTextColors(normalizeTextColors),
+-          inversion(inversion)
+-    {
+-        // A column starts partway into each scanline of the full page.
+-        _rowsize = image.bytesPerLine();
+-        setInvertColors(dark);
+-        setSmoothScalingImages(smooth);
+-    }
+-
+-    void SetTextColor(lUInt32 color) override
+-    {
+-        LVColorDrawBuf::SetTextColor(normalizeTextColors ? 0 : color);
+-    }
+-
+-    void SetUnsupportedFormatting(bool unsupported) override { unsupportedSource = unsupported; }
+-
+-    void OnImageDrawn(bool visiblePixels) override { imageHasVisiblePixels = visiblePixels; }
+-
+-    void OnTableDrawn() override { hasTable = true; }
+-
+-    bool hasTable = false;
+-    int visibleImages = 0;
+-    bool hasImages = false, hasText = false, hasUnsupportedFormatting = false;
+-    QVector<QRect> imageRegions;
+-    using LVColorDrawBuf::Draw;
+-
+-    void Draw(int x, int y, const lUInt8 *bitmap, int width, int height,
+-              const lUInt32 *palette) override
+-    {
+-        lvRect clip;
+-        GetClipRect(&clip);
+-        if (width > 0 && height > 0 && qint64(x) + width > clip.left && x < clip.right
+-            && qint64(y) + height > clip.top && y < clip.bottom) {
+-            hasText = true;
+-            hasUnsupportedFormatting |= unsupportedSource;
+-        }
+-        const auto color = palette ? palette[0] : GetTextColor();
+-        const auto background = GetBackgroundColor();
+-        const bool neutral = qRed(color) == qGreen(color) && qRed(color) == qBlue(color);
+-        const bool coloredPaper =
+-                qRed(background) != qGreen(background) || qRed(background) != qBlue(background);
+-        const bool preserveContrast = coloredPaper && (background >> 24) != 255;
+-        // CREngine pre-inverts every non-gray text color. Undo that for faint
+-        // tints on neutral paper so near-black text becomes light in dark mode.
+-        // On preserved colored paper, keep the publisher's original contrast.
+-        const bool invertInk =
+-                dark && (preserveContrast ? neutral : !neutral && !hasVisibleColor(color));
+-        const lUInt32 ink = normalizeTextColors ? 0 : invertInk ? color ^ 0x00ffffffU : color;
+-        LVColorDrawBuf::Draw(x, y, bitmap, width, height, &ink);
+-    }
+-
+-    void Draw(LVImageSourceRef image, int x, int y, int width, int height, bool dither) override
+-    {
+-        hasImages = true;
+-        lvRect clip;
+-        GetClipRect(&clip);
+-        const qint64 left = qMax<qint64>(0, qMax<qint64>(x, clip.left));
+-        const qint64 top = qMax<qint64>(0, qMax<qint64>(y, clip.top));
+-        const qint64 right =
+-                qMin<qint64>(pageSize.width(), qMin<qint64>(qint64(x) + width, clip.right));
+-        const qint64 bottom =
+-                qMin<qint64>(pageSize.height(), qMin<qint64>(qint64(y) + height, clip.bottom));
+-        auto *node = image->GetSourceNode();
+-        const auto style = node ? node->getStyle() : css_style_ref_t();
+-        const bool unsupportedImage =
+-                !style.isNull() && style->writing_mode_warning == css_wmw_unsupported;
+-        if (right > left && bottom > top)
+-            ++visibleImages;
+-        if (!imageRegionsFull && right > left && bottom > top) {
+-            if (imageRegions.size() < 128)
+-                imageRegions.append(
+-                        QRect(int(left), int(top), int(right - left), int(bottom - top)));
+-            else {
+-                imageRegions.clear();
+-                imageRegions.append(QRect(QPoint(0, 0), pageSize));
+-                imageRegionsFull = true;
+-            }
+-        }
+-        bool invertIllustration = false;
+-        if (dark && inversion && !equationImage(image)) {
+-            const auto node = reinterpret_cast<quintptr>(image->GetSourceNode());
+-            // Vector details can appear at a larger size. Do not reuse a smaller raster verdict.
+-            const auto key = std::make_tuple(node, image->IsScalable() ? width : 0,
+-                                             image->IsScalable() ? height : 0);
+-            auto found = inversion->constFind(key);
+-            if (node && found != inversion->constEnd()) {
+-                invertIllustration = found.value();
+-            } else {
+-                IllustrationProbe probe(image->IsScalable() ? width : image->GetWidth(),
+-                                        image->IsScalable() ? height : image->GetHeight());
+-                invertIllustration = probe.eligible(image);
+-                if (inversion->size() >= 1024)
+-                    inversion->clear();
+-                if (node)
+-                    inversion->insert(key, invertIllustration);
+-            }
+-        }
+-        if (dark && (equationImage(image) || invertIllustration))
+-            image = LVImageSourceRef(new EquationImage(image));
+-        // Composite images in the final page colors. CREngine's invert-images
+-        // option instead blends transparency against a white background.
+-        if (dark)
+-            InvertRect(x, y, x + width, y + height);
+-        LVColorDrawBuf::Draw(image, x, y, width, height, dither);
+-        hasUnsupportedFormatting |= unsupportedImage && imageHasVisiblePixels;
+-        if (dark)
+-            InvertRect(x, y, x + width, y + height);
+-    }
+-
+-private:
+-    QSize pageSize;
+-    bool imageRegionsFull = false;
+-    bool unsupportedSource = false;
+-    bool imageHasVisiblePixels = false;
+-    bool dark;
+-    bool normalizeTextColors;
+-    QMap<std::tuple<quintptr, int, int>, bool> *inversion;
+-};
+-
+ QVector<QRect> colorTileRegions(const QVector<uchar> &tiles, int columns, int rows,
+                                 const QSize &size)
+ {
+@@ -409,6 +161,7 @@ EngineDocument::~EngineDocument()
+ {
+     searchText_.reset();
+     sourceIndex_.reset();
++    comicImageRequests_.clear();
+     engine_.reset();
+     source_.reset();
+     // Document work and destruction run on the engine worker. A preview may
+@@ -591,16 +344,17 @@ void EngineDocument::setDocumentCache(QString directory, QByteArray fingerprint,
+ 
+ QByteArray EngineDocument::documentCachePolicy() const
+ {
++    const auto modePolicy = cachePolicy_ + (comicsMode_ ? ":comics-v5:on" : "");
+     // Detect CSS edits for cache reuse only. User CSS is never an installation asset.
+     if (userStyleSheet_.isEmpty()) {
+-        return cachePolicy_;
++        return modePolicy;
+     }
+     if (!policy_.isEmpty() && policySheet_.isSharedWith(userStyleSheet_)
+-        && policyBase_ == cachePolicy_)
++        && policyBase_ == modePolicy)
+         return policy_;
+     policySheet_ = userStyleSheet_;
+-    policyBase_ = cachePolicy_;
+-    policy_ = cachePolicy_ + ":user-css-v1:"
++    policyBase_ = modePolicy;
++    policy_ = modePolicy + ":user-css-v1:"
+             + QCryptographicHash::hash(userStyleSheet_, QCryptographicHash::Sha256).toHex();
+     return policy_;
+ }
+@@ -742,6 +496,8 @@ void EngineDocument::activateFontParameters() const
+ void EngineDocument::configure(QSize size, const QJsonObject &settings)
+ {
+     auto saved = settings;
++    appearance::migrateLegacyNotes(saved);
++    comicsMode_ = saved.value(appearance::comicsModeKey).toBool(false);
+     appearance::migrateLineSpacing(saved);
+     // Outline thickness must not affect layout-time italic overhang measurements.
+     setExtraFontWeight(0);
+@@ -844,6 +600,10 @@ void EngineDocument::configure(QSize size, const QJsonObject &settings)
+     twoColumnsLandscape_ = saved.value("two_columns_landscape").toBool(false);
+     columns_ = twoColumnsLandscape_ ? (size.width() > size.height() ? 2 : 1)
+                                     : qBound(1, saved.value("columns").toInt(1), 2);
++    baseColumns_ = columns_;
++    const auto effectiveLayout = comicPageLayout(
++            comicsMode_, baseColumns_, lvRect(margin_, topMargin_, margin_, bottomMargin_));
++    columns_ = effectiveLayout.columns;
+     columnSpacing_ = qBound(0, saved.value("column_spacing").toInt(readingPixels(60)),
+                             maximumMarginPixels());
+     columnSpacingPercent_ = saved.value("column_spacing_percent").toInt(0);
+@@ -860,6 +620,7 @@ void EngineDocument::configure(QSize size, const QJsonObject &settings)
+     landmarks_.clear();
+     engine_ = std::make_unique<ColumnView>();
+     engine_->setHangingPunctuation(hangingPunctuation_);
++    engine_->setComicSpreads(comicsMode_);
+     engine_->setColumns(columns_);
+     engine_->setColumnSpacing(columnSpacing_);
+     // CREngine defaults to a 72-pixel cap. Use the same physical limits as the controls.
+@@ -924,7 +685,7 @@ void EngineDocument::configure(QSize size, const QJsonObject &settings)
+     engine_->setFontSize(pixels_);
+     // CSS sets the line height; the engine must not multiply it again.
+     engine_->setDefaultInterlineSpace(100);
+-    engine_->setPageMargins(lvRect(margin_, topMargin_, margin_, bottomMargin_));
++    engine_->setPageMargins(effectiveLayout.margins);
+     engine_->setPageHeaderInfo(0);
+     engine_->setShowCover(false);
+     engine_->setBackgroundColor(0xffffff);
+@@ -1181,6 +942,9 @@ bool EngineDocument::updateAppearance(const appearance::Patch &patch, QSize size
+             settings.value("beautifier_initials").toBool(beautifierInitials_);
+     const bool beautifierSpacing = settings.value("beautifier_spacing").toBool(beautifierSpacing_);
+     const bool beautifierIndent = settings.value("beautifier_indent").toBool(beautifierIndent_);
++    const bool comics = settings.contains(appearance::comicsModeKey)
++            ? settings.value(appearance::comicsModeKey).toBool(false) : comicsMode_;
++    const bool comicsChanged = comics != comicsMode_;
+     const int margin = settings.value("margin_pixels").toInt(margin_);
+     const int topMargin = settings.value("top_margin_pixels").toInt(topMargin_);
+     const int bottomMargin = settings.value("bottom_margin_pixels").toInt(bottomMargin_);
+@@ -1234,9 +998,12 @@ bool EngineDocument::updateAppearance(const appearance::Patch &patch, QSize size
+         size = size_;
+     const bool landscapeColumns =
+             settings.value("two_columns_landscape").toBool(twoColumnsLandscape_);
+-    const int columns = landscapeColumns
++    const int baseColumns = landscapeColumns
+             ? (size.width() > size.height() ? 2 : 1)
+-            : settings.value("columns").toInt(twoColumnsLandscape_ ? 1 : columns_);
++            : settings.value("columns").toInt(twoColumnsLandscape_ ? 1 : baseColumns_);
++    const auto effectiveLayout = comicPageLayout(
++            comics, baseColumns, lvRect(margin, topMargin, margin, bottomMargin));
++    const int columns = effectiveLayout.columns;
+     const int gapPercent = settings.value("column_spacing_percent").toInt(columnSpacingPercent_);
+     const int columnSpacing = gapPercent ? qRound(pixels * gapPercent / 100.0)
+                                          : settings.value("column_spacing").toInt(columnSpacing_);
+@@ -1285,7 +1052,7 @@ bool EngineDocument::updateAppearance(const appearance::Patch &patch, QSize size
+     const bool bionicChanged = bionic != bionic_;
+     // Outline thickness changes pixels only. Keep the formatted page and its anchors.
+     const bool thicknessChanged = weight != weight_;
+-    const bool styled = normalizeTextColors != normalizeTextColors_
++    const bool styled = comicsChanged || normalizeTextColors != normalizeTextColors_
+             || inpageFootnotes != inpageFootnotes_ || beautifierInitials != beautifierInitials_
+             || beautifierSpacing != beautifierSpacing_ || beautifierIndent != beautifierIndent_
+             || fallbackFaces != fallbackFaces_ || normalizePageMargins != normalizePageMargins_
+@@ -1303,6 +1070,10 @@ bool EngineDocument::updateAppearance(const appearance::Patch &patch, QSize size
+                 || chapterStartsSpread != chapterStartsSpread_);
+     chapterStartsSpread_ = chapterStartsSpread;
+     const bool resized = size != size_ || columns != columns_ || columnSpacing != columnSpacing_;
++    baseColumns_ = baseColumns;
++    comicsMode_ = comics;
++    engine_->setComicSpreads(comicsMode_);
++    if (comicsChanged && comicsMode_) markComicImages(engine_.get());
+     twoColumnsLandscape_ = landscapeColumns;
+     columnSpacingPercent_ = gapPercent;
+     if (!verticalChanged && !styled && !resized && weight == weight_ && dark == darkMode_
+@@ -1379,7 +1150,7 @@ bool EngineDocument::updateAppearance(const appearance::Patch &patch, QSize size
+         setExtraFontWeight(0);
+         auto properties = LVCreatePropsContainer();
+         properties->setInt(PROP_FONT_BASE_WEIGHT, LVRendGetBaseFontWeight());
+-        properties->setInt(PROP_FORMAT_SPACE_WIDTH_SCALE_PERCENT, wordSpacing_);
++            properties->setInt(PROP_FORMAT_SPACE_WIDTH_SCALE_PERCENT, wordSpacing_);
+         properties->setInt(PROP_FORMAT_MAX_ADDED_LETTER_SPACING_PERCENT, justificationTracking_);
+         properties->setInt(PROP_FLOATING_PUNCTUATION, hangingPunctuation_);
+         properties->setInt(PROP_RENDER_BLOCK_RENDERING_FLAGS,
+@@ -1389,17 +1160,18 @@ bool EngineDocument::updateAppearance(const appearance::Patch &patch, QSize size
+         engine_->propsApply(properties);
+         engine_->requestRender();
+         applyPublisherFontFallbacks();
+-        engine_->setPageMargins(lvRect(margin, topMargin, margin, bottomMargin));
++        engine_->setPageMargins(effectiveLayout.margins);
+         engine_->setFontSize(pixels);
+         engine_->setDefaultInterlineSpace(100);
+         applyStyleSheet();
+     }
+-    if (bionicChanged) {
++    if (bionicChanged || comicsChanged) {
+         if (!cacheFingerprint_.isEmpty())
+             engine_->getDocProps()->setHex(
+-                    DOC_PROP_FILE_CRC32,
+-                    documentCacheChecksum(documentCachePolicy() + ":bionic-v3:" + bionic_.toUtf8(),
+-                                          domVersion_));
++                DOC_PROP_FILE_CRC32,
++                documentCacheChecksum(documentCachePolicy() + fb2::cachePolicy(fb2Document_) +
++                                          ":bionic-v3:" + bionic_.toUtf8(),
++                                      domVersion_));
+         engine_->getDocument()->getProps()->setInt("kobalt.bionic.mode", bionic_ == "bold" ? 1 : 0);
+         engine_->requestRender();
+     }
+@@ -1412,6 +1184,7 @@ bool EngineDocument::updateAppearance(const appearance::Patch &patch, QSize size
+         engine_->Resize(size.width(), size.height());
+     }
+     cache_.clear();
++    comicImageRequests_.clear();
+     spareImage_ = {};
+     damage_.clear();
+     if (thicknessChanged) {
+@@ -1441,6 +1214,7 @@ bool EngineDocument::updateAppearance(const appearance::Patch &patch, QSize size
+             alternateViewport_ = {};
+         }
+     }
++    if (comicsMode_ && resized) applyStyleSheet();
+     if (slices()) {
+         // Slice starts belong to the old pagination. Rebuild them from the
+         // chapter start before locating the reading position in the new layout.
+@@ -1478,6 +1252,7 @@ bool EngineDocument::renderLayout()
+     engine_->Render();
+ #endif
+     engine_->groupColumns(hideNonlinearFragments_, chapterStartsSpread_);
++    engine_->rebuildComicSpreads();
+     cutSlice();
+     return true;
+ }
+@@ -1688,9 +1463,11 @@ blockquote {
+     }
+     const auto base = fb2Document_ ? lString8(readerFb2Css)
+                                    : lString8(readerHtmlCss) + lString8(readerOverridesCss);
+-    engine_->setStyleSheet(base
+-                           + lString8(overrides.toUtf8().constData()) + lString8("\n")
+-                           + lString8(userStyleSheet_.constData()));
++    const auto comicsCss = comicsMode_ ? lString8(comicPageCss()) : lString8();
++    const auto spreadCss = comicsMode_ && size_.width() > size_.height()
++            ? lString8(comicSpreadCss()) : lString8();
++    engine_->setStyleSheet(base + lString8(overrides.toUtf8().constData()) + lString8("\n")
++                           + lString8(userStyleSheet_.constData()) + comicsCss + spreadCss);
+ }
+ 
+ void EngineDocument::resize(QSize size)
+@@ -1788,7 +1565,8 @@ bool EngineDocument::loadNextImage()
+ {
+     if (!source_ || !source_->resources)
+         return false;
+-    source_->resources->loadNextImage();
++    auto &resources = *source_->resources;
++    if (!loadVisibleComicImages()) resources.loadNextImage();
+     return refreshImages();
+ }
+ 
+@@ -1802,6 +1580,7 @@ void EngineDocument::releaseImages()
+     if (engine_)
+         engine_->getDocument()->clearAlternateLayout();
+     alternateViewport_ = {};
++    comicImageRequests_.clear();
+     cache_.clear();
+     spareImage_ = {};
+     damage_.clear();
+@@ -1838,7 +1617,9 @@ QImage EngineDocument::imageFromAnchor(bool stayInChapter)
+     auto *document = engine_->getDocument();
+     auto *list = engine_->getPageList();
+     const auto anchor = document->createXPointer(cre(anchor_));
+-    if (columns_ != 1 || anchor.isNull() || engine_->isVerticalText())
++    // Graphic screens are indivisible; anchored text slicing would crop art and
++    // confuse displayed-screen indices with internal source-page indices.
++    if (comicsMode_ || columns_ != 1 || anchor.isNull() || engine_->isVerticalText())
+         return image(current);
+     const int pageIndex = engine_->getBookmarkPage(anchor);
+     if (pageIndex < 0 || pageIndex >= list->length()
+@@ -1918,6 +1699,13 @@ QImage EngineDocument::image(int pageNumber)
+     if (result.isNull())
+         return {};
+     PageDrawBuffer buffer(result, darkMode_, true, normalizeTextColors_, &imageInversion_);
++    const bool trackSpread = beginComicImageRequests(pageNumber);
++    const auto comics = paintComicPage(pageNumber, result, buffer);
++    if (comics == ComicPaint::Failed) {
++        if (trackSpread) source_->resources->endImageRequests();
++        return {};
++    }
++    if (comics == ComicPaint::NotHandled) {
+     if (columns_ == 1) {
+         engine_->drawColumn(buffer, pageNumber, 0);
+     } else {
+@@ -1948,6 +1736,8 @@ QImage EngineDocument::image(int pageNumber)
+                 buffer.imageRegions.append(region.translated(x, 0));
+         }
+     }
++    }
++    if (trackSpread) finishComicImageRequests(pageNumber);
+     // CREngine composites into 0x00RRGGBB. Qt's opaque RGB32 contract requires
+     // 0xffRRGGBB, including when a painter uses this image as a source.
+     bool hasColor = false;
+@@ -2137,6 +1927,10 @@ quint64 EngineDocument::layoutSignature() const
+     mix(quint64(quintptr(engine_->getDocument())));
+     mix(engine_->getDocumentRenderingHash(true));
+     mix(columns_);
++    mix(comicsMode_);
++    mix(size_.width());
++    mix(size_.height());
++    mix(engine_->getPageCount());
+     mix(columns_ > 1 && hideNonlinearFragments_);
+     mix(columns_ > 1 && chapterStartsSpread_);
+     mix(verticalSpacing_ == "center" ? 2 : verticalSpacing_ == "expand" ? 1 : 0);
+@@ -2592,7 +2386,8 @@ QJsonObject EngineDocument::settingsState() const
+               { "reduce_chapter_spacing", reduceChapterSpacing_ },
+               { "vertical_justification", verticalSpacing_ },
+               { "vertical_spacing_scope", verticalSpacingScope_ },
+-              { "columns", columns_ },
++              { appearance::comicsModeKey, comicsMode_ },
++              { "columns", baseColumns_ },
+               { "two_columns_landscape", twoColumnsLandscape_ },
+               { "chapter_starts_spread", chapterStartsSpread_ },
+               { "column_spacing_percent", columnSpacingPercent_ },
+diff --git a/src/engine/blaze/adapter/engine_document.h b/src/engine/blaze/adapter/engine_document.h
+index f88fcf64901fc41c0a4d216f1b69912379ce067b..2594711f6ac1b97d63472ecefa698a217b39337d 100644
+--- a/src/engine/blaze/adapter/engine_document.h
++++ b/src/engine/blaze/adapter/engine_document.h
+@@ -32,6 +32,7 @@ struct ldomNode;
+ 
+ namespace kobalt {
+ class ColumnView;
++class PageDrawBuffer;
+ 
+ namespace nickel {
+ class NickelPositionCodec;
+@@ -293,6 +294,7 @@ public:
+                             const std::function<bool()> &current = {},
+                             const QStringList &bookmarkPositions = {},
+                             bool adoptingFullDocument = false) override;
++    QImage frameImage() override;
+     // One screen that starts at the reading position instead of a page break. With
+     // stayInChapter, it starts earlier near a chapter's end, so that a full screen stays in
+     // the chapter. Without it, the text continues past the chapter to fill the screen.
+@@ -376,6 +378,13 @@ private:
+     enum class AppearanceAction { Validate, Apply };
+     bool updateAppearance(const appearance::Patch &patch, QSize size, OpeningProgress progress,
+                           AppearanceAction action);
++    enum class ComicPaint { NotHandled, Painted, Failed };
++    ComicPaint paintComicPage(int pageNumber, QImage &result, PageDrawBuffer &buffer);
++    bool beginComicImageRequests(int pageNumber);
++    void finishComicImageRequests(int pageNumber);
++    bool loadVisibleComicImages();
++    bool loadComicImages(int pageNumber);
++    QImage comicFrameImage(int pageNumber);
+     // Sets the current and next entries of `links` around `position`.
+     ChapterSelection chapterAround(const QVector<ChapterLink> &links,
+                                    const QString &position) const;
+@@ -443,6 +452,8 @@ private:
+     QPair<int, qint64> sourceIndexUsage() const;
+     int columns_ = 1, columnSpacing_ = readingPixels(60), columnSpacingPercent_ = 0;
+     bool twoColumnsLandscape_ = false, chapterStartsSpread_ = false;
++    bool comicsMode_ = false;
++    int baseColumns_ = 1;
+     QSize size_;
+     QString anchor_;
+     std::function<bool()> interrupt_;
+@@ -793,6 +804,7 @@ private:
+     int alternateColumns_ = 1, alternateColumnSpacing_ = 0, layoutPpi_ = 0;
+     QByteArray layoutCss_;
+     QMap<int, QImage> cache_;
++    QMap<int, QStringList> comicImageRequests_;
+     // One retired page, owned only by this document. Never retain client images.
+     QImage spareImage_;
+     quint64 imageRevision_ = 0;
+diff --git a/src/engine/blaze/adapter/engine_document_comics.cpp b/src/engine/blaze/adapter/engine_document_comics.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..341a2e7a11bb815b92787d7eb1227639d892d3c1
+--- /dev/null
++++ b/src/engine/blaze/adapter/engine_document_comics.cpp
+@@ -0,0 +1,165 @@
++#include "engine_document.h"
++#include "page_draw_buffer.h"
++#include <QPainter>
++#include "column_view.h"
++#include "reader_source.h"
++#include "engine/engine_activity.h"
++#include "publication/resource_cache.h"
++#include "support/diagnostics.h"
++
++namespace kobalt {
++QImage EngineDocument::frameImage()
++{
++    return comicFrameImage(page());
++}
++
++QImage EngineDocument::comicFrameImage(int pageNumber)
++{
++    auto result = image(pageNumber);
++    if (!comicsMode_ || !engine_ || !source_ || !source_->resources
++        || engine_->comicPageCount(pageNumber) != 2)
++        return result;
++    const auto names = comicImageRequests_.value(pageNumber);
++    int pending = 0;
++    for (const auto &name : names)
++        pending += source_->resources->pendingImage(name);
++    if (pending > 0 && names.size() <= 2) {
++        engineActivity().checkpoint();
++        if (loadComicImages(pageNumber) && refreshImages())
++            result = image(pageNumber);
++        engineActivity().checkpoint();
++    }
++    if (diagnosticsActive()) {
++        int remaining = 0;
++        for (const auto &name : names)
++            remaining += source_->resources->pendingImage(name);
++        diagnostic("comic-frame-images",
++                   { { "page", pageNumber },
++                     { "visible_resources", names.size() },
++                     { "pending_before", pending },
++                     { "pending_after", remaining } },
++                   false);
++    }
++    return result;
++}
++
++bool EngineDocument::beginComicImageRequests(int pageNumber)
++{
++    const bool tracked = comicsMode_ && source_ && source_->resources
++            && engine_->comicPageCount(pageNumber) == 2;
++    if (tracked)
++        source_->resources->beginImageRequests();
++    return tracked;
++}
++
++void EngineDocument::finishComicImageRequests(int pageNumber)
++{
++    // Neighbour drawing must not erase the visible page's request identity.
++    // A decoded image may bypass Decode() on later draws, so retain the union
++    // until reflow/source change rather than replacing it with an empty trace.
++    if (!comicImageRequests_.contains(pageNumber) && comicImageRequests_.size() >= 8) {
++        for (const auto key : comicImageRequests_.keys()) {
++            if (key != page() && key != pageNumber && !cache_.contains(key)) {
++                comicImageRequests_.remove(key);
++                break;
++            }
++        }
++    }
++    auto &names = comicImageRequests_[pageNumber];
++    for (const auto &name : source_->resources->endImageRequests())
++        if (!names.contains(name))
++            names.append(name);
++}
++
++bool EngineDocument::loadVisibleComicImages()
++{
++    return loadComicImages(page());
++}
++
++bool EngineDocument::loadComicImages(int pageNumber)
++{
++    auto &resources = *source_->resources;
++    bool batch = false;
++    // A spread is one displayed screen. Load only its requested images, not
++    // the neighbour queue, before ReaderSession captures the next frame.
++    if (comicsMode_ && engine_ && engine_->comicPageCount(pageNumber) == 2) {
++        const auto names = comicImageRequests_.value(pageNumber);
++        if (names.size() <= 2) {
++            for (const auto &name : names) {
++                if (!resources.prioritizePendingImage(name))
++                    continue;
++                batch = true;
++                resources.loadNextImage();
++                if (!resources.error().isEmpty())
++                    break;
++            }
++        }
++    }
++    return batch;
++}
++
++EngineDocument::ComicPaint EngineDocument::paintComicPage(int pageNumber, QImage &result,
++                                                          PageDrawBuffer &buffer)
++{
++    if (auto *node = engine_->singleComicNode(pageNumber)) {
++        const auto source = node->getObjectImageSource();
++        const auto rect = engine_->singleComicRect(pageNumber);
++        const bool rotate = engine_->rotatedComicNode(pageNumber) != nullptr;
++        result.fill(darkMode_ ? Qt::black : Qt::white);
++        // Scale to the final viewport before the quarter-turn: no additional source-sized
++        // bitmap copy, second resampling or artwork cropping is introduced.
++        QImage layer(rotate ? rect.height() : rect.width(), rotate ? rect.width() : rect.height(),
++                     QImage::Format_RGB32);
++        if (layer.isNull())
++            return ComicPaint::Failed;
++        layer.fill(darkMode_ ? Qt::black : Qt::white);
++        PageDrawBuffer part(layer, darkMode_, true, normalizeTextColors_, &imageInversion_);
++        part.Draw(source, 0, 0, layer.width(), layer.height(), false);
++        QPainter painter(&result);
++        painter.translate(rect.x() + (rotate ? rect.width() : 0), rect.y());
++        if (rotate)
++            painter.rotate(90);
++        painter.drawImage(0, 0, layer);
++        buffer.visibleImages += part.visibleImages;
++        buffer.hasImages = true;
++        buffer.imageRegions.append(rect);
++        return ComicPaint::Painted;
++    }
++    if (columns_ != 1 || engine_->comicPageCount(pageNumber) != 2)
++        return ComicPaint::NotHandled;
++    result.fill(Qt::white);
++    QImage layer(size_, QImage::Format_RGB32);
++    if (layer.isNull()) {
++        return ComicPaint::Failed;
++    }
++    QPainter painter(&result);
++    for (int i = 0; i < 2; ++i) {
++        PageDrawBuffer part(layer, darkMode_, true, normalizeTextColors_, &imageInversion_);
++        engine_->drawColumn(part, pageNumber, i);
++        const int physical = engine_->comicRightToLeft() ? 1 - i : i;
++        const int left = physical * size_.width() / 2;
++        const int right = (physical + 1) * size_.width() / 2;
++        const int offset = (left + right - size_.width()) / 2;
++        const QRect clip(left, 0, right - left, size_.height());
++        const int vertical = part.imageRegions.size() == 1 && !part.hasText
++                ? (size_.height() - part.imageRegions.first().height()) / 2
++                        - part.imageRegions.first().y()
++                : 0;
++        const auto bounds = part.imageRegions.size() == 1
++                ? part.imageRegions.first().translated(offset, vertical).intersected(clip)
++                : QRect();
++        engine_->setComicVerticalOffset(pageNumber, i, vertical, bounds);
++        painter.setClipRect(clip);
++        painter.drawImage(offset, vertical, layer);
++        buffer.visibleImages += part.visibleImages;
++        buffer.hasTable |= part.hasTable;
++        buffer.hasImages |= part.hasImages;
++        buffer.hasText |= part.hasText;
++        buffer.hasUnsupportedFormatting |= part.hasUnsupportedFormatting;
++        for (const auto &region : part.imageRegions)
++            buffer.imageRegions.append(region.translated(offset, vertical).intersected(clip));
++    }
++    return ComicPaint::Painted;
++}
++
++} // namespace kobalt
+diff --git a/src/engine/blaze/adapter/page_draw_buffer.h b/src/engine/blaze/adapter/page_draw_buffer.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..5fce7802fec6e6723856be8f447e5a609e3e9272
+--- /dev/null
++++ b/src/engine/blaze/adapter/page_draw_buffer.h
+@@ -0,0 +1,264 @@
++#pragma once
++#include <lvdocview.h>
++#include <QImage>
++#include <QMap>
++#include <QRect>
++#include <QVector>
++#include <tuple>
++#include <vector>
++#include "render/page_refresh_regions.h"
++namespace kobalt {
++namespace pageDrawDetail {
++inline bool equationImage(const LVImageSourceRef &image)
++{
++    for (auto *node = image->GetSourceNode(); node; node = node->getParentNode()) {
++        if (!node->isElement())
++            continue;
++        if (!node->getAttributeValue("data-tex").empty()
++            || node->getAttributeValue("role") == U"math")
++            return true;
++    }
++    return false;
++}
++
++// Transform neutral ink before alpha compositing, so transparent pixels keep
++// the actual page background. Delegate vector sizing to avoid an extra raster scale.
++class EquationImage : public LVImageSource, private LVImageDecoderCallback
++{
++public:
++    explicit EquationImage(LVImageSourceRef source) : source(source) { }
++
++    ldomDocument *GetSourceDocument() override { return source->GetSourceDocument(); }
++
++    ldomNode *GetSourceNode() override { return source->GetSourceNode(); }
++
++    LVStream *GetSourceStream() override { return source->GetSourceStream(); }
++
++    void Compact() override { source->Compact(); }
++
++    int GetWidth() const override { return source->GetWidth(); }
++
++    int GetHeight() const override { return source->GetHeight(); }
++
++    bool IsScalable() const override { return source->IsScalable(); }
++
++    bool Decode(LVImageDecoderCallback *target) override
++    {
++        if (!target)
++            return source->Decode(nullptr);
++        callback = target;
++        int width = GetWidth(), height = GetHeight();
++        if (IsScalable())
++            target->GetTargetSize(width, height);
++        row.resize(width);
++        return source->Decode(this);
++    }
++
++private:
++    bool GetTargetSize(int &width, int &height) const override
++    {
++        return callback->GetTargetSize(width, height);
++    }
++
++    void OnStartDecode(LVImageSource *) override { callback->OnStartDecode(this); }
++
++    bool OnLineDecoded(LVImageSource *, int y, lUInt32 *pixels) override
++    {
++        for (size_t x = 0; x < row.size(); ++x) {
++            const auto pixel = pixels[x];
++            const bool neutral = qRed(pixel) == qGreen(pixel) && qRed(pixel) == qBlue(pixel);
++            row[x] = neutral ? pixel ^ 0x00ffffffU : pixel;
++        }
++        return callback->OnLineDecoded(this, y, row.data());
++    }
++
++    void OnEndDecode(LVImageSource *, bool errors) override { callback->OnEndDecode(this, errors); }
++
++    LVImageSourceRef source;
++    LVImageDecoderCallback *callback = nullptr;
++    std::vector<lUInt32> row;
++};
++
++// A white border and mostly white paper distinguish illustrations from dark artwork.
++// Check every visible source pixel so even a small colour accent prevents inversion.
++class IllustrationProbe : public LVImageDecoderCallback
++{
++public:
++    IllustrationProbe(int width, int height) : width(width), height(height) { }
++
++    bool eligible(LVImageSourceRef source)
++    {
++        return source->Decode(this) && !failed && lines == height && neutral && total
++                && white * 2 >= total && border && whiteBorder * 10 >= border * 8;
++    }
++
++private:
++    bool GetTargetSize(int &w, int &h) const override
++    {
++        w = width;
++        h = height;
++        return true;
++    }
++
++    void OnStartDecode(LVImageSource *) override { }
++
++    bool OnLineDecoded(LVImageSource *, int y, lUInt32 *pixels) override
++    {
++        ++lines;
++        for (int x = 0; x < width; ++x) {
++            const auto pixel = pixels[x];
++            // CREngine uses an inverted alpha channel. Invisible RGB is irrelevant.
++            const int transparency = pixel >> 24;
++            if (transparency != 255
++                && (qRed(pixel) != qGreen(pixel) || qRed(pixel) != qBlue(pixel)))
++                neutral = false;
++            const bool paper = transparency == 255
++                    || (qRed(pixel) >= 245 && qGreen(pixel) >= 245 && qBlue(pixel) >= 245);
++            ++total;
++            white += paper;
++            if (x == 0 || y == 0 || x == width - 1 || y == height - 1) {
++                ++border;
++                whiteBorder += paper;
++            }
++        }
++        return true;
++    }
++
++    void OnEndDecode(LVImageSource *, bool errors) override { failed = errors; }
++
++    int width, height, lines = 0;
++    quint64 total = 0, white = 0, border = 0, whiteBorder = 0;
++    bool neutral = true, failed = false;
++};
++
++}
++class PageDrawBuffer : public LVColorDrawBuf
++{
++public:
++    PageDrawBuffer(QImage &image, bool dark, bool smooth, bool normalizeTextColors,
++                   QMap<std::tuple<quintptr, int, int>, bool> *inversion = nullptr, int x = 0,
++                   int width = -1)
++        : LVColorDrawBuf(width < 0 ? image.width() : width, image.height(), image.bits() + 4 * x,
++                         32),
++          pageSize(GetWidth(), image.height()),
++          dark(dark),
++          normalizeTextColors(normalizeTextColors),
++          inversion(inversion)
++    {
++        // A column starts partway into each scanline of the full page.
++        _rowsize = image.bytesPerLine();
++        setInvertColors(dark);
++        setSmoothScalingImages(smooth);
++    }
++
++    void SetTextColor(lUInt32 color) override
++    {
++        LVColorDrawBuf::SetTextColor(normalizeTextColors ? 0 : color);
++    }
++
++    void SetUnsupportedFormatting(bool unsupported) override { unsupportedSource = unsupported; }
++
++    void OnImageDrawn(bool visiblePixels) override { imageHasVisiblePixels = visiblePixels; }
++
++    void OnTableDrawn() override { hasTable = true; }
++
++    bool hasTable = false;
++    int visibleImages = 0;
++    bool hasImages = false, hasText = false, hasUnsupportedFormatting = false;
++    QVector<QRect> imageRegions;
++    using LVColorDrawBuf::Draw;
++
++    void Draw(int x, int y, const lUInt8 *bitmap, int width, int height,
++              const lUInt32 *palette) override
++    {
++        lvRect clip;
++        GetClipRect(&clip);
++        if (width > 0 && height > 0 && qint64(x) + width > clip.left && x < clip.right
++            && qint64(y) + height > clip.top && y < clip.bottom) {
++            hasText = true;
++            hasUnsupportedFormatting |= unsupportedSource;
++        }
++        const auto color = palette ? palette[0] : GetTextColor();
++        const auto background = GetBackgroundColor();
++        const bool neutral = qRed(color) == qGreen(color) && qRed(color) == qBlue(color);
++        const bool coloredPaper =
++                qRed(background) != qGreen(background) || qRed(background) != qBlue(background);
++        const bool preserveContrast = coloredPaper && (background >> 24) != 255;
++        // CREngine pre-inverts every non-gray text color. Undo that for faint
++        // tints on neutral paper so near-black text becomes light in dark mode.
++        // On preserved colored paper, keep the publisher's original contrast.
++        const bool invertInk =
++                dark && (preserveContrast ? neutral : !neutral && !hasVisibleColor(color));
++        const lUInt32 ink = normalizeTextColors ? 0 : invertInk ? color ^ 0x00ffffffU : color;
++        LVColorDrawBuf::Draw(x, y, bitmap, width, height, &ink);
++    }
++
++    void Draw(LVImageSourceRef image, int x, int y, int width, int height, bool dither) override
++    {
++        hasImages = true;
++        lvRect clip;
++        GetClipRect(&clip);
++        const qint64 left = qMax<qint64>(0, qMax<qint64>(x, clip.left));
++        const qint64 top = qMax<qint64>(0, qMax<qint64>(y, clip.top));
++        const qint64 right =
++                qMin<qint64>(pageSize.width(), qMin<qint64>(qint64(x) + width, clip.right));
++        const qint64 bottom =
++                qMin<qint64>(pageSize.height(), qMin<qint64>(qint64(y) + height, clip.bottom));
++        auto *node = image->GetSourceNode();
++        const auto style = node ? node->getStyle() : css_style_ref_t();
++        const bool unsupportedImage =
++                !style.isNull() && style->writing_mode_warning == css_wmw_unsupported;
++        if (right > left && bottom > top)
++            ++visibleImages;
++        if (!imageRegionsFull && right > left && bottom > top) {
++            if (imageRegions.size() < 128)
++                imageRegions.append(
++                        QRect(int(left), int(top), int(right - left), int(bottom - top)));
++            else {
++                imageRegions.clear();
++                imageRegions.append(QRect(QPoint(0, 0), pageSize));
++                imageRegionsFull = true;
++            }
++        }
++        bool invertIllustration = false;
++        if (dark && inversion && !pageDrawDetail::equationImage(image)) {
++            const auto node = reinterpret_cast<quintptr>(image->GetSourceNode());
++            // Vector details can appear at a larger size. Do not reuse a smaller raster verdict.
++            const auto key = std::make_tuple(node, image->IsScalable() ? width : 0,
++                                             image->IsScalable() ? height : 0);
++            auto found = inversion->constFind(key);
++            if (node && found != inversion->constEnd()) {
++                invertIllustration = found.value();
++            } else {
++                pageDrawDetail::IllustrationProbe probe(image->IsScalable() ? width : image->GetWidth(),
++                                        image->IsScalable() ? height : image->GetHeight());
++                invertIllustration = probe.eligible(image);
++                if (inversion->size() >= 1024)
++                    inversion->clear();
++                if (node)
++                    inversion->insert(key, invertIllustration);
++            }
++        }
++        if (dark && (pageDrawDetail::equationImage(image) || invertIllustration))
++            image = LVImageSourceRef(new pageDrawDetail::EquationImage(image));
++        // Composite images in the final page colors. CREngine's invert-images
++        // option instead blends transparency against a white background.
++        if (dark)
++            InvertRect(x, y, x + width, y + height);
++        LVColorDrawBuf::Draw(image, x, y, width, height, dither);
++        hasUnsupportedFormatting |= unsupportedImage && imageHasVisiblePixels;
++        if (dark)
++            InvertRect(x, y, x + width, y + height);
++    }
++
++private:
++    QSize pageSize;
++    bool imageRegionsFull = false;
++    bool unsupportedSource = false;
++    bool imageHasVisiblePixels = false;
++    bool dark;
++    bool normalizeTextColors;
++    QMap<std::tuple<quintptr, int, int>, bool> *inversion;
++};
++
++}
+diff --git a/src/engine/blaze/adapter/reader_source.cpp b/src/engine/blaze/adapter/reader_source.cpp
+index 5a32d9e62b6bbfaf5b0cae2d4a3eedd87f95fda7..d3cdd8432b5692bdb5a21bd099dd1228b655f9e9 100644
+--- a/src/engine/blaze/adapter/reader_source.cpp
++++ b/src/engine/blaze/adapter/reader_source.cpp
+@@ -1,3 +1,4 @@
++#include "reader_comics.h"
+ #include "support/main_thread.h"
+ #include "engine/engine_worker.h"
+ #include "stop_point.h"
+@@ -293,7 +294,7 @@ class ContentContainer : public LVContainer
+ {
+ public:
+     explicit ContentContainer(LVContainerRef source, QSet<QString> skippedFonts = {})
+-        : source(source), skippedFonts_(std::move(skippedFonts))
++        : source(source), skippedFonts_(std::move(skippedFonts)), singleComicPages_(singleComicPages(source))
+     {
+     }
+ 
+@@ -348,6 +349,18 @@ public:
+             return stream;
+         }
+         auto cleaned = withoutKoboStyleHacks(bytes);
++        if (singleComicPages_.contains(QDir::cleanPath(path))) {
++            // Byte offsets from Latin-1 are identical to the source, including UTF-8.
++            // Keep the source file unchanged; only the engine input gets the marker.
++            const QRegularExpression body(QStringLiteral("<body(?=[\\s>])"), QRegularExpression::CaseInsensitiveOption);
++            const auto match = body.match(QString::fromLatin1(cleaned));
++            if (match.hasMatch()) {
++                const int end = cleaned.indexOf('>', match.capturedEnd());
++                const auto bodyTag = cleaned.mid(match.capturedStart(), end - match.capturedStart());
++                if (!bodyTag.contains("data-kobalt-comic-single="))
++                    cleaned.insert(match.capturedEnd(), " data-kobalt-comic-single=\"1\"");
++            }
++        }
+         if (cleaned == bytes) {
+             stream->SetPos(0);
+             return stream;
+@@ -360,6 +373,7 @@ protected:
+ 
+ private:
+     QSet<QString> skippedFonts_;
++    QSet<QString> singleComicPages_;
+ };
+ 
+ class SectionContainer : public ContentContainer
+@@ -877,6 +891,7 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
+         // Loading computed styles before the body markers existed, including in previews.
+         engine_->getDocument()->forceReinitStyles();
+     }
++    if (comicsMode_) markComicImages(engine_.get());
+ #ifdef KOBLAZE_CANCEL_CHECK
+     koblazeCheckCancel();
+ #endif
+@@ -904,6 +919,7 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
+     applySlice();
+     engine_->Render();
+     engine_->groupColumns(hideNonlinearFragments_, chapterStartsSpread_);
++    engine_->rebuildComicSpreads();
+     openingTimes_["model_paginate_ms"] = double(phase.restart());
+     cutSlice();
+ #if __has_include(<koblaze.h>)
+@@ -2264,7 +2280,7 @@ PagePreview EngineDocument::previewTurn(int direction,
+     if (spread >= 0 || ((!direction || target != page()) && !tail)) {
+         auto &document = spread >= 0 ? *full_ : *this;
+         PagePreview result;
+-        result.image = document.image(target);
++        result.image = document.comicFrameImage(target);
+         result.position = document.pageStart(target);
+         result.ranges = document.pageRangeRects(target, ranges);
+         result.bookmarked = !bookmarkPositions.isEmpty()
+@@ -2293,7 +2309,7 @@ PagePreview EngineDocument::previewTurn(int direction,
+             || !preview->turnInWindow(direction))
+             return {};
+         PagePreview result;
+-        result.image = preview->image(preview->page());
++        result.image = preview->frameImage();
+         result.position = preview->pageStart(preview->page());
+         result.ranges = preview->pageRangeRects(preview->page(), ranges);
+         result.bookmarked = !bookmarkPositions.isEmpty()
+diff --git a/src/engine/engine.h b/src/engine/engine.h
+index 29e0d049e5095263382e1725b43cd7a8a74b967d..6288a139e189d7b2c8fcac16c763e29f60073629 100644
+--- a/src/engine/engine.h
++++ b/src/engine/engine.h
+@@ -238,6 +238,10 @@ public:
+     virtual void setDarkMode(bool enabled) = 0;
+     virtual void resize(QSize size) = 0;
+     virtual QImage image(int page) = 0;
++    // Publish a complete current frame. Graphic adapters may finish the bounded
++    // visible image pair here; neighbour image() calls must stay speculative.
++    virtual QImage frameImage() { return image(page()); }
++
+     // The current page or one normal turn beside it, without moving the
+     // reading document. An empty image means no preview is available.
+     virtual PagePreview previewTurn(int direction,
+diff --git a/src/publication/image_request_trace.h b/src/publication/image_request_trace.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..0796b917a29235d856ebd9de7905098d5135cc7f
+--- /dev/null
++++ b/src/publication/image_request_trace.h
+@@ -0,0 +1,37 @@
++#pragma once
++#include <QStringList>
++
++namespace kobalt {
++// Worker-only requests for one rendered screen, in first-request order.
++class ImageRequestTrace
++{
++public:
++    void begin()
++    {
++        names_.clear();
++        active_ = true;
++    }
++
++    QStringList end()
++    {
++        active_ = false;
++        return names_;
++    }
++
++    void record(const QString &name)
++    {
++        if (active_ && !names_.contains(name))
++            names_.append(name);
++    }
++
++    void clear()
++    {
++        names_.clear();
++        active_ = false;
++    }
++
++private:
++    bool active_ = false;
++    QStringList names_;
++};
++} // namespace kobalt
+diff --git a/src/publication/resource_cache.cpp b/src/publication/resource_cache.cpp
+index 32504a62dd058c5f4499fe89ade71ee5286f583c..70536d798b24014cf52994dc12bb1f127c0e9282 100644
+--- a/src/publication/resource_cache.cpp
++++ b/src/publication/resource_cache.cpp
+@@ -74,6 +74,7 @@ QSize ResourceCache::deferredImageSize(const QString &name)
+ 
+ bool ResourceCache::imageReady(const QString &name)
+ {
++    imageRequests_.record(name);
+     if (cancelled_ && cancelled_())
+         return false;
+     if (readyImages_.contains(name) || failedImages_.contains(name)
+@@ -84,6 +85,13 @@ bool ResourceCache::imageReady(const QString &name)
+     return false;
+ }
+ 
++bool ResourceCache::prioritizePendingImage(const QString &name)
++{
++    if (!pendingImages_.removeOne(name)) return false;
++    pendingImages_.prepend(name);
++    return true;
++}
++
+ bool ResourceCache::loadNextImage()
+ {
+     if (pendingImages_.isEmpty() || !error_.isEmpty() || (cancelled_ && cancelled_()))
+@@ -122,6 +130,7 @@ void ResourceCache::releaseBytes()
+ {
+     entries_.clear();
+     recent_.clear();
++    imageRequests_.clear();
+     allocated_ = 0;
+     readyImages_.clear();
+     pendingImages_.clear();
+diff --git a/src/publication/resource_cache.h b/src/publication/resource_cache.h
+index c399a96956f42807688e3f66243792bb34741116..5c72745d925ccf1a83dd827baa230dea0cf6cc2e 100644
+--- a/src/publication/resource_cache.h
++++ b/src/publication/resource_cache.h
+@@ -1,4 +1,5 @@
+ #pragma once
++#include "image_request_trace.h"
+ #include <QJsonObject>
+ #include <QMap>
+ #include <QStringList>
+@@ -46,6 +47,11 @@ public:
+     bool imageReady(const QString &name);
+     bool loadNextImage();
+     bool loadImage(const QString &name);
++    // Worker-only: collect resources actually requested by one rendered screen.
++    void beginImageRequests() { imageRequests_.begin(); }
++    QStringList endImageRequests() { return imageRequests_.end(); }
++    bool prioritizePendingImage(const QString &name);
++    bool pendingImage(const QString &name) const { return pendingImages_.contains(name); }
+     // Keep dimensions and integrity checks, but no encoded resource bytes.
+     void releaseBytes();
+ 
+@@ -86,6 +92,7 @@ private:
+     QSet<QString> readyImages_;
+     QStringList pendingImages_;
+     quint64 imageRevision_ = 0;
++    ImageRequestTrace imageRequests_;
+     std::function<bool()> cancelled_;
+     std::map<QString, Entry> entries_;
+     std::map<QString, QByteArray> fingerprints_;
+diff --git a/src/reading/appearance_settings.h b/src/reading/appearance_settings.h
+index 7c475482a229878985006c60d6a4999fa03deb5c..cce55f637cf388e683832caa8892ebaba7cb3da3 100644
+--- a/src/reading/appearance_settings.h
++++ b/src/reading/appearance_settings.h
+@@ -12,6 +12,7 @@ inline constexpr int defaultVariableFontWeight = 450;
+ inline constexpr int defaultColumnSpacingPercent = 150;
+ 
+ namespace appearance {
++inline constexpr auto comicsModeKey = "comics_reading_mode";
+ // Migrate the fork's old format-specific preference once. A valid canonical
+ // value (including false) always wins; discard malformed legacy values.
+ inline void migrateLegacyNotes(QJsonObject &settings)
+@@ -89,7 +90,7 @@ inline constexpr std::array<const char *, 6> normalizationKeys{
+ QJsonObject normalizationSettings(const QJsonObject &settings);
+ QString normalizationPreset(const QJsonObject &settings);
+ QJsonObject normalizationPresetSettings(const QString &preset);
+-inline constexpr std::array<const char *, 39> keys{ "line_spacing_version",
++inline constexpr std::array<const char *, 40> keys{ comicsModeKey, "line_spacing_version",
+                                                     "font_pixels",
+                                                     "line_spacing",
+                                                     "paragraph_spacing",
+diff --git a/tests/model/comics.cpp b/tests/model/comics.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..1890ff55de2094d9be45537a406dd681cafae0cd
+--- /dev/null
++++ b/tests/model/comics.cpp
+@@ -0,0 +1,403 @@
++#include "check.h"
++#include "reader_inputs.h"
++#include "reader_source_index_probe.h"
++#include "reading/appearance_settings.h"
++#include "engine/blaze/adapter/page_draw_buffer.h"
++#include "engine/blaze/adapter/reader_comics.h"
++#include <QBuffer>
++#include <QGuiApplication>
++#include <QTemporaryDir>
++
++using namespace kobalt;
++
++static QRect inkBounds(const QImage &image)
++{
++    QRect bounds;
++    for (int y = 0; y < image.height(); ++y)
++        for (int x = 0; x < image.width(); ++x) {
++            const auto pixel = image.pixel(x, y);
++            if (qRed(pixel) > 200 && qGreen(pixel) < 40 && qBlue(pixel) < 40)
++                bounds = bounds.united(QRect(x, y, 1, 1));
++        }
++    return bounds;
++}
++
++// The renderer is shared, not reimplemented by the fork comics path.
++static void commonDrawBufferContract()
++{
++    QImage image(8, 8, QImage::Format_RGB32);
++    image.fill(Qt::white);
++    PageDrawBuffer normalized(image, false, true, true);
++    normalized.SetTextColor(0x123456);
++    require(normalized.GetTextColor() == 0, "Shared buffer lost text-ink normalization");
++    const lUInt8 bitmap[] = { 255, 255, 255, 255 };
++    normalized.Draw(-10, -10, bitmap, 2, 2, nullptr);
++    require(!normalized.hasText, "Clipped text was counted as visible");
++    normalized.Draw(1, 1, bitmap, 2, 2, nullptr);
++    require(normalized.hasText && !normalized.hasImages && normalized.imageRegions.isEmpty(),
++            "Shared buffer changed text/image metadata");
++    PageDrawBuffer publisher(image, false, true, false);
++    publisher.SetTextColor(0x123456);
++    require(publisher.GetTextColor() == 0x123456, "Shared buffer lost publisher text ink");
++}
++
++static void effectiveComicLayoutContract()
++{
++    const lvRect base(11, 22, 11, 33);
++    for (int columns : { 0, 1, 2, 3 }) {
++        const auto off = comicPageLayout(false, columns, base);
++        require(off.columns == columns && off.margins.left == 11 && off.margins.top == 22
++                        && off.margins.right == 11 && off.margins.bottom == 33,
++                "Disabled comics overlay changed base layout or validation policy");
++        const auto on = comicPageLayout(true, columns, base);
++        require(on.columns == 1 && on.margins.left == 0 && on.margins.top == 0
++                        && on.margins.right == 0 && on.margins.bottom == 0,
++                "Enabled comics overlay did not suppress effective margins/columns");
++    }
++    require(base.left == 11 && base.top == 22 && base.right == 11 && base.bottom == 33,
++            "Effective overlay mutated its base input");
++}
++
++int main(int argc, char **argv)
++{
++    QGuiApplication app(argc, argv);
++    commonDrawBufferContract();
++    effectiveComicLayoutContract();
++    // Same proportions and inline/div structure as the supplied KCC page,
++    // but synthetic solid art makes geometry independently measurable.
++    QImage art(1160, 1680, QImage::Format_RGB32);
++    art.fill(Qt::red);
++    QByteArray png;
++    QBuffer buffer(&png);
++    require(buffer.open(QIODevice::WriteOnly) && art.save(&buffer, "PNG"), "Encode comic art");
++    const QMap<QString, QByteArray> data{
++        {"mimetype", "application/epub+zip"},
++        {"META-INF/container.xml", "<container xmlns='urn:oasis:names:tc:opendocument:xmlns:container' version='1.0'><rootfiles><rootfile full-path='book.opf' media-type='application/oebps-package+xml'/></rootfiles></container>"},
++        {"book.opf", "<package xmlns='http://www.idpf.org/2007/opf' version='2.0'><metadata/><manifest><item id='c' href='c.xhtml' media-type='application/xhtml+xml'/><item id='i' href='art.png' media-type='image/png'/></manifest><spine><itemref idref='c'/></spine></package>"},
++        {"c.xhtml", "<html xmlns='http://www.w3.org/1999/xhtml'><head><style>@page{margin:0}body{margin:0;padding:0}</style></head><body><div style='text-align:center'><img width='1160' height='1680' src='art.png'/></div></body></html>"},
++        {"art.png", png}
++    };
++    QMap<QString, qint64> lengths;
++    for (auto it = data.cbegin(); it != data.cend(); ++it) lengths[it.key()] = it.value().size();
++    auto resources = std::make_shared<ResourceCache>(data.keys(),
++        [data](const QString &name, const ResourceCache::Sink &sink, QString *) {
++            const auto bytes = data.value(name);
++            return sink(bytes.constData(), bytes.size());
++        }, std::make_shared<std::atomic_bool>(false));
++    for (const int ppi : {96, 300}) {
++        readingPpi.store(ppi);
++        QTemporaryDir cache;
++        require(cache.isValid(), "Create comic cache");
++        EngineDocument model(test::readerFonts());
++        const QByteArray fingerprint(64, 'a');
++        model.setDocumentCache(cache.path(), fingerprint, "comics-test", 1024 * 1024);
++        QString error;
++        const int baseMargin = readingPixels(42), editedMargin = readingPixels(60);
++        const int baseTop = readingPixels(33), editedTop = readingPixels(51), baseBottom = readingPixels(27);
++        QJsonObject saved{{appearance::comicsModeKey, true}, {"margin_pixels", baseMargin},
++            {"top_margin_pixels", baseTop}, {"bottom_margin_pixels", baseBottom},
++            {"two_columns_landscape", true}};
++        require(model.openResources(resources, lengths, QSize(1264, 1680), saved, &error), qPrintable(error));
++        require(ReaderSourceIndexProbe::comicsGeometry(model), "Comic profile did not override physical geometry");
++        auto bounds = inkBounds(model.image(0));
++        require(bounds.height() == 1680 && bounds.top() == 0 && qAbs(bounds.width() - 1160) <= 1,
++                qPrintable(QString("Comic fit/baseline: %1,%2 %3x%4 at %5 PPI")
++                    .arg(bounds.x()).arg(bounds.y()).arg(bounds.width()).arg(bounds.height()).arg(ppi)));
++        require(model.pages() == 1, "Single graphic page acquired an extra page");
++        require(model.state().value("margin_pixels").toInt() == baseMargin, "Overlay overwrote saved margin");
++        require(model.applyAppearance(appearance::Patch(QJsonObject{{"margin_pixels", editedMargin}, {"top_margin_pixels", editedTop}})), "Edit while active");
++        require(ReaderSourceIndexProbe::comicsGeometry(model) && model.margin() == editedMargin,
++                "Active edit must save base without changing effective margins");
++        require(model.applyAppearance({}, QSize(1680, 1264)), "Rotate comic");
++        require(ReaderSourceIndexProbe::comicsGeometry(model), "Landscape changed physical engine geometry");
++        bounds = inkBounds(model.image(0));
++        require(qAbs(bounds.width() - 840) <= 1
++                    && qAbs(bounds.height() - qRound(840.0 * 1680 / 1160)) <= 2,
++                "Landscape portrait did not fit a half-screen without distortion");
++        require(model.saveDocumentCache(), "Save comics parsed cache");
++        const auto checkpoint = model.state();
++        EngineDocument reopened(test::readerFonts());
++        reopened.setDocumentCache(cache.path(), fingerprint, "comics-test", 1024 * 1024);
++        require(reopened.openResources(resources, lengths, QSize(1680, 1264), checkpoint, &error), qPrintable(error));
++        require(reopened.openedFromCache(), "Compatible comics checkpoint did not use parsed cache");
++        require(ReaderSourceIndexProbe::comicsGeometry(reopened) && reopened.margin() == editedMargin,
++                "Reopen lost mode or updated base settings");
++        require(reopened.applyAppearance(appearance::Patch(QJsonObject{{appearance::comicsModeKey, false}})), "Disable comic mode");
++        require(reopened.margin() == editedMargin && reopened.state().value("top_margin_pixels").toInt() == editedTop
++                    && reopened.state().value("bottom_margin_pixels").toInt() == baseBottom && reopened.state().value("columns").toInt() == 2,
++                "Disable did not restore latest base layout");
++        require(reopened.embeddedFontCount() == 0, "Synthetic EPUB acquired document fonts");
++    }
++    // Ordinary prose must retain positive line height even with comics enabled.
++    // This covers accidental activation on both EPUB-like markup and FB2.
++    for (const bool fictionBook : {false, true}) {
++        QByteArray paragraphs;
++        for (int i = 0; i < 40; ++i)
++            paragraphs += "<p id='p" + QByteArray::number(i) + "'>" +
++                    QByteArray("Words on separate readable lines. ").repeated(20) + "</p>";
++        const auto bytes = fictionBook
++                ? "<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'><description><title-info><book-title>Prose</book-title><lang>en</lang></title-info></description><body><section>" + paragraphs + "</section></body></FictionBook>"
++                : "<html><head><title>Prose</title></head><body>" + paragraphs + "</body></html>";
++        EngineDocument prose(test::readerFonts());
++        QString error;
++        const QJsonObject proseSettings{{appearance::comicsModeKey, true}, {"font_pixels", 32}};
++        if (fictionBook) {
++            require(prose.open(bytes, QSize(800, 1000), proseSettings, &error), qPrintable(error));
++        } else {
++            auto proseData = data;
++            proseData["c.xhtml"] = bytes;
++            QMap<QString, qint64> proseLengths;
++            for (auto it = proseData.cbegin(); it != proseData.cend(); ++it) proseLengths[it.key()] = it.value().size();
++            auto proseResources = std::make_shared<ResourceCache>(proseData.keys(),
++                [proseData](const QString &name, const ResourceCache::Sink &sink, QString *) {
++                    const auto resource = proseData.value(name);
++                    return sink(resource.constData(), resource.size());
++                }, std::make_shared<std::atomic_bool>(false));
++            require(prose.openResources(proseResources, proseLengths, QSize(800, 1000), proseSettings, &error), qPrintable(error));
++        }
++        const auto first = ReaderSourceIndexProbe::nodeBounds(prose, "p0");
++        const auto second = ReaderSourceIndexProbe::nodeBounds(prose, "p1");
++        require(first.height() > 32 && second.top() >= first.bottom(),
++                qPrintable(QString("Comics prose bounds (FB2=%1): first y=%2 h=%3, second y=%4 h=%5")
++                    .arg(fictionBook).arg(first.y()).arg(first.height()).arg(second.y()).arg(second.height())));
++        require(prose.pages() > 1, "Comics prose collapsed into a single page");
++    }
++
++    // Mixed source sequence: portrait + portrait, a wide spread, and an odd portrait.
++    // Page numbering and saved anchors must describe displayed screens, not halves.
++    auto mixed = data;
++    QImage wide(1680, 1000, QImage::Format_RGB32);
++    wide.fill(Qt::red);
++    QByteArray widePng;
++    QBuffer wideBuffer(&widePng);
++    require(wideBuffer.open(QIODevice::WriteOnly) && wide.save(&wideBuffer, "PNG"), "Encode wide art");
++    mixed["wide.png"] = widePng;
++    mixed["book.opf"] = "<package xmlns='http://www.idpf.org/2007/opf' version='2.0'><metadata/><manifest><item id='c' href='c.xhtml' media-type='application/xhtml+xml'/><item id='i' href='art.png' media-type='image/png'/><item id='w' href='wide.png' media-type='image/png'/></manifest><spine><itemref idref='c'/></spine></package>";
++    mixed["c.xhtml"] = "<html xmlns='http://www.w3.org/1999/xhtml'><head><title>Mixed</title></head><body><div><img src='art.png'/></div><div><img src='art.png'/></div><div><img src='wide.png'/></div><div><img src='art.png'/></div></body></html>";
++    QMap<QString, qint64> mixedLengths;
++    for (auto it = mixed.cbegin(); it != mixed.cend(); ++it) mixedLengths[it.key()] = it.value().size();
++    auto mixedResources = std::make_shared<ResourceCache>(mixed.keys(),
++        [mixed](const QString &name, const ResourceCache::Sink &sink, QString *) {
++            const auto bytes = mixed.value(name);
++            return sink(bytes.constData(), bytes.size());
++        }, std::make_shared<std::atomic_bool>(false));
++    readingPpi.store(96);
++    EngineDocument spread(test::readerFonts());
++    QString error;
++    require(spread.openResources(mixedResources, mixedLengths, QSize(1680, 1264),
++                {{appearance::comicsModeKey, true}}, &error), qPrintable(error));
++    require(spread.pages() == 3, "Mixed art did not become pair / wide / odd screens");
++    auto pair = spread.image(0);
++    require(qRed(pair.pixel(100, 100)) > 200 && qGreen(pair.pixel(100, 100)) < 40
++                && qGreen(pair.pixel(1000, 100)) < 40, "Portrait pair missing one side");
++    const auto wideBounds = inkBounds(spread.image(1));
++    require(wideBounds.width() == 1680 && qAbs(wideBounds.height() - 1000) <= 1,
++                "Wide source spread rotated, cropped or fitted to half the screen");
++    require(spread.go(1), "Select wide screen");
++    require(inkBounds(spread.imageFromAnchor()) == wideBounds, "Anchored preview sliced a graphic screen");
++    const auto widePosition = spread.position();
++    require(spread.applyAppearance({}, QSize(1264, 1680)), "Rotate mixed art to portrait");
++    require(spread.pages() == 4, "Portrait must have one source image per screen");
++    require(spread.goTo(widePosition), "Wide anchor lost after rotation");
++    require(spread.applyAppearance({}, QSize(1680, 1264)), "Rotate mixed art back");
++    require(spread.page() == 1 && spread.pages() == 3, "Spread anchor/page mapping changed after rotation");
++    // KCC can store a spread in a portrait-shaped bitmap and mark its spine
++    // item as page-spread-center. Aspect ratio alone must never pair it.
++    auto centered = mixed;
++    centered["book.opf"] = "<package xmlns='http://www.idpf.org/2007/opf' version='3.0'><metadata/><manifest><item id='p' href='c.xhtml' media-type='application/xhtml+xml'/><item id='s' href='center.xhtml' media-type='application/xhtml+xml'/><item id='i' href='art.png' media-type='image/png'/></manifest><spine><itemref idref='p'/><itemref idref='s' properties='rendition:page-spread-center'/></spine></package>";
++    centered["c.xhtml"] = "<html xmlns='http://www.w3.org/1999/xhtml'><head/><body><div><img src='art.png'/></div></body></html>";
++    centered["center.xhtml"] = centered["c.xhtml"];
++    const auto openCentered = [&centered](EngineDocument &document, const QJsonObject &settings) {
++        QMap<QString, qint64> lengths;
++        for (auto it = centered.cbegin(); it != centered.cend(); ++it) lengths[it.key()] = it.value().size();
++        auto resources = std::make_shared<ResourceCache>(centered.keys(),
++            [centered](const QString &name, const ResourceCache::Sink &sink, QString *) {
++                const auto bytes = centered.value(name);
++                return sink(bytes.constData(), bytes.size());
++            }, std::make_shared<std::atomic_bool>(false));
++        QString error;
++        require(document.openResources(resources, lengths, QSize(1680, 1264), settings, &error), qPrintable(error));
++    };
++    QTemporaryDir centeredCache;
++    require(centeredCache.isValid(), "Create centered spread cache");
++    EngineDocument center(test::readerFonts());
++    center.setDocumentCache(centeredCache.path(), "centered-spread", "comics-center-test", 1024 * 1024);
++    openCentered(center, {{appearance::comicsModeKey, true}});
++    require(center.pages() == 2, "Centered portrait-shaped source paired with its neighbour");
++    require(center.go(1), "Select standalone centered screen");
++    const auto centerBounds = inkBounds(center.image(1));
++    require(centerBounds.width() == 1680 && qAbs(centerBounds.height() - 1160) <= 1,
++            "Portrait-shaped center spread was not rotated to full landscape width");
++    require(center.imageAt(centerBounds.center()).size() == QSize(1160, 1680),
++            "Rotated center hit did not retain the original image identity");
++    require(center.imageAt(QPoint(0, 0)).isNull(), "Letterbox outside rotated center hit artwork");
++    const auto centerAnchor = center.position();
++    require(inkBounds(center.imageFromAnchor()) == centerBounds,
++            "Anchored center preview lost landscape rotation");
++    require(center.saveDocumentCache(), "Save centered spread cache");
++    EngineDocument centerCached(test::readerFonts());
++    centerCached.setDocumentCache(centeredCache.path(), "centered-spread", "comics-center-test", 1024 * 1024);
++    openCentered(centerCached, center.state());
++    // The engine may reject cached rendered pages on a style-hash change and
++    // repaginate the saved DOM. Both routes must retain standalone semantics.
++    // The existing single-spine test above independently requires a rendered hit.
++    require(centerCached.pages() == 2, "Saved centered checkpoint lost standalone page mapping");
++    std::printf("Centered checkpoint rendered-cache-hit=%s; standalone pages preserved\n",
++                centerCached.openedFromCache() ? "true" : "false");
++    require(center.applyAppearance({}, QSize(1264, 1680)) && center.pages() == 2,
++            "Portrait center mapping changed");
++    require(center.applyAppearance({}, QSize(1680, 1264)) && center.pages() == 2,
++            "Center placement lost after landscape round trip");
++    require(center.goTo(centerAnchor) && inkBounds(center.image(center.page())) == centerBounds,
++            "Standalone anchor lost rotation after orientation round trip");
++    EngineDocument centerToggle(test::readerFonts());
++    openCentered(centerToggle, {{appearance::comicsModeKey, false}});
++    require(centerToggle.applyAppearance(appearance::Patch(QJsonObject{{appearance::comicsModeKey, true}})) && centerToggle.pages() == 2,
++            "Opening with comics off lost standalone metadata on enable");
++    // Both resources of the visible spread must be ready before the next
++    // image-load frame. Neighbour resources remain pending, not preloaded.
++    auto deferredData = data;
++    QImage blue(1160, 1500, QImage::Format_RGB32);
++    blue.fill(Qt::blue);
++    QByteArray bluePng;
++    QBuffer blueBuffer(&bluePng);
++    require(blueBuffer.open(QIODevice::WriteOnly) && blue.save(&blueBuffer, "PNG"), "Encode second portrait");
++    deferredData["blue.png"] = bluePng;
++    deferredData["neighbor.png"] = bluePng;
++    deferredData["book.opf"] = "<package xmlns='http://www.idpf.org/2007/opf' version='2.0'><metadata/><manifest><item id='c' href='c.xhtml' media-type='application/xhtml+xml'/><item id='i' href='art.png' media-type='image/png'/><item id='b' href='blue.png' media-type='image/png'/></manifest><spine><itemref idref='c'/></spine></package>";
++    deferredData["c.xhtml"] = "<html xmlns='http://www.w3.org/1999/xhtml'><head/><body><div><img src='art.png'/></div><div><img src='blue.png'/></div></body></html>";
++    QMap<QString, qint64> deferredLengths;
++    QMap<QString, int> loads;
++    for (auto it = deferredData.cbegin(); it != deferredData.cend(); ++it) deferredLengths[it.key()] = it.value().size();
++    auto deferredResources = std::make_shared<ResourceCache>(deferredData.keys(),
++        [&loads, deferredData](const QString &name, const ResourceCache::Sink &sink, QString *) {
++            ++loads[name];
++            const auto bytes = deferredData.value(name);
++            return sink(bytes.constData(), bytes.size());
++        }, std::make_shared<std::atomic_bool>(false), ResourceCache::Statistics(),
++        [](const QString &name) {
++            return name.endsWith(".png") ? QSize(1160, name == "art.png" ? 1680 : 1500) : QSize();
++        });
++    EngineDocument deferredSpread(test::readerFonts());
++    require(deferredSpread.openResources(deferredResources, deferredLengths, QSize(1680, 1264),
++                {{appearance::comicsModeKey, true}}, &error), qPrintable(error));
++    require(deferredSpread.pages() == 1, "Deferred portrait resources did not form one spread");
++    deferredSpread.image(0);
++    require(deferredResources->statistics().value("pending_images").toInt() == 2,
++            "Visible spread did not queue both deferred portraits");
++    // A neighbour is intentionally queued before the visible requests are
++    // loaded; batching must still select only resources of the visible screen.
++    deferredResources->imageReady("neighbor.png");
++    require(deferredResources->prioritizePendingImage("neighbor.png"), "Queue neighbour first");
++    require(deferredSpread.loadNextImage(), "Visible spread load made no progress");
++    require(loads.value("art.png") == 1 && loads.value("blue.png") == 1 && !loads.contains("neighbor.png"),
++            "Spread load published one side or eagerly loaded a neighbour");
++    require(deferredResources->statistics().value("pending_images").toInt() == 1,
++            "Visible spread batch consumed the neighbour queue");
++    const auto readySpread = deferredSpread.image(0);
++    require(qRed(readySpread.pixel(420, 600)) > 200 && qBlue(readySpread.pixel(1260, 600)) > 200,
++            "Completed spread frame lacks one of the visible portraits");
++    const auto leftBounds = inkBounds(readySpread);
++    QRect rightBounds;
++    for (int y = 0; y < readySpread.height(); ++y)
++        for (int x = readySpread.width() / 2; x < readySpread.width(); ++x)
++            if (qBlue(readySpread.pixel(x, y)) > 200 && qRed(readySpread.pixel(x, y)) < 40)
++                rightBounds = rightBounds.united(QRect(x, y, 1, 1));
++    require(leftBounds.top() > 0 && rightBounds.top() > leftBounds.top()
++                && qAbs(leftBounds.top() - (1264 - leftBounds.height()) / 2) <= 1
++                && qAbs(rightBounds.top() - (1264 - rightBounds.height()) / 2) <= 1,
++            "Different-height portraits are not independently vertically centered");
++    require(deferredSpread.imageAt(leftBounds.center()).size() == QSize(1160, 1680)
++                && deferredSpread.imageAt(rightBounds.center()).size() == QSize(1160, 1500),
++            "Centered pair image-viewer hit lost its source");
++    require(deferredSpread.imageAt(QPoint(420, 0)).isNull()
++                && deferredSpread.imageAt(QPoint(1260, 0)).isNull(),
++            "Pair letterbox incorrectly hits artwork");
++
++    // Regression for the case missed by load-batching alone: the first
++    // publishable frame has one ready bitmap and one deferred bitmap.
++    deferredSpread.releaseImages();
++    loads.clear();
++    deferredResources->imageReady("art.png");
++    require(deferredResources->loadNextImage(), "Prime one ready portrait");
++    deferredResources->imageReady("neighbor.png");
++    Engine &frameEngine = deferredSpread;
++    const auto mixedReadyFrame = frameEngine.frameImage();
++    require(qRed(mixedReadyFrame.pixel(420, 600)) > 200
++                && qBlue(mixedReadyFrame.pixel(1260, 600)) > 200
++                && loads.value("blue.png") == 1 && !loads.contains("neighbor.png"),
++            "First published frame exposed a half-ready spread or loaded a neighbour");
++    // A completely cold first frame and a cached frame must follow the same
++    // publication contract; neighbours remain asynchronous in both cases.
++    deferredSpread.releaseImages();
++    loads.clear();
++    deferredResources->imageReady("neighbor.png");
++    const auto coldFrame = frameEngine.frameImage();
++    require(qRed(coldFrame.pixel(420, 600)) > 200 && qBlue(coldFrame.pixel(1260, 600)) > 200
++                && loads.value("art.png") == 1 && loads.value("blue.png") == 1
++                && !loads.contains("neighbor.png"), "Cold published frame is not a complete visible pair");
++    deferredSpread.frameImage();
++    require(!loads.contains("neighbor.png"), "Cached publication consumed neighbour work");
++
++    // Engine preview uses its own target's bounded image request identity too.
++    deferredSpread.releaseImages();
++    loads.clear();
++    const auto previewAnchor = deferredSpread.position();
++    deferredResources->imageReady("neighbor.png");
++    const auto spreadPreview = deferredSpread.previewTurn(0);
++    require(!spreadPreview.image.isNull()
++                && qRed(spreadPreview.image.pixel(420, 600)) > 200
++                && qBlue(spreadPreview.image.pixel(1260, 600)) > 200
++                && deferredSpread.position() == previewAnchor && !loads.contains("neighbor.png"),
++            "Engine preview exposed a half-ready spread, moved the source or consumed neighbours");
++
++    // Preparing many neighbour candidates must not erase the identity of a
++    // still-cached half-ready current frame (the old map-wide clear did this).
++    auto manyData = deferredData;
++    QByteArray manyBody = "<html xmlns='http://www.w3.org/1999/xhtml'><head/><body>";
++    for (int i = 0; i < 11; ++i)
++        manyBody += "<div><img src='art.png'/></div><div><img src='blue.png'/></div>";
++    manyData["c.xhtml"] = manyBody + "</body></html>";
++    QMap<QString, qint64> manyLengths;
++    for (auto it = manyData.cbegin(); it != manyData.cend(); ++it) manyLengths[it.key()] = it.value().size();
++    auto manyResources = std::make_shared<ResourceCache>(manyData.keys(),
++        [manyData](const QString &name, const ResourceCache::Sink &sink, QString *) {
++            const auto bytes = manyData.value(name);
++            return sink(bytes.constData(), bytes.size());
++        }, std::make_shared<std::atomic_bool>(false), ResourceCache::Statistics(),
++        [](const QString &name) {
++            return name.endsWith(".png") ? QSize(1160, name == "art.png" ? 1680 : 1500) : QSize();
++        });
++    EngineDocument many(test::readerFonts());
++    require(many.openResources(manyResources, manyLengths, QSize(1680, 1264),
++                {{appearance::comicsModeKey, true}}, &error) && many.pages() == 11, qPrintable(error));
++    many.image(0);
++    for (int i = 1; i < many.pages(); ++i) many.image(i);
++    const auto retainedFrame = many.frameImage();
++    require(qRed(retainedFrame.pixel(420, 600)) > 200 && qBlue(retainedFrame.pixel(1260, 600)) > 200,
++            "Neighbour request-map pressure exposed a cached half-ready current frame");
++
++    // Center placement never requests a quarter-turn for an already-wide bitmap.
++    auto wideCenteredData = centered;
++    wideCenteredData["art.png"] = widePng;
++    QMap<QString, qint64> wideCenteredLengths;
++    for (auto it = wideCenteredData.cbegin(); it != wideCenteredData.cend(); ++it)
++        wideCenteredLengths[it.key()] = it.value().size();
++    auto wideCenteredResources = std::make_shared<ResourceCache>(wideCenteredData.keys(),
++        [wideCenteredData](const QString &name, const ResourceCache::Sink &sink, QString *) {
++            const auto bytes = wideCenteredData.value(name);
++            return sink(bytes.constData(), bytes.size());
++        }, std::make_shared<std::atomic_bool>(false));
++    EngineDocument wideCentered(test::readerFonts());
++    require(wideCentered.openResources(wideCenteredResources, wideCenteredLengths, QSize(1680, 1264),
++                {{appearance::comicsModeKey, true}}, &error) && wideCentered.go(1), qPrintable(error));
++    const auto landscapeBounds = inkBounds(wideCentered.frameImage());
++    require(landscapeBounds == QRect(0, 132, 1680, 1000),
++            "Already-landscape center bitmap was rotated or not vertically centered");
++    require(wideCentered.imageAt(landscapeBounds.center()).size() == QSize(1680, 1000),
++            "Landscape center viewer lost original dimensions");
++    require(wideCentered.applyAppearance({}, QSize(1264, 1680)), "Rotate wide center to portrait view");
++    const auto portraitBounds = inkBounds(wideCentered.image(wideCentered.page()));
++    require(portraitBounds.width() > portraitBounds.height(), "Portrait viewport rotated an already-wide source");
++    std::puts("PASS: comics fit, zero effective margins, orientation and editable base persistence");
++}
+diff --git a/tests/model/resource_cache.cpp b/tests/model/resource_cache.cpp
+index a3d320c1c24ef181fc352ae5719467f2465db9d7..ddf642946b00d1098ca5f02618d87b667c05fbec 100644
+--- a/tests/model/resource_cache.cpp
++++ b/tests/model/resource_cache.cpp
+@@ -176,6 +176,35 @@ int main(int argc, char **argv)
+                         && images.readBounded("bad", 2) == "ok",
+                 "Renewed source did not retry its failed image");
+     }
++    {
++        QStringList loaded;
++        ResourceCache images({ "neighbour", "left", "right" },
++            [&loaded](const QString &name, const ResourceCache::Sink &sink, QString *) {
++                loaded.append(name);
++                return sink("ok", 2);
++            }, cancelled);
++        images.imageReady("neighbour");
++        images.beginImageRequests();
++        images.imageReady("left");
++        images.imageReady("right");
++        images.imageReady("left");
++        require(images.endImageRequests() == QStringList({ "left", "right" }),
++                "Visible requests were duplicated or included previous neighbours");
++        images.imageReady("neighbour");
++        require(images.endImageRequests() == QStringList({ "left", "right" }),
++                "A completed image trace kept recording new requests");
++        require(images.prioritizePendingImage("right") && images.loadNextImage()
++                    && loaded == QStringList({ "right" }), "Visible image priority did not preserve queue identity");
++        require(!images.prioritizePendingImage("right") && !images.prioritizePendingImage("missing"),
++                "Priority requeued ready or unknown image");
++        require(images.loadNextImage() && loaded.last() == "neighbour",
++                "Visible priority discarded the neighbour queue");
++        images.releaseBytes();
++        images.imageReady("left");
++        require(images.endImageRequests().isEmpty(), "Release did not stop/clear image tracing");
++        images.beginImageRequests();
++        require(images.endImageRequests().isEmpty(), "Release kept image request tracing");
++    }
+     {
+         auto revoked = std::make_shared<kobalt::SourceLease>();
+         int goodLoads = 0;
+diff --git a/tests/support/reader_source_index_probe.h b/tests/support/reader_source_index_probe.h
+index 172926269967c1bea44369ed525b3f83be1b74a2..3451726eb54a83e692b9af09b6ffe0bca3f89793 100644
+--- a/tests/support/reader_source_index_probe.h
++++ b/tests/support/reader_source_index_probe.h
+@@ -10,6 +10,30 @@ namespace kobalt {
+ struct ReaderSourceIndexProbe
+ {
+     using Ranges = QVector<QPair<QString, QString>>;
++    static bool comicsGeometry(const EngineDocument &model) {
++        const auto margins = model.engine_->getPageMargins();
++        return margins.left == 0 && margins.top == 0 && margins.right == 0
++                && margins.bottom == 0 && model.columns_ == 1;
++    }
++    static QRect nodeBounds(const EngineDocument &model, const char *id) {
++        auto *root = model.engine_->getDocument()->getRootNode();
++        std::vector<ldomNode *> pending{root};
++        const auto wanted = QString::fromLatin1(id);
++        while (!pending.empty()) {
++            auto *node = pending.back(); pending.pop_back();
++            if (!node || !node->isElement()) continue;
++            const auto value = QString::fromUtf8(UnicodeToUtf8(node->getAttributeValue("id")).c_str());
++            // CREngine separates the EPUB fragment prefix with "_ ".
++            if (value == wanted || value.endsWith("_" + wanted) || value.endsWith("_ " + wanted)) {
++                lvRect rect;
++                node->getAbsRect(rect);
++                return QRect(rect.left, rect.top, rect.width(), rect.height());
++            }
++            for (int i = 0; i < node->getChildCount(); ++i) pending.push_back(node->getChildNode(i));
++        }
++        return {};
++    }
++
+ 
+     static lString32 cre(const QString &text) { return Utf8ToUnicode(text.toUtf8().constData()); }
+ 

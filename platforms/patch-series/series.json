@@ -53,8 +53,11 @@
     },
     {
       "id": "031-comics-engine",
-      "status": "planned",
-      "scope": "Engine rendering, source markers, visible image requests, preview/cache lifecycle and full synthetic comic fixtures"
+      "status": "prepared",
+      "scope": "Engine rendering, source markers, visible image requests, preview/cache lifecycle and full synthetic comic fixtures",
+      "path": "platforms/patch-series/patches/031-comics-engine.patch",
+      "sha256": "fab7970cf30626650fbde8270f3d6d9af14836fd37bb1cc05df3d30312bacc8d",
+      "validation": "Clean sequential apply and Python checks locally; native runtime/Qt5 package CI pending."
     },
     {
       "id": "032-comics-integration-refresh",
