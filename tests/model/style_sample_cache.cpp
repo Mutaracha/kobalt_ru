@@ -101,7 +101,6 @@ int main(int argc, char **argv)
     turned["chapter_title"] = "Two";
     turned["chapter_page"] = 1;
     turned["chapter_pages"] = 4;
-    turned["whole_book_failed"] = false;
     require(styleSampleSettings(turned) == styleSampleSettings(frame),
             "The displayed frame changed the sample settings");
     // A book that shows one chapter at a time reports where that part is,

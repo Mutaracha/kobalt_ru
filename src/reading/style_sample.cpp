@@ -506,8 +506,7 @@ QJsonObject styleSampleSettings(QJsonObject state)
     // These describe the displayed frame and change with a page turn. The
     // sample does not depend on them, and a kept sample must not either.
     for (const auto *key :
-         { "page", "next_page", "cached_pages", "chapter_title", "chapter_page", "chapter_pages",
-           "whole_book_failed" })
+         { "page", "next_page", "cached_pages", "chapter_title", "chapter_page", "chapter_pages" })
         state.remove(key);
     // A book that shows one chapter at a time has more of these: where the
     // part is in the book, its estimated pages and how long it took to

@@ -1,3 +1,14 @@
+## Текущее упрощение retained delta
+
+По указанию пользователя: upstream beta9 dark/i.MX animation eligibility и BOOX
+refresh восстановлены целиком вместе с upstream animation regression tests.
+F09 исключение whole_book_failed из sample key удалено; соответствующая fork-only
+строка теста тоже снята, весь style_sample_cache test теперь upstream.
+Первый book-open flash восстановлен как в beta9. Оставшиеся opening hooks —
+FB2, comics и locale, не альтернативный ускоритель. Audit: карта F07–F09/opening.
+CI нового runtime pending; physical device/BOOX acceptance не заявляются.
+F07 пока не удалён: пользователь запросил места проверки ribbon/fitting.
+
 ## Дополнение к очереди beta10: Libra2
 
 Deferred до обновления: проверить указанную разработчиком upstream опцию кнопок
