@@ -9,6 +9,7 @@ permissions:
   contents: read
 jobs:
   qt5:
+    if: ${{ !contains(github.event.head_commit.message, '[native-only]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -58,6 +59,8 @@ jobs:
           image=$(sh "$root/platforms/sdk-image.sh" linux)
           docker pull "$image"
           mkdir -p "$RUNNER_TEMP/control-native-dependencies"
+          log="$RUNNER_TEMP/ru-presentation.log"
+          set +e
           docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
             -v "$root:/work" -v "$RUNNER_TEMP/control-native-dependencies:/dependency-cache" \
             -w /work/platforms/desktop "$image" bash -euc '
@@ -66,7 +69,17 @@ jobs:
               QT_QPA_PLATFORM=offscreen KOBALT_RU_RENDER_DIR=/work/build/ru-render \
                 /work/build/desktop-linux/kobalt-ru-control-ui-tests ru
               QT_QPA_PLATFORM=offscreen /work/build/desktop-linux/kobalt-ru-control-ui-tests en
-            '
+            ' 2>&1 | tee "$log"
+          result=${PIPESTATUS[0]}
+          set -e
+          if [[ "$result" != 0 ]]; then
+            # Annotations stay readable via GitHub API when blob log downloads are blocked.
+            tail -n 45 "$log" | while IFS= read -r line; do
+              line=${line//'%'/'%25'}
+              echo "::error::$line"
+            done
+          fi
+          exit "$result"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
