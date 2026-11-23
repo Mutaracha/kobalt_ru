@@ -44,9 +44,22 @@
       "validation": "CI 45270389485: native publication/resource/FB2-engine/menu/appearance checks and Qt5 build/check-package PASS. Legacy workflow 45270389509 also PASS. Hardware and Qt6 firmware/Android acceptance pending."
     },
     {
-      "id": "030-comics",
+      "id": "030-comics-layout",
+      "status": "prepared",
+      "scope": "First comics layer: effective geometry, bounded OPF center-page metadata, bitmap classification and ColumnView spread geometry; preserves beta10 chapter-start grouping",
+      "path": "platforms/patch-series/patches/030-comics-layout.patch",
+      "sha256": "7095153f31e79326d6c6c09813e957a806e05950a0c25c123df246539cbaf8c7",
+      "validation": "Clean apply and Python series checks locally; native comics-layout/columns/chapter-parity and Qt5 CI pending. Engine/session/UI enablement follows in 031/032."
+    },
+    {
+      "id": "031-comics-engine",
       "status": "planned",
-      "scope": "Comics rendering, settings/session hooks and graphics refresh; registration and tests"
+      "scope": "Engine rendering, source markers, visible image requests, preview/cache lifecycle and full synthetic comic fixtures"
+    },
+    {
+      "id": "032-comics-integration-refresh",
+      "status": "planned",
+      "scope": "Comics appearance/session/UI wiring and graphics refresh; toolbar composition remains in 040"
     },
     {
       "id": "040-reader-controls",

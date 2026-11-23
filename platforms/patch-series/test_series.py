@@ -88,6 +88,13 @@ class SeriesTests(unittest.TestCase):
                 cmake)
             self.assertIsNotNone(zip_targets, 'Missing ZIP fixture target definitions')
             self.assertIn('fb2_engine', zip_targets.group(1).split('|'))
+            self.assertIn('comics_layout', zip_targets.group(1).split('|'))
+            column_view = (destination / 'src/engine/blaze/adapter/column_view.h').read_text()
+            self.assertIn('chapterColumns()', column_view)
+            self.assertIn('void rebuildComicSpreads();', column_view)
+            self.assertNotIn('Position restore(', column_view)
+            self.assertTrue((destination / 'src/engine/blaze/adapter/reader_comics.cpp').is_file())
+
             self.assertIn('appearance::migrateLegacyNotes(saved);',
                           (destination / 'src/reading/opening_job.cpp').read_text())
             for qt in ('qt5', 'qt6'):

@@ -81,11 +81,11 @@ jobs:
               if [[ "$SDK" == linux ]]; then
                 cd platforms/desktop
                 cmake --preset linux -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
-                cmake --build --preset linux --parallel 4 --target kobalt-local-resources-tests kobalt-zip-resource-tests kobalt-plain-archive-tests kobalt-fb2-engine-tests kobalt-nickel-book-menu-tests kobalt-appearance-settings-tests
+                cmake --build --preset linux --parallel 4 --target kobalt-local-resources-tests kobalt-zip-resource-tests kobalt-plain-archive-tests kobalt-fb2-engine-tests kobalt-nickel-book-menu-tests kobalt-appearance-settings-tests kobalt-comics-layout-tests kobalt-columns-tests kobalt-chapter-parity-tests
                 for test in local-resources zip-resource plain-archive fb2-engine; do
                   QT_QPA_PLATFORM=offscreen "/work/build/desktop-linux/kobalt-$test-tests"
                 done
-                QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^(model|platform)\.(nickel-book-menu|appearance-settings)$"
+                QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^((model|platform)\.(nickel-book-menu|appearance-settings)|engine\.(comics-layout|columns|chapter-parity))$"
               else
                 cd platforms/kobo
                 cmake --preset qt5 -DKOBALT_COMMIT=1796a32 -DKOBALT_COMMIT_MODIFIED=ON -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4

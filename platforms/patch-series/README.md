@@ -23,7 +23,9 @@
 | 021 | FB2 raw resources: stream/lease/cancellation | Native + Qt5 CI PASS |
 | 022 | FB2 engine: raw/resource input, CSS/семантика, preview, cache | Native + Qt5/package CI PASS; устройство ещё не принято |
 | 023 | Kobo raw-FB2 routing Qt5/Qt6, миграция настройки примечаний | Native + Qt5/package CI PASS; устройство ещё не принято |
-| 030 | Комиксы: изображения, layout, settings/session и graphics refresh | План |
+| 030 | Комиксы: effective geometry, OPF center metadata, ColumnView spread geometry | Подготовлен; CI ожидается, пользовательский режим ещё не включён |
+| 031 | Комиксы: EngineDocument/source/render/cache/preview и synthetic fixtures | План |
+| 032 | Комиксы: appearance/session/UI и graphics refresh | План |
 | 040 | Согласованные reader toolbar/навигация/presentation; только отсутствующее upstream | План |
 | 050 | Оставшиеся согласованные About/brand/UI/annotations/locale hooks | План; не дублировать 010 |
 | 060 | Итоговые CI/package/provenance для полной серии | План |
@@ -131,3 +133,5 @@ Workflow `Ordered patch series` теперь сохраняет проверен
 Артефакт `Kobalt-qt5-device` другого workflow остаётся legacy-сборкой.
 [Инструкция и сценарии проверки](DEVICE-TEST.md). У прогона 8c26105
 тестовый prefix package ещё не публиковался; не подменять его legacy-пакетом.
+
+[030 — выполненный первый слой комиксов и границы 031/032](../../doc/reports/patch-series/comics-layout.md).
