@@ -1,0 +1,75 @@
+{
+  "upstream": "1796a32559dbb2912bd565990d1c7a0ca7ac4e52",
+  "files": [
+    {
+      "path": "assets/CMakeLists.txt",
+      "sha256": "6b9a5760ef9ff9c1c9897b442c407f4077befd9ec6ef5c89db033a7478e774b5",
+      "upstream_sha256": "35e0ddfb11b235a411430c846710bd65e6b273c93d4b2a7954d979968766b282"
+    },
+    {
+      "path": "assets/ru.strings",
+      "sha256": "cdd78570850f43c3ee3775138ec135d0f79c9d6a6a7be3a2a89bddedc058fde8",
+      "upstream_sha256": null
+    },
+    {
+      "path": "platforms/android/main.cpp",
+      "sha256": "3f5a7fe713cb014a80e33105119d7156e3e420f9ee01cd48d32bcedb56988ae3",
+      "upstream_sha256": "f4b6532fb27f8bc556e3c5b7f5934e13e047081f0ab265bb4d5ac84aa7417d26"
+    },
+    {
+      "path": "platforms/desktop/main.cpp",
+      "sha256": "5a9289d053db0d7ed15d4bb03f28b8f4fd7cdcc5b7afb204ccd2997533b86419",
+      "upstream_sha256": "a4edd36ab17aa0123d924d08355f7e2d622a752c1a3c753b21ba07d9074cac17"
+    },
+    {
+      "path": "platforms/kobo/common/reader_coordinator.cpp",
+      "sha256": "bc1ee790bde59f360284a6fdadcb9558d805786107dfdc870657537633d53665",
+      "upstream_sha256": "85ea5f5fbc49aa05c6be59f7944da19eb97e0fcb158b9c90a1a9a57dbc590d1f"
+    },
+    {
+      "path": "platforms/kobo/nickel-qt5/reader_controller.cpp",
+      "sha256": "37eaf0fc5cad97798e0c6528d76e3f92522d5a1a7b6f3809ba2f3861e7207e39",
+      "upstream_sha256": "4a8b88f8481e5909ad7ba86ae8f58b7f72261afbd1ebea12497a3c15082cacbd"
+    },
+    {
+      "path": "platforms/kobo/nickel-qt6/reader_controller.cpp",
+      "sha256": "c29276fffd74c0d1359d30905b0584606577de1569d2098b8899216dff88c221",
+      "upstream_sha256": "5b82d596fd684e1acd4db195d011a4f2806e8e8c4ef6a383176cdd98409bb4d9"
+    },
+    {
+      "path": "platforms/strings-test.cmake",
+      "sha256": "9eeb8d912423e9d2739701ba0ff897c49c4d2d8d8c6e8d5e9122cf9169716856",
+      "upstream_sha256": "8fb9b290b123e0e1a69b0d4e3501cfd1e970c9a5c3dca1a4d99edf686bedc262"
+    },
+    {
+      "path": "platforms/strings.cmake",
+      "sha256": "8490c6a57f6c7059800ec0aa682b4be512c4186e6045c5ce13ac4905ddb2d94b",
+      "upstream_sha256": "5bf499ace9fe9b35733839a8cdc3f12a382b045b61a29c04858f26816e194d6b"
+    },
+    {
+      "path": "src/app/reader/panels/activity_view.cpp",
+      "sha256": "2496f73a5df2c17b9ee420d66ebaa31713c12fdd65b0a61ecf5cad0857bbe837",
+      "upstream_sha256": "09d44b931a6cb4eb5462c73580f80018806fcc3c7941d04b074761fca5b1265a"
+    },
+    {
+      "path": "src/support/percentage_text.h",
+      "sha256": "ab3538df434b7b5328196b9dde437ccedfea8cef711a5b1df782e36835fe7f46",
+      "upstream_sha256": "856a6b9eb9985a4354f682412602b688e730a0457a5be98f69b24d4535a38cf2"
+    },
+    {
+      "path": "src/support/string_locale.h",
+      "sha256": "4fefa89c9e70bf4f994667199eb3201899fe6cdcd90c9bd763caa0ceb6a45432",
+      "upstream_sha256": null
+    },
+    {
+      "path": "src/support/string_table.h",
+      "sha256": "1de2477848360ec82f38d2d6bb6f8adaeb71c91e76a6248271d41cc841a927cd",
+      "upstream_sha256": null
+    },
+    {
+      "path": "src/support/strings.h",
+      "sha256": "c0bd2355567fd704f9d2f270e3febfa01a34293c43b954f9eb358184bfb0990b",
+      "upstream_sha256": "c966790512fbf30f4e6d4d8926b772f05428893442d0a8b86dee5543cc40215a"
+    }
+  ]
+}

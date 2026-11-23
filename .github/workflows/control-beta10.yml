@@ -1,0 +1,45 @@
+name: Original beta10 Russian control
+on:
+  push:
+    branches: [arena/83c6bb75-kobalt-ru]
+    paths:
+      - 'platforms/control-beta10/**'
+      - '.github/workflows/control-beta10.yml'
+permissions:
+  contents: read
+jobs:
+  qt5:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export only upstream beta10 and the audited RU patch
+        run: bash platforms/control-beta10/prepare.sh
+      - name: Validate string generation and parity
+        run: |
+          set -euo pipefail
+          cmake -DTEST_TMP_ROOT="$RUNNER_TEMP/control-strings" -P build/control-beta10/platforms/strings-test.cmake
+          cmake -DROOT="$PWD/build/control-beta10" -P platforms/control-beta10/validate.cmake
+      - name: Build with original pinned Qt5 SDK and validate package
+        run: |
+          set -euo pipefail
+          root="$PWD/build/control-beta10"
+          image=$(sh "$root/platforms/sdk-image.sh" qt5)
+          docker pull "$image"
+          mkdir -p "$RUNNER_TEMP/control-dependencies"
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$root:/work" -v "$RUNNER_TEMP/control-dependencies:/dependency-cache" \
+            -w /work/platforms/kobo "$image" bash -euc '
+              cmake --preset qt5 -DKOBALT_COMMIT=1796a32 -DKOBALT_COMMIT_MODIFIED=ON -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
+              cmake --build --preset qt5 --parallel 4
+              cmake --build --preset qt5 --target check-package
+            '
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Kobalt-beta10-original-ru-qt5-control
+          if-no-files-found: error
+          path: |
+            build/control-beta10/build/kobo-qt5/*.zip
+            platforms/control-beta10/ru.patch
+            platforms/control-beta10/manifest.json
+            doc/reports/control-beta10/translation-gaps.json
