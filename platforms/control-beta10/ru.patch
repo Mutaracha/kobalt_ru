@@ -10701,10 +10701,10 @@ index dca6151c..dd104d00 100644
          if (family.isEmpty())
 diff --git a/tests/model/ru_control_ui.cpp b/tests/model/ru_control_ui.cpp
 new file mode 100644
-index 00000000..643c5295
+index 00000000..1295131c
 --- /dev/null
 +++ b/tests/model/ru_control_ui.cpp
-@@ -0,0 +1,135 @@
+@@ -0,0 +1,139 @@
 +#include "check.h"
 +#include "reader_inputs.h"
 +#include "support/percentage_text.h"
@@ -10752,7 +10752,11 @@ index 00000000..643c5295
 +        "header_footer.field_description.battery_warning", "sleep.percent_read",
 +        "sleep.battery_charged", "sleep.percent_through" };
 +    for (const auto *key : percentKeys) {
-+        const auto value = strings::get(key).arg(strings::percentArgument(qint64(99)));
++        // Fill the book-title slot too: an unresolved %2 is not a percent sign.
++        const auto value = strings::get(key).replace(QStringLiteral("%2"), QStringLiteral("Book"))
++                .arg(strings::percentArgument(qint64(99)));
++        if (value.count('%') != 1)
++            std::fprintf(stderr, "Percent contract failed for %s: %s\n", key, qPrintable(value));
 +        require(value.count('%') == 1, "Repeated/missing sign in a formatted percent argument");
 +    }
 +    require(strings::get("sleep.state_with_battery")

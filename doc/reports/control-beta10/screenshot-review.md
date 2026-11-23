@@ -88,3 +88,9 @@ QObject lookup: DescribedOption has no Q_OBJECT, so use findChild<QCheckBox*>()
 then dynamic_cast, not Qt's findChild<DescribedOption*>(). Native rerun pending.
 Failure-tail annotation bounded to 18×200 characters to fit GitHub's 4 KB limit.
 No application changes in this test-harness correction; Qt5 package is reused.
+
+Native rerun CI45239991931 compiled/linked successfully, then the new percent
+assertion counted the still-unfilled `%2` book-title placeholder as a second
+percent sign. Fixed the test to populate the title before counting signs and
+print the key/value on any contract failure. This is not a runtime string change;
+negative CMake regression still rejects the actual obsolete `%1%` suffix.

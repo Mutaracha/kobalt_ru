@@ -178,7 +178,7 @@
     },
     {
       "path": "tests/model/ru_control_ui.cpp",
-      "sha256": "15e06d359185dd7ddb4e42be4fae7dbac7f263c84f32979929f5769052dc6599",
+      "sha256": "7fc88faf6d50882efb44c7fa5dd6de335688b132a626819ce5eb8f4c377e9d0b",
       "upstream_sha256": null
     }
   ]
