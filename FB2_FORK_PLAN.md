@@ -1,4 +1,4 @@
-## Контроль beta10 — RU presentation review in progress
+## Контроль beta10 — RU presentation done (CI), device review pending
 
 Новая evidence: 60 исходных скриншотов 56843a0, commit4b59de0 (байты сохранены).
 Просмотрены все; подтверждены bottom-tab Cyrillic clipping, Widgets duration
@@ -8,10 +8,13 @@ fitting + две строки ribbon со стабильной battery anchor; s
 scale; 11 percent-template adaptations без смены формулировок. EN поведение
 сохраняется. Engine/storage/sleep-wake/vertical margins не менялись.
 [Реестр скриншотов, причины и ограничения](doc/reports/control-beta10/screenshot-review.md).
-Добавлен focused native RU/EN raster/metrics test и отдельный CI job;
-локальные strings/assets PASS, native + Qt5 compile/package pending.
-Следующее: CI, новый пакет и визуальная проверка пользователем; 80% scale пока
-не визуально принятый итог. Полная native suite и device повторно не запускались.
+Дополнительно screen020: включён штатный wrapLabel для RU inversion checkbox.
+Локальные strings/assets/negative percent guard PASS.
+Qt5 compile/link/check-package CI45238612205 PASS, runtime overlay9228e406,
+artifact14850976282. Focused native RU+EN raster/metrics CI45241167262 PASS,
+test overlaycc3c9e77; runtime hashes идентичны пакету (отличается только test file).
+Следующее: пакет и скриншоты пользователя; 80% scale не визуально принятый итог.
+Полная native suite и повторная device проверка не выполнялись.
 
 ## Текущая проверка Debug rail / языка
 

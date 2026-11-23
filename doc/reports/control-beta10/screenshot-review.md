@@ -60,7 +60,7 @@ New focused test `component.ru-control-ui` (also executable with `en`):
 The workflow runs separate RU and EN processes (not unsupported live retranslation)
 and publishes raster samples separately from the installation package. They are
 synthetic headless outputs, NOT user/device evidence and NOT visual acceptance.
-All native checks are pending until the new CI completes. Local CMake strings,
+Focused native checks passed as recorded below. Local CMake strings,
 production references, runtime manifest hashes and strings rebuild checks pass.
 Full native suite not requested/run. The current environment has no Qt/Docker.
 
@@ -72,25 +72,42 @@ and large UI, numeric widths (1/11/111/9999), one/two/long time values and sleep
 charging/off states. If upstream supplies an equivalent fix, drop that hunk
 instead of stacking duplicate geometry/formatting policy.
 
-## CI harness integration note
+## Verification outcome / package handoff
 
-First Qt5 package on 9df3a64b passed (CI45236979735), while the newly registered
-native test could not configure: the upstream desktop harness requires every
-new test to have a validation-area mapping. Added settings area mapping and
-one-line test comment; this is test integration, not evidence of a passing test.
-Blob log downloads are blocked in Arena; the workflow now exposes a single
-multiline failure-tail annotation via the GitHub API. First per-line annotation
-attempt was truncated by GitHub's annotation limit. New native/Qt5 checks pending.
+| Check | Result / evidence |
+|---|---|
+| Strings generation/rebuild, 1808 key/slot parity, production references, manifest assets | Local PASS |
+| Inject old `sleep.percent_read = прочитано %1%` | Rejected by new CMake guard, PASS; restored after test |
+| Exact pristine apply + 36 output SHA-256 values | Local PASS |
+| Qt5 compile/link + original check-package | [CI45238612205](https://github.com/Mutaracha/kobalt_ru/actions/runs/45238612205), PASS, source9228e406 |
+| Focused native compile/link and RU **and** EN executions | [CI45241167262](https://github.com/Mutaracha/kobalt_ru/actions/runs/45241167262), PASS, sourcecc3c9e77 |
+| Full native suite / physical Kobo visual acceptance | NOT RUN / pending user screenshots |
 
-Qt5 compile/link/check-package on 9228e406: PASS (CI45238612205).
-Native compile reached the new test, not an application failure. Corrected its
-QObject lookup: DescribedOption has no Q_OBJECT, so use findChild<QCheckBox*>()
-then dynamic_cast, not Qt's findChild<DescribedOption*>(). Native rerun pending.
-Failure-tail annotation bounded to 18×200 characters to fit GitHub's 4 KB limit.
-No application changes in this test-harness correction; Qt5 package is reused.
+[Installation artifact14850976282](https://github.com/Mutaracha/kobalt_ru/actions/runs/45238612205/artifacts/14850976282),
+`Kobalt-beta10-original-ru-qt5-control`, 44 997 129 bytes Actions archive.
+Inside: `build/control-beta10/build/kobo-qt5/Kobalt-qt5.zip`.
 
-Native rerun CI45239991931 compiled/linked successfully, then the new percent
-assertion counted the still-unfilled `%2` book-title placeholder as a second
-percent sign. Fixed the test to populate the title before counting signs and
-print the key/value on any contract failure. This is not a runtime string change;
-negative CMake regression still rejects the actual obsolete `%1%` suffix.
+[Headless synthetic samples14853145717](https://github.com/Mutaracha/kobalt_ru/actions/runs/45241167262/artifacts/14853145717),
+`beta10-ru-presentation-samples`, 163 157 bytes. These are not device screenshots;
+CI rendered/saved the samples successfully. Archives were not downloaded/viewed
+in Arena (blob-host access restrictions observed earlier), so no visual pass is
+inferred from artifact existence. Native raster/metric assertions themselves pass.
+
+Package source9228e406 vs latest test sourcecc3c9e77 compared by the exact overlay
+manifest: **only `tests/model/ru_control_ui.cpp` differs**. Production source/assets
+are byte-identical. Qt5 packaging was intentionally not repeated for test-only
+lookup/assertion corrections; `[native-only]` commits skip that job.
+
+### Harness failures corrected before the native PASS
+
+- Desktop validation requires an area for every new test: added `settings` mapping
+  and a one-line test scope comment.
+- DescribedOption has no Q_OBJECT: find QCheckBox by name, then dynamic_cast.
+- The percent test must populate the book-title `%2` before counting literal
+  percent signs; unresolved placeholder `%2` is not a duplicate sign.
+- GitHub blob logs cannot be fetched from Arena; bounded multiline annotations
+  expose the error tail via API without GitHub's per-step count/4 KB truncation.
+
+Those earlier failed runs are not passes and are not device evidence. The final
+native PASS above is after these harness corrections, with the actual runtime
+ink-box/fitting/statistics code unchanged from the packaged revision.
