@@ -45,3 +45,31 @@ jobs:
             platforms/control-beta10/ru.patch
             platforms/control-beta10/manifest.json
             doc/reports/control-beta10/translation-gaps.json
+  ru-presentation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash platforms/control-beta10/prepare.sh
+      - name: Build focused RU presentation checks in the pinned native SDK
+        run: |
+          set -euo pipefail
+          root="$PWD/build/control-beta10"
+          image=$(sh "$root/platforms/sdk-image.sh" linux)
+          docker pull "$image"
+          mkdir -p "$RUNNER_TEMP/control-native-dependencies"
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$root:/work" -v "$RUNNER_TEMP/control-native-dependencies:/dependency-cache" \
+            -w /work/platforms/desktop "$image" bash -euc '
+              cmake --preset linux -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
+              cmake --build --preset linux --parallel 4 --target kobalt-ru-control-ui-tests
+              QT_QPA_PLATFORM=offscreen KOBALT_RU_RENDER_DIR=/work/build/ru-render \
+                /work/build/desktop-linux/kobalt-ru-control-ui-tests ru
+              QT_QPA_PLATFORM=offscreen /work/build/desktop-linux/kobalt-ru-control-ui-tests en
+            '
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: beta10-ru-presentation-samples
+          if-no-files-found: warn
+          path: build/control-beta10/build/ru-render/*.png

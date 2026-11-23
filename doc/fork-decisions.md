@@ -335,3 +335,14 @@ F07 ribbon/fitting пока не удалять: пользователь зап
 применены в control patch. Файлы шрифтов предоставлены commit 9d20cd4; перенесены
 только assets, не изменения соседней ветки. Это разрешение на тестовый пакет,
 не утверждение о свободной лицензии Monotype Corsiva.
+
+## B10-RU-PRESENTATION-REVIEW — восстановить локализованное fitting
+
+Источник: пользовательские скриншоты commit4b59de0 и прямое указание вернуть
+прежние исправления подписи/сна, уменьшить цифры нового шрифта статистики.
+Разрешена только presentation-дельта в isolated RU patch: full Cyrillic ink box,
+bounded sleep fitting/newlines/ribbon rows и уменьшение statistics figures.
+Не переносить sleep/wake/storage/engine. Точный размер 80% — предложенная
+реализация для следующей проверки, не принятый визуальный результат.
+Все 60 экранов просмотрены; ограничения и будущий upgrade-checklist находятся
+в [screenshot review](reports/control-beta10/screenshot-review.md).

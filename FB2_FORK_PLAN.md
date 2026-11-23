@@ -1,18 +1,17 @@
-## Контроль original beta10 + RU — done (пакет), device pending
+## Контроль beta10 — RU presentation review in progress
 
-База строго upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`,
-изолированный export + RU patch. Приняты все 204 перевода, применены.
-Шрифты взяты только как assets из `9d20cd4729c4fa5fbd5370ef7c1ec39519d74a04`:
-MTCORSVA для RU serif, Caveat Regular/Bold для RU playful default;
-English defaults не меняются. Medium/SemiBold сохранены как оригиналы, не bundled.
-Ink-box «ОТЛАДКА» и percent fix сохранены. Debug language UI отсутствует.
-[Точный состав и проверки](doc/reports/control-beta10/README.md).
-Локальные strings/manifest проверки PASS; Qt5 compile/link/check-package PASS:
-CI45226251278, runtime/source overlay 56843a03. Artifact14842514625,
-`Kobalt-beta10-original-ru-qt5-control` (44 989 107 байт Actions archive).
-Предыдущая ревизия с двумя исправлениями CI45221686704 PASS, но не проверяет
-текущие fonts/translations. Следующее: скриншоты пользователя и device review.
-CLDR не портирован, физическая/визуальная приёмка не заявлена.
+Новая evidence: 60 исходных скриншотов 56843a0, commit4b59de0 (байты сохранены).
+Просмотрены все; подтверждены bottom-tab Cyrillic clipping, Widgets duration
+переполнение, крупные Corsiva statistics figures и остаточные двойные % в sleep.
+В isolated RU patch: общий ink-rect для трёх stacked-label painters; bounded sleep
+fitting + две строки ribbon со стабильной battery anchor; statistics-only 80% RU
+scale; 11 percent-template adaptations без смены формулировок. EN поведение
+сохраняется. Engine/storage/sleep-wake/vertical margins не менялись.
+[Реестр скриншотов, причины и ограничения](doc/reports/control-beta10/screenshot-review.md).
+Добавлен focused native RU/EN raster/metrics test и отдельный CI job;
+локальные strings/assets PASS, native + Qt5 compile/package pending.
+Следующее: CI, новый пакет и визуальная проверка пользователем; 80% scale пока
+не визуально принятый итог. Полная native suite и device повторно не запускались.
 
 ## Текущая проверка Debug rail / языка
 

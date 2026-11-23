@@ -15,7 +15,7 @@
 Корневые src/assets форка и старые fork workflows не входят в сборку.
 
 Полный точный unified/binary diff: `platforms/control-beta10/ru.patch`.
-Исчерпывающий список **27** отличающихся файлов с исходными/новыми SHA-256:
+Исчерпывающий список **35** отличающихся файлов с исходными/новыми SHA-256:
 `platforms/control-beta10/manifest.json`. Остальные upstream файлы побайтно прежние.
 
 | Файлы | Назначение |
@@ -84,7 +84,7 @@ Provenance пакета: upstream `1796a32` + modified ON; точный overlay 
 Для скриншотов нужны: «Экран»/батарея/«Отладка», заголовки/загрузка (Corsiva),
 предустановка «Игровая» (Caveat), длинные новые русские строки.
 
-## Текущий результат CI — PASS
+## Предыдущий результат CI — PASS (до screenshot-review)
 
 [CI45226251278](https://github.com/Mutaracha/kobalt_ru/actions/runs/45226251278),
 source/orchestration `56843a039bad818ca021f6eda21c8b5bf34786d2`.
@@ -103,3 +103,18 @@ runtime asset hashes, Qt5 compile/link и оригинальный check-package
 `git diff --check` для обычных файлов PASS; для самого generated patch показывает
 whitespace в сохранённых license notices и blank context lines (не C++-дефекты).
 Правки шрифтов не являются результатом физической приёмки или полной native suite.
+
+## Текущая RU presentation revision
+
+[Разбор всех 60 пользовательских скриншотов](screenshot-review.md).
+Добавлены: общий `src/ui/style/locale_text.h` с RU-only ink/fitting/statistics
+policy; его call sites в `navigation.cpp`, `chapter_graph.cpp`, `stats_cell.h`,
+`activity_view.cpp`, `buttons.cpp`, `sleep_screen.cpp`, `sleep_designs.cpp`.
+Статистика уменьшена до 80% только для RU; titles не менялись. Fitting сна
+возвращён без lifecycle/storage. Исправлены 11 дополнительных percent-template
+контрактов. Это адаптация строк к formatter beta10, не новый текст.
+
+`tests/model/ru_control_ui.cpp` + регистрация target в desktop CMake добавлены
+в exact patch как проверки. Workflow отдельно собирает/runs RU и EN процесс,
+публикует synthetic samples. Qt5 package и focused native test текущей ревизии
+проверяются отдельно; предыдущий PASS к ним не относится.

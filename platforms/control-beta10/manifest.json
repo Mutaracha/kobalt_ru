@@ -38,18 +38,23 @@
     },
     {
       "path": "assets/notices/Monotype-Corsiva",
-      "sha256": "fbd86135c4d2bddf78d21c0e86e2156ddef852f9fc9e48fec1bec5ecac2ab4ae",
+      "sha256": "a63dd87f11bbe930f3af05ac7186d524547cdc8b2904eb66a9522f1ef1feacda",
       "upstream_sha256": null
     },
     {
       "path": "assets/ru.strings",
-      "sha256": "bbab3c6f88c96ea504336e82fef6db7098f524173a5d16d03bd5eae60cb87049",
+      "sha256": "19c4a90522abdedcfb2c5600ddd901e61fce8714c73b43eadd68b60dae3a89db",
       "upstream_sha256": null
     },
     {
       "path": "platforms/android/main.cpp",
       "sha256": "3f5a7fe713cb014a80e33105119d7156e3e420f9ee01cd48d32bcedb56988ae3",
       "upstream_sha256": "f4b6532fb27f8bc556e3c5b7f5934e13e047081f0ab265bb4d5ac84aa7417d26"
+    },
+    {
+      "path": "platforms/desktop/CMakeLists.txt",
+      "sha256": "77f458b5acde83b14b13f45c622dec4fc42a73dedf651051af7ff651fd502c7a",
+      "upstream_sha256": "0e84fe9cb498510424b61f876ae1bb4352c335769084b0812f772ff16b699bc1"
     },
     {
       "path": "platforms/desktop/main.cpp",
@@ -83,13 +88,38 @@
     },
     {
       "path": "src/app/reader/panels/activity_view.cpp",
-      "sha256": "2496f73a5df2c17b9ee420d66ebaa31713c12fdd65b0a61ecf5cad0857bbe837",
+      "sha256": "adbf33509e724a91739cdc18720f554ef4b46ffb892b3cbef6939d5d451b18c6",
       "upstream_sha256": "09d44b931a6cb4eb5462c73580f80018806fcc3c7941d04b074761fca5b1265a"
+    },
+    {
+      "path": "src/app/reader/panels/chapter_graph.cpp",
+      "sha256": "13d907b0d40be8d22bc3aa854b834dcff50a90f1e6a69a3f3cddaa2188711d6b",
+      "upstream_sha256": "bc36537c52251ff225318d3697220c4fc29612a590aaca3a5433b9565f4574b8"
+    },
+    {
+      "path": "src/app/reader/panels/stats_cell.h",
+      "sha256": "c562bd2cb1bab1229fd20fa7c5ef1d61e47a94a828d6c2d5e456766fa33b2e33",
+      "upstream_sha256": "bce1622b5b0b32f922449706a9bb36476f08bfe8ff6e4fffa6635fb3e9c1b400"
     },
     {
       "path": "src/app/reader/settings/interface_style.h",
       "sha256": "3356d4f0e37828a30a73abc852ac1c9195ea5180ba1192107e8dc2c474cca090",
       "upstream_sha256": "649db71b47d2d38ece90ab2a1c8e5902237791517b72ec7da650508ab2d6404d"
+    },
+    {
+      "path": "src/app/reader/views/navigation.cpp",
+      "sha256": "d84be9f4b8177b1105762edfb39c926f4bfaafef60c7d82870e150f5599bd43e",
+      "upstream_sha256": "3ab47d78d75a769a9e0268d86bbc5247ea8e1af94d31a23ec28ec7aee054b896"
+    },
+    {
+      "path": "src/app/reader/views/sleep_designs.cpp",
+      "sha256": "a607b11f5f26ecfd14b754e306cf90c248d031e5d1a5af05b764e177b455f589",
+      "upstream_sha256": "de47f364edbe1d60ccf006c4d8f60a4b6061a3978f9469b08acebeb12ac0ec05"
+    },
+    {
+      "path": "src/app/reader/views/sleep_screen.cpp",
+      "sha256": "82f752360ca16481f617ec1cc5bb0ee0e305ec415a55f88397b005261b565358",
+      "upstream_sha256": "595d72a06a9a4b8ce390f93ccc4820efd2ebe706bae7fef4e6c304c86f8e6829"
     },
     {
       "path": "src/assets/bundled_fonts.cpp",
@@ -123,7 +153,7 @@
     },
     {
       "path": "src/ui/controls/buttons.cpp",
-      "sha256": "a6f7d527ebdb5240b358f2fcfae976167f8ad81fd7cc7cca7bf13628a2604154",
+      "sha256": "562cebb4821b22a876b95771a9458acaa3639b8e8e954451b1c478c5586c99eb",
       "upstream_sha256": "bd16ab202d5a57886e1a688708bfe9be1aa12e8639e2f731f082b108f7756f7f"
     },
     {
@@ -132,9 +162,19 @@
       "upstream_sha256": "5feb84e7dfbfce0a638b8b53aee35c502ca52fd7f8b90494fe8ffe75af3b3259"
     },
     {
+      "path": "src/ui/style/locale_text.h",
+      "sha256": "91b59262c5b58ebe029852c1a70a61d1d7525c360169d6b5db96e6665404d339",
+      "upstream_sha256": null
+    },
+    {
       "path": "src/ui/style/private_text.cpp",
       "sha256": "c3392433c19c130238475ab5f6a18ddb2aa1e87dc5ffe631495189df46e8dad1",
       "upstream_sha256": "d3c021dfe6205422b1d3691c0d23e30a374356eab3acf420cd61a7cf8b5c9467"
+    },
+    {
+      "path": "tests/model/ru_control_ui.cpp",
+      "sha256": "89219a80f6f0a5494d31d96b2d3ae3386fb97de1a91b108381848d9de4378eb7",
+      "upstream_sha256": null
     }
   ]
 }

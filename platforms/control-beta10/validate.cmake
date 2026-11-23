@@ -29,3 +29,14 @@ foreach(index RANGE ${last})
     endif()
 endforeach()
 message(STATUS "Control beta10: runtime asset manifest hashes passed")
+
+# beta10 moved percent signs into formatted arguments at these call sites.
+# Slot parity alone cannot detect the old fork's doubled literal sign.
+foreach(key IN ITEMS chapter_graph.book_progress chapter_graph.chapter_progress
+        header_footer.field_description.battery_warning kosync.percent kosync.resume_description
+        reader.brightness reader.warmth sleep.battery_charged sleep.percent_read
+        sleep.percent_through sleep.state_with_battery)
+    if("${ru_value_${key}}" MATCHES "%[1-9][0-9]?%")
+        message(FATAL_ERROR "Obsolete literal percent suffix in RU ${key}")
+    endif()
+endforeach()

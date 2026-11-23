@@ -7884,7 +7884,7 @@ index 00000000..6e5220c9
 +OTHER DEALINGS IN THE FONT SOFTWARE.
 diff --git a/assets/notices/Monotype-Corsiva b/assets/notices/Monotype-Corsiva
 new file mode 100644
-index 00000000..f86188ac
+index 00000000..8013379f
 --- /dev/null
 +++ b/assets/notices/Monotype-Corsiva
 @@ -0,0 +1,22 @@
@@ -7912,7 +7912,7 @@ index 00000000..f86188ac
 +
 diff --git a/assets/ru.strings b/assets/ru.strings
 new file mode 100644
-index 00000000..16d491ed
+index 00000000..4ad6974a
 --- /dev/null
 +++ b/assets/ru.strings
 @@ -0,0 +1,1809 @@
@@ -8289,9 +8289,9 @@ index 00000000..16d491ed
 +"chapter_contents.summary" = "Содержание · глав: %1";
 +"chapter_contents.summary_one" = "Содержание · 1 глава";
 +"chapter_contents.view_landmarks" = "Посмотреть ориентиры книги";
-+"chapter_graph.book_progress" = "Прогресс книги: %1%";
++"chapter_graph.book_progress" = "Прогресс книги: %1";
 +"chapter_graph.chapter_lengths_are_unavailable" = "Длины глав недоступны";
-+"chapter_graph.chapter_progress" = "Прогресс главы: %1%";
++"chapter_graph.chapter_progress" = "Прогресс главы: %1";
 +"chapter_graph.chapters_to_of" = "Главы с %1 по %2 из %3";
 +"chapter_graph.current_chapter" = "Текущая глава: %1";
 +"chapter_graph.next_chapter" = "Следующая глава: %1 %2";
@@ -8636,7 +8636,7 @@ index 00000000..16d491ed
 +"header_footer.field.time" = "Время";
 +"header_footer.field.title" = "Название книги";
 +"header_footer.field.title_and_page" = "Название и страница в книге";
-+"header_footer.field_description.battery_warning" = "Показывает батарею только ниже %1%.";
++"header_footer.field_description.battery_warning" = "Показывает батарею только ниже %1.";
 +"header_footer.field_description.book_status" = "Время последнего перелистывания и состояние вёрстки: быстрая — пока свёрстана одна глава, полная — когда свёрстана вся книга. Обновляется каждые 5 секунд.";
 +"header_footer.field_description.time_left" = "Оценивается по вашей скорости чтения.";
 +"header_footer.fields" = "Поля";
@@ -8779,13 +8779,13 @@ index 00000000..16d491ed
 +"kosync.pages_back_one" = "Назад на 1 стр.";
 +"kosync.password" = "Пароль";
 +"kosync.pending" = "Вернитесь к чтению, чтобы выбрать позицию.";
-+"kosync.percent" = "%1%";
++"kosync.percent" = "%1";
 +"kosync.position_error" = "Не удалось открыть полученную позицию. Ваша позиция сохранена, автосинхронизация выключена.";
 +"kosync.rate_limited" = "Сервер ограничивает частоту запросов. Повторите синхронизацию позже.";
 +"kosync.reader_timeout" = "Синхронизация не завершилась, пока читалка была занята. Повторите попытку после завершения текущей операции. Позиция чтения сохранена.";
 +"kosync.redirect_error" = "Сервер перенаправил запрос синхронизации. Данные входа не передавались. Проверьте адрес KOSync и префикс пути.";
 +"kosync.response_too_large" = "Ответ сервера превышает допустимый размер. Проверьте адрес и совместимость сервера с KOSync.";
-+"kosync.resume_description" = "Другое устройство сохранило позицию %1% (%2). Выберите, какую позицию оставить.";
++"kosync.resume_description" = "Другое устройство сохранило позицию %1 (%2). Выберите, какую позицию оставить.";
 +"kosync.resume_title" = "Продолжить с полученной позиции?";
 +"kosync.resumed" = "Чтение продолжено с полученной позиции.";
 +"kosync.retry_later" = "Ридер занят. Повторим синхронизацию позже.";
@@ -8992,7 +8992,7 @@ index 00000000..16d491ed
 +"reader.book_position" = "Позиция в книге";
 +"reader.bookmarks" = "Аннотации и закладки";
 +"reader.both" = "Оба";
-+"reader.brightness" = "Яркость %1%";
++"reader.brightness" = "Яркость %1";
 +"reader.brightness_and_warmth" = "Яркость и тёплый свет";
 +"reader.built_in_fonts" = "Встроенные шрифты";
 +"reader.chapter_lengths" = "Длины глав";
@@ -9108,7 +9108,7 @@ index 00000000..16d491ed
 +"reader.untitled_chapter" = "Глава без названия";
 +"reader.uses_default_font" = "Использует %1";
 +"reader.vertical_margins" = "Вертикальные поля: ";
-+"reader.warmth" = "Тёплый свет %1%";
++"reader.warmth" = "Тёплый свет %1";
 +"reader.weight_value" = "+%1";
 +"reader.whole_book" = "Вся книга";
 +"reader.your_default_font" = "Ваш шрифт по умолчанию";
@@ -9533,7 +9533,7 @@ index 00000000..16d491ed
 +"sleep.backdrop_plain" = "Пустой фон";
 +"sleep.backdrop_wallpaper" = "Обои";
 +"sleep.battery" = "Батарея";
-+"sleep.battery_charged" = "Заряжено на %1%";
++"sleep.battery_charged" = "Заряжено на %1";
 +"sleep.charged" = "Заряжено";
 +"sleep.charging" = "Зарядка";
 +"sleep.custom_background" = "Фон";
@@ -9580,8 +9580,8 @@ index 00000000..16d491ed
 +"sleep.missing_cover" = "?";
 +"sleep.now_reading" = "Сейчас читаю";
 +"sleep.of_reading" = "чтения";
-+"sleep.percent_read" = "прочитано %1%";
-+"sleep.percent_through" = "%1% книги «%2»";
++"sleep.percent_read" = "прочитано %1";
++"sleep.percent_through" = "%1 книги «%2»";
 +"sleep.place_bottom" = "Снизу";
 +"sleep.place_bottom_left" = "Снизу слева";
 +"sleep.place_bottom_right" = "Снизу справа";
@@ -9601,7 +9601,7 @@ index 00000000..16d491ed
 +"sleep.rotation_disabled" = "Экран сна будет только в книжной ориентации.";
 +"sleep.rotation_enabled" = "Экран сна теперь поддерживает и альбомную ориентацию.";
 +"sleep.sleeping" = "Сон";
-+"sleep.state_with_battery" = "%1 (%2%)";
++"sleep.state_with_battery" = "%1 (%2)";
 +"sleep.status_none" = "Нет";
 +"sleep.status_random" = "Случайный статус";
 +"sleep.step_count" = "%1 из %2";
@@ -9737,6 +9737,18 @@ index fdc2678d..cc88d2bf 100644
      app.setApplicationName("Kobalt");
      app.setOrganizationName("Kobalt");
      app.setQuitOnLastWindowClosed(false);
+diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
+index 08d4f7ee..50a46bc3 100644
+--- a/platforms/desktop/CMakeLists.txt
++++ b/platforms/desktop/CMakeLists.txt
+@@ -814,6 +814,7 @@ if(BUILD_TESTING)
+     kobalt_regressions(engine epub_compatibility large_toc vertical_spacing source_index location_round_trip engine_contract text_sample page_estimate layout_interrupt spine_window chapter_slices chapter_parity fast_surfaces fast_shaping columns advanced_text paragraph_spacing beautifier alignment indentation page_layout vertical_writing mathml line_breaking
+         css_class_index compiled_hyphenation fallback_styles svg_limits image_proportions figure_layout whitespace links search word_selection reader publisher_markup local_reader document_word_count document_cache alternate_layout)
+     kobalt_regressions(component ui acknowledgments kosync_ui)
++    kobalt_regressions(component ru_control_ui)
+     target_sources(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}/platforms/kobo/display/page_animation.cpp")
+     target_include_directories(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}" "${source}")
+     target_link_libraries(kobalt-ui-tests PRIVATE Qt6::GuiPrivate)
 diff --git a/platforms/desktop/main.cpp b/platforms/desktop/main.cpp
 index ac74bec0..0d4674e6 100644
 --- a/platforms/desktop/main.cpp
@@ -9904,10 +9916,15 @@ index 2306be0e..2e1c0333 100644
      if(EXISTS "${output}")
          file(READ "${output}" previous)
 diff --git a/src/app/reader/panels/activity_view.cpp b/src/app/reader/panels/activity_view.cpp
-index e5c7f3c4..b94a2d40 100644
+index e5c7f3c4..c7d3e79d 100644
 --- a/src/app/reader/panels/activity_view.cpp
 +++ b/src/app/reader/panels/activity_view.cpp
-@@ -32,16 +32,9 @@ namespace sizes = ui::metrics::activity;
+@@ -1,3 +1,4 @@
++#include "ui/style/locale_text.h"
+ #include "activity_view.h"
+ #include "stats_cell.h"
+ #include "app/reader/settings/settings_panel.h"
+@@ -32,16 +33,9 @@ namespace sizes = ui::metrics::activity;
  namespace {
  constexpr qint64 minute = 60 * 1000, hour = 60 * minute;
  
@@ -9925,7 +9942,16 @@ index e5c7f3c4..b94a2d40 100644
  }
  
  QString clock(qint64 utc)
-@@ -301,7 +294,7 @@ public:
+@@ -196,7 +190,7 @@ int drawFigure(QPainter *painter, int right, int baseline, qint64 milliseconds,
+     }
+     if (minutes < 60 || minutes % 60)
+         parts.append({ strings::get("stats.minutes"), false });
+-    const QFont number(ui::brandFont(pixels)), unit(ui::interfaceFont(chapters::unitText));
++    const QFont number(ui::statisticFont(pixels)), unit(ui::interfaceFont(chapters::unitText));
+     const int gap = chapters::unitGap;
+     int width = 0;
+     for (const auto &part : parts)
+@@ -301,7 +295,7 @@ public:
          QStringList entries;
          for (int i = 0; i < week.size(); ++i)
              if (week[i] >= 0)
@@ -9934,7 +9960,7 @@ index e5c7f3c4..b94a2d40 100644
                                        chartDuration(week[i]));
          setAccessibleDescription(entries.join(QStringLiteral(". ")));
          update();
-@@ -333,7 +326,7 @@ protected:
+@@ -333,7 +327,7 @@ protected:
              const int left = center - barWidth / 2;
              // Today keeps its day name in a narrow column; the underline
              // still marks it.
@@ -9943,7 +9969,7 @@ index e5c7f3c4..b94a2d40 100644
              const QString name = index == today
                              && ui::interfaceTextWidth(strings::get("activity.today").toUpper(),
                                                        label)
-@@ -593,7 +586,7 @@ public:
+@@ -593,7 +587,7 @@ public:
          month = first;
          days = values;
          today = now;
@@ -9952,7 +9978,7 @@ index e5c7f3c4..b94a2d40 100644
          setAccessibleDescription(since.isValid()
                                           ? dailyValues(days, qMax(month, since),
                                                         qMin(now, month.addMonths(1).addDays(-1)))
-@@ -618,7 +611,7 @@ protected:
+@@ -618,7 +612,7 @@ protected:
          painter.fillRect(0, 0, width(), ui::metrics::control::border, ui::dividerColor(this));
          for (int column = 0; column < 7; ++column)
              drawCaption(painter, QRect(chrome::inset + inner * column / 7, 0, inner / 7, head),
@@ -9961,7 +9987,7 @@ index e5c7f3c4..b94a2d40 100644
          const QDate first = activity::weekStart(month);
          const int rowHeight = (height() - head) / 6;
          const QFont value(ui::interfaceFont(chapters::unitText));
-@@ -727,7 +720,7 @@ public:
+@@ -727,7 +721,7 @@ public:
              for (; it != values.cend() && it.key() <= last; ++it)
                  read += level(it.value()) > 0;
              readingDays += read;
@@ -9970,7 +9996,7 @@ index e5c7f3c4..b94a2d40 100644
                                    plural("activity.day_read", "activity.days_read_count", read));
              start = last.addDays(1);
          }
-@@ -776,7 +769,7 @@ protected:
+@@ -776,7 +770,7 @@ protected:
              const int week = int(start.daysTo(QDate(today.year(), month, 1))) / 7;
              drawCaption(painter,
                          QRect(left + week * step, top + 7 * step + ui::px(4), step * 4, labels),
@@ -9979,7 +10005,7 @@ index e5c7f3c4..b94a2d40 100644
                          Qt::AlignLeft | Qt::AlignTop, ui::noteColor(this),
                          chrome::captionLabelText);
          }
-@@ -893,14 +886,14 @@ private:
+@@ -893,14 +887,14 @@ private:
          const bool thisMonth =
                  shown.year() == summary.today.year() && shown.month() == summary.today.month();
          month->caption->setText(thisMonth ? strings::get("activity.this_month")
@@ -9996,7 +10022,16 @@ index e5c7f3c4..b94a2d40 100644
      }
  
      void arrange()
-@@ -1315,7 +1308,7 @@ private:
+@@ -1110,7 +1104,7 @@ protected:
+                                  width / 2, rule, lines);
+             } else {
+                 drawText(painter, coverArea, book.title.left(1).toUpper(), Qt::AlignCenter,
+-                         ui::brandFont(frame.width() * 3 / 5), note);
++                         ui::statisticFont(frame.width() * 3 / 5), note);
+             }
+         }
+         const int left = coverArea.right() + 1 + ui::px(24);
+@@ -1315,7 +1309,7 @@ private:
                      auto *header = bands[bandsUsed++];
                      setBand(header,
                              month.month.isValid()
@@ -10005,7 +10040,25 @@ index e5c7f3c4..b94a2d40 100644
                                      : strings::get("activity.hidden"),
                              (showCopySource
                                       ? strings::get("activity.copies_count").arg(month.books.size())
-@@ -1816,7 +1809,7 @@ public:
+@@ -1521,7 +1515,7 @@ protected:
+         const int top = (height() - nameHeight - ui::px(4) - captionHeight) / 2;
+         const int right = width() - chrome::inset;
+         const int pixels = sizes::figureText * 7 / 10;
+-        const QFont figure(ui::brandFont(pixels)), unit(ui::interfaceFont(chapters::unitText));
++        const QFont figure(ui::statisticFont(pixels)), unit(ui::interfaceFont(chapters::unitText));
+         const int baseline = top + ui::interfaceLineAscent(name) + ui::px(10);
+         int figureWidth = 0;
+         if (!number.isEmpty()) {
+@@ -1711,7 +1705,7 @@ protected:
+             const auto number = QString::number(milestone.target);
+             // Longer numbers get smaller; a book is narrower than the others.
+             const bool book = milestone.kind == activity::Milestone::Kind::Books;
+-            painter.setFont(ui::brandFont(number.size() > 3                   ? shape * 2 / 5
++            painter.setFont(ui::statisticFont(number.size() > 3                   ? shape * 2 / 5
+                                                   : number.size() > 2 && book ? shape * 2 / 5
+                                                                               : shape / 2));
+             painter.setPen(reached ? paper : note);
+@@ -1816,7 +1810,7 @@ public:
                                                + day(summary.longestSessionDate),
                                summary.longestSession);
          records[1]->setRecord(strings::get("activity.most_in_day"),
@@ -10014,7 +10067,7 @@ index e5c7f3c4..b94a2d40 100644
                                                                     QStringLiteral("ddd d MMM"))
                                                + QStringLiteral(" · ")
                                                + plural("activity.book_count",
-@@ -2602,7 +2595,7 @@ public:
+@@ -2602,7 +2596,7 @@ public:
              lastCell->caption->setText(strings::get("activity.last_read"));
              const auto last = total.last ? activity::localDate(total.last) : QDate();
              lastCell->set(last.isValid() ? QString::number(last.day()) : QString(),
@@ -10023,7 +10076,7 @@ index e5c7f3c4..b94a2d40 100644
                                           : QString(),
                            last.isValid() && last.year() != today.year()
                                    ? QString::number(last.year())
-@@ -2722,7 +2715,7 @@ private:
+@@ -2722,7 +2716,7 @@ private:
                      ? strings::get("activity.today_at").arg(clock(session.started))
                      : date == today.addDays(-1)
                      ? strings::get("activity.yesterday_at").arg(clock(session.started))
@@ -10032,7 +10085,7 @@ index e5c7f3c4..b94a2d40 100644
                              + clock(session.started);
              QString range;
              if (extras.ranges.contains(session.started)) {
-@@ -2965,7 +2958,7 @@ void ActivityView::updateCopies(bool firstPage)
+@@ -2965,7 +2959,7 @@ void ActivityView::updateCopies(bool firstPage)
      for (int i = 0; i < copies.books.size(); ++i) {
          const auto &copy = copies.books[i];
          const auto date =
@@ -10041,6 +10094,53 @@ index e5c7f3c4..b94a2d40 100644
          const auto number = QString::number(i + 1) + QStringLiteral(" · ");
          auto caption = labels.value(sources[i]);
          if (!caption.isEmpty())
+diff --git a/src/app/reader/panels/chapter_graph.cpp b/src/app/reader/panels/chapter_graph.cpp
+index 4afabbdc..cf10eca2 100644
+--- a/src/app/reader/panels/chapter_graph.cpp
++++ b/src/app/reader/panels/chapter_graph.cpp
+@@ -1,3 +1,4 @@
++#include "ui/style/locale_text.h"
+ #include "reading/header_footer.h"
+ #include "ui/controls/icons.h"
+ #include "ui/controls/text.h"
+@@ -215,7 +216,9 @@ protected:
+         painter.setFont(label);
+         ui::drawOpticalText(
+                 painter,
+-                QRect(ui::px(2), top + icon + chrome::tabGap, width() - ui::px(4), capital),
++                ui::localeLabelInkRect(
++                        QRect(ui::px(2), top + icon + chrome::tabGap, width() - ui::px(4), capital),
++                        strings::get("activity.title").toUpper(), label),
+                 strings::get("activity.title").toUpper(), true);
+     }
+ };
+diff --git a/src/app/reader/panels/stats_cell.h b/src/app/reader/panels/stats_cell.h
+index 9d9a32d6..070d354c 100644
+--- a/src/app/reader/panels/stats_cell.h
++++ b/src/app/reader/panels/stats_cell.h
+@@ -1,3 +1,4 @@
++#include "ui/style/locale_text.h"
+ #pragma once
+ #include "ui/controls/text.h"
+ #include "ui/style/fonts.h"
+@@ -28,7 +29,7 @@ public:
+         figure->setObjectName(prefix + "Figure");
+         figure->setTextFormat(Qt::PlainText);
+         ui::readerStyle(figure,
+-                        ui::styles::brand(ui::metrics::chapters::figureText)
++                        ui::styles::brand(ui::localeStatisticPixels(ui::metrics::chapters::figureText))
+                                 + "background:transparent;");
+         unit = new ui::InterfaceLabel(this);
+         unit->setObjectName(prefix + "Unit");
+@@ -74,7 +75,7 @@ private:
+     {
+         const int inner = qMax(1, width() - 2 * ui::metrics::chrome::inset);
+         const QFont captionMetrics(ui::captionFont()),
+-                figureMetrics(ui::brandFont(ui::metrics::chapters::figureText)),
++                figureMetrics(ui::statisticFont(ui::metrics::chapters::figureText)),
+                 unitMetrics(ui::interfaceFont(ui::metrics::chapters::unitText));
+         caption->setGeometry(ui::metrics::chrome::inset, ui::metrics::chapters::cellPadding, inner,
+                              ui::interfaceLineHeight(captionMetrics));
 diff --git a/src/app/reader/settings/interface_style.h b/src/app/reader/settings/interface_style.h
 index 723c0fca..a52b76b8 100644
 --- a/src/app/reader/settings/interface_style.h
@@ -10062,6 +10162,153 @@ index 723c0fca..a52b76b8 100644
          style.icons = ui::IconStyle::Pastel;
          style.palette = QStringLiteral("blue");
      } else if (id == "notebook") {
+diff --git a/src/app/reader/views/navigation.cpp b/src/app/reader/views/navigation.cpp
+index 0d53abd0..9dc5203e 100644
+--- a/src/app/reader/views/navigation.cpp
++++ b/src/app/reader/views/navigation.cpp
+@@ -1,3 +1,4 @@
++#include "ui/style/locale_text.h"
+ #include "support/percentage_text.h"
+ #include "ui/controls/buttons.h"
+ #include "ui/controls/icons.h"
+@@ -493,7 +494,9 @@ protected:
+         painter.setFont(label);
+         ui::drawOpticalText(
+                 painter,
+-                QRect(ui::px(2), icon.bottom() + 1 + chrome::tabGap, width() - ui::px(4), capital),
++                ui::localeLabelInkRect(
++                        QRect(ui::px(2), icon.bottom() + 1 + chrome::tabGap,
++                              width() - ui::px(4), capital), text(), label),
+                 text(), true);
+     }
+ 
+diff --git a/src/app/reader/views/sleep_designs.cpp b/src/app/reader/views/sleep_designs.cpp
+index dc97b650..089c5b74 100644
+--- a/src/app/reader/views/sleep_designs.cpp
++++ b/src/app/reader/views/sleep_designs.cpp
+@@ -1,3 +1,4 @@
++#include "ui/style/locale_text.h"
+ #include "sleep_screen.h"
+ 
+ #include "ui/controls/panels.h"
+@@ -124,9 +125,12 @@ QFont body(const QString &family, qreal pixels)
+ void text(QPainter &painter, const QFont &font, const QColor &color, const QRectF &area,
+           const QString &value, Qt::Alignment alignment = Qt::AlignLeft | Qt::AlignVCenter)
+ {
+-    painter.setFont(font);
++    const auto fitted = ui::fittedLocaleFont(font, value, qFloor(area.width()), qFloor(area.height()));
++    painter.setFont(fitted);
+     painter.setPen(color);
+-    ui::drawInterfaceText(painter, area.toAlignedRect(), value, alignment);
++    const auto shown = strings::locale() == strings::Locale::Russian
++            ? ui::elideInterfaceText(value, fitted, qMax(1, qFloor(area.width()))) : value;
++    ui::drawInterfaceText(painter, area.toAlignedRect(), shown, alignment);
+ }
+ 
+ // Draws one line so its baseline sits at `baseline`, like SVG text.
+@@ -284,7 +288,10 @@ void drawBlock(QPainter &painter, const Block &value, QPointF topLeft, const QCo
+ 
+ QString escaped(const QString &value)
+ {
+-    return value.toHtmlEscaped();
++    auto html = value.toHtmlEscaped();
++    if (strings::locale() == strings::Locale::Russian)
++        html.replace(QLatin1Char('\n'), QStringLiteral("<br>"));
++    return html;
+ }
+ 
+ std::unique_ptr<Block> titleBlock(const QString &value, const QFont &font, qreal width,
+@@ -772,8 +779,16 @@ void paintWidgets(QPainter &painter, const Frame &frame, const Content &content,
+               QPointF(layout.left.left() + pad, layout.left.center().y() - caption->height / 2.0),
+               colors.ink);
+     const auto &left = content.shot.details.left;
+-    baselineText(painter, remaining, colors.ink, QPointF(layout.left.right() - pad, baseline),
+-                 left.isEmpty() ? content.shot.remaining : left, Qt::AlignRight);
++    const auto remainingText = left.isEmpty() ? content.shot.remaining : left;
++    if (strings::locale() == strings::Locale::Russian) {
++        const qreal x = layout.left.left() + pad + 40 * u + 2 * u;
++        text(painter, remaining, colors.ink,
++             QRectF(x, layout.left.top() + pad, qMax<qreal>(1, layout.left.right() - pad - x),
++                    layout.left.height() - 2 * pad), remainingText, Qt::AlignRight | Qt::AlignVCenter);
++    } else {
++        baselineText(painter, remaining, colors.ink, QPointF(layout.left.right() - pad, baseline),
++                     remainingText, Qt::AlignRight);
++    }
+ }
+ 
+ // ---------------------------------------------------------------- C09
+diff --git a/src/app/reader/views/sleep_screen.cpp b/src/app/reader/views/sleep_screen.cpp
+index 19119a32..5032af96 100644
+--- a/src/app/reader/views/sleep_screen.cpp
++++ b/src/app/reader/views/sleep_screen.cpp
+@@ -1,3 +1,4 @@
++#include "ui/style/locale_text.h"
+ #include "sleep_screen.h"
+ #include "reading/remaining_time.h"
+ 
+@@ -170,11 +171,13 @@ struct RibbonLines
+         detailHeight = ui::interfaceLineHeight(detail),
+         batteryHeight = ui::interfaceLineHeight(battery);
+ 
++    int detailRows() const { return strings::locale() == strings::Locale::Russian ? 2 : 1; }
++
+     int height() const
+     {
+         return int(sleepMetrics::ribbonTop) + captionHeight + int(sleepMetrics::ribbonGap)
+                 + int(sleepMetrics::border) + int(sleepMetrics::ribbonGap) / 2 + figureHeight
+-                + int(sleepMetrics::ribbonGap) / 2 + detailHeight + int(sleepMetrics::ribbonGap)
++                + int(sleepMetrics::ribbonGap) / 2 + detailRows() * detailHeight + int(sleepMetrics::ribbonGap)
+                 + batteryHeight + int(sleepMetrics::ribbonGap) + int(sleepMetrics::ribbonNotch);
+     }
+ };
+@@ -213,9 +216,10 @@ void paintBookmark(QPainter &painter, const QRect &ribbon, const Content &conten
+     const int textLeft = ribbon.left() + padding;
+     const int width = ribbon.width() - 2 * padding;
+     const auto centered = [&](const QString &text, const QFont &font, int y, int height) {
+-        painter.setFont(font);
++        const auto fitted = ui::fittedLocaleFont(font, text, width, height);
++        painter.setFont(fitted);
+         ui::drawInterfaceText(painter, QRect(textLeft, y, width, height),
+-                              ui::elideInterfaceText(text, font, width),
++                              ui::elideInterfaceText(text, fitted, width),
+                               Qt::AlignHCenter | Qt::AlignVCenter);
+     };
+     painter.setPen(QPen(ink, int(sleepMetrics::border)));
+@@ -233,9 +237,32 @@ void paintBookmark(QPainter &painter, const QRect &ribbon, const Content &conten
+     else
+         centered(content.progress, lines.detail, y, lines.figureHeight);
+     y += lines.figureHeight + int(sleepMetrics::ribbonGap) / 2;
++    QStringList remainingLines;
+     if (!content.remaining.isEmpty())
+-        centered(content.remaining, lines.detail, y, lines.detailHeight);
+-    y += lines.detailHeight + int(sleepMetrics::ribbonGap);
++        remainingLines.append(content.remaining);
++    if (strings::locale() == strings::Locale::Russian && !content.remaining.isEmpty()) {
++        const auto pattern = strings::get("sleep.time_left");
++        const int slot = pattern.indexOf(QStringLiteral("%1"));
++        if (slot >= 0) {
++            const auto prefix = pattern.left(slot), suffix = pattern.mid(slot + 2);
++            if (content.remaining.startsWith(prefix) && content.remaining.endsWith(suffix)
++                && content.remaining.size() >= prefix.size() + suffix.size()) {
++                const auto duration = content.remaining.mid(prefix.size(),
++                        content.remaining.size() - prefix.size() - suffix.size()).trimmed();
++                const auto caption = (prefix + suffix).trimmed();
++                if (!duration.isEmpty() && !caption.isEmpty())
++                    remainingLines = prefix.trimmed().isEmpty() ? QStringList{ duration, caption }
++                                                                : QStringList{ caption, duration };
++            }
++        }
++    }
++    for (const auto &line : remainingLines) {
++        centered(line, lines.detail, y, lines.detailHeight);
++        y += lines.detailHeight;
++    }
++    // A status/battery update must not change the ribbon's reserved geometry.
++    y = ribbon.top() + lines.height() - int(sleepMetrics::ribbonNotch)
++            - int(sleepMetrics::ribbonGap) - lines.batteryHeight;
+     if (content.showsBattery()) {
+         const auto battery = sleepBattery(content.batteryPercent);
+         paintSleepBattery(painter, battery, ribbon.left() + (ribbon.width() - battery.width()) / 2,
 diff --git a/src/assets/bundled_fonts.cpp b/src/assets/bundled_fonts.cpp
 index 62bd50b0..8a45ef06 100644
 --- a/src/assets/bundled_fonts.cpp
@@ -10221,26 +10468,23 @@ index 9f2c994d..2a6938d0 100644
              std::lower_bound(begin, begin + count, key, [](const Entry &item, const char *name) {
                  return std::strcmp(item.key, name) < 0;
 diff --git a/src/ui/controls/buttons.cpp b/src/ui/controls/buttons.cpp
-index 1a12337a..f1e3e025 100644
+index 1a12337a..cf85c101 100644
 --- a/src/ui/controls/buttons.cpp
 +++ b/src/ui/controls/buttons.cpp
-@@ -107,12 +107,17 @@ void Button::paintEvent(QPaintEvent *)
-             if (iconAboveLabel) {
-                 // Capitals' height is the label's ink, so the icon and that
-                 // ink centre as one group, as in the bottom tabs.
--                const int capital = interfaceInkBounds(QStringLiteral("H"), font()).height();
-+                const auto commonInk = interfaceInkBounds(QStringLiteral("H"), font());
-+                const auto labelInk = interfaceInkBounds(text(), font());
-+                const int capital = commonInk.height();
-                 const int top = (height() - iconSize().height() - gap - capital) / 2;
+@@ -1,3 +1,4 @@
++#include "ui/style/locale_text.h"
+ #include "buttons.h"
+ #include "text.h"
+ #include "ui/style/private_text.h"
+@@ -112,7 +113,10 @@ void Button::paintEvent(QPaintEvent *)
                  const QRect area((width() - iconSize().width()) / 2, top, iconSize().width(),
                                   iconSize().height());
                  paintIcon(area);
 -                drawOpticalText(painter, QRect(0, area.bottom() + 1 + gap, width(), capital),
 +                // Preserve the common baseline while allowing the full Cyrillic ink box.
 +                drawOpticalText(painter,
-+                                QRect(0, area.bottom() + 1 + gap + labelInk.top() - commonInk.top(),
-+                                      width(), labelInk.height()),
++                                localeLabelInkRect(QRect(0, area.bottom() + 1 + gap, width(), capital),
++                                                   text(), font()),
                                  text(), true);
                  return;
              }
@@ -10289,6 +10533,58 @@ index 2991976d..3b8a8269 100644
  
      bool eventFilter(QObject *object, QEvent *event) override
      {
+diff --git a/src/ui/style/locale_text.h b/src/ui/style/locale_text.h
+new file mode 100644
+index 00000000..efbc77eb
+--- /dev/null
++++ b/src/ui/style/locale_text.h
+@@ -0,0 +1,46 @@
++#pragma once
++#include "fonts.h"
++#include "private_text.h"
++#include "support/strings.h"
++#include <QRect>
++
++namespace kobalt::ui {
++// The shared cap-height anchor must not become the clipping box for Cyrillic
++// accents/descenders. Keep the Latin baseline; allow the label's actual ink.
++inline QRect localeLabelInkRect(QRect capArea, const QString &text, const QFont &font)
++{
++    if (strings::locale() != strings::Locale::Russian || text.isEmpty())
++        return capArea;
++    const auto reference = interfaceInkBounds(QStringLiteral("H"), font);
++    const auto ink = interfaceInkBounds(text, font);
++    capArea.translate(0, ink.top() - reference.top());
++    capArea.setHeight(ink.height());
++    return capArea;
++}
++
++// Corsiva figures are optically larger than Instrument Serif at the same em.
++// Apply only to statistics, never globally to titles, metadata or book text.
++inline int localeStatisticPixels(int pixels)
++{
++    return strings::locale() == strings::Locale::Russian ? qMax(1, qRound(pixels * .8)) : pixels;
++}
++
++inline QFont statisticFont(int pixels)
++{
++    return brandFont(localeStatisticPixels(pixels));
++}
++
++// Restore the bounded single-line fitting used by the Russian sleep designs.
++// Measure with the renderer that will paint, not QFontMetrics from a fallback.
++inline QFont fittedLocaleFont(QFont font, const QString &text, int width, int height)
++{
++    if (strings::locale() != strings::Locale::Russian)
++        return font;
++    const int minimum = qMax(1, font.pixelSize() / 2);
++    while (font.pixelSize() > minimum
++           && (interfaceTextWidth(text, font) > qMax(1, width)
++               || interfaceLineHeight(font) > qMax(1, height)))
++        font.setPixelSize(font.pixelSize() - 1);
++    return font;
++}
++} // namespace kobalt::ui
 diff --git a/src/ui/style/private_text.cpp b/src/ui/style/private_text.cpp
 index dca6151c..dd104d00 100644
 --- a/src/ui/style/private_text.cpp
@@ -10379,3 +10675,131 @@ index dca6151c..dd104d00 100644
      bool loaded = true;
      for (const auto &family : families) {
          if (family.isEmpty())
+diff --git a/tests/model/ru_control_ui.cpp b/tests/model/ru_control_ui.cpp
+new file mode 100644
+index 00000000..497814d0
+--- /dev/null
++++ b/tests/model/ru_control_ui.cpp
+@@ -0,0 +1,122 @@
++#include "check.h"
++#include "reader_inputs.h"
++#include "support/percentage_text.h"
++#include "ui/style/locale_text.h"
++#include "ui/controls/text.h"
++#include "app/reader/panels/stats_cell.h"
++#include "app/reader/settings/interface_style.h"
++#include "app/reader/views/sleep_screen.h"
++#include <QApplication>
++#include <QDir>
++#include <QPainter>
++#include <cstdio>
++
++using namespace kobalt;
++
++static int inkPixels(const QImage &image)
++{
++    int count = 0;
++    for (int y = 0; y < image.height(); ++y)
++        for (int x = 0; x < image.width(); ++x)
++            count += qGray(image.pixel(x, y)) < 200;
++    return count;
++}
++
++int main(int argc, char **argv)
++{
++    QApplication app(argc, argv);
++    const auto language = argc > 1 && QByteArray(argv[1]) == "en"
++            ? strings::Locale::English : strings::Locale::Russian;
++    strings::setLocale(language);
++    require(test::readerAssets().available(), "Control assets unavailable");
++    require(ui::initializeInterfaceFonts(test::readerAssets()), "Control fonts unavailable");
++    require(ui::brandFont(40).family() == (language == strings::Locale::Russian
++                    ? "Monotype Corsiva" : "Instrument Serif"), "Wrong locale serif family");
++    require(reader::themePreset("playful").mainFace == (language == strings::Locale::Russian
++                    ? "Caveat" : "Kalam"), "Wrong locale handwriting preset");
++    require(ui::localeStatisticPixels(100) == (language == strings::Locale::Russian ? 80 : 100),
++            "Statistics scale leaked across locales");
++
++    const char *percentKeys[] = { "common.percent", "chapter_graph.book_progress",
++        "chapter_graph.chapter_progress", "kosync.percent", "reader.brightness", "reader.warmth",
++        "header_footer.field_description.battery_warning", "sleep.percent_read",
++        "sleep.battery_charged", "sleep.percent_through" };
++    for (const auto *key : percentKeys) {
++        const auto value = strings::get(key).arg(strings::percentArgument(qint64(99)));
++        require(value.count('%') == 1, "Repeated/missing sign in a formatted percent argument");
++    }
++    require(strings::get("sleep.state_with_battery")
++                    .arg("Status", strings::percentArgument(qint64(99))).count('%') == 1,
++            "Repeated charging status percent");
++
++    const auto output = qEnvironmentVariable("KOBALT_RU_RENDER_DIR");
++    if (!output.isEmpty())
++        require(QDir().mkpath(output), "Cannot create review output directory");
++    for (const int ppi : { 212, 300 }) {
++        ui::setDensity(ppi);
++        const auto font = ui::interfaceFont(ui::metrics::chrome::tabText);
++        const int cap = ui::interfaceInkBounds("H", font).height();
++        for (const auto &text : { QString::fromUtf8("РАСКЛАДКА"), QString::fromUtf8("ОТЛАДКА"),
++                                 QString::fromUtf8("ГЛАВЫ"), QString::fromUtf8("СТАТИСТИКА") }) {
++            const QRect anchor(4, 60, 390, cap);
++            const auto bounds = ui::localeLabelInkRect(anchor, text, font);
++            if (language == strings::Locale::English)
++                require(bounds == anchor, "English cap-height geometry changed");
++            QImage actual(400, 160, QImage::Format_RGB32), reference(actual.size(), actual.format());
++            actual.fill(Qt::white);
++            reference.fill(Qt::white);
++            {
++                QPainter painter(&actual);
++                painter.setPen(Qt::black);
++                painter.setFont(font);
++                ui::drawOpticalText(painter, bounds, text, true);
++            }
++            {
++                QPainter painter(&reference);
++                painter.setPen(Qt::black);
++                painter.setFont(font);
++                ui::drawOpticalText(painter, QRect(4, 20, 390, 120), text, true);
++            }
++            if (language == strings::Locale::Russian)
++                require(inkPixels(actual) >= inkPixels(reference) * .98,
++                        "Cyrillic tab ink clipped against a full-height reference");
++        }
++        QFont large = ui::brandFont(80);
++        const QString time = QString::fromUtf8("1 ч 31 мин");
++        const auto fitted = ui::fittedLocaleFont(large, time, 240, 120);
++        if (language == strings::Locale::Russian)
++            require(ui::interfaceTextWidth(time, fitted) <= 240,
++                    "Russian widget time does not fit the test tile");
++        else
++            require(fitted.pixelSize() == large.pixelSize(), "English font was shrunk");
++        StatsCell cell(nullptr, "ruControl", strings::get("activity.reading"));
++        cell.resize(400, 240);
++        cell.ensurePolished();
++        cell.set("895", strings::get("stats.pages_left"), "10 ч 19 мин");
++        require(cell.figure->font().pixelSize() == ui::localeStatisticPixels(ui::metrics::chapters::figureText),
++                "Statistics widget font and measurement disagree");
++        if (!output.isEmpty())
++            require(cell.grab().save(output + QString("/stats-%1.png").arg(ppi)), "Cannot save statistics sample");
++    }
++    ui::setDensity(ui::designPpi);
++    for (const auto design : { sleep::Design::Widgets, sleep::Design::Bookmark,
++                              sleep::Design::Caption, sleep::Design::Night }) {
++        sleep::Snapshot shot;
++        shot.mode = sleep::Mode::Plain;
++        shot.design = design;
++        shot.percent = 2;
++        shot.progress = strings::get("sleep.percent_read").arg(strings::percentage(qint64(2)));
++        shot.remaining = reader::sleepTimeLeft(10 * 3600000 + 19 * 60000);
++        shot.details.left = "10 ч 19 мин";
++        shot.details.title = QString::fromUtf8("Кокаиновые короли");
++        shot.details.author = QString::fromUtf8("Гульотта Г., Лин Д.");
++        shot.details.todayMilliseconds = 91 * 60000;
++        QImage backdrop(1072, 1448, QImage::Format_RGB32);
++        backdrop.fill(Qt::white);
++        const auto screen = reader::sleepDesignImage(backdrop, shot, 97, reader::SleepStatus::Sleeping);
++        require(!screen.isNull() && screen.size() == backdrop.size(), "Sleep design render failed");
++        if (!output.isEmpty())
++            require(screen.save(output + QString("/sleep-%1.png").arg(int(design))), "Cannot save sleep sample");
++    }
++    std::puts("PASS: locale ink boxes, bounded sleep fitting, percent contracts, statistics scale and design renders");
++}
