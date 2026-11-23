@@ -1,4 +1,4 @@
-## Контроль original beta10 + RU — in progress (новый пакет), device pending
+## Контроль original beta10 + RU — done (пакет), device pending
 
 База строго upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`,
 изолированный export + RU patch. Приняты все 204 перевода, применены.
@@ -7,9 +7,11 @@ MTCORSVA для RU serif, Caveat Regular/Bold для RU playful default;
 English defaults не меняются. Medium/SemiBold сохранены как оригиналы, не bundled.
 Ink-box «ОТЛАДКА» и percent fix сохранены. Debug language UI отсутствует.
 [Точный состав и проверки](doc/reports/control-beta10/README.md).
-Локальные strings/manifest проверки PASS; новый Qt5 compile/package pending.
+Локальные strings/manifest проверки PASS; Qt5 compile/link/check-package PASS:
+CI45226251278, runtime/source overlay 56843a03. Artifact14842514625,
+`Kobalt-beta10-original-ru-qt5-control` (44 989 107 байт Actions archive).
 Предыдущая ревизия с двумя исправлениями CI45221686704 PASS, но не проверяет
-текущие fonts/translations. Следующее: CI нового пакета, скриншоты пользователя.
+текущие fonts/translations. Следующее: скриншоты пользователя и device review.
 CLDR не портирован, физическая/визуальная приёмка не заявлена.
 
 ## Текущая проверка Debug rail / языка

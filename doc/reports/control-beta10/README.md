@@ -83,3 +83,23 @@ Provenance пакета: upstream `1796a32` + modified ON; точный overlay 
 сохранить backup профиля; не считать downgrade безопасным без проверки совместимости.
 Для скриншотов нужны: «Экран»/батарея/«Отладка», заголовки/загрузка (Corsiva),
 предустановка «Игровая» (Caveat), длинные новые русские строки.
+
+## Текущий результат CI — PASS
+
+[CI45226251278](https://github.com/Mutaracha/kobalt_ru/actions/runs/45226251278),
+source/orchestration `56843a039bad818ca021f6eda21c8b5bf34786d2`.
+Пройдены export/apply (включая binary patch), string generation/parity,
+runtime asset hashes, Qt5 compile/link и оригинальный check-package.
+
+[Скачать artifact14842514625](https://github.com/Mutaracha/kobalt_ru/actions/runs/45226251278/artifacts/14842514625):
+`Kobalt-beta10-original-ru-qt5-control`, Actions archive 44 989 107 байт.
+Внутри `build/control-beta10/build/kobo-qt5/Kobalt-qt5.zip` — установочный пакет.
+Другие файлы artifact — patch/manifest и исторический translation-gaps.json;
+он не означает, что 204 строки по-прежнему не переведены: принятые значения
+уже в ru.strings внутри patch. Полный текущий статус — этот отчёт.
+
+Локально Actions archive не скачивался/не распаковывался; доступность и размер
+подтверждены GitHub API, проверка пакета — CI. Физические скриншоты ожидаются.
+`git diff --check` для обычных файлов PASS; для самого generated patch показывает
+whitespace в сохранённых license notices и blank context lines (не C++-дефекты).
+Правки шрифтов не являются результатом физической приёмки или полной native suite.
