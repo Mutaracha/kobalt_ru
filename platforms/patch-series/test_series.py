@@ -101,11 +101,14 @@ class SeriesTests(unittest.TestCase):
         workflow = (ROOT / '.github/workflows/patch-series.yml').read_text()
         marker = '          set -euo pipefail\n'
         self.assertEqual(workflow.count(marker), 1)
-        script = marker + workflow.split(marker, 1)[1]
+        script = marker + workflow.split(marker, 1)[1].split('\n      - name:', 1)[0]
         script = '\n'.join(line[10:] for line in script.splitlines())
         result = subprocess.run(['bash', '-n'], input=script, text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('--no-tests=error', script)
+        self.assertIn('build/prepared-prefix/build/kobo-qt5/Kobalt-qt5.zip', workflow)
+        self.assertIn('name: Beta10-series-prefix-qt5', workflow)
+        self.assertIn('test-only-prefix-not-full-fork', workflow)
 
     def test_pin_required(self):
         self.data['upstream'] = 'main'

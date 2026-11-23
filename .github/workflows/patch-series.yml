@@ -45,13 +45,22 @@ jobs:
         run: |
           git fetch --no-tags https://github.com/nicoverbruggen/kobalt.git 1796a32559dbb2912bd565990d1c7a0ca7ac4e52
           python3 - <<'PY'
-          import sys
+          import json, sys
           from pathlib import Path
           sys.path.insert(0, 'platforms/patch-series')
           from apply import apply_to
           out = Path('build/prepared-prefix').resolve()
           out.mkdir(parents=True)
-          apply_to(Path.cwd(), Path('platforms/patch-series/series.json'), out, ready_only=True)
+          data = apply_to(Path.cwd(), Path('platforms/patch-series/series.json'), out, ready_only=True)
+          applied = []
+          for patch in data['patches']:
+              if patch['status'] not in ('ready', 'prepared'):
+                  break
+              applied.append(patch)
+          Path('build/applied-prefix.json').write_text(json.dumps({
+              'upstream': data['upstream'], 'policy': 'test-only-prefix-not-full-fork',
+              'applied': applied, 'remaining': data['patches'][len(applied):]
+          }, indent=2) + '\n')
           assert (out / 'src/publication/fb2_resources.cpp').is_file()
           PY
           cmake -DROOT="$PWD/build/prepared-prefix" -P platforms/control-beta10/validate.cmake
@@ -93,3 +102,21 @@ jobs:
             echo "::error::$message"
           fi
           exit "$result"
+      - name: Collect beta10 prefix device test package
+        if: matrix.sdk == 'qt5'
+        run: |
+          mkdir -p build/prefix-device-artifact
+          cp build/prepared-prefix/build/kobo-qt5/Kobalt-qt5.zip build/prefix-device-artifact/Beta10-series-prefix-qt5.zip
+          cp build/applied-prefix.json build/prefix-device-artifact/applied-prefix.json
+          printf '%s\n' "$GITHUB_SHA" > build/prefix-device-artifact/source-commit.txt
+          cp platforms/patch-series/DEVICE-TEST.md build/prefix-device-artifact/README.md
+          cd build/prefix-device-artifact
+          sha256sum Beta10-series-prefix-qt5.zip > SHA256SUMS
+      - name: Upload beta10 prefix (not legacy device build or complete fork)
+        if: matrix.sdk == 'qt5'
+        uses: actions/upload-artifact@v7
+        with:
+          name: Beta10-series-prefix-qt5
+          path: build/prefix-device-artifact/
+          if-no-files-found: error
+          retention-days: 14
