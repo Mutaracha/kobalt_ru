@@ -74,7 +74,15 @@ CMake установлен в изолированное временное ок
 проверяет оригинальный `check-package` и публикует
 `Kobalt-beta10-original-ru-qt5-control` вместе с patch/manifest/gaps.
 Это orchestration в нашей ветке, не дополнительный runtime diff.
-Результат CI следует проверять отдельно; успешность не предполагается.
+CI **PASS**: [run 45212880701](https://github.com/Mutaracha/kobalt_ru/actions/runs/45212880701),
+source/orchestration `8b1111a35c76d1b42384f659c3abb926e7063caa`.
+Успешны Qt5 compile/link, оригинальный `check-package` и artifact upload.
+[Artifact 14838120646](https://github.com/Mutaracha/kobalt_ru/actions/runs/45212880701/artifacts/14838120646):
+`Kobalt-beta10-original-ru-qt5-control`, 44 188 806 байт (Actions archive).
+Внутри — установочный `Kobalt-qt5.zip`, patch, manifest и translation gaps.
+Скачивание artifact в Arena заблокировано доступом к blob host (EOF);
+локальное распаковывание/проверка содержимого архива не заявляются.
+Native Qt test suite и физическое устройство не запускались.
 
 Локальная повторная проверка после подготовки:
 

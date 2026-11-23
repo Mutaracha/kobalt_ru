@@ -1,12 +1,12 @@
-## Контроль original beta10 + RU — in progress
+## Контроль original beta10 + RU — done (build), device pending
 
 Пользователь запросил upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`
 с переводом нашей ветки, Russian default, без Debug language UI и без других
 fork изменений. Подготовлен отдельный source export + точный 14-file patch,
 не замена runtime всего форка. [Состав, ограничения, проверки](doc/reports/control-beta10/README.md).
-Локальные CMake strings checks PASS; Qt5 binary/package CI pending.
-Следующее: проверить workflow `Original beta10 Russian control` и передать artifact
-только после package PASS. 194 новых и 10 несовместимых строк оставлены EN до
+Локальные CMake strings checks PASS; Qt5 compile/link/package CI45212880701 PASS
+(runtime/source overlay 8b1111a3). Artifact `Kobalt-beta10-original-ru-qt5-control`,
+ID14838120646. Следующее: согласование оставшихся строк и device-проверка. 194 новых и 10 несовместимых строк оставлены EN до
 согласования; CLDR не портирован. Полная RU приёмка не заявлена.
 Шрифты/drawing не изменены; fallback Instrument Serif и ink-box — отдельная
 device-проверка/согласование перед любыми исправлениями.
