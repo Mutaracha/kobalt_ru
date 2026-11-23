@@ -8,7 +8,7 @@ README.md	reference	REFERENCE-ONLY	False	True	2b901db2230cd3f1da132bc45789ed0cc2
 assets/CMakeLists.txt	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	True	False	1559c5986c4399336ae2ca070b8a79366f466c86	d759e430e7463089f9236c909cbbd1c0581a87fd	1559c5986c4399336ae2ca070b8a79366f466c86
 assets/acknowledgments.json	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	True	True	9eb0d86bb1bdb5dedae9adb2149c541a72ec8467	06895b317a904781ce1cc33533eebc6036e4bcc8	597f5c564ddb507744cd1ba13473d6408a997e92
 assets/en.strings	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	fb4608773993144ed003579ebe8a57bfd74e9294	78cdce28a4a1011f00e47ec652080fdd9501d526	d63855aca5e39f9b12edf58267324fffe4070655
-assets/hyph/Russian_EnUS.pattern	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	efba638f80e9ad74e8a258565827d9dcd5b33fe5	-
+assets/hyph/Russian_EnUS.pattern	removed	DROP: user excluded redundant mixed RU/EN hyphenation dictionary	False	False	-	efba638f80e9ad74e8a258565827d9dcd5b33fe5	-
 assets/icons/phosphor/dark-theme.svg	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	6709d15d7d7725e3cd78d2b3c1389cecbdd4bb4c	-
 assets/manifest.json	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	True	True	cbb7a84b8fdd036f31c977304c542a01a1183d3a	6a5e894eee33f0edf0febd7866f6bad806868c41	fa8b20e684d25ad683c775b623d1c789a9eadf66
 assets/notices/Fluent-MIT	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	48bc6bb4996ac924359e8e28b9ae88970e5ed3fc	-

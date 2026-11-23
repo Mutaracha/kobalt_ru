@@ -23,6 +23,8 @@ def hints(path):
         return 'reference', 'REFERENCE-ONLY'
     if path == 'platforms/kobo/common/page_button_mapping.h':
         return 'removed', 'DROP: user verified upstream invert_landscape replaces Libra2 mapping'
+    if path == 'assets/hyph/Russian_EnUS.pattern':
+        return 'removed', 'DROP: user excluded redundant mixed RU/EN hyphenation dictionary'
     stages = []
     if any(x in path for x in ('fb2', 'publication/', 'reader_source', 'reader_fork_styles', 'reader_styles', 'footnote', 'reader_links', 'reader_alignment', 'reader_beautifier', 'opening_job', 'native_publication', 'book_menu')):
         stages.append('020-fb2')

@@ -77,6 +77,9 @@ class SeriesTests(unittest.TestCase):
             self.assertEqual((destination / 'assets/ru.strings').read_bytes(),
                              (ROOT / 'platforms/control-beta10/ru.strings').read_bytes())
             self.assertTrue((destination / 'src/publication/fb2_resources.cpp').is_file())
+            # The mixed RU/EN pattern is explicitly excluded from the full port.
+            self.assertFalse((destination / 'assets/hyph/Russian_EnUS.pattern').exists())
+            self.assertTrue((destination / 'assets/hyph/Russian.pattern').is_file())
             cmake = (destination / 'platforms/desktop/CMakeLists.txt').read_text()
             # book_fixtures.h expands this macro while compiling fb2_engine.cpp.
             zip_targets = re.search(

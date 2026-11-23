@@ -21,8 +21,8 @@
 | 010 | RU, уже включённые шрифты/локальное отображение/тест RU/EN | Патч существует, чистое применение проверено |
 | 020 | FB2 publication: распознавание, inspection, fingerprint | Native + Qt5 CI PASS |
 | 021 | FB2 raw resources: stream/lease/cancellation | Native + Qt5 CI PASS |
-| 022 | FB2 engine: raw/resource input, CSS/семантика, preview, cache | Подготовлен, новая CI-проверка ожидается |
-| 023 | Kobo raw-FB2 routing Qt5/Qt6, миграция настройки примечаний | Подготовлен; native/Qt5 и устройство ещё проверяются |
+| 022 | FB2 engine: raw/resource input, CSS/семантика, preview, cache | Native + Qt5/package CI PASS; устройство ещё не принято |
+| 023 | Kobo raw-FB2 routing Qt5/Qt6, миграция настройки примечаний | Native + Qt5/package CI PASS; устройство ещё не принято |
 | 030 | Комиксы: изображения, layout, settings/session и graphics refresh | План |
 | 040 | Согласованные reader toolbar/навигация/presentation; только отсутствующее upstream | План |
 | 050 | Оставшиеся согласованные About/brand/UI/annotations/locale hooks | План; не дублировать 010 |
@@ -58,7 +58,7 @@ Upstream invert-swipes сначала сравнить с форком: сохр
 python3 platforms/patch-series/apply.py --output build/full-beta10-stack
 ```
 
-Сейчас команда **намеренно отказывает**: 022/023 имеют статус `prepared`, а 030–060 ещё не адаптированы. Это защита
+Сейчас команда **намеренно отказывает**: 010–023 проверены в CI, но 030–060 ещё не адаптированы. Это защита
 от выдачи незавершённого export за готовый полный форк. После готовности всей серии
 будет создаваться новый export из git archive закреплённого upstream. Перед каждым
 патчем выполняется apply --check, промежуточный каталог временный; существующий
@@ -86,8 +86,8 @@ python3 platforms/patch-series/inventory.py --output build/patch-inventory
 
 Таблица воспроизводится из закреплённых git trees: 349 различных путей между
 старым upstream и runtime-источником форка, из них 164 reference и 185 кандидатов
-runtime/build/assets/tests. Один отдельный путь Libra2 помечен DROP; остальные
-184 требуют hunk-review (native-ui hook Libra2 расположен в смешанном файле и
+runtime/build/assets/tests. Два отдельных пути помечены DROP: устаревший Libra2 mapping и лишний
+`assets/hyph/Russian_EnUS.pattern`; остальные 183 требуют hunk-review (native-ui hook Libra2 расположен в смешанном файле и
 удаляется по hunks, а не удалением всего файла).
 
 `stage_hints_NOT_approval` — подсказки по путям, **не завершённая классификация
@@ -111,3 +111,14 @@ package + устройство; Qt6/Android, если не проверены, �
 [Адаптация движка 022 и её границы](../../doc/reports/patch-series/fb2-engine.md).
 
 [Платформенная адаптация 023 и оставшиеся проверки](../../doc/reports/patch-series/fb2-platform-inputs.md).
+
+## Дополнительное исключение: смешанный словарь переносов
+
+По решению пользователя `assets/hyph/Russian_EnUS.pattern` не переносится в полный
+beta10-форк. В 050/060 не добавлять его в asset manifest, список поставляемых
+patterns и fork-only license notice. Обычный `Russian.pattern` сохраняется.
+Переводной словарь `ru-en` из `assets/dictionaries.json` — другой ресурс, не удалять.
+Upstream таблица известных языков может упоминать не поставляемые dictionaries:
+само такое упоминание не означает включение файла в пакет и не требует отката upstream.
+Префикс 010–023 уже не содержит смешанного файла; regression проверяет его отсутствие.
+Исторический legacy checkout и исходные отчёты дельты не переписываются этим решением.

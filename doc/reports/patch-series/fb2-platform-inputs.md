@@ -25,3 +25,11 @@ FB2.ZIP is out of scope, not an unported fork feature: the old fork did not supp
 CI 45267840438 failed before compilation in both SDK jobs: single quotes around the new ctest regex prematurely closed the Docker shell argument. Use double quotes inside that argument. Test selection also includes the actual `platform.nickel-book-menu` group (not `model`). `--no-tests=error` prevents an empty selection from looking successful. A Python regression runs `bash -n` on the actual workflow script.
 
 The separate legacy Kobo workflow built its Qt5 device package successfully, but its native regression job failed compiling `tests/model/ui.cpp`: duplicate `const auto actual` declarations. Remove the duplicate only, preserving the image/clipping assertion. That workflow builds the current legacy checkout, not the beta10 patch export; success there does not validate the new series.
+
+
+## Confirmed CI
+
+Run 45270389485 on 7facfcb9: all three series jobs PASS, including native
+FB2 engine, platform.nickel-book-menu and model.appearance-settings, plus Qt5
+build/check-package. Legacy workflow 45270389509 also PASS. 023 is now ready as
+a CI-verified series stage, not as blanket hardware/Qt6 firmware acceptance.

@@ -81,3 +81,9 @@ FB2 runtime остановился на cache-reuse assertion: исходный 
 Исправлен fixture: XML comment увеличивает только cache-тест до >128 KiB,
 не раздувая rendered text. Порог production не менялся, assertion сохранён.
 Повторный runtime ещё требуется; 022 остаётся prepared.
+
+
+## Подтверждение исправлений
+
+CI 45270389485 (7facfcb9): native tests и Qt5/package PASS, включая реальный
+FB2 cache reuse/eviction. 022 переведён в ready; аппаратная приёмка остаётся открыта.

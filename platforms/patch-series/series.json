@@ -29,19 +29,19 @@
     },
     {
       "id": "022-fb2-engine",
-      "status": "prepared",
+      "status": "ready",
       "path": "platforms/patch-series/patches/022-fb2-engine.patch",
       "sha256": "d1ff9c4bd3efb2073c1bde76e001deb4bfdabd732aa1085fe22427cef6d457ae",
       "scope": "Raw FB2 engine/resource inputs, format stylesheet/semantics, preview and parsed-cache lifecycle; preserves beta10 ZIP64 and chapter-spread behavior",
-      "validation": "CI 45267339459: Qt5 build/check-package PASS; native compile and resource tests PASS, cache reuse assertion failed because fixture was below upstream 64 KiB cache-lookup threshold. Fixture enlarged without changing production policy; recheck pending."
+      "validation": "CI 45270389485: native publication/resource/FB2-engine/menu/appearance checks and Qt5 build/check-package PASS. Legacy workflow 45270389509 also PASS. Hardware and Qt6 firmware/Android acceptance pending."
     },
     {
       "id": "023-fb2-platform-inputs",
-      "status": "prepared",
+      "status": "ready",
       "scope": "Kobo raw-FB2 eligibility and Qt5/Qt6 local opening; legacy note preference migration; preserves EPUB DRM guards",
       "path": "platforms/patch-series/patches/023-fb2-platform-inputs.patch",
       "sha256": "132a17e161e039cac77ed5d4d2e20563e8dae00ea278b1f7672c04690c7ae44a",
-      "validation": "Clean apply and Python series tests locally; native/Qt5 CI and device acceptance pending"
+      "validation": "CI 45270389485: native publication/resource/FB2-engine/menu/appearance checks and Qt5 build/check-package PASS. Legacy workflow 45270389509 also PASS. Hardware and Qt6 firmware/Android acceptance pending."
     },
     {
       "id": "030-comics",
@@ -56,7 +56,7 @@
     {
       "id": "050-fork-presentation",
       "status": "planned",
-      "scope": "Remaining approved brand/About/annotation/UI/locale differences, excluding those already in 010-ru"
+      "scope": "Remaining approved brand/About/annotation/UI/locale differences, excluding those already in 010-ru; exclude redundant Russian_EnUS.pattern and its fork-only manifest/notice/list entries, preserve Russian.pattern and translation dictionaries"
     },
     {
       "id": "060-build-integration",

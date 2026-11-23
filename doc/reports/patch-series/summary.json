@@ -3,9 +3,9 @@
   "fork_source": "ca50dd358386e9fccc5122b464f74003caa51e75",
   "target_upstream": "1796a32559dbb2912bd565990d1c7a0ca7ac4e52",
   "counts": {
-    "REVIEW-HUNKS": 184,
+    "REVIEW-HUNKS": 183,
     "REFERENCE-ONLY": 164,
-    "DROP": 1
+    "DROP": 2
   },
   "warning": "Path-level candidate hints only. Shared files require hunk-level review; this is not a completed port."
 }
