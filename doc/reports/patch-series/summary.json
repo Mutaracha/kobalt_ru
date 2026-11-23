@@ -1,0 +1,11 @@
+{
+  "old_upstream": "be47258850ffdc3295257475afdf8b8f6cb53176",
+  "fork_source": "ca50dd358386e9fccc5122b464f74003caa51e75",
+  "target_upstream": "1796a32559dbb2912bd565990d1c7a0ca7ac4e52",
+  "counts": {
+    "REVIEW-HUNKS": 184,
+    "REFERENCE-ONLY": 164,
+    "DROP": 1
+  },
+  "warning": "Path-level candidate hints only. Shared files require hunk-level review; this is not a completed port."
+}

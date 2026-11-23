@@ -1,0 +1,350 @@
+path	stage_hints_NOT_approval	decision	also_touched_by_010_ru	upstream_changed_since_beta9	old_base_oid	fork_oid	beta10_oid
+.clang-format-ignore	060-build-integration	REVIEW-HUNKS: do not copy whole files	False	False	b8afcdb366af3cca0a3d9ce72b9fff5e50650470	dcfadd68132d72e069d726d9e5558f8858688696	b8afcdb366af3cca0a3d9ce72b9fff5e50650470
+.github/workflows/ci.yml	060-build-integration	REVIEW-HUNKS: do not copy whole files	False	True	2e61707591f2bc2f79b5ada4dc325bf4455720e3	53fe0d32182c03cc06fdd865f8adb6deee699699	b58ad05923999cc40290ea0b314626a5d32319ff
+.github/workflows/kobo-qt5-device.yml	060-build-integration	REVIEW-HUNKS: do not copy whole files	False	False	-	92a9e5d1d7596db77a8e92ccee12502c2457eb93	-
+AGENTS.md	reference	REFERENCE-ONLY	False	True	8affab2734729f6ca6aace785bb15b863d1c9898	71b6f501e170b246c4a3c7d3d275bdc7c62a1336	2f6692349941e322244c2111f1164861fea40c60
+FB2_FORK_PLAN.md	reference	REFERENCE-ONLY	False	False	-	a860b2b96316c483ffd64a0f5ba25ef4081fbbdb	-
+README.md	reference	REFERENCE-ONLY	False	True	2b901db2230cd3f1da132bc45789ed0cc24c81ca	edb850dd874d6ad4b04a6aa2e84234068a2e0696	ad560ee717d189ab92b9a0d3946b45a84deaf0c8
+assets/CMakeLists.txt	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	True	False	1559c5986c4399336ae2ca070b8a79366f466c86	d759e430e7463089f9236c909cbbd1c0581a87fd	1559c5986c4399336ae2ca070b8a79366f466c86
+assets/acknowledgments.json	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	True	True	9eb0d86bb1bdb5dedae9adb2149c541a72ec8467	06895b317a904781ce1cc33533eebc6036e4bcc8	597f5c564ddb507744cd1ba13473d6408a997e92
+assets/en.strings	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	fb4608773993144ed003579ebe8a57bfd74e9294	78cdce28a4a1011f00e47ec652080fdd9501d526	d63855aca5e39f9b12edf58267324fffe4070655
+assets/hyph/Russian_EnUS.pattern	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	efba638f80e9ad74e8a258565827d9dcd5b33fe5	-
+assets/icons/phosphor/dark-theme.svg	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	6709d15d7d7725e3cd78d2b3c1389cecbdd4bb4c	-
+assets/manifest.json	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	True	True	cbb7a84b8fdd036f31c977304c542a01a1183d3a	6a5e894eee33f0edf0febd7866f6bad806868c41	fa8b20e684d25ad683c775b623d1c789a9eadf66
+assets/notices/Fluent-MIT	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	48bc6bb4996ac924359e8e28b9ae88970e5ed3fc	-
+assets/notices/Hyphenation-patterns	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	999268ec65fa14b8c7e07b50fe3edbac7aa7bd6a	7e637bd7dfca823801dd6e687f119ee6a314c9ae	21f2adf2d8a3affc19a9c443c69bface4f4bf341
+assets/notices/NickelFix-MIT	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	51a21587b7a206a8fed2074cc0839f40aeb68ee8	-
+assets/ru.strings	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	True	False	-	c168c6c6456fc0d28554b229151bc146dc0f53b1	-
+doc/acknowledgements.md	reference	REFERENCE-ONLY	False	True	825c5718ff6a1b1b2426bc3949287ce3e0c206fb	97b34b7989ebbfc14f165b690592edc2ab2351f7	b241097ff9b5f030dca5686a68bda8a1c01c043a
+doc/beta8-device-check.md	reference	REFERENCE-ONLY	False	False	-	050dd4ac72e9b10b3064f78308440ee82435bde4	-
+doc/beta9-remaining-strings-review.md	reference	REFERENCE-ONLY	False	False	-	dd074bd7c1f543520e9bc32db8e2cb197b1ec65e	-
+doc/beta9-strings-review.md	reference	REFERENCE-ONLY	False	False	-	55c02a8b174d48967d361b47d484bf0ecfcb2aa3	-
+doc/building.md	reference	REFERENCE-ONLY	False	True	ebcdf87b59e62deace5aca52d2cf24dc03a117e2	d825b87eabf9b3cfa4ea6e4491bdcc7e3ca72f1a	a69096760e632fb86781589cb8df616306a44a5f
+doc/engines/koblaze-upstream-beta9.md	reference	REFERENCE-ONLY	False	False	-	b246d47e08070f86ddca275b47977a39dc6e7b4f	-
+doc/fb2-footnotes.md	reference	REFERENCE-ONLY	False	False	-	59250850de793abf053249f0380089056e10c8cf	-
+doc/fork-decisions.md	reference	REFERENCE-ONLY	False	False	-	1338ac0f0a2afa1576cb685687dacb025e83182b	-
+doc/fork-delta.md	reference	REFERENCE-ONLY	False	False	-	61666d298fcc7aa3c89a882aff45476895cf95e1	-
+doc/fork-kobalt_ru.md	reference	REFERENCE-ONLY	False	False	-	7ed379abd9c257e2555d72145bdc04bf301c4bb0	-
+doc/fork-update-workflow.md	reference	REFERENCE-ONLY	False	False	-	d1efc67ae7fa4f6389b87de7c868ad82b73232cd	-
+doc/forum-description.ru.bbcode.txt	reference	REFERENCE-ONLY	False	False	-	d70673032ee433768fe903a67de342ad527aae4d	-
+doc/power-mechanisms.md	reference	REFERENCE-ONLY	False	True	8e8b0f003f1cf4a1832c4c95ecfe973b872c23e7	0a7102ace609583c68b7b67602f55b8b483ad45b	9c57ebe5eaab44d70ea8a774926ae2e69d03ca28
+doc/qt6-one-off.md	reference	REFERENCE-ONLY	False	False	-	f2123f79aa74fd29e9d38fc03cc315926aa5f1e6	-
+doc/reader.md	reference	REFERENCE-ONLY	False	False	1ae6f24ca7dad823b0398c7dd41d1e8c867fe722	e2a77d12471381fe4997ef2062eabcf46cb5dab0	1ae6f24ca7dad823b0398c7dd41d1e8c867fe722
+doc/reader/android.md	reference	REFERENCE-ONLY	False	True	aab4931172682982888f52f15eec2f0c7ef87c9f	b69bb03e5101b63ef7d860e1fc23d2b2012322ca	a4eac82e5a4136bf1966aec6555c56c164454660
+doc/reader/annotations.md	reference	REFERENCE-ONLY	False	True	42c185ff8db3770972730e915601c6035965df0b	c94cf3c8aab24b127cb199c9beb3411ada4ae65d	09287a74254c64f7429883afeb9c9b017f710dbe
+doc/reader/desktop.md	reference	REFERENCE-ONLY	False	True	3f445c69f37fe4ecbbc2ae2094c1bb356650df73	1ed9504899c9ef954706e6ae78ed904a7a781775	bd7f03fad18ce9090b260a0a04bdabef4a2f4e5f
+doc/reader/dictionaries.md	reference	REFERENCE-ONLY	False	True	47d4c0cf3f56699f0e191ef7d81334c8dced9005	a8cd71bf70cc03e86a710ec5b69c8155cd8adcaf	104e016edcb5b5565c301d306943322366efd322
+doc/reader/display.md	reference	REFERENCE-ONLY	False	True	77968955c37757c690167c3b09a1f082f376f672	51a1c8f4fc859317bfae765148acc76ddb525300	ad319834494ccfaa35227bb056d272c2ff803048
+doc/reader/installation.md	reference	REFERENCE-ONLY	False	True	799def3f1d0c6c5d480acb7095ccbb4ae9ccef73	78ee3c8666274fbf8653ba21c11ce303bd7529f8	7101656fcb69c41ad6a772575dc56f9df7a3e5ae
+doc/reader/interface.md	reference	REFERENCE-ONLY	False	True	4e2e387c0edee65cd6ffc6db4871755122bc6007	2f1637d44864a9c5565a9eee99659523cb2c82b0	2bc7549536eb05ff0ed9e101564f8c33b29accb7
+doc/reader/navigation.md	reference	REFERENCE-ONLY	False	True	144e287720477bb995f07a88ec3f2962d979bf23	1705c03a1dbbf4e4c62b193e6395b0e4e1fe96d7	a607acb98351bf46a44c5a5dde09d1cdd250e113
+doc/reader/opening.md	reference	REFERENCE-ONLY	False	True	7f819c83c3c616f13dffc23e9fa4cad1d114e294	7d410e3d93ab3295c9cb6f11a68b2ecf52a672f6	4c2d3cd5a00acbbc0afcce6a5d280b70e4b00ec9
+doc/reader/progress.md	reference	REFERENCE-ONLY	False	True	1f4e4c4bf3eeb30097201a748b50fea1a057eb5d	dc4c3d440a362a548240a3a1f85d55a92ffd082e	33930e696d2ce5aeb89c48a75b9c012dbaf8c090
+doc/reader/settings.md	reference	REFERENCE-ONLY	False	True	6f9f9038eeb33f842affdbce0694d66f9d66439c	93c54657d6efac3db742b2dccb1593b4ab755e11	dcda1b1c4105d5a70a8acf5e377bdac3a6ecb023
+doc/reader/sleep.md	reference	REFERENCE-ONLY	False	True	28bbe899db0b18c9a84c5b17bd2a1caeaa07804d	fdbc69fc9b0a177fa1f2d645a48416cd7dbac39f	e12c129a5b5f3ef8be59a37f9931115050f96f5f
+doc/reader/sync.md	reference	REFERENCE-ONLY	False	True	980a559e99921b66df330744e5dabcf1d9efd609	0deb77ad1ee4f005b84a4649a03a5c32a1933f17	b7802259170cba24593ae11a4d76f9122bf7b3fc
+doc/reader/typography.md	reference	REFERENCE-ONLY	False	True	ff3bf683598bebec6786814b3868ba4a9635084c	28566d56fefc66aacb0e88fdafab6c718cd89bad	4121e38af46d2a37adcd22b1093e2ddd13531f5f
+doc/reader/viewport.md	reference	REFERENCE-ONLY	False	True	6aaa9b5331f8c1236843b446a63015cbd5f95988	f73af2817b72ab346c8593daccbf47ebaa42eeee	cfecb2d0846c3401052b7466681d6e7b39d67d8e
+doc/release-evaluation.md	reference	REFERENCE-ONLY	False	True	688690ab3efe75bd5aa8f1c6a16e7ee1f9959277	8854ed57563ac60012f01aec1241172d2b0b1e39	6eac7a6fc99670a9a732d1592423805a268bc437
+doc/reports/033d0be2-device-review.md	reference	REFERENCE-ONLY	False	False	-	df9fd58f8b10cfffd9a2aa3e8b0e37971a777fcf	-
+doc/reports/77564e9-device-issues.md	reference	REFERENCE-ONLY	False	False	-	db521a3b2e2b737ca44e7b0ccb169ac964eab7e1	-
+doc/reports/beta10-fork-map/README.md	reference	REFERENCE-ONLY	False	False	-	9226d4e296d4fac4483ab5f008d8cbc6f3e5ae32	-
+doc/reports/beta10-fork-map/all-files.tsv	reference	REFERENCE-ONLY	False	False	-	3f34c2250ac06b3bb00685dcf781d4c96cd09dad	-
+doc/reports/beta10-fork-map/modified-files.md	reference	REFERENCE-ONLY	False	False	-	ecdeefe030f5d669006b995e4d4797f0648c0aac	-
+doc/reports/beta10-fork-map/reference-files.tsv	reference	REFERENCE-ONLY	False	False	-	e5d21b009f477488f3c904988c95fd259cd57070	-
+doc/reports/beta10-fork-map/reproduce.py	reference	REFERENCE-ONLY	False	False	-	eeed10b8735f0499ae17fdfa9d772c32d3520d28	-
+doc/reports/beta10-fork-map/sleep-refresh-cache-opening.md	reference	REFERENCE-ONLY	False	False	-	e206466967d4396fa6f3f8dfe245bde5161c7cb4	-
+doc/reports/beta10-fork-map/styles-and-presentation.md	reference	REFERENCE-ONLY	False	False	-	750aa40bb9e162d9f14ad612f7d29dc43b14b641	-
+doc/reports/beta10-fork-map/summary.json	reference	REFERENCE-ONLY	False	False	-	868f92d78891987927f8b784ab632315b6b966bc	-
+doc/reports/beta10-fork-map/take-upstream.txt	reference	REFERENCE-ONLY	False	False	-	c02cb62ac4e09f521bbf64fa2c254410834c7b54	-
+doc/reports/beta9-annotation-port-matrix.md	reference	REFERENCE-ONLY	False	False	-	b1d11e73b5083992dfbd46dba5b7ad481b44fc33	-
+doc/reports/beta9-delta-current/README.md	reference	REFERENCE-ONLY	False	False	-	5b82180713a554cbe4f9b345a76c5f06f0be9c1e	-
+doc/reports/beta9-delta-current/changes.stat	reference	REFERENCE-ONLY	False	False	-	3c68cc51bf1c5128d657eabf3d2dbf1860220791	-
+doc/reports/beta9-delta-current/files.tsv	reference	REFERENCE-ONLY	False	False	-	16f4c529ff7646e585deb03abc37252c0588747b	-
+doc/reports/beta9-delta-current/summary.json	reference	REFERENCE-ONLY	False	False	-	42e3886e5e7018ea22be503d92b7cd3325c507b6	-
+doc/reports/beta9-delta/README.md	reference	REFERENCE-ONLY	False	False	-	b91ab13714eec48b4595a9e6a9d2eefd5eaf8c11	-
+doc/reports/beta9-delta/changes.stat	reference	REFERENCE-ONLY	False	False	-	329f5ec4d973474975350340bed75d79581a9164	-
+doc/reports/beta9-delta/files.tsv	reference	REFERENCE-ONLY	False	False	-	3d0a837c840bd5428909efd1e31506b4acb9ef1e	-
+doc/reports/beta9-delta/summary.json	reference	REFERENCE-ONLY	False	False	-	de75bb643052f9313512e08e053a84d9ee43e3f3	-
+doc/reports/beta9-engine-adapter.md	reference	REFERENCE-ONLY	False	False	-	5c1e4ad32ca80580aff529a548a36fe314b2725f	-
+doc/reports/beta9-engine-contracts.md	reference	REFERENCE-ONLY	False	False	-	5f17f403c40aa521281d8c3f0752aaf46112394f	-
+doc/reports/beta9-hybrid-counter.md	reference	REFERENCE-ONLY	False	False	-	5a7eadeaddbba9b0b2b7cf14938577840f9a99b2	-
+doc/reports/beta9-inventory.md	reference	REFERENCE-ONLY	False	False	-	eb6e56b04bd32fa7090220da57ffb50013e52a6d	-
+doc/reports/beta9-inventory.tsv	reference	REFERENCE-ONLY	False	False	-	d26a4aa942a4857fe998a74873ddf18a2ce24b8c	-
+doc/reports/beta9-physical-buttons.md	reference	REFERENCE-ONLY	False	False	-	cdf3e74c8358dc7573c6fa704ebc7c360ce16a15	-
+doc/reports/beta9-port-map.tsv	reference	REFERENCE-ONLY	False	False	-	96ab381817e06a380c6ea22ca91ab8113c1de2b1	-
+doc/reports/beta9-preflight.md	reference	REFERENCE-ONLY	False	False	-	548f0de8b37ba22e8c874d972d4cab7169780f18	-
+doc/reports/beta9-source-locations.md	reference	REFERENCE-ONLY	False	False	-	ddc3123ee3eb29ab6f552105089e1f8540452440	-
+doc/reports/beta9-stage1-blaze.md	reference	REFERENCE-ONLY	False	False	-	e221fe4522ae453c6558fc013c0daa15db845335	-
+doc/reports/beta9-stage2-adapter.md	reference	REFERENCE-ONLY	False	False	-	066e207b3e39a2ab32932321849b4088d306ef02	-
+doc/reports/beta9-upgrade-retrospective.md	reference	REFERENCE-ONLY	False	False	-	b646764e39a0b2f4bb160457d099783b78cdc1b2	-
+doc/reports/beta9-wireless.md	reference	REFERENCE-ONLY	False	False	-	a2be27cdf4624f94b99be066fbe36f49d92310fa	-
+doc/reports/beta9-worker-contracts.md	reference	REFERENCE-ONLY	False	False	-	75a9a970a8e986f1a4435cd854e26060eab1fda3	-
+doc/reports/cfb8f51c-device-followup.md	reference	REFERENCE-ONLY	False	False	-	d8c8ee90914aa7245da5c14aa5f1edd5cf5383af	-
+doc/reports/fb2-hybrid-preparation.md	reference	REFERENCE-ONLY	False	False	-	436800bdb62a804d951a04bdbd328430e1778c2c	-
+doc/reports/fb2-post-refactor.md	reference	REFERENCE-ONLY	False	False	-	6b20c0800995f1e78b5735aeb8b17f5b54cb5a88	-
+doc/reports/fb2-preview-position.md	reference	REFERENCE-ONLY	False	False	-	51042513eccc4b41030122766e6e25ce9316d8f4	-
+doc/reports/fb2-reliability-koreader.md	reference	REFERENCE-ONLY	False	False	-	ffab90f429e6b0018202365b35ba6684821e2e94	-
+doc/reports/upstream-cleanup-stage1.md	reference	REFERENCE-ONLY	False	False	-	4d3b3a282db5cd3cd90f19a8d14ccc45242fd1b5	-
+doc/reports/upstream-panels-alignment.md	reference	REFERENCE-ONLY	False	False	-	af678173bc58c7015b4da90cc94f5cabb3f74837	-
+doc/storage.md	reference	REFERENCE-ONLY	False	True	eb303a1087c2351539053f21cae7461f7b3cd0b2	ea24f697590d771c176a58145c2b65164b75dd13	dbf4007c2271b610e216720710e75c08712d6e95
+doc/sync-data.md	reference	REFERENCE-ONLY	False	True	4de2ac5e4e8d323f2f26e458d696fab2b4d428a7	54ba09a685bab9576027fc04884eb04fca8f161d	a164af4f8c2267da95c62e27d43c42caac1f3530
+doc/validation.md	reference	REFERENCE-ONLY	False	True	91f90384519de39465f765bb1a26db406a78ee4f	184fa384c0e61a0f1e0a3510af4c7b7eddb5fedf	fe853f6d03575c2e5d1ba8d78ebc43383c67407f
+doc/validation/033d0be2-followup.md	reference	REFERENCE-ONLY	False	False	-	31b3e0261948219e4d50ece85e64a298df0930a2	-
+doc/validation/annotations.md	reference	REFERENCE-ONLY	False	True	7189388b625eea3b4c47341dac7f85f00921c500	0d84e99ee4774dd7dab45314f88f0f515e91deca	0a21bc85c3dbbaec2e1fe163096e25c6092ba644
+doc/validation/beta9-annotation-foundation.md	reference	REFERENCE-ONLY	False	False	-	51f21d2eec74939caa0da76c9cd6e1760b8283f5	-
+doc/validation/beta9-device.md	reference	REFERENCE-ONLY	False	False	-	7ff941cd7bda4abf051509629bca3f9ae13e043b	-
+doc/validation/beta9-kosync-sleep.md	reference	REFERENCE-ONLY	False	False	-	9f29aac02526f11068fb9fa12539f48ea0882f73	-
+doc/validation/beta9-note-editor.md	reference	REFERENCE-ONLY	False	False	-	8a0bfd48ce8814102701a3ea41d394527e65f84f	-
+doc/validation/brightness.md	reference	REFERENCE-ONLY	False	False	4a4913dedc4ecf412c23c6b0fe50a577e18ba514	c21b799f59adb4d3c1f0190d188790553dd5d43d	4a4913dedc4ecf412c23c6b0fe50a577e18ba514
+doc/validation/chrome.md	reference	REFERENCE-ONLY	False	True	254951ae58b913cce1da368b021ef38d4de6e08f	a5c61ad76f1373a8d95735a8124fe87a5514ada6	cfc578a42105fb70a3cd8c0024d0dcdcd9a8dd41
+doc/validation/diagnostics.md	reference	REFERENCE-ONLY	False	True	0e010a9ff066662f08ed896b09e58e4afaf67ab8	70065b23290df0924b485e5e89436d3e72bfe4b1	769a6c1582a5384c4bf67b3adf8b1b1ee683d372
+doc/validation/dictionary.md	reference	REFERENCE-ONLY	False	True	7e243c5d73c396d200c66517bcc4a35ffc3d4fe7	c54a061c2e1c109f32aa743132dacb489ce89036	fcbced3c479fcedb02cae97e94f358c03bf0eb54
+doc/validation/display.md	reference	REFERENCE-ONLY	False	True	ac08ce299832c14b2170290419c0d9cb6528a029	90bba3e2e3374d84616050ddce5418ef698fef49	d270dbc7915084d804f5e0459aa04aeae130980f
+doc/validation/evaluation.md	reference	REFERENCE-ONLY	False	True	ebb94f6b7495e866d07f89a68ae472f8890906d8	c7a4dac3da4a793134b3ddd31909c7e29463bfbc	08494ca4bcef638b00cabb4847e5c9c2a2d77b87
+doc/validation/fonts.md	reference	REFERENCE-ONLY	False	True	1f826c1660f26b49d4a0a5f1e47e622360693ac0	f9390288e082643aa846bdc0f69b4400c849ba02	93c27681a01d59f83971411e09dbca57344625ae
+doc/validation/gallery.md	reference	REFERENCE-ONLY	False	False	fe5bd793443ba942097432128b7d0c32c3eab9f4	210b94c2dbfc76e3c3c9ff616059f0388a14adec	fe5bd793443ba942097432128b7d0c32c3eab9f4
+doc/validation/images.md	reference	REFERENCE-ONLY	False	True	7cc9693c30b67871667c22e3f87eb78bfc1a2c84	d48f9868177212a8c46f2abe9bcd62eae4b99762	70fca6b080010ff0304437a0454c672c08d91c36
+doc/validation/input.md	reference	REFERENCE-ONLY	False	True	75fafce6fd5945c8dd1385fa8b8e7be55f46e705	e036fb658ac8e65b1409d253468d72cc31f4b10f	d62b93e64c9dace058abc0e8bc26fdb23d3a0292
+doc/validation/kobo.md	reference	REFERENCE-ONLY	False	True	8a1a28697497530f7667a223f309968befaf6bd2	f59dc475cfb0ccec536f9cba530a669651308005	9df52813cf4b94a74c9024101901eb6b0a83997c
+doc/validation/layout.md	reference	REFERENCE-ONLY	False	True	934eb18b7ee2d595fb034c7e17ccae796918c50a	7aa12814e8a4973461a941ded6077f036f929768	c50cef2fcfe7ee68d161af55117c06d2908156d5
+doc/validation/library.md	reference	REFERENCE-ONLY	False	True	2b87f5809239179cf486a9ff3e0148d37f5d0084	4cb35736a6ebbcd4d570aa56118502ac965f6c77	9ca03c361695ccda0536f0877c91a81f849ce20c
+doc/validation/links.md	reference	REFERENCE-ONLY	False	True	d141ad77a4a5eb0329642ef6095c6d00abfeac6b	d114b6e48c48c16a4be86186bccaf291f6adffb2	009a9e55e2430ee824d5f3f793a0a1a4d1db88aa
+doc/validation/progress.md	reference	REFERENCE-ONLY	False	True	82491534f38a9f432b6d54719032746834bb76a6	669c3873e16edb64edfcf0a92dc10a4de993765e	948a60990313bc41eed8ebd5054b5c3a366621f6
+doc/validation/reading.md	reference	REFERENCE-ONLY	False	True	bb306378e50ab3c93c9fea313bea6e928cbd52ad	fb99ae6d0d7601964162a6713e0c4b3978e8202e	a5e64a6cf2ad4852ab94f6e4964667c2ddcfdbad
+doc/validation/settings.md	reference	REFERENCE-ONLY	False	True	1eb8bbcbe1318d8e2731a11770f3dd044ab0b1dd	0fe270f92f49c63f53d7df97c26fee3df4e02520	71f6b06c93e7ffa3d5ec495e4adaf2eb696ea602
+doc/validation/sleep.md	reference	REFERENCE-ONLY	False	True	eb45087d60a000c6c4842405c1b25b70c0294976	e92fe66516a71f64444b6df8a8be48177e5173f2	8c8464a9ec23796da2f7408a36a9acef707bf2be
+doc/validation/storage.md	reference	REFERENCE-ONLY	False	False	ad7ef078e1ab1c061be3dccfc8ba68fad70f779a	6b882ec6c243801b15d621b80db8b562cbb77731	ad7ef078e1ab1c061be3dccfc8ba68fad70f779a
+doc/validation/upstream-panels-device.md	reference	REFERENCE-ONLY	False	False	-	4f0d4181deacc549c540644d412960a39055ea30	-
+doc/validation/upstream-presets-device.md	reference	REFERENCE-ONLY	False	False	-	8199179844632dbb3d7dc56d1f52f5d2c9fe0d41	-
+doc/validation/viewport.md	reference	REFERENCE-ONLY	False	True	60443779e2d5b876f1e428d4e875391b425311ea	47710fbffd58acef1295f62bf71a680ae8b1e53b	ce548353840dec6beb43d286a27958646be772ea
+platforms/android/CMakeLists.txt	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	d37cb1aa5f69da924e9c2d5adf857d80a778f48f	f9ef0349276ef4c075854b91f3331d24e1ad1ab6	69a70d14fd1191a95069f669d45eee8ab07e8ae4
+platforms/android/app/src/org/kobalt/android/KobaltActivity.java	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	299ca3339739a04c4620548a057beb4e3c55e4c2	091162ee76c507f0783cf9a020a6578e24dbdb64	be3dbc7c9247f1b8c829ae0a4be4272784607a33
+platforms/android/main.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	True	True	a9ac7ee618e8369b814eb21a2ae2810045ec1fbb	2cd7d872bd0bc96129870e3b9690b06754369307	fdc2678d9481675d01640890f73676c46184ace1
+platforms/checks/reader-properties.allow	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	b545a4c77228b5cbd14fd2a7b3bb807a0d5dcabb	90d43f35f898f67dfd758b1c4fe42bf571c18211	b545a4c77228b5cbd14fd2a7b3bb807a0d5dcabb
+platforms/ci/check-source-archive.sh	060-build-integration	REVIEW-HUNKS: do not copy whole files	False	False	0ae8e23bea8239198da529e824780f97b17ae6d1	0ae8e23bea8239198da529e824780f97b17ae6d1	0ae8e23bea8239198da529e824780f97b17ae6d1
+platforms/ci/cleanup-runs.sh	060-build-integration	REVIEW-HUNKS: do not copy whole files	False	False	-	62df9a84b7d5fd153c76ee18e30f47793d365ab5	-
+platforms/ci/test_upstream_delta.py	060-build-integration	REVIEW-HUNKS: do not copy whole files	False	False	-	1454f7a7736636a821aa0846d5dfde4b45d6b097	-
+platforms/ci/upstream_delta.py	060-build-integration	REVIEW-HUNKS: do not copy whole files	False	False	-	1dd3d5dbb5a2d78b71cddce6b19f08d611ff9731	-
+platforms/desktop/CMakeLists.txt	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	True	True	103e60416c2c930d6e0ca1bbe4334c1aa850c384	e559a05e607e22aae0c448fa7cbade85bbe24a7f	08d4f7ee213dd0d39f3348b8c9d37431afac0c8f
+platforms/desktop/main.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	True	False	ac74bec0ea3ec15baaf3bff2715870d875531450	37fe70145c7c2c4d16e5eacc2bc7bce09e383ff8	ac74bec0ea3ec15baaf3bff2715870d875531450
+platforms/kobo/CMakeLists.txt	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	4a6423c8f7877b006a3f8b7270b631ff04abe9b9	2a21bbafd9075b752e5f9b1f74ef354bb7689bc0	79b65064e58a6e6b3a99d5a7aa4463bdff1e2444
+platforms/kobo/build.sh	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	0983f1e085692c7a0f78e4b20733da0d45d38fcf	dff1c5e6d090e453d4d6599b2e130caa2c23891c	577049c68af5d335866ff5938088b67a05b0812a
+platforms/kobo/common/book_menu.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	92ed41e2dfcb77d11ca075644f7b75ec4ed54696	109b323600a6370cdd0d67dde518b71218d01d53	92ed41e2dfcb77d11ca075644f7b75ec4ed54696
+platforms/kobo/common/book_menu.h	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	61c4fcc06a949483d53b600f0fbd27364b31fb77	37e165b027915b1b23f776af01da0570c9bbd22a	61c4fcc06a949483d53b600f0fbd27364b31fb77
+platforms/kobo/common/page_button_mapping.h	removed	DROP: user verified upstream invert_landscape replaces Libra2 mapping	False	False	-	62460e3f197754240350ee794db20e4066e2a02f	-
+platforms/kobo/common/reader_coordinator.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	True	True	69eda5f6ce8001a2df46aa364c6d66059f1e4853	60ff31171420fed791c580847896d8011aadbb37	10cda7723e0a72aba36093982e866b0fc4142003
+platforms/kobo/nickel-qt5/native_publication.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	f7e5d13e3dce632e2992e7c0e6f880178509752e	d8d6d9e077648d01a81574b8344d1ef9ceea66a1	f7e5d13e3dce632e2992e7c0e6f880178509752e
+platforms/kobo/nickel-qt5/native_ui.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	f3f9697dddb545a3d1119402c756ac5aa7469d39	9d98d16bd65b748a70210f950498b6660336796a	d800fc8915169c0187a88190e3c2cb7363f8fa7a
+platforms/kobo/nickel-qt5/reader_controller.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	True	True	bf0c2736190a01cd85293ccd5b0abf73d10e676a	d562c148d0a6926b47a399a42b9b30a48318de5b	669be943e60a57e52c3894621a0ffa53870f6009
+platforms/kobo/nickel-qt5/refresh.cpp	030-comics	REVIEW-HUNKS: do not copy whole files	False	True	2cd5aeb8a5d73caf12302d37e403121bbc3e9027	1f506bdfaea10ae2bfb40592945513384e7f7fa4	c6798cae60862c395a007c1f74ebba994e881a11
+platforms/kobo/nickel-qt6/native_publication.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	29d8a46419390df5f20617ce5119535372b28195	0fd0aa9da4f35a0b66c71b67016d86641a5594ae	29d8a46419390df5f20617ce5119535372b28195
+platforms/kobo/nickel-qt6/reader_controller.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	True	True	3ccf2546df719d35f149396fe50dcd305b672e7d	e9e0403a637cb84c56d01269b969016b4d31e340	88e24b65a5f7d447b51e58b4da9d60391857317f
+platforms/kobo/sources.cmake	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	fd002d9c370197621ed4e588dce96f34e7563609	37b1dd54ce7c7a4b2c4b9e6f1f5d999278122b46	10e38f02f1afcd7be97de6923556b5d3c2233b07
+platforms/shared-inputs.cmake	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	95a795e211b7e55dc793398273c4d0d52991df27	723d4cf5507e1d7aacb1bb26a0fb3870f6016f30	95a795e211b7e55dc793398273c4d0d52991df27
+platforms/strings-test.cmake	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	True	False	5b7ea1553562fc6f88ba90516a5e1c483fbc7260	0681bea7f70b2c2758708e9f337517a0bf42a95c	5b7ea1553562fc6f88ba90516a5e1c483fbc7260
+platforms/strings.cmake	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	True	False	2306be0ee488869e39c3f8a14cdc813f9597e4e5	2e1c0333a5d863393b942b214ebec8bc9989e7bf	2306be0ee488869e39c3f8a14cdc813f9597e4e5
+src/app/about/about_page.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	87119817b227f110573fa3640f2e2d819c565b88	8ae124adb5e1b9743c422dc0cd8ec43c3ca8775d	94a02c26f5b0020740fddc99b4cf823623483fe1
+src/app/about/fork_about.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	31397e2ff1d78b0853110ca7bd42bc9818985c16	-
+src/app/about/fork_about.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	63950b938811099b619835677f24c18681a64459	-
+src/app/library/library_view.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	89a31e367d8e57dc856187e3df46675882398e43	7cc0f83babb836996b7eeb51598ea85e72bf28e5	c816badcea7d8677f4b54ea92d6603a90999d389
+src/app/reader/panels/activity_view.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	True	True	91c9c4d124e3438e0d581929d953efaa250dd923	94fbad68dacf391c8ad17fd4adfdc87b4bcbf34a	e5c7f3c4f3df8965329e1fcee7f190827b620fea
+src/app/reader/panels/chapter_contents.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	00239220f5aee691c4e59097ff089574952f2d03	53a0e89d37866e7f04bc545db708d70a89cb7ed0	0315df1e6c581e1ca541512fbbe21fb28a94af3e
+src/app/reader/panels/chapter_graph.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	True	True	d6ed77bc60cd7c075936152c6ad87150aa6d82f2	5e12cb81be1d60cc96a8f1dcf71dbc12c0eec6f7	4afabbdca39d041f0d9fab7101164c2f4ce10a71
+src/app/reader/panels/light_panel.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	d096f827e1e21f9892a2bd66e5645e7fafc6cebc	8e133c4abbeceaa1679eefb290cef06944b92e4a	5bc037f0c16a558b555ba3cdbf590aa07f5c4646
+src/app/reader/panels/search_panel.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	18408e0932cf6dd5df2f2fd97814a0c318c8dadd	c2bed5bf12bcbb70f349fa46f106ad829bfb51d5	15f04b5e90ef338d2de54301007fcb997eac265b
+src/app/reader/settings/appearance_panel.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	78a81c13d98e582cd8f1e20b759aba17ad929beb	ba449d7e31670f96480921aeeec3fa8d69b2dde9	4cdf49b76b12e5f943f9044494947e420b0d0632
+src/app/reader/settings/appearance_panel.h	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	202d55f11887cfed587557b5fe470ab04a1ed8ca	99b5de4897d28ab820e9b3f2acabd393821d53d2	6335239ce5b41c86e1ede72db94abb8674dea54a
+src/app/reader/settings/debug_language_dialog.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	283dd3c4c7fe63dd325d56601954cdd66246f095	-
+src/app/reader/settings/debug_language_dialog.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	68588edb380855180d3c34f1ab950730109bb6e7	-
+src/app/reader/settings/fork_settings.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	-	0ce0855cfed9ad138c30912ae722381fcdbd45d4	-
+src/app/reader/settings/fork_settings.h	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	-	30435de114b3e07e032d89b11436802d8e4d213f	-
+src/app/reader/settings/settings_panel.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	f2081762988c6f2435c98e1088bc6e669b58b582	6a570ba39ebb300d59de8bba9e15becd5ba99a2e	c11b502668ec285f87ddb83442a4bd7c3bc96f6f
+src/app/reader/views/fork_navigation.cpp	040-reader-controls	REVIEW-HUNKS: do not copy whole files	False	False	-	40dd3a68e4ac7a24bf2b08348c50140a23d7e419	-
+src/app/reader/views/fork_navigation.h	040-reader-controls	REVIEW-HUNKS: do not copy whole files	False	False	-	4109ca844f6d0e8fd3b54ba3b6dfabf3e13df1ef	-
+src/app/reader/views/navigation.cpp	040-reader-controls	REVIEW-HUNKS: do not copy whole files	True	True	e927efdcbb065385d8e9973288c1fc328ea8aa0b	fe3dbb445b009a412249cb7979337b66069b8688	0d53abd044d0b8384565a5ab35f8b2b00017daec
+src/app/reader/views/navigation.h	040-reader-controls	REVIEW-HUNKS: do not copy whole files	False	True	7081fa244afb757c5f8c63f99395efc2dc6ab115	3abd984d6d235ccdb44aa25d386b7333a48d6b44	eac1a57e258cd6d11577a820074e4d3b6eda1ef6
+src/app/reader/views/reading_page.cpp	040-reader-controls	REVIEW-HUNKS: do not copy whole files	False	True	1b0c8dfde75e823e40c28079574922d310a8cfde	b82b6f3854b390a55d83382de394f1bd5b5d5778	92c50e8f4a535dc45ade0ba72731e03390889288
+src/app/reader/views/reading_page.h	040-reader-controls	REVIEW-HUNKS: do not copy whole files	False	True	897a5f9447ca6db2951e80663b37089b2e2c828e	12a14127dfe36e00c67e6b5bccbd3bccae667144	8361348b36fb4bba477215dec418e671e03566c4
+src/app/reader/views/sleep_designs.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	True	True	c298949cd941b885752ada881151c2051b7215b2	52ff1c4fbe985f8fa4ee20c9f0b7d759e5f8d952	dc97b650e5ffc76ad168f06747dca6cbdf2c5d2d
+src/app/reader/views/sleep_ribbon_text.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	ac49d9ed89809b3bf8f5175acfb182829869e835	-
+src/app/reader/views/sleep_screen.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	True	True	0a5d522effc9a51fd3cd89aa3bbe774f0375f0d8	1c077cd59cd6404f48626a9e386145cd77c3c4a8	19119a329d3c4624c95a4134d47ada3eef9ee5f4
+src/app/reader/views/sleep_screen.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	859ec28dbabbc81ceb51251e2885967c580544c6	583e0a358d572b1f11bcf256ef472393173b1192	b9ef681b7bcc2b26725966c2cf4508a5d52edce6
+src/app/reader/window/fork_reader_actions.cpp	040-reader-controls	REVIEW-HUNKS: do not copy whole files	False	False	-	a2b646e48322cbb48a5032f797089d2fe1e52de9	-
+src/app/reader/window/reader.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	0aaba79619cf6a091596dd6270b1923fc47b4713	6e4c95c984420dc8ae8eee1283afc51a55e67922	c4c2f8a727646ff697f90ebcea20c245773d18ce
+src/app/reader/window/reader_annotations.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	b0768e078bb66ec9908b0b5769bde726513e7712	5c76b1152ecfc50e4f45bb9a2e471738d98fde88	cd439b9b71a5f8e10a62cf9826713e4eb1c5dac5
+src/app/reader/window/reader_build.cpp	040-reader-controls	REVIEW-HUNKS: do not copy whole files	False	True	00a48f49e0e9f019d79273fc512f9dee42e905b5	1f809e7b8b14e91d6f741672842f557b47ac0456	0e09f527d1c97de8d11df980ba2b2c3a8b419e9a
+src/app/reader/window/reader_p.h	040-reader-controls	REVIEW-HUNKS: do not copy whole files	False	True	a9740ccd6bbdcd2ca6e330d625bcddf931cebec9	c68f45f055ea650530eae5b979227835286eeb03	b5e457c2a68523bdd34862fe63a639f55ceb8078
+src/app/reader/window/reader_refresh.cpp	040-reader-controls	REVIEW-HUNKS: do not copy whole files	False	True	0e8c36d6ef0e191fb61fc62ed3be95c6a176c767	d47a3ecfee0c9fb0bd638158e8f4c3b07c6431da	26988feabeb8b813b7e43f18c5a1a38ff6c90138
+src/app/reader/window/reader_settings.cpp	040-reader-controls	REVIEW-HUNKS: do not copy whole files	False	True	f3208602c0ea4bc3ea253a92041d14abe93e2d78	62262884b63829ed18da654e7d3286d59c9cdc4d	7134983479027ec4bce10daa982dae4771b84db7
+src/app/reader/window/reader_text_presets.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	0d1c8399854e116bcfb55953823bdd7450e6f686	7e0e27b3e8abb07c31e42f753153ef4f7d5aebd4	19d8d2d05b8fb2ba93fb00a0f8d6d91a6f3ddbb4
+src/engine/blaze/adapter/column_view.h	030-comics	REVIEW-HUNKS: do not copy whole files	False	True	78cbf062f95892d0d5a929eaaf74d43216751e20	6176d8d46489fb0aa8c68935516a1446c4900dd9	f07fec464491456d62694b341ff949319618ba9d
+src/engine/blaze/adapter/column_view_comics.cpp	030-comics	REVIEW-HUNKS: do not copy whole files	False	False	-	f2907e5ef1f61b16df729e5a34cce699b7133416	-
+src/engine/blaze/adapter/engine_document.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	3c8f9a0845d3e79fbbda770d7756ef50cea3029e	46f40b047589a9bb331aa85a07b2917123dea565	bb48c5c6342a8f3b02a94c37e6b1194013360dd7
+src/engine/blaze/adapter/engine_document.h	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	979161ae238e0c31d8cd609520647b011bef143c	584fe4bb761c53619ed36c339b9d6ba85f65b0ce	25a17810636774bdeee0a3b73b171ba2efc99e36
+src/engine/blaze/adapter/engine_document_comics.cpp	030-comics	REVIEW-HUNKS: do not copy whole files	False	False	-	93426d91c67b5aa50e93bbd9fd95c4b1f35c64b5	-
+src/engine/blaze/adapter/page_draw_buffer.cpp	030-comics	REVIEW-HUNKS: do not copy whole files	False	False	-	cb56239ad5d15377050c89194486917eb7412572	-
+src/engine/blaze/adapter/page_draw_buffer.h	030-comics	REVIEW-HUNKS: do not copy whole files	False	False	-	e46b6810e51260c6c47e4ff58f8e43a084aa5fcc	-
+src/engine/blaze/adapter/reader_alignment.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	99e64515209392628453be56a3eec48f954450b6	6f97706d66586cb14d9ea4f6eb4a314c7f249618	99e64515209392628453be56a3eec48f954450b6
+src/engine/blaze/adapter/reader_beautifier.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	be0cfc93ef96a99c2a74714bda54ada48d9d318f	fe57a726aa81509d515b2037c577cdc1f78e50a4	be0cfc93ef96a99c2a74714bda54ada48d9d318f
+src/engine/blaze/adapter/reader_comics.cpp	030-comics	REVIEW-HUNKS: do not copy whole files	False	False	-	591d33acc74be5d313dfe86b060bb54d84f429c2	-
+src/engine/blaze/adapter/reader_comics.h	030-comics	REVIEW-HUNKS: do not copy whole files	False	False	-	b7a88fe77ae31392eaba694a791fd485cb29ed2b	-
+src/engine/blaze/adapter/reader_fb2.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	-	90c2847baa0b2485a0270e0657844f2e6d7a97a0	-
+src/engine/blaze/adapter/reader_fb2.h	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	-	646b8931a40d734585c250d109a6642adbeb28b2	-
+src/engine/blaze/adapter/reader_fork_styles.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	-	cf047e22ef5ba6c1062c0cf7e06abbf2f2352f37	-
+src/engine/blaze/adapter/reader_fork_styles.h	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	-	3b992dba4d7d35b5ac2ca37a72593c6231dd3798	-
+src/engine/blaze/adapter/reader_links.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	True	5813350c897546be2477530e3644cd3644b8d8e9	20daa5aaa834dfb6d11d64f1705925f45d16f531	4dff5f003f5bce19a0add807192f86bee0af294b
+src/engine/blaze/adapter/reader_page_layout.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	4d80a9fbd52975d5ca85950bd866836246bb6f50	65a25a0374a47c03b48ce42274a51f0e07b3e0a7	4d80a9fbd52975d5ca85950bd866836246bb6f50
+src/engine/blaze/adapter/reader_source.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	True	37789acadd49859058a42863a358475daabf71a0	e6f74505c6cfb7acda1fc8f45f6027cfe0bc5048	c88d6fd4bb72981ff122da71f8867f0502c75ee5
+src/engine/blaze/adapter/reader_source.h	020-fb2	REVIEW-HUNKS: do not copy whole files	False	True	ffb83c196ab4024b00e1a5ddee783262600fde3b	eae63d8d2376e43e31e7280c816d16ce4a1d6848	a1d9b585d3d935c2c5de692dcb5c1d0b434bba1f
+src/engine/blaze/adapter/reader_styles.h.in	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	877b4ccccefdab655c6496ed5994d3c5a9c17b9a	0a2c3d40e5f3e624ab5afd5446d50fbf21629d04	877b4ccccefdab655c6496ed5994d3c5a9c17b9a
+src/engine/engine.h	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	3d4ca48a58348c58176d706c10c0f90e1ac1a791	c7fd971c2bc0f7db4197c231e65a87bc8d992f35	29e0d049e5095263382e1725b43cd7a8a74b967d
+src/publication/fb2.h	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	-	0971642ab950f8b17603305b391aca18dfbf4d7b	-
+src/publication/fb2_resources.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	-	f0db54a1016cf68649922a05e8efb6063836cf5f	-
+src/publication/fb2_resources.h	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	-	e55e245f8366f64f61958da592f23670deece986	-
+src/publication/image_request_trace.h	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	-	0796b917a29235d856ebd9de7905098d5135cc7f	-
+src/publication/local_resources.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	df5744d50ec366bc72269c17e1ef5a4c6ab82591	7bd4802c80e6dd7f60508894d05e63ef4c19ca4a	df5744d50ec366bc72269c17e1ef5a4c6ab82591
+src/publication/publication.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	True	7a0797fdc7edbc17274fef005c5d902be6bca064	d07fcf4dd3b9016ef5478734be70443f5f1f5054	fe900103ff534e501cabbfecb570c53841ba9027
+src/publication/publication.h	020-fb2	REVIEW-HUNKS: do not copy whole files	False	True	5c28e25caafcd9191d6c04be8d58e82a74073808	8e6352233437fb44d546a18ca4f8280aaec9feba	e61744b3e136c1346eeadb1766a11dc20d01481b
+src/publication/publication_fb2.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	-	32b6b31937adc3f7b9a4c586e3f7cd42ddf3b6a8	-
+src/publication/resource_cache.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	True	d343c0eef6956366ea052613427f34e9b492ecaa	cbcd92282d147e6f4c4900371b2fbf21239fb8a5	32504a62dd058c5f4499fe89ade71ee5286f583c
+src/publication/resource_cache.h	020-fb2	REVIEW-HUNKS: do not copy whole files	False	True	06c8be132854fb0ed1749b981f452681f4932bb9	df9c5f03ae9939cf36f59ec064a45e3c64e04c09	c399a96956f42807688e3f66243792bb34741116
+src/reading/appearance_settings.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	6f2686837318b1b45743348168e2859179136e5b	d483a0e1f96101a25e2935dceeb96c75172f907e	6597dc89093f15b7bababbd3991d07e5f9678a78
+src/reading/appearance_settings.h	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	bddca2e0b0d78410c56cbd31d6266113df135b98	56e37c2518a1d330da8bcde86dfb815bfb765005	19f6ee664e8f735c721f693ad9fd124c72b770a5
+src/reading/features.h	040-reader-controls	REVIEW-HUNKS: do not copy whole files	False	True	647d0d6a4fbfa7e703885acf122289ac4c909ea9	197f49960196faa1f5ac8a5b4cbd68e263d304d3	f3778b67b33e366668b5dba150ff8cb53dfc7f9e
+src/reading/fork_text_preset_names.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	a128d117f52af3dda369ce85074ce718bdc0c949	-
+src/reading/opening_job.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	True	e1ebc1b7939fadd2f0d3369bd35470278344792f	3709aed7b524ec4b5bdad45310b79d40cbc369b2	b38a6b7408adca0eee434c72bb4298e0463db91d
+src/reading/page_navigation.h	040-reader-controls	REVIEW-HUNKS: do not copy whole files	False	False	8ab0e1146e23bd011927ac35f203f7f02edcc348	97de8592092cfabb3d5156e590b049724792cbbb	8ab0e1146e23bd011927ac35f203f7f02edcc348
+src/reading/reader_session.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	db277077fc4b9a3b478bffd1e7e9b27a83cb4dac	c0558136fd9747b8fdc9d11f7786cad7e9aaed00	782ea0bb20cca512f5a4848459c4ff0574fa151b
+src/reading/reader_session.h	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	53146ac9fcb4c22eac736748645f4360f32bc406	44e91c15f26ec944864f210cac5e96b3b6a43f1c	604a0ccb569a3bf89752a1d5a2dd1f0286f9e585
+src/support/build_info.h.in	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	e14472d2c2a722d8a1b9017c4aa52e3866cb7272	3bf48887f6b64aa5c175c249776e741a1b4eb885	e3d4f09f37c28c543180b2db73ad499d4524dd89
+src/support/debug_language.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	eec862311f78a3e174eccd95ee4df47200db72a0	-
+src/support/debug_language.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	8a845eef58ce897bba15a2545951bacb225675ec	-
+src/support/locale.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	64f8e0465f2e021bbdda96012049b678522e4b33	-
+src/support/locale.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	4d759e6e068f2527c8ea1324bab95a5fee20cec7	-
+src/support/string_locale.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	True	False	-	c62a2943e1aa3e18e241460966b76179450425b6	-
+src/support/string_table.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	True	False	-	54112f52c07adedbd05b9f64fd0e9fc5031f2e91	-
+src/support/strings.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	True	False	9f2c994dc3dce470681e258dbee0e77a6fec4e70	689f86919c57b276d14ae90b3408b1061f31bc0e	9f2c994dc3dce470681e258dbee0e77a6fec4e70
+src/ui/controls/buttons.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	True	True	7274f6ea3424da49802e59aca1ba30a189a9899e	ba8823c16d1df8f855d5d76c29f0f29a46150242	1a12337a2aec5fd4b9af2ef98d6b49309be265b8
+src/ui/controls/buttons.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	3fedd0b31430a1841ba2f65df452d98582c9ba31	b81866591a8e0ea024360e5926d8984ccf1c04bb	7c8820247a4077fe366e24f8fbe8d71bc4669aba
+src/ui/controls/fork_icon_geometry.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	5924d595956aa24264f8639d10f815812e3f376c	-
+src/ui/controls/fork_icon_geometry.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	5fa2a8799fef12c2c996aa4a95d1e07c2d1e6e57	-
+src/ui/controls/highlight_palette.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	6caa8147fcd67ef647d21455aafca4f4376fe46f	83e4238f6b95ca0598d6b932ce5ea51c105f8122	6caa8147fcd67ef647d21455aafca4f4376fe46f
+src/ui/controls/icons.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	68c000d0c46a49eb627b2df92fc0d735a027c72a	524518402acf1fb88d7d17915e8185c31de495a1	c369dbc3dbf56a13fa20384bd35567d8290418c7
+src/ui/controls/icons.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	81de7b21b79a140cf71fe0e321485f69d6c3bd0e	4229495fba6295ab338c027374cb9bc87bd4bfd2	40d3b1e8da45744c306367ff2442f0fb6f4bfee1
+src/ui/controls/options.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	bcbc1be4f19a36c3f56b7430dfa8691ba3a25dfc	a4d6ce28e0e98e4cc69d862d0ed5fcd1f6bff989	71c11694fdb95e94095284c16bb45fa8cd3fb2dc
+src/ui/controls/options.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	4b62ac78ac88eca61fd7dd994e7353d665fac7aa	c46a57306755d65da4c75c6c84ab48b483213877	3eb5bc3f0915276af4d658d3013d4b8d1f11b604
+src/ui/controls/return_title_text.h	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	False	-	a2fd46e77d71a9aba095ce3e75293e41fb4c9a2e	-
+test & diagnostic/033d0be2/diagnostics comics.zip	reference	REFERENCE-ONLY	False	False	-	9b649a7568967fc5e9ea4e21b4c674adc7893472	-
+test & diagnostic/033d0be2/diagnostics epub.zip	reference	REFERENCE-ONLY	False	False	-	4d6ca0f61acd8de7805757ecac2259e46746b788	-
+test & diagnostic/033d0be2/diagnostics fb2.zip	reference	REFERENCE-ONLY	False	False	-	fb144f5ff46e067401b3eac4d64dda978c1bf466	-
+test & diagnostic/033d0be2/screenshot.zip	reference	REFERENCE-ONLY	False	False	-	73caa2365fd5d93e024ef82a7478aadc730cd850	-
+test & diagnostic/1. Виртуальный свет.fb2	reference	REFERENCE-ONLY	False	False	-	119cf06448bd8023b4055b74c2ce979e40fe9195	-
+test & diagnostic/116024c/README.md	reference	REFERENCE-ONLY	False	False	-	939c23133d9779a9787341f94cbddf46f6c12ba0	-
+test & diagnostic/116024c/events.zip	reference	REFERENCE-ONLY	False	False	-	e5ad408f8f04fba715740f0cd76e85f6c4da1262	-
+test & diagnostic/116024c/screen_001.png	reference	REFERENCE-ONLY	False	False	-	2d37640019ed13e7dfbb75268dd524a8190acac3	-
+test & diagnostic/116024c/screen_002.png	reference	REFERENCE-ONLY	False	False	-	81b6be1f1043ebf85e7421ac5b269ebabcf044f8	-
+test & diagnostic/116024c/screen_003.png	reference	REFERENCE-ONLY	False	False	-	6badeb79996aa11e322e7de123276e55eb81b057	-
+test & diagnostic/116024c/screen_004.png	reference	REFERENCE-ONLY	False	False	-	5a5dee65a53d1e91b058d296abe4d6b1c63291e4	-
+test & diagnostic/116024c/screen_005.png	reference	REFERENCE-ONLY	False	False	-	1cd2eab9db1ad45830239cf1b3fd9c0471253fb9	-
+test & diagnostic/116024c/screen_006.png	reference	REFERENCE-ONLY	False	False	-	31223ba5a59e8758348059c7c16e0097a6222712	-
+test & diagnostic/116024c/screen_007.png	reference	REFERENCE-ONLY	False	False	-	43b7721587b886508aa732bf72102060f04d8a0b	-
+test & diagnostic/116024c/screen_008.png	reference	REFERENCE-ONLY	False	False	-	61ff6cddd69e90807032f5a6699e4d0115fe22ab	-
+test & diagnostic/116024c/screen_009.png	reference	REFERENCE-ONLY	False	False	-	8fe85c8facdf316ab5844e39f58ecb807449aee2	-
+test & diagnostic/1a56b68/diagnostics 1a56b68.zip	reference	REFERENCE-ONLY	False	False	-	98df2a0b090663861889fef83c0780f85167425e	-
+test & diagnostic/1b09118/README.md	reference	REFERENCE-ONLY	False	False	-	de13e7b24aadcbd2cd3abf3262bbab31aa59b043	-
+test & diagnostic/1b09118/events.zip	reference	REFERENCE-ONLY	False	False	-	d06dedff1ba84a6ffbe6299ff40928782380b439	-
+test & diagnostic/1b09118/screen_001.png	reference	REFERENCE-ONLY	False	False	-	0d2c8f09d40e8fda7350708a29e15cf892e47de5	-
+test & diagnostic/1b09118/screen_002.png	reference	REFERENCE-ONLY	False	False	-	6f4f8c42946744f7d8538462c00e10f5280aeb78	-
+test & diagnostic/1b09118/screen_003.png	reference	REFERENCE-ONLY	False	False	-	e029d9d75304c5ec1fe876eccd681222cbbe27ec	-
+test & diagnostic/1b09118/screen_004.png	reference	REFERENCE-ONLY	False	False	-	a8827f53d206ec21806a58fe0cc4956c6b743f18	-
+test & diagnostic/61dbfaa/Sin City vol 4.kepub.epub	reference	REFERENCE-ONLY	False	False	-	79486f007e9c674cca3b304a2ea93d3d54d2e1d1	-
+test & diagnostic/6a82161/diagnostics 2.zip	reference	REFERENCE-ONLY	False	False	-	cef730f9899b195af516ee0e738e12a288e79d94	-
+test & diagnostic/6a82161/diagnostics.zip	reference	REFERENCE-ONLY	False	False	-	1838a731a378baeb9c488d6e06992bf0597bdc7a	-
+test & diagnostic/6a82161/screen_001.png	reference	REFERENCE-ONLY	False	False	-	9c049b8a9f9445cb600e33533dafa44d623eedca	-
+test & diagnostic/77564e9/Adventure.ttf	reference	REFERENCE-ONLY	False	False	-	bc6a6734818b0567ed1cb83ac969a1902b3117a6	-
+test & diagnostic/77564e9/Oranienbaum-Regular.ttf	reference	REFERENCE-ONLY	False	False	-	7b8f692ba9cd229d2c0e1b42e6aa25bc5ba31eaf	-
+test & diagnostic/77564e9/README.md	reference	REFERENCE-ONLY	False	False	-	dc15c88678f211f58644853df76b9b527af83954	-
+test & diagnostic/77564e9/ViaodaLibre-Regular.ttf	reference	REFERENCE-ONLY	False	False	-	a152bc470f3960233ee27a5f41b2903237fceedb	-
+test & diagnostic/77564e9/diagnostics epub hibrid.zip	reference	REFERENCE-ONLY	False	False	-	aa1b99bf3c6bf8a5e1f4232374ad4f682b5fdc3d	-
+test & diagnostic/77564e9/diagnostics epub.zip	reference	REFERENCE-ONLY	False	False	-	509bd87e4bc56afb07c2017466a7d1bef122daa9	-
+test & diagnostic/77564e9/diagnostics freeze.zip	reference	REFERENCE-ONLY	False	False	-	b9033dd20436727f30e44b7743e84f6a9f6a8074	-
+test & diagnostic/77564e9/screen_001.png	reference	REFERENCE-ONLY	False	False	-	9dc9127020370d1c07c16303efab6359a3f9bb3e	-
+test & diagnostic/77564e9/screen_002.png	reference	REFERENCE-ONLY	False	False	-	0d02ebb7c370def3e65610d80a5ba7a827d7331f	-
+test & diagnostic/77564e9/screen_005.png	reference	REFERENCE-ONLY	False	False	-	9db63f991362fea848303ee9c405358d25ae6784	-
+test & diagnostic/77564e9/screen_006.png	reference	REFERENCE-ONLY	False	False	-	764dd533971356325bbda120da936f66a4fa5a90	-
+test & diagnostic/77564e9/screen_007.png	reference	REFERENCE-ONLY	False	False	-	0c380125b322ed5a31b4727456ae6b60d1569706	-
+test & diagnostic/77564e9/screen_008.png	reference	REFERENCE-ONLY	False	False	-	e1b8b2dcccb0d4e9ea592b0df6759c406e4bd252	-
+test & diagnostic/80ee8d7/diagnostics hibrid.zip	reference	REFERENCE-ONLY	False	False	-	75142b150849c7bae5599723af6741d164b2a48f	-
+test & diagnostic/README.md	reference	REFERENCE-ONLY	False	False	-	8dfbd0009c8cc29c07fe762cc254ba2105b6f2cd	-
+test & diagnostic/SHA256SUMS	reference	REFERENCE-ONLY	False	False	-	f3628945226f84e3985b734cf383dff71e518922	-
+test & diagnostic/cfb8f51c/events.zip	reference	REFERENCE-ONLY	False	False	-	e0aff3d37a5e6a71930189b861d7d0e5f55e8884	-
+test & diagnostic/cfb8f51c/screen_001.png	reference	REFERENCE-ONLY	False	False	-	a0d6de0b14b5bdf5128f55a17305782397a6689b	-
+test & diagnostic/cfb8f51c/screen_002.png	reference	REFERENCE-ONLY	False	False	-	a932307daf7737fc9494a20105f197aad49908b8	-
+test & diagnostic/diagnostics 61dbfaa.zip	reference	REFERENCE-ONLY	False	False	-	dca0a8587964961752d4cf650773f9975fadb232	-
+test & diagnostic/diagnostics a170389.zip	reference	REFERENCE-ONLY	False	False	-	4f4b98dcf6861372fb8c3432677a89ac7efcc0ab	-
+test & diagnostic/fb2-post-refactor/screen_002-11.png	reference	REFERENCE-ONLY	False	False	-	165145aae2e6d17d526224070226ed29f4d1e4dd	-
+test & diagnostic/fb2-post-refactor/screen_003-9.png	reference	REFERENCE-ONLY	False	False	-	e3c24e8129b35187f19dbb1b68731ce2af76313c	-
+test & diagnostic/reading-menu-counter/README.md	reference	REFERENCE-ONLY	False	False	-	1bdb54b53c754d5c5f0cc097f5be32ebf835c66d	-
+test & diagnostic/reading-menu-counter/screen_001-15.png	reference	REFERENCE-ONLY	False	False	-	45a0d24e9633e2cfb48de902b35a89210debe599	-
+test & diagnostic/reading-menu-counter/screen_001-16.png	reference	REFERENCE-ONLY	False	False	-	870fcf182201e852616f26287a00a4cd604c5353	-
+test & diagnostic/reading-menu-counter/screen_001-17.png	reference	REFERENCE-ONLY	False	False	-	0a4f225d6aa527c016d0cdbe90e3d81d2c2dcecf	-
+test & diagnostic/reading-menu-counter/screen_001-18.png	reference	REFERENCE-ONLY	False	False	-	c21627d0e1158b2dbe5a0c32ae62c845c79e0924	-
+test & diagnostic/reading-menu-counter/screen_001-19.png	reference	REFERENCE-ONLY	False	False	-	9a464948aa0cb7d20a41c7d5f80959d1c7b7f649	-
+test & diagnostic/reading-menu-counter/screen_002-12.png	reference	REFERENCE-ONLY	False	False	-	4bb3208f161a565a5d643882d70e099181eebae8	-
+test & diagnostic/reading-menu-counter/screen_002-13.png	reference	REFERENCE-ONLY	False	False	-	1ac8be6ef938d93042c2243391279e3d48ed473e	-
+tests/desktop.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	9838814b17b2c8f8fe308f400249535b3d23987d	012be8397d08e8671b1e478a5046dcf9a00648f0	e44791f0e8b4a4c46700d3d5631da8c5d0100ad3
+tests/desktop_perf.h	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	959c06121e32aa415b50b7cee59d63c0ae553a95	3a86bf113ea8bae68d3b328a126adaa5f61d4446	c89ec6b91b434ed3bb37dd860a7c6d570acba783
+tests/fixtures/fonts/fira-sans/FiraSans-Regular.ttf	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	-	7544de9cc8d102e1597dac2fb71951c2019a08cd	-
+tests/fixtures/fonts/fira-sans/OFL.txt	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	-	a2c1ae225f24bc345413e0764c0ddcf2a0e6d4da	-
+tests/fixtures/fonts/fira-sans/README.md	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	-	22719d8ba5a0bb107b24c111ed3c1c0c98b38f1e	-
+tests/kobo_shutdown.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	8031776fe25a043df3715a504ab0e33aeb02e41f	247e27bdc1f22cfb40fe47987abb795bf0c70be0	dce9d9cb8c4bacae261c9a55e0f7e69551253300
+tests/manual/README.md	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	-	b46eaf8aaf0239c4fbedc11596460e34af404840	-
+tests/manual/books/comics/README.md	030-comics	REVIEW-HUNKS: do not copy whole files	False	False	-	4508793ea0efec4503d26e55dd39a2e0c4bb9077	-
+tests/manual/books/comics/spice-single-page.epub	030-comics	REVIEW-HUNKS: do not copy whole files	False	False	-	06c4c5bd5cc831dc49388f71e7c9bb7c76222bba	-
+tests/manual/books/publisher/Кокаиновые+короли.epub	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	-	d0a4c88f6e6ba04004aede64ceb631eb9461f7c9	-
+tests/manual/materials.sha256	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	-	39609de1ca10552b63f0922050ac4df60c6d83bd	-
+tests/model/alternate_layout.cpp	030-comics	REVIEW-HUNKS: do not copy whole files	False	False	d126d736a35f23c4214b2945a866f3fea250bf97	7d6d8fc6bc7aa17f149a0e25f372af3278bb720e	d126d736a35f23c4214b2945a866f3fea250bf97
+tests/model/annotation_draft.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	d6b6f7d329100849573f83bfcdfb9ed30c68245f	4b78c691e739dd7abebeaf27209f0fd843fcfbb2	d6b6f7d329100849573f83bfcdfb9ed30c68245f
+tests/model/appearance_settings.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	4b35923fc57e75968ade15f97739a7b820646c8d	5dd8a3ace1db34ef4189502b691d98c2473cb5a2	155708b490a42ee99f4fff7610fa298dc702104f
+tests/model/beautifier.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	ada9101dc80f39c5ef35ba2632d7efc2f18fae52	36fdae15215bc4e2a936d191f79e24f20439e207	ada9101dc80f39c5ef35ba2632d7efc2f18fae52
+tests/model/columns.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	7cb3b220c45d5d2329d80ad01ae85c5ceec66451	79611c56191481b49e54b78e725aabbb177c785f	894ed8f8ea0d07efd477d23c185e56481a216abe
+tests/model/comics.cpp	030-comics	REVIEW-HUNKS: do not copy whole files	False	False	-	1890ff55de2094d9be45537a406dd681cafae0cd	-
+tests/model/dictionary_store.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	25cfcc17f5ecb2c25fd0b4271c947ece2516e296	dea89a1de16b5028b7b6e96dc995191f15ccd52b	678993422c295d5f2aa91abe82038f10b2c90501
+tests/model/document_cache.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	ae0ba1144816627d40aa14c6514b030efa270735	abbf019b8fece4614f695ea2ff77b23c06ca85f2	6c5cf62d0edfaec9520ed56d6b18a764ab4138f1
+tests/model/engine_contract.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	b268599cb94e3a2db8da831b87bae542aac66118	7dd3f9f7f62863ec62726131fb350afcf06e2f42	b268599cb94e3a2db8da831b87bae542aac66118
+tests/model/engine_contracts.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	-	56a4f88d1811056abbb8523dc2862a2032d771a1	-
+tests/model/engine_worker.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	-	fd00fd821cd43bf75fa4a564be60e6d58bf0502c	-
+tests/model/fallback_styles.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	fa6999ec04dbb0e76d2a8e24aae1d71bb6c1ea0a	271361825bb14122752a9125dc07adb5324a5d6b	e5a6eabbc8189d5e88ea1ad41987a4f83db82c97
+tests/model/fb2.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	-	d22fcde20e2cf376b862b54d8950b23e3d8e40c8	-
+tests/model/fb2_session.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	-	97b9951522590c92dc5a76387c50de1f0996649c	-
+tests/model/figure_layout.cpp	030-comics	REVIEW-HUNKS: do not copy whole files	False	False	65b5a5d46d4f0e141d54e1b486fa83b1f08da31e	b365e7e9255df1e6bab0770c000cdcd97ffcfd70	65b5a5d46d4f0e141d54e1b486fa83b1f08da31e
+tests/model/highlight_session.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	b2f615c5aa14361fcd375cfaf9bf0761d18de349	26eeecd8efbee6837854971b27289559237a709c	26e6ded32547cf85e1d0b587fc8ffd371f01d04b
+tests/model/large_toc.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	1de53f6213ccc6b1c774d95f8597b6b4d75d4eb0	d1b25761487fbbda7f27836d17071b4222e07314	4fbb655f4b556123581d4f624694db40b76d904f
+tests/model/links.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	216f849292b54c535bb1b22bfe4d0e65771ff657	883105a60895e39408bddd247b1b587cea908fb9	4a4095946b112154dee3cb338d445f3145065260
+tests/model/local_resources.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	a28b7fa4b62b905a6118352b8052106ca9e15c9f	81218ed194fa38fd23353941db90c9147aab20d3	a28b7fa4b62b905a6118352b8052106ca9e15c9f
+tests/model/location_round_trip.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	090aa37421d1158dd378bb8f7a06c4b3eccb4332	bc4ae376ebf60a306c2dad7fd0aae1e582da8a7a	090aa37421d1158dd378bb8f7a06c4b3eccb4332
+tests/model/multilingual.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	8454bf4ed37e5b61907624ff0a1db576352e9609	49baeae48d855235bd4384d26d70f44aee71ac4e	8454bf4ed37e5b61907624ff0a1db576352e9609
+tests/model/native_dialog_overlay.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	09be68a7e147c9a847d84f3fcdd7e3d2fff552cc	ad4a08b23ba85dc156535ca367b23a9a71f62ba3	09be68a7e147c9a847d84f3fcdd7e3d2fff552cc
+tests/model/nickel_book_menu.cpp	020-fb2	REVIEW-HUNKS: do not copy whole files	False	False	645240a7609ace797dd9ba5fb6948345818563eb	8d2ba3ef6bc031782d6b94477e2c78c3911efe5c	645240a7609ace797dd9ba5fb6948345818563eb
+tests/model/publisher_markup.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	a93f1b3ed6222adf83941c934576a7eec8794383	9b4760aabdb4b89d49184bb93dd780cd9935c21e	a93f1b3ed6222adf83941c934576a7eec8794383
+tests/model/reader.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	7bf9eef9c8a7e0d0bb2af3c4620a152ca4b98512	7c478a5e9d609cfbd82817504d3362a2fe94831c	87995aa8d8f3dffaa865e2d15318be4c0820734b
+tests/model/reader_session.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	6223836dcc58c09bf48f104c825fc0f69679a388	06e3b1a5b82297ff59a99c33cfd5a4eb4a5d63f4	fd1103a1a166a87d05c05930b8faae355bb16d53
+tests/model/reading_book.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	853991608d6b5c49abe5cd6490f44bdcba5fd698	324fd497803f6a9a1f779393631c65ea80607051	05393f0dd1f3a0bd4e2262cbe154ea997d423cef
+tests/model/reading_progress.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	60674fbf1de16394d80151bcbaf8acea2f1212d1	738a7cdafe7f4ad42a1714691b7918c01860f61b	c69ce89a70817769a7b711d0ba0c71ebabf73b11
+tests/model/resource_cache.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	a3d320c1c24ef181fc352ae5719467f2465db9d7	f9a76b5266b5026f707c65049db3d92e94f286b4	a3d320c1c24ef181fc352ae5719467f2465db9d7
+tests/model/search.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	c74b9ec7b858951b4bad0edacb23749d92c33b5c	f4c392d881f143f2458f557d247467933d0b1668	90aff36384d6cab62b427447b79cc345e8c9c18e
+tests/model/strings_locale.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	-	9303ec8957d0cf24016b510c618e47d2772d48fc	-
+tests/model/text_presets.cpp	050-fork-presentation	REVIEW-HUNKS: do not copy whole files	False	True	74a000456fbbbd8af42ad9a76142cad0b6cf5e06	9ec5538f8be102d2afc15fc30dd361815e814795	824e502c0bfe171a9d5ab3cb1776049b92df1c14
+tests/model/ui.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	2ee2d6eeff3b5a33daabb92b0d1af6bdd04349f4	a161c6b4d2a5539654c88b4d23dad36580dc07bd	6d48de379c82731cf66dff8b10b5dbaf40d55c63
+tests/model/vertical_writing.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	f76d7747735dba48aab1ae95498b3cd8cb0518d1	a0fd9cc1090dc2bc6b007d63a4c2bac7cf864077	0027cde4d63a751cb8bebc9b412a99cbaca07200
+tests/model/word_selection.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	b17e63a378d5bdbf8e0a69ea0120e549f491120e	bcae24e5e448c749cbde8a35d0b5d930a3967060	b2f7e416e57f144935d15420add0172167068070
+tests/pewter/keyboard.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	328fe6dc51ab59b89d801717e5bf4e92145e847e	bb36b47cbd04dac3fc8723bafaafe5172275373c	328fe6dc51ab59b89d801717e5bf4e92145e847e
+tests/pewter/nickel.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	421ea8e9524c521747760c71be4c29c6302bb07d	1c1e1dee74bbdb247668ef0be7442f803dc015c0	bb22260be613f59c0014342b1fd746250552faae
+tests/pewter/nickel.h	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	61513e87af0a80d86dd8de40715d7daae5967b6e	c29d7acb6ecaadcc0e149de1c737e1ceb4894dcf	fd30594c4d71cf104c0b2997258dd2fc25aa67bb
+tests/pewter/progress.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	565d20f441d1d507ad905a5f0466a164e3b9ad11	c0483b2197466e94bc788bb04c41d900e6c6cc2e	6a7f58f487be58408b30246a125bdce89547f196
+tests/reader_lifecycle.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	52064ef13657fc0e04adf3675d182234964b0053	328d85a72b7f39a5465054d62432432acbc0bad5	d49d638d59527fa6340b87bddc471ceca4f4d457
+tests/reader_ui.cpp	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	5fe3ccb3ba24591b8cd048ce4237c4616917ee33	bd96ad5cc4168b9263c4591a7d95dbf058a09271	aeaef3ba61b338695ff6991ad63f9874457023d0
+tests/support/anchor_preview.h	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	False	-	4911f4096540dcfee1a9bcfac97742bab39ff7cb	-
+tests/support/reader_source_index_probe.h	020-fb2	REVIEW-HUNKS: do not copy whole files	False	True	aeab3ebd190bb5d2208cc90319d8960fbc812706	2a34dbbca197a1dcd77abc843d2978c5a8611ee2	172926269967c1bea44369ed525b3f83be1b74a2
+tests/support/screenshot_gallery.h	020-fb2..060-build-integration:shared-review	REVIEW-HUNKS: do not copy whole files	False	True	cdbe66a463711089ec91031b992a5137d5a2b723	8a1383f479fbf1d4f076bd6bed610226fb414572	7720675637c698ceb7f5a7c894480624a081e0c6

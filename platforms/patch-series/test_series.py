@@ -1,0 +1,68 @@
+import copy
+import hashlib
+import json
+from pathlib import Path
+import tempfile
+import unittest
+from unittest.mock import patch
+
+from apply import apply_to, load_series
+
+
+class SeriesTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        (self.root / 'one.patch').write_text('fixture')
+        self.data = dict(schema=1, policy='ordered-full-stack', upstream='a' * 40, patches=[
+            dict(id='010-ru', status='ready', path='one.patch', sha256=hashlib.sha256(b'fixture').hexdigest()),
+            dict(id='020-fb2', status='planned')])
+        self.manifest = self.root / 'series.json'
+
+    def load(self, data=None):
+        self.manifest.write_text(json.dumps(data or self.data))
+        return load_series(self.manifest, self.root)
+
+    def test_ready_prefix(self):
+        self.assertEqual(self.load()['policy'], 'ordered-full-stack')
+
+    def test_checksum_drift_rejected(self):
+        (self.root / 'one.patch').write_text('changed')
+        with self.assertRaisesRegex(ValueError, 'checksum'):
+            self.load()
+
+    def test_duplicate_or_wrong_order(self):
+        for ids in [('010-ru', '010-ru'), ('020-fb2', '010-ru')]:
+            data = copy.deepcopy(self.data)
+            for entry, identifier in zip(data['patches'], ids):
+                entry['id'] = identifier
+            with self.assertRaisesRegex(ValueError, 'unique and ordered'):
+                self.load(data)
+
+    def test_no_ready_after_gap(self):
+        self.data['patches'][0]['status'] = 'planned'
+        self.data['patches'][1]['status'] = 'ready'
+        with self.assertRaisesRegex(ValueError, 'prefix'):
+            self.load()
+
+    def test_reject_path_escape(self):
+        self.data['patches'][0]['path'] = '../outside.patch'
+        with self.assertRaisesRegex(ValueError, 'escapes'):
+            self.load()
+
+    def test_incomplete_stack_rejected_before_git(self):
+        self.load()
+        with patch('apply.subprocess.check_output') as git:
+            with self.assertRaisesRegex(ValueError, 'Full stack not ready'):
+                apply_to(self.root, self.manifest, self.root / 'output')
+            git.assert_not_called()
+
+    def test_pin_required(self):
+        self.data['upstream'] = 'main'
+        with self.assertRaisesRegex(ValueError, 'full commit'):
+            self.load()
+
+
+if __name__ == '__main__':
+    unittest.main()

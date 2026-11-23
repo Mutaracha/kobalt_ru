@@ -1,0 +1,34 @@
+name: Ordered patch series
+on:
+  push:
+    paths:
+      - 'platforms/patch-series/**'
+      - 'platforms/control-beta10/ru.patch'
+      - 'doc/reports/patch-series/**'
+      - '.github/workflows/patch-series.yml'
+  pull_request:
+    paths:
+      - 'platforms/patch-series/**'
+      - 'platforms/control-beta10/ru.patch'
+      - '.github/workflows/patch-series.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check-ready-prefix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch fixed comparison objects
+        run: |
+          git fetch --no-tags https://github.com/nicoverbruggen/kobalt.git 1796a32559dbb2912bd565990d1c7a0ca7ac4e52 be47258850ffdc3295257475afdf8b8f6cb53176
+          git fetch --no-tags origin ca50dd358386e9fccc5122b464f74003caa51e75
+      - name: Series validation tests
+        run: python3 -m unittest discover -s platforms/patch-series -p 'test_*.py' -v
+      - name: Verify ready prefix only (not full-stack acceptance)
+        run: python3 platforms/patch-series/apply.py --verify-ready
+      - name: Reproduce inventory
+        run: |
+          python3 platforms/patch-series/inventory.py --output build/patch-inventory
+          diff -u doc/reports/patch-series/inventory.tsv build/patch-inventory/inventory.tsv
+          diff -u doc/reports/patch-series/summary.json build/patch-inventory/summary.json

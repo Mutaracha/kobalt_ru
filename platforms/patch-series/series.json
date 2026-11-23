@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "upstream": "1796a32559dbb2912bd565990d1c7a0ca7ac4e52",
+  "fork_source": "ca50dd358386e9fccc5122b464f74003caa51e75",
+  "policy": "ordered-full-stack",
+  "patches": [
+    {
+      "id": "010-ru",
+      "status": "ready",
+      "path": "platforms/control-beta10/ru.patch",
+      "sha256": "e6c7c07670ce35f676cda7c06e99c7a5e71a3fc35f8211a24d3a218fc0b10d72",
+      "scope": "Reviewed beta10 RU overlay, including its existing font/presentation fixes"
+    },
+    {
+      "id": "020-fb2",
+      "status": "planned",
+      "scope": "FB2 inputs, resources, metadata, engine integration, format styles and footnotes; registration and tests in the same patch"
+    },
+    {
+      "id": "030-comics",
+      "status": "planned",
+      "scope": "Comics rendering, settings/session hooks and graphics refresh; registration and tests"
+    },
+    {
+      "id": "040-reader-controls",
+      "status": "planned",
+      "scope": "Approved dark/comics toolbar and reader presentation; audit upstream swipe inversion before porting"
+    },
+    {
+      "id": "050-fork-presentation",
+      "status": "planned",
+      "scope": "Remaining approved brand/About/annotation/UI/locale differences, excluding those already in 010-ru"
+    },
+    {
+      "id": "060-build-integration",
+      "status": "planned",
+      "scope": "Final full-stack packaging, provenance and CI; source/test registration stays with the introducing patch"
+    }
+  ]
+}
