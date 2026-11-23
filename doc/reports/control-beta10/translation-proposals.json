@@ -1,0 +1,1239 @@
+{
+  "status": "proposal_not_applied",
+  "entries": [
+    {
+      "key": "activity.chart_dates",
+      "en": "%1 to %2",
+      "proposed_ru": "%1 — %2",
+      "reason": "missing"
+    },
+    {
+      "key": "activity.chart_value",
+      "en": "%1: %2",
+      "proposed_ru": "%1: %2",
+      "reason": "missing"
+    },
+    {
+      "key": "activity.copies",
+      "en": "Book copies",
+      "proposed_ru": "Копии книг",
+      "reason": "missing"
+    },
+    {
+      "key": "activity.copies_count",
+      "en": "%1 copies",
+      "proposed_ru": "Копий: %1",
+      "reason": "missing"
+    },
+    {
+      "key": "activity.projected_finish",
+      "en": "Projected finish %1",
+      "proposed_ru": "Ожидаемое завершение: %1",
+      "reason": "missing"
+    },
+    {
+      "key": "activity.under_minute",
+      "en": "Less than one minute",
+      "proposed_ru": "Менее минуты",
+      "reason": "missing"
+    },
+    {
+      "key": "annotations.add_note_title",
+      "en": "Add Note",
+      "proposed_ru": "Добавить заметку",
+      "reason": "missing"
+    },
+    {
+      "key": "annotations.color",
+      "en": "Color",
+      "proposed_ru": "Цвет",
+      "reason": "missing"
+    },
+    {
+      "key": "annotations.discard",
+      "en": "Discard",
+      "proposed_ru": "Отменить изменения",
+      "reason": "missing"
+    },
+    {
+      "key": "annotations.edit_note_title",
+      "en": "Edit Note",
+      "proposed_ru": "Изменить заметку",
+      "reason": "missing"
+    },
+    {
+      "key": "annotations.look_up",
+      "en": "Look up",
+      "proposed_ru": "Найти в словаре",
+      "reason": "missing"
+    },
+    {
+      "key": "annotations.note",
+      "en": "Note",
+      "proposed_ru": "Заметка",
+      "reason": "missing"
+    },
+    {
+      "key": "annotations.numbered_entry",
+      "en": "Annotation %1",
+      "proposed_ru": "Аннотация %1",
+      "reason": "missing"
+    },
+    {
+      "key": "annotations.style",
+      "en": "Style",
+      "proposed_ru": "Стиль",
+      "reason": "missing"
+    },
+    {
+      "key": "bookmarks.modify_title",
+      "en": "Modify Pinned Bookmark",
+      "proposed_ru": "Изменить закреплённую закладку",
+      "reason": "missing"
+    },
+    {
+      "key": "bookmarks.numbered_entry",
+      "en": "Bookmark %1",
+      "proposed_ru": "Закладка %1",
+      "reason": "missing"
+    },
+    {
+      "key": "bookmarks.pin_title",
+      "en": "Pin Bookmark",
+      "proposed_ru": "Закрепить закладку",
+      "reason": "missing"
+    },
+    {
+      "key": "bookmarks.remove_screen_detail",
+      "en": "Screen %1 · %2",
+      "proposed_ru": "Экран %1 · %2",
+      "reason": "missing"
+    },
+    {
+      "key": "buttons.invert_landscape",
+      "en": "Invert page buttons in landscape",
+      "proposed_ru": "Инвертировать кнопки перелистывания в альбомной ориентации",
+      "reason": "missing"
+    },
+    {
+      "key": "buttons.invert_landscape_hint",
+      "en": "Turn this on if the buttons are reversed when you hold your device sideways.",
+      "proposed_ru": "Включите, если при повороте устройства набок кнопки работают наоборот.",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.additional_actions",
+      "en": "Additional actions",
+      "proposed_ru": "Дополнительные действия",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.both",
+      "en": "Start and end",
+      "proposed_ru": "Начало и конец",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.end",
+      "en": "End",
+      "proposed_ru": "Конец",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.enter_printed_page",
+      "en": "Enter a page number from the print edition.",
+      "proposed_ru": "Введите номер страницы из печатного издания.",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.go_to_printed_page",
+      "en": "Go to printed page",
+      "proposed_ru": "Перейти к печатной странице",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.illustrated_entry",
+      "en": "Illustrated entry %1",
+      "proposed_ru": "Пункт с иллюстрацией %1",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.landmark_count",
+      "en": "Landmarks · %1",
+      "proposed_ru": "Ориентиры · %1",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.landmarks",
+      "en": "Landmarks",
+      "proposed_ru": "Ориентиры",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.location",
+      "en": "Location",
+      "proposed_ru": "Позиция",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.mark_end",
+      "en": "Mark as end",
+      "proposed_ru": "Отметить как конец",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.mark_start",
+      "en": "Mark as start",
+      "proposed_ru": "Отметить как начало",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.more",
+      "en": "More navigation options",
+      "proposed_ru": "Другие способы навигации",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.no_printed_pages",
+      "en": "This book doesn’t include printed page numbers.",
+      "proposed_ru": "В этой книге нет номеров печатных страниц.",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.other_labels",
+      "en": "Other page labels",
+      "proposed_ru": "Другие обозначения страниц",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.preview_image",
+      "en": "View illustration for %1",
+      "proposed_ru": "Посмотреть иллюстрацию: %1",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.printed_count",
+      "en": "Printed pages · %1",
+      "proposed_ru": "Печатные страницы · %1",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.printed_pages",
+      "en": "Printed pages",
+      "proposed_ru": "Печатные страницы",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.reset_end",
+      "en": "Restore default end",
+      "proposed_ru": "Восстановить исходный конец",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.reset_start",
+      "en": "Restore default start",
+      "proposed_ru": "Восстановить исходное начало",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.start",
+      "en": "Start",
+      "proposed_ru": "Начало",
+      "reason": "missing"
+    },
+    {
+      "key": "chapter_contents.view_landmarks",
+      "en": "View book landmarks",
+      "proposed_ru": "Посмотреть ориентиры книги",
+      "reason": "missing"
+    },
+    {
+      "key": "closing.local_only",
+      "en": "Exit without sending progress",
+      "proposed_ru": "Выйти без отправки прогресса",
+      "reason": "missing"
+    },
+    {
+      "key": "closing.sync_detail",
+      "en": "Kobalt will close when sync finishes. If Kobo has a different reading position, you can choose which one to keep. Tap outside this message to keep reading.",
+      "proposed_ru": "Kobalt закроется после завершения синхронизации. Если на Kobo сохранена другая позиция чтения, вы сможете выбрать, какую оставить. Нажмите вне этого сообщения, чтобы продолжить чтение.",
+      "reason": "missing"
+    },
+    {
+      "key": "closing.sync_title",
+      "en": "Your Kobo is syncing",
+      "proposed_ru": "Kobo выполняет синхронизацию",
+      "reason": "missing"
+    },
+    {
+      "key": "closing.wait_for_sync",
+      "en": "Wait for sync to complete",
+      "proposed_ru": "Дождаться завершения синхронизации",
+      "reason": "missing"
+    },
+    {
+      "key": "closing.waiting_for_sync",
+      "en": "Waiting for sync to complete…",
+      "proposed_ru": "Ожидание завершения синхронизации…",
+      "reason": "missing"
+    },
+    {
+      "key": "common.screen",
+      "en": "screen",
+      "proposed_ru": "экран",
+      "reason": "missing"
+    },
+    {
+      "key": "common.screens",
+      "en": "screens",
+      "proposed_ru": "экраны",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.cannot_activate_installed_dictionary",
+      "en": "Cannot activate installed dictionary.",
+      "proposed_ru": "Не удалось активировать установленный словарь.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.cannot_create_dictionary_storage",
+      "en": "Cannot create dictionary storage.",
+      "proposed_ru": "Не удалось создать хранилище словарей.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.cannot_install_this_dictionary",
+      "en": "Cannot install this dictionary.",
+      "proposed_ru": "Не удалось установить этот словарь.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.cannot_read_dictionary_index",
+      "en": "Cannot read dictionary index.",
+      "proposed_ru": "Не удалось прочитать индекс словаря.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.cannot_remove_this_dictionary",
+      "en": "Cannot remove this dictionary.",
+      "proposed_ru": "Не удалось удалить этот словарь.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.cannot_save_dictionary_files",
+      "en": "Cannot save dictionary files.",
+      "proposed_ru": "Не удалось сохранить файлы словаря.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.cannot_save_dictionary_index",
+      "en": "Cannot save dictionary index.",
+      "proposed_ru": "Не удалось сохранить индекс словаря.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.cannot_save_dictionary_metadata",
+      "en": "Cannot save dictionary metadata.",
+      "proposed_ru": "Не удалось сохранить метаданные словаря.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.cannot_save_the_download",
+      "en": "Cannot save the download.",
+      "proposed_ru": "Не удалось сохранить загрузку.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.dictionary_archive_is_damaged",
+      "en": "Dictionary archive is damaged.",
+      "proposed_ru": "Архив словаря повреждён.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.dictionary_archive_is_missing_required_files",
+      "en": "Dictionary archive is missing required files.",
+      "proposed_ru": "В архиве словаря отсутствуют необходимые файлы.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.dictionary_checksum_differs",
+      "en": "Dictionary checksum differs.",
+      "proposed_ru": "Контрольная сумма словаря не совпадает.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.dictionary_checksum_or_size_differs",
+      "en": "Dictionary checksum or size differs.",
+      "proposed_ru": "Контрольная сумма или размер словаря не совпадает.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.dictionary_definition_is_damaged",
+      "en": "Dictionary definition is damaged.",
+      "proposed_ru": "Словарная статья повреждена.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.dictionary_download_is_incomplete",
+      "en": "Dictionary download is incomplete.",
+      "proposed_ru": "Словарь загружен не полностью.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.dictionary_index_is_damaged",
+      "en": "Dictionary index is damaged.",
+      "proposed_ru": "Индекс словаря повреждён.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.dictionary_index_is_too_large",
+      "en": "Dictionary index is too large.",
+      "proposed_ru": "Индекс словаря слишком велик.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.dictionary_index_points_outside_its_data",
+      "en": "Dictionary index points outside its data.",
+      "proposed_ru": "Индекс словаря ссылается за пределы данных.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.dictionary_installed",
+      "en": "Dictionary installed.",
+      "proposed_ru": "Словарь установлен.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.dictionary_removed",
+      "en": "Dictionary removed.",
+      "proposed_ru": "Словарь удалён.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.download_cancelled",
+      "en": "Download cancelled.",
+      "proposed_ru": "Загрузка отменена.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.download_size_or_storage_error",
+      "en": "Download size or storage error.",
+      "proposed_ru": "Ошибка размера загрузки или хранилища.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.download_timed_out",
+      "en": "The dictionary download timed out.",
+      "proposed_ru": "Время ожидания загрузки словаря истекло.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.downloading_name",
+      "en": "Downloading %1",
+      "proposed_ru": "Загрузка: %1",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.downloading_progress",
+      "en": "Downloading %1 · %2",
+      "proposed_ru": "Загрузка: %1 · %2",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.installation_cancelled",
+      "en": "Installation cancelled.",
+      "proposed_ru": "Установка отменена.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.installed_dictionary_is_damaged",
+      "en": "Installed dictionary is damaged.",
+      "proposed_ru": "Установленный словарь повреждён.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.installed_inflection_index_is_damaged",
+      "en": "Installed inflection index is damaged.",
+      "proposed_ru": "Установленный индекс словоформ повреждён.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.installing_name",
+      "en": "Installing %1",
+      "proposed_ru": "Установка: %1",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.invalid_dictzip_data",
+      "en": "Invalid dictzip data.",
+      "proposed_ru": "Некорректные данные dictzip.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.invalid_stardict_index",
+      "en": "Invalid StarDict index.",
+      "proposed_ru": "Некорректный индекс StarDict.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.invalid_stardict_metadata",
+      "en": "Invalid StarDict metadata.",
+      "proposed_ru": "Некорректные метаданные StarDict.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.missing_stardict_inflection_index",
+      "en": "Missing StarDict inflection index.",
+      "proposed_ru": "Отсутствует индекс словоформ StarDict.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.missing_stardict_metadata",
+      "en": "Missing StarDict metadata.",
+      "proposed_ru": "Отсутствуют метаданные StarDict.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.no_dictionary_installed",
+      "en": "No dictionary installed.",
+      "proposed_ru": "Нет установленных словарей.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.not_enough_space_for_this_dictionary",
+      "en": "Not enough space for this dictionary.",
+      "proposed_ru": "Недостаточно места для этого словаря.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.stardict_index_size_differs",
+      "en": "StarDict index size differs.",
+      "proposed_ru": "Размер индекса StarDict не совпадает.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.stardict_word_count_differs_from_its_index",
+      "en": "StarDict word count differs from its index.",
+      "proposed_ru": "Число слов StarDict не совпадает с индексом.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.this_dictionary_is_not_available",
+      "en": "This dictionary is not available.",
+      "proposed_ru": "Этот словарь недоступен.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.this_dictionary_is_not_installed",
+      "en": "This dictionary is not installed.",
+      "proposed_ru": "Этот словарь не установлен.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.unsafe_download_redirect",
+      "en": "Unsafe download redirect.",
+      "proposed_ru": "Небезопасное перенаправление загрузки.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.unsupported_stardict_format",
+      "en": "Unsupported StarDict format.",
+      "proposed_ru": "Неподдерживаемый формат StarDict.",
+      "reason": "missing"
+    },
+    {
+      "key": "dictionaries.wait_for_this_download_to_finish",
+      "en": "Wait for this download to finish.",
+      "proposed_ru": "Дождитесь завершения этой загрузки.",
+      "reason": "missing"
+    },
+    {
+      "key": "features.activity",
+      "en": "Activity",
+      "proposed_ru": "Активность",
+      "reason": "missing"
+    },
+    {
+      "key": "features.activity_description",
+      "en": "Hides the Activity section in Stats. Reading history continues.",
+      "proposed_ru": "Скрывает раздел «Активность» в статистике. История чтения продолжает сохраняться.",
+      "reason": "missing"
+    },
+    {
+      "key": "header_footer.both_off_hint",
+      "en": "Turn on Header or Footer below, then tap a slot to edit it.",
+      "proposed_ru": "Включите верхний или нижний колонтитул ниже, затем нажмите на поле, чтобы изменить его.",
+      "reason": "missing"
+    },
+    {
+      "key": "header_footer.field.chapter_and_screen",
+      "en": "Chapter and screen in chapter",
+      "proposed_ru": "Глава и экран в главе",
+      "reason": "missing"
+    },
+    {
+      "key": "header_footer.field.chapter_screen",
+      "en": "Screen in chapter",
+      "proposed_ru": "Экран в главе",
+      "reason": "missing"
+    },
+    {
+      "key": "header_footer.field.chapter_screens_left",
+      "en": "Screens remaining in chapter",
+      "proposed_ru": "Осталось экранов в главе",
+      "reason": "missing"
+    },
+    {
+      "key": "header_footer.footer_off_hint",
+      "en": "Tap a header slot to edit it. Turn on Footer to edit its slots.",
+      "proposed_ru": "Нажмите на поле верхнего колонтитула, чтобы изменить его. Включите нижний колонтитул, чтобы изменить его поля.",
+      "reason": "missing"
+    },
+    {
+      "key": "header_footer.header_off_hint",
+      "en": "Tap a footer slot to edit it. Turn on Header to edit its slots.",
+      "proposed_ru": "Нажмите на поле нижнего колонтитула, чтобы изменить его. Включите верхний колонтитул, чтобы изменить его поля.",
+      "reason": "missing"
+    },
+    {
+      "key": "header_footer.progress_bar_bottom",
+      "en": "Bottom",
+      "proposed_ru": "Снизу",
+      "reason": "missing"
+    },
+    {
+      "key": "header_footer.progress_bar_top",
+      "en": "Top",
+      "proposed_ru": "Сверху",
+      "reason": "missing"
+    },
+    {
+      "key": "header_footer.progress_ticks",
+      "en": "Chapter ticks",
+      "proposed_ru": "Метки глав",
+      "reason": "missing"
+    },
+    {
+      "key": "kosync.device_name_title",
+      "en": "Device Name",
+      "proposed_ru": "Имя устройства",
+      "reason": "missing"
+    },
+    {
+      "key": "kosync.matching_title",
+      "en": "Document Matching",
+      "proposed_ru": "Сопоставление документов",
+      "reason": "missing"
+    },
+    {
+      "key": "kosync.screens_ahead",
+      "en": "%1 screens ahead",
+      "proposed_ru": "Вперёд на %1 экр.",
+      "reason": "missing"
+    },
+    {
+      "key": "kosync.screens_ahead_one",
+      "en": "1 screen ahead",
+      "proposed_ru": "Вперёд на 1 экр.",
+      "reason": "missing"
+    },
+    {
+      "key": "kosync.screens_back",
+      "en": "%1 screens back",
+      "proposed_ru": "Назад на %1 экр.",
+      "reason": "missing"
+    },
+    {
+      "key": "kosync.screens_back_one",
+      "en": "1 screen back",
+      "proposed_ru": "Назад на 1 экр.",
+      "reason": "missing"
+    },
+    {
+      "key": "marks.location_range",
+      "en": "%1 to %2",
+      "proposed_ru": "%1 — %2",
+      "reason": "missing"
+    },
+    {
+      "key": "marks.page_range",
+      "en": "Pages %1 to %2",
+      "proposed_ru": "Страницы %1–%2",
+      "reason": "missing"
+    },
+    {
+      "key": "marks.row_action",
+      "en": "%1: %2",
+      "proposed_ru": "%1: %2",
+      "reason": "missing"
+    },
+    {
+      "key": "marks.screen_range",
+      "en": "Screens %1–%2",
+      "proposed_ru": "Экраны %1–%2",
+      "reason": "missing"
+    },
+    {
+      "key": "marks.screen_range_description",
+      "en": "Screens %1 to %2",
+      "proposed_ru": "Экраны с %1 по %2",
+      "reason": "missing"
+    },
+    {
+      "key": "marks.sort_dialog_title",
+      "en": "Sort By",
+      "proposed_ru": "Сортировать по",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.applying_theme",
+      "en": "Applying theme...",
+      "proposed_ru": "Применение темы…",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.book_defaults_selected",
+      "en": "Book defaults selected",
+      "proposed_ru": "Выбраны настройки книги по умолчанию",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.counting_pages",
+      "en": "Counting pages",
+      "proposed_ru": "Подсчёт страниц",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.counting_screens",
+      "en": "Counting screens",
+      "proposed_ru": "Подсчёт экранов",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.edge_brightness",
+      "en": "Swipe along the left edge to adjust brightness",
+      "proposed_ru": "Проведите вдоль левого края, чтобы изменить яркость",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.international_supplemental_fonts",
+      "en": "Supplemental Fonts (International)",
+      "proposed_ru": "Дополнительные шрифты (международные)",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.menu_screen_of",
+      "en": "SCREEN %1 OF %2",
+      "proposed_ru": "ЭКРАН %1 ИЗ %2",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.restore_book_defaults",
+      "en": "Restore book defaults",
+      "proposed_ru": "Восстановить настройки книги по умолчанию",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.restore_book_defaults_detail",
+      "en": "The font, size, line spacing, alignment, weight and hyphenation of this book return to Text for new books, or to Book default when that is Same as last book. Other books and other settings do not change. The defaults apply when you close Settings.",
+      "proposed_ru": "Шрифт, размер, межстрочный интервал, выравнивание, насыщенность и переносы этой книги вернутся к настройкам «Текст для новых книг» либо к настройкам книги, если выбрано «Как в последней книге». Другие книги и настройки не изменятся. Настройки применятся после закрытия раздела «Настройки».",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.restore_book_defaults_prompt",
+      "en": "Restore book defaults?",
+      "proposed_ru": "Восстановить настройки книги по умолчанию?",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.return_screen",
+      "en": "Return to screen %1",
+      "proposed_ru": "Вернуться к экрану %1",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.screen_number",
+      "en": "Screen %1",
+      "proposed_ru": "Экран %1",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.strip_padding",
+      "en": "Padding",
+      "proposed_ru": "Отступы",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.strip_size_value",
+      "en": "%1 px",
+      "proposed_ru": "%1 пикс.",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.text_preview_lifted",
+      "en": "The preview starts below the illustration so you can see how your text settings look.",
+      "proposed_ru": "Предпросмотр начинается под иллюстрацией, чтобы были видны выбранные настройки текста.",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.text_preview_sample",
+      "en": "This page has no text to preview. This sample shows how your text settings will look.",
+      "proposed_ru": "На этой странице нет текста для предпросмотра. Этот образец показывает, как будут выглядеть выбранные настройки текста.",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.ui_fonts",
+      "en": "UI Fonts",
+      "proposed_ru": "Шрифты интерфейса",
+      "reason": "missing"
+    },
+    {
+      "key": "reader.zoom_screen_range",
+      "en": "Screens %1 to %2 of %3",
+      "proposed_ru": "Экраны с %1 по %2 из %3",
+      "reason": "missing"
+    },
+    {
+      "key": "search_panel.chapter_detail",
+      "en": "%1: %2",
+      "proposed_ru": "%1: %2",
+      "reason": "missing"
+    },
+    {
+      "key": "search_panel.screen_chapter",
+      "en": "Screen %1 · %2",
+      "proposed_ru": "Экран %1 · %2",
+      "reason": "missing"
+    },
+    {
+      "key": "search_panel.screen_detail",
+      "en": "Screen %1: %2",
+      "proposed_ru": "Экран %1: %2",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.brightness_gesture_feedback",
+      "en": "Show brightness gesture pop-up",
+      "proposed_ru": "Показывать всплывающий индикатор жеста яркости",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.chapter_spread",
+      "en": "Start chapters on a new spread",
+      "proposed_ru": "Начинать главы с нового разворота",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.chapter_spread_description",
+      "en": "When a chapter starts on a new page, show it in the first column.",
+      "proposed_ru": "Если глава начинается с новой страницы, показывать её в первой колонке.",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.columns_description",
+      "en": "Column spacing is measured in multiples of the current text size.",
+      "proposed_ru": "Расстояние между колонками измеряется в долях текущего размера текста.",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.dark_mode",
+      "en": "Dark Mode",
+      "proposed_ru": "Тёмный режим",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.font_too_large",
+      "en": "Font disabled due to size limitations.",
+      "proposed_ru": "Шрифт отключён из-за ограничения размера.",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.icon_color",
+      "en": "Color only",
+      "proposed_ru": "Только цвет",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.icon_monochrome",
+      "en": "Monochrome",
+      "proposed_ru": "Монохромные",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.icon_pastel",
+      "en": "Pastel tiles",
+      "proposed_ru": "Пастельные плитки",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.icon_rings",
+      "en": "Color rings",
+      "proposed_ru": "Цветные кольца",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.icon_theme",
+      "en": "Icon theme",
+      "proposed_ru": "Тема значков",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.landscape_column_layout",
+      "en": "Multiple columns in landscape mode",
+      "proposed_ru": "Несколько колонок в альбомной ориентации",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.night_mode_description",
+      "en": "Also known as Night Mode. Displays light text on a dark background, and inverts some colors.",
+      "proposed_ru": "Также известен как ночной режим. Показывает светлый текст на тёмном фоне и инвертирует некоторые цвета.",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.palette",
+      "en": "Color theme",
+      "proposed_ru": "Цветовая тема",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.palette_blue",
+      "en": "Blue",
+      "proposed_ru": "Синяя",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.palette_grayscale",
+      "en": "Grayscale",
+      "proposed_ru": "Оттенки серого",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.palette_sage",
+      "en": "Sage",
+      "proposed_ru": "Шалфейная",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.palette_sepia",
+      "en": "Sepia",
+      "proposed_ru": "Сепия",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.primary_typography",
+      "en": "Primary typography",
+      "proposed_ru": "Основная типографика",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.publisher_page_numbers",
+      "en": "Always display publisher provided page numbers",
+      "proposed_ru": "Всегда показывать номера страниц издателя",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.publisher_page_numbers_description",
+      "en": "Use the print edition’s page labels when available. Kobalt counts its own layout in screens.",
+      "proposed_ru": "Использовать обозначения страниц печатного издания, если они есть. Собственную раскладку Kobalt считает в экранах.",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.secondary_arabic",
+      "en": "Arabic numerals",
+      "proposed_ru": "Арабские цифры",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.secondary_letters",
+      "en": "Lowercase letters",
+      "proposed_ru": "Строчные буквы",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.secondary_numbers",
+      "en": "Secondary page numbers",
+      "proposed_ru": "Дополнительная нумерация страниц",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.secondary_numbers_hint",
+      "en": "Choose how pages before and after the main text are numbered in every book.",
+      "proposed_ru": "Выберите способ нумерации страниц до и после основного текста во всех книгах.",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.secondary_prefixed",
+      "en": "Section-prefixed numbers",
+      "proposed_ru": "Номера с префиксом раздела",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.secondary_preview",
+      "en": "Front  %1   ·   Back  %2",
+      "proposed_ru": "До текста  %1   ·   После текста  %2",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.secondary_roman",
+      "en": "Lowercase Roman",
+      "proposed_ru": "Строчные римские цифры",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.secondary_typography",
+      "en": "Secondary typography",
+      "proposed_ru": "Дополнительная типографика",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.secondary_upper_roman",
+      "en": "Uppercase Roman",
+      "proposed_ru": "Прописные римские цифры",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.sideloaded_fonts_first",
+      "en": "Show sideloaded fonts first",
+      "proposed_ru": "Показывать пользовательские шрифты первыми",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.sideloaded_fonts_first_description",
+      "en": "List your own fonts before recommended fonts in every typeface picker.",
+      "proposed_ru": "Показывать ваши шрифты перед рекомендуемыми во всех списках выбора гарнитуры.",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.single_column",
+      "en": "Single column",
+      "proposed_ru": "Одна колонка",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.theme_classic",
+      "en": "Classic",
+      "proposed_ru": "Классическая",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.theme_custom",
+      "en": "Custom",
+      "proposed_ru": "Своя",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.theme_details",
+      "en": "Detailed configuration",
+      "proposed_ru": "Подробная настройка",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.theme_notebook",
+      "en": "Notebook",
+      "proposed_ru": "Блокнот",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.theme_playful",
+      "en": "Playful",
+      "proposed_ru": "Игровая",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.theme_preset",
+      "en": "Theme preset",
+      "proposed_ru": "Предустановка темы",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.theme_selection",
+      "en": "Preset",
+      "proposed_ru": "Предустановка",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.theming",
+      "en": "Theming",
+      "proposed_ru": "Оформление",
+      "reason": "missing"
+    },
+    {
+      "key": "settings.two_in_landscape",
+      "en": "Two in landscape",
+      "proposed_ru": "Две в альбомной ориентации",
+      "reason": "missing"
+    },
+    {
+      "key": "shutdown.restarting",
+      "en": "Restarting",
+      "proposed_ru": "Перезапуск",
+      "reason": "missing"
+    },
+    {
+      "key": "shutdown.saving",
+      "en": "Saving your progress first...",
+      "proposed_ru": "Сначала сохраняем прогресс чтения…",
+      "reason": "missing"
+    },
+    {
+      "key": "shutdown.shutting_down",
+      "en": "Shutting down",
+      "proposed_ru": "Выключение",
+      "reason": "missing"
+    },
+    {
+      "key": "sleep.status_random",
+      "en": "Random status",
+      "proposed_ru": "Случайный статус",
+      "reason": "missing"
+    },
+    {
+      "key": "stats.count_words_in",
+      "en": "Book stats for",
+      "proposed_ru": "Статистика книги для",
+      "reason": "missing"
+    },
+    {
+      "key": "stats.count_words_in_title",
+      "en": "Book Stats For",
+      "proposed_ru": "Статистика книги для",
+      "reason": "missing"
+    },
+    {
+      "key": "stats.main_words",
+      "en": "Main text · %1",
+      "proposed_ru": "Основной текст · %1",
+      "reason": "missing"
+    },
+    {
+      "key": "stats.scope_hint",
+      "en": "Choose which pages, words and reading time the Book figures cover. This choice applies to all books.",
+      "proposed_ru": "Выберите, какие страницы, слова и время чтения учитываются в показателях книги. Выбор применяется ко всем книгам.",
+      "reason": "missing"
+    },
+    {
+      "key": "stats.scope_main",
+      "en": "Main text",
+      "proposed_ru": "Основной текст",
+      "reason": "missing"
+    },
+    {
+      "key": "stats.scope_main_hint",
+      "en": "From the start to the end marked in Chapters or supplied by the book.",
+      "proposed_ru": "От начала до конца, отмеченных в разделе «Главы» или заданных книгой.",
+      "reason": "missing"
+    },
+    {
+      "key": "stats.scope_volume",
+      "en": "Whole volume",
+      "proposed_ru": "Весь том",
+      "reason": "missing"
+    },
+    {
+      "key": "stats.scope_volume_hint",
+      "en": "Include the front and back matter and every book in the volume.",
+      "proposed_ru": "Включать материалы до и после основного текста и все книги тома.",
+      "reason": "missing"
+    },
+    {
+      "key": "stats.screen_left",
+      "en": "screen remaining",
+      "proposed_ru": "экр. остался",
+      "reason": "missing"
+    },
+    {
+      "key": "stats.screen_of",
+      "en": "Screen %1 of %2",
+      "proposed_ru": "Экран %1 из %2",
+      "reason": "missing"
+    },
+    {
+      "key": "stats.screens_left",
+      "en": "screens remaining",
+      "proposed_ru": "экр. осталось",
+      "reason": "missing"
+    },
+    {
+      "key": "stats.volume_words",
+      "en": "Volume · %1",
+      "proposed_ru": "Том · %1",
+      "reason": "missing"
+    },
+    {
+      "key": "words.go_to_screen",
+      "en": "Go to screen %1",
+      "proposed_ru": "Перейти к экрану %1",
+      "reason": "missing"
+    },
+    {
+      "key": "annotations.summary_one",
+      "en": "1 annotation",
+      "proposed_ru": "1 аннотация",
+      "reason": "placeholder_incompatible",
+      "previous_fork_ru": "%1 аннотация"
+    },
+    {
+      "key": "chapter_contents.summary_one",
+      "en": "Contents · 1 chapter",
+      "proposed_ru": "Содержание · 1 глава",
+      "reason": "placeholder_incompatible",
+      "previous_fork_ru": "Содержание · %1 глава"
+    },
+    {
+      "key": "library.count_one",
+      "en": "1 book",
+      "proposed_ru": "1 книга",
+      "reason": "placeholder_incompatible",
+      "previous_fork_ru": "%1 книга"
+    },
+    {
+      "key": "settings.paragraph_spacing_description",
+      "en": "Values are percentages of the text size: with 12 pt text, a %1 indent is 12 pt. Applies to all books. Headings and special blocks keep their formatting.",
+      "proposed_ru": "Значения — в процентах от размера текста: при 12 пт отступ %1 равен 12 пт. Для всех книг. Заголовки и особые блоки сохраняют оформление.",
+      "reason": "placeholder_incompatible",
+      "previous_fork_ru": "Значения — в процентах от размера текста: при 12 пт отступ 100% равен 12 пт. Для всех книг. Заголовки и особые блоки сохраняют оформление."
+    },
+    {
+      "key": "settings.percentage_decimal_description",
+      "en": "For example, %1",
+      "proposed_ru": "Например, %1",
+      "reason": "placeholder_incompatible",
+      "previous_fork_ru": "Например, 8,1%"
+    },
+    {
+      "key": "settings.percentage_whole_description",
+      "en": "For example, %1",
+      "proposed_ru": "Например, %1",
+      "reason": "placeholder_incompatible",
+      "previous_fork_ru": "Например, 8%"
+    },
+    {
+      "key": "settings.vertical_spacing_center_description",
+      "en": "Center prose that occupies at least %1 of the reading height. Keep line spacing unchanged.",
+      "proposed_ru": "Центрирует прозу, занимающую не менее %1 высоты чтения. Межстрочный интервал не меняется.",
+      "reason": "placeholder_incompatible",
+      "previous_fork_ru": "Центрирует прозу, занимающую не менее 90% высоты чтения. Межстрочный интервал не меняется."
+    },
+    {
+      "key": "settings.word_spacing_narrow_description",
+      "en": "Use %1 of the normal space width.",
+      "proposed_ru": "Использовать %1 обычной ширины пробела.",
+      "reason": "placeholder_incompatible",
+      "previous_fork_ru": "Использовать 80% обычной ширины пробела."
+    },
+    {
+      "key": "settings.word_spacing_normal_description",
+      "en": "Keep the font’s normal space width (%1).",
+      "proposed_ru": "Сохранять обычную ширину пробела шрифта (%1).",
+      "reason": "placeholder_incompatible",
+      "previous_fork_ru": "Сохранять обычную ширину пробела шрифта (100%)."
+    },
+    {
+      "key": "settings.word_spacing_wide_description",
+      "en": "Use %1 of the normal space width.",
+      "proposed_ru": "Использовать %1 обычной ширины пробела.",
+      "reason": "placeholder_incompatible",
+      "previous_fork_ru": "Использовать 120% обычной ширины пробела."
+    }
+  ]
+}

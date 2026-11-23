@@ -1,3 +1,15 @@
+## Контроль beta10 — device follow-up in progress
+
+По скриншоту пользователя добавлены в isolated patch: Cyrillic ink-box stacked
+label из ca50dd3 и адаптация RU common.percent к beta10 (%1, не %1%).
+[Причины и статус](doc/reports/control-beta10/device-followup.md).
+204 предложения EN → RU отправляются в Git на согласование, не применены.
+MTCORSVA вместо Instrument Serif / Caveat вместо Kalam разрешены только для RU;
+blocked: файлов нет в указанной папке/новом upload. Других шрифтов не подставлять.
+Локально CMake generation/rebuild PASS с Ninja, percent guard +/- PASS;
+Qt5/package новой ревизии pending, device acceptance pending.
+Следующее: CI нового patch, файлы/права шрифтов, согласование текста.
+
 ## Контроль original beta10 + RU — done (build), device pending
 
 Пользователь запросил upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`

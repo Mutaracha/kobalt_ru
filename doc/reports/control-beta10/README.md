@@ -15,14 +15,15 @@
 
 Полный unified diff: `platforms/control-beta10/ru.patch`.
 Контрольные SHA-256 исходных и результирующих файлов: `platforms/control-beta10/manifest.json`.
-Всего **14 файлов, +1942 / −37 строк**:
+Текущая ревизия: **15 файлов** (первый контроль: 14). Полный diff и hashes — выше.
 
 | Файлы | Единственное назначение |
 |---|---|
-| `assets/ru.strings` | Таблица 1808 ключей, соответствующих EN beta10 |
+| `assets/ru.strings` | Таблица 1808 ключей; common.percent адаптирован к beta10 (`%1`) |
 | `assets/CMakeLists.txt` | Генерация RU, проверка паритета и зависимости reconfigure |
 | `platforms/strings.cmake` | Общий parser, проверка ключей/аргументов, имя входа в generated header |
 | `platforms/strings-test.cmake` | Ожидание actual input name в header |
+| `src/ui/controls/buttons.cpp` | Согласованный полный Cyrillic ink-box stacked label из ca50dd3 |
 | `src/support/string_table.h` | Общий тип Entry, вынесенный из strings.h |
 | `src/support/string_locale.h` | Выбор таблицы и QLocale; Russian по умолчанию |
 | `src/support/strings.h` | Поиск в выбранной таблице; каноническая diagnostics entries остаётся EN |
@@ -35,13 +36,17 @@
 Русский фиксирован для контрольной сборки: host locale/env/старые language markers
 не меняют его. UI переключателя, включая вкладку «Отладка», не добавлен.
 
-Никаких FB2/comics, sleep/refresh/Libra2, About/fork row, геометрии/иконок,
+Никаких FB2/comics, sleep/refresh/Libra2, About/fork row, иных изменений геометрии/иконок,
 новых шрифтов, Russian_EnUS.pattern, изменений engine/storage не перенесено.
 Все остальные upstream файлы сохраняются побайтно.
 
+[Текущий device follow-up, причины и статус шрифтов](device-followup.md).
+[Все 204 предложения перевода EN → RU для согласования](translation-proposals.md).
+
 ## Неполнота перевода — не скрывать
 
-Повторно использованы **1604** существующих RU значения без изменения текста.
+Повторно использованы 1604 существующих RU значения; из них **1603 без изменения текста**,
+а `common.percent` исправлен с `%1%` на `%1` под контракт beta10.
 Для **194** новых ключей и **10** строк с несовместимыми `%N` сохранён upstream EN,
 а не внесён несогласованный новый перевод. Точный список и исходные значения:
 `translation-gaps.json`. EN assets не менялись. Набор ключей и аргументов совпадает.
@@ -52,14 +57,14 @@ CLDR plurals из форка пока не портированы: это пот
 остаётся upstream, поэтому некоторые русские склонения будут неверными.
 Не путать этот минимальный контроль с языковой приёмкой полного форка.
 
-## Шрифты/отрисовка — отдельно, не применено
+## Шрифты/отрисовка — отдельное согласование
 
 - Штатные IBM Plex Sans/Mono содержат кириллицу; замена не предлагается.
 - Instrument Serif не содержит кириллицу. Нужна device-проверка fallback;
   потенциальная замена/добавление шрифта требует отдельного согласования.
-- Fork stacked-icon Button ink-box correction **не перенесён**.
-  Возможное обрезание русских подписей проверяется отдельно; коррекция
-  геометрии требует согласования. До этого ни шрифты, ни drawing не меняются.
+- Fork stacked-icon Button ink-box correction **теперь перенесён** по явному
+  запросу пользователя после device-скриншота. Нужна повторная device-проверка.
+- MTCORSVA/Caveat разрешены только для RU, но файлы отсутствуют: подключение blocked.
 
 ## Проверки и сборка
 
@@ -74,7 +79,7 @@ CMake установлен в изолированное временное ок
 проверяет оригинальный `check-package` и публикует
 `Kobalt-beta10-original-ru-qt5-control` вместе с patch/manifest/gaps.
 Это orchestration в нашей ветке, не дополнительный runtime diff.
-CI **PASS**: [run 45212880701](https://github.com/Mutaracha/kobalt_ru/actions/runs/45212880701),
+Первый контроль (до текущих двух исправлений), CI **PASS**: [run 45212880701](https://github.com/Mutaracha/kobalt_ru/actions/runs/45212880701),
 source/orchestration `8b1111a35c76d1b42384f659c3abb926e7063caa`.
 Успешны Qt5 compile/link, оригинальный `check-package` и artifact upload.
 [Artifact 14838120646](https://github.com/Mutaracha/kobalt_ru/actions/runs/45212880701/artifacts/14838120646):
@@ -94,3 +99,6 @@ cmake -DTEST_TMP_ROOT="$PWD/build/control-string-tests" -P build/control-beta10/
 Установка использует оригинальный upstream профиль/пути. Отдельный профиль не
 добавлен, чтобы не менять контроль. Перед устройством нужен backup профиля;
 не считать downgrade между версиями безопасным без проверки совместимости.
+
+Текущая ревизия добавляет только ink-box и исправление common.percent; её CI
+проверяется отдельно и результат первого контроля на неё не распространяется.

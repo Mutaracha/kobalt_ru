@@ -320,3 +320,15 @@ feature при beta10. Старую first-open flash suppression тоже уда
 locale inputs оставить как необходимые функции, а не отдельную оптимизацию.
 F07 ribbon/fitting пока не удалять: пользователь запросил места для проверки.
 Текущий runtime2b33d231; CI результат в плане.
+
+## B10-RU-CONTROL-FOLLOWUP — узкий device patch и RU-only шрифты
+
+Источник: сообщение пользователя со скриншотом control beta10 после CI45212880701.
+Разрешено добавить прежний Cyrillic ink-box fix stacked label и исправить
+проценты батареи в контрольном RU patch без остальных изменений форка.
+Для beta10 common.percent должен быть %1, знак добавляет formatter upstream.
+Разрешены MTCORSVA вместо Instrument Serif и Caveat вместо default Kalam
+**только для русского**; English остаётся upstream. Это не разрешение заменить
+их другими файлами или перераспространять шрифт без подходящих прав.
+Доступность файлов и проверки: [follow-up](reports/control-beta10/device-followup.md).
+Новые формулировки отправлены как proposals, не считаются принятыми.

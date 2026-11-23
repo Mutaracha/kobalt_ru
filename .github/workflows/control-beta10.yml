@@ -16,6 +16,8 @@ jobs:
       - name: Export only upstream beta10 and the audited RU patch
         run: bash platforms/control-beta10/prepare.sh
       - name: Validate string generation and parity
+        env:
+          CMAKE_GENERATOR: Ninja
         run: |
           set -euo pipefail
           cmake -DTEST_TMP_ROOT="$RUNNER_TEMP/control-strings" -P build/control-beta10/platforms/strings-test.cmake
