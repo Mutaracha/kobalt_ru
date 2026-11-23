@@ -84,6 +84,12 @@ class SeriesTests(unittest.TestCase):
                 cmake)
             self.assertIsNotNone(zip_targets, 'Missing ZIP fixture target definitions')
             self.assertIn('fb2_engine', zip_targets.group(1).split('|'))
+            self.assertIn('appearance::migrateLegacyNotes(saved);',
+                          (destination / 'src/reading/opening_job.cpp').read_text())
+            for qt in ('qt5', 'qt6'):
+                native = (destination / f'platforms/kobo/nickel-{qt}/native_publication.cpp').read_text()
+                self.assertIn('if (fb2)', native)
+                self.assertIn('FB2 uses Kobalt', native)
             self.assertIn('files[QString::fromLatin1(Publication::singleFb2ResourceName)]',
                           (destination / 'tests/model/local_resources.cpp').read_text())
 

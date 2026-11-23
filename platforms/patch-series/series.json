@@ -37,8 +37,16 @@
     },
     {
       "id": "023-fb2-platform-inputs",
+      "status": "prepared",
+      "scope": "Kobo raw-FB2 eligibility and Qt5/Qt6 local opening; legacy note preference migration; preserves EPUB DRM guards",
+      "path": "platforms/patch-series/patches/023-fb2-platform-inputs.patch",
+      "sha256": "132a17e161e039cac77ed5d4d2e20563e8dae00ea278b1f7672c04690c7ae44a",
+      "validation": "Clean apply and Python series tests locally; native/Qt5 CI and device acceptance pending"
+    },
+    {
+      "id": "024-fb2-archive-library",
       "status": "planned",
-      "scope": "Remaining FB2.ZIP, metadata/library/platform opening inputs and note-setting migration; full-format/device acceptance remains pending"
+      "scope": "Remaining FB2.ZIP and metadata/library/platform input audit; full-format/device acceptance pending"
     },
     {
       "id": "030-comics",
