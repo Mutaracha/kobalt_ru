@@ -14,8 +14,9 @@
 namespace {
 using Update = std::array<uint32_t, 18>;
 std::vector<Update> updates;
-std::vector<quint64> policies;
 int flushes = 0;
+// Every policy the adapter sent, in order.
+std::vector<quint64> policies;
 int expectImmediate = -1;
 bool available = true;
 
@@ -33,8 +34,9 @@ template <class Flags>
 void flush(QBackingStore *, const QRegion &region, QWindow *, const QPoint &, const Flags &flags)
 {
     ++flushes;
-    for (const auto &entry : flags) {
+    for (const auto &entry : flags)
         policies.push_back(quint64(entry.second));
+    for (const auto &entry : flags) {
         if (expectImmediate >= 0)
             require(bool(entry.second & 1) == bool(expectImmediate),
                     "Navigation submission lost its immediate flush flag or changed an unsplit call");
@@ -75,7 +77,9 @@ void diagnostic(const char *, QJsonObject, bool) { }
 void diagnostic(const char *, QJsonObject, DiagnosticSeverity) { }
 
 DiagnosticOperation::DiagnosticOperation(const char *name, std::function<bool()> stopped)
-    : operation(name), interrupted(std::move(stopped)) { }
+    : operation(name), interrupted(std::move(stopped))
+{
+}
 
 DiagnosticOperation::~DiagnosticOperation() = default;
 } // namespace kobalt
@@ -124,8 +128,8 @@ int main(int argc, char **argv)
                 flushes = 0;
                 reader.setProperty("reader_animation_direction", direction);
                 submit();
-                require(flushes == 1 && updates.size() == 10,
-                        "Qt5 text turn did not reach the animation hook");
+                require(flushes == 1 && updates.size() == (dark ? 1u : 10u),
+                        "Qt5 i.MX must sweep only in light mode");
                 QRegion coverage;
                 for (const auto &update : updates) {
                     require(update[4] == (dark ? 10U : 6U) && update[5] == 0,
@@ -133,8 +137,8 @@ int main(int argc, char **argv)
                     coverage +=
                             QRect(int(update[1]), int(update[0]), int(update[2]), int(update[3]));
                 }
-                require(coverage == QRegion(reader.rect()),
-                        "Qt5 sweep did not cover the completed page");
+                require(coverage == QRegion(dark ? damage : reader.rect()),
+                        "Qt5 i.MX turn changed its expected update bounds");
                 require(updates.back()[6] == 42, "Qt5 sweep lost the final update marker");
             }
             for (int excluded : { 0, 1, 2, 3 }) {
@@ -306,16 +310,17 @@ int main(int argc, char **argv)
         reader.setProperty("reader_annotation_drag", true);
         policies.clear();
         submit(step);
-        require(policies.size() == 1 && policies[0] == ((quint64(1) << 5) | (1U << 2)),
+        require(policies.size() == 1 && policies[0] == ((1U << 5) | (1U << 2)),
                 "A drag step did not use the direct waveform in partial mode");
         reader.setProperty("reader_annotation_drag", false);
         policies.clear();
         submit(next);
-        require(policies.size() == 2 && policies[0] == ((quint64(1) << 10) | (1U << 3)),
+        require(policies.size() == 2 && policies[0] == ((1U << 10) | (1U << 3)),
                 "The flush after a drag did not redraw it with REAGL in full mode");
         policies.clear();
         submit(next);
         require(policies.size() == 1, "The drag cleanup repeated");
     }
-    std::puts("PASS: Qt5 flush ABIs preserve sweeps and keep MTK tab feedback partial");
+    std::puts("PASS: Qt5 flush ABIs preserve sweeps, keep MTK tab feedback partial and use the "
+              "direct waveform while dragging");
 }
