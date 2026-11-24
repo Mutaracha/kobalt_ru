@@ -104,3 +104,17 @@ classic UI не превратился в рукописный.
 RU overlay. Текст описания «Быстрее всего» не меняется: запрос касается имени режима.
 
 Скриншоты сохранены рядом с диагностикой в `test & diagnostic/ace3c3c/ui-review/`.
+
+## Follow-up пакет (шрифты/перевод, без новых engine исправлений)
+
+Runtime `4f2cecd18767944dbdcf1a7c80b5c485a575d84c`,
+[CI45425030626](https://github.com/Mutaracha/kobalt_ru/actions/runs/45425030626):
+full series checks, native regressions (включая оба языка), Qt5/package/qemu PASS.
+Artifact **Kobalt-ru-beta10-series-qt5**, `14936239073`, 44,585,598 bytes:
+https://github.com/Mutaracha/kobalt_ru/actions/runs/45425030626/artifacts/14936239073
+
+Новый пакет исправляет роли serif/wordmark и название «Быстро». Проверенные
+шрифтовые роли: headings/opening label/exit prefix+Kobalt — RU Monotype Corsiva,
+EN Instrument Serif, italic=false; playful default — RU Caveat/EN Kalam;
+обычный classic Sans UI не меняется. Это не повторная аппаратная приёмка и не
+исправление отмеченного риска публикации whole_book_ready в эксперименте 034.

@@ -1,3 +1,18 @@
+## Device review 034 и исправление RU serif-ролей
+
+- Диагностика пользователя `cfa10b9` проанализирована: cold session totals
+  1 Hybrid/Accurate = 5.121/8.621 s, 2 = 11.483/27.481 s (по одному проходу).
+  Быстрые повторы в основной серии — retained memory reuse, не доказательство
+  дискового cache-hit. Замечены повторная full build и отдельная repagination
+  при disk cache-hit; 034 остаётся экспериментом, не production acceptance.
+- `header_footer.calculating` общий для EPUB/FB2. Риск блокировки публикации
+  whole_book_ready через bookFraction=-1 зафиксирован, ещё не исправлен.
+- Follow-up `4f2cecd1`, CI45425030626 all PASS: восстановлена locale serif-роль
+  заголовков/opening/exit/бренда (RU MTCORSVA, EN Instrument Serif), без Italic-face;
+  «Быстрее» → «Быстро». Caveat остаётся RU заменой default Kalam в playful,
+  classic Sans и explicit custom settings не переписываются.
+- [Полный разбор логов и пакет](doc/reports/patch-series/034-device-review.md).
+
 ## Текущая проверка: FB2 startup experiment 034
 
 - Проверочная full-series сборка `ace3c3ce`, CI45400041656 — все 3 jobs PASS.
