@@ -1,5 +1,8 @@
 # Cache and initial partial-frame correction
 
+> Поэтапный отчёт: статусы относятся к указанному runtime. Текущее состояние и
+> пакет — [сводный журнал](README.md), действующие проверки — [beta10](../../validation/beta10-device.md).
+
 ## Changes
 
 - Render's automatic swap is skipped while `ldomDocCache` is disabled. Adapter cache scopes end after loading and are reopened for explicit saves; attempting an automatic swap between these scopes previously set the document's permanent `_maperror` flag when cache creation failed. This correction does not clear real write errors, relax source identity checks, or keep process-global cache state enabled between jobs.

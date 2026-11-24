@@ -1,5 +1,8 @@
 # Hybrid: combined cold-open evidence and 7f47164 device follow-up
 
+> Поэтапный отчёт: статусы относятся к указанному runtime. Текущее состояние и
+> пакет — [сводный журнал](README.md), действующие проверки — [beta10](../../validation/beta10-device.md).
+
 ## Scope and measurement boundaries
 
 Inputs: previous ace3c3c and 4f2cecd1 diagnostic archives, the stopwatch protocol in `034-reboot-cache-review.md`, and `test & diagnostic/7f47164/diagnostics.zip` uploaded in 30bafb0b. The latest archive has 9172 events. Its device timestamps are 2026-11-24; these are recorded device time, not an independent date assertion. The latest startup identifies unmodified runtime 7f47164f.

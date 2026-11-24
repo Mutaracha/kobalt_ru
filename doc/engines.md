@@ -4,7 +4,7 @@ Blaze is Kobalt’s EPUB rendering engine. It is a hard fork of KOReader’s CRE
 
 ## Status
 
-The reader opens books through the [Engine interface](../src/engine/engine.h). The [Blaze adapter](../src/engine/blaze/adapter/) translates reader operations into library calls. The [library](../src/engine/blaze/crengine/) owns the EPUB document, fonts, shaping and page layout. Its file names, build target and XPointer format reflect its CREngine ancestry.
+The reader opens books through the [Engine interface](../src/engine/engine.h). The [Blaze adapter](../src/engine/blaze/adapter) translates reader operations into library calls. The [library](../src/engine/blaze/crengine) owns the EPUB document, fonts, shaping and page layout. Its file names, build target and XPointer format reflect its CREngine ancestry.
 
 The Rendering engine setting selects how Blaze lays out the book.
 

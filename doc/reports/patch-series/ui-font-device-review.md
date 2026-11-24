@@ -1,5 +1,8 @@
 # Device review: font roles after complete series
 
+> Поэтапный отчёт: статусы относятся к указанному runtime. Текущее состояние и
+> пакет — [сводный журнал](README.md), действующие проверки — [beta10](../../validation/beta10-device.md).
+
 ## Hardware evidence
 
 The user tested full-series runtime `df8e910a` and confirmed successful book

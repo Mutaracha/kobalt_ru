@@ -1,5 +1,8 @@
 # 023: raw-FB2 platform inputs and note preference migration
 
+> Поэтапный отчёт: статусы относятся к указанному runtime. Текущее состояние и
+> пакет — [сводный журнал](README.md), действующие проверки — [beta10](../../validation/beta10-device.md).
+
 Applied strictly after 010/020/021/022 to pristine beta10. This is a prepared stage, not complete FB2 or device acceptance.
 
 ## Ported

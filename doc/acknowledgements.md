@@ -2,7 +2,7 @@
 
 Kobalt uses code and assets from the projects below. Thank you to their authors and contributors, especially the KOReader community for its work on CREngine and the renderer extensions.
 
-This list covers the Kobo, Android and macOS reader builds, adapted source, bundled assets and development tools. Some dependencies apply only to one platform. Full license texts and copyright notices are kept in [assets/notices](../assets/notices/). The reader also shows these notices in Settings → About → Acknowledgments.
+This list covers the Kobo, Android and macOS reader builds, adapted source, bundled assets and development tools. Some dependencies apply only to one platform. Full license texts and copyright notices are kept in [assets/notices](../assets/notices). The reader also shows these notices in Settings → About → Acknowledgments.
 
 ## Reader dependencies
 
@@ -96,7 +96,7 @@ The individual hyphenation pattern credits are preserved in the [pattern notices
 | Slovenian | Matjaž Vrečko. |
 | Ukrainian | Maksym Polyakov. |
 
-The [font manifests](../assets/fonts/) and [icon manifest](../assets/icons/phosphor/manifest.json) record source revisions and checksums.
+The [font manifests](../assets/fonts) and [icon manifest](../assets/icons/phosphor/manifest.json) record source revisions and checksums.
 
 ## Optional dictionaries
 

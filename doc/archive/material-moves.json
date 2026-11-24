@@ -1,0 +1,680 @@
+{
+  "baseline": "25aac587f7ede39b5f2a89712ac7380501d1ae82",
+  "note": "SHA256 is pre-move content; Markdown links may be rebased. Raw data must match exactly.",
+  "files": [
+    {
+      "old": "doc/beta8-device-check.md",
+      "new": "doc/archive/pre-beta10/doc/beta8-device-check.md",
+      "sha256_before": "7c59f062e59e50e709ce08310df132a579f2d96d02c9c3ac8b8848b94405ad14",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/beta9-remaining-strings-review.md",
+      "new": "doc/archive/pre-beta10/doc/beta9-remaining-strings-review.md",
+      "sha256_before": "84a3565c61607a0e5a56e38ec8d9235bc996e9cdc67370e05172d0b966f86d33",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/beta9-strings-review.md",
+      "new": "doc/archive/pre-beta10/doc/beta9-strings-review.md",
+      "sha256_before": "eb6dcc95e8e28145aebe5848ea107e4a008d52e1a0d505555c6fd84853a216aa",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/engines/koblaze-upstream-beta9.md",
+      "new": "doc/archive/pre-beta10/doc/engines/koblaze-upstream-beta9.md",
+      "sha256_before": "d90536b757000d93d3fc62a6729e9211c5bc098f9e1226df42c6c994da9bef23",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-annotation-port-matrix.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-annotation-port-matrix.md",
+      "sha256_before": "abf51453c52670d7366eec3793d3d4eb422875cb6d3722824ba34e22fdd07d7b",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-engine-adapter.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-engine-adapter.md",
+      "sha256_before": "30f975fd2e8eb1ccc354f77087721f19389a65c586240783c87b2680e9194fdc",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-engine-contracts.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-engine-contracts.md",
+      "sha256_before": "822955a8849487105fee7329403aa9eddb0756287fd0897a4cdbc2f604752f1d",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-hybrid-counter.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-hybrid-counter.md",
+      "sha256_before": "20aca8ba027d806c46be495eeb881e4c6aedc2921d4ffe0565a08dbc268c3d01",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-inventory.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-inventory.md",
+      "sha256_before": "3cdfd70e2a3daf29d725044644c6f6c59ca11cf9a387d419597461987433fcf4",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-inventory.tsv",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-inventory.tsv",
+      "sha256_before": "49ce6e44bd56fa39fe6bd8c8625e2ff3da7132f2a19934a2703ab73685b88101",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-physical-buttons.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-physical-buttons.md",
+      "sha256_before": "e4a1c7f2300d7b32986112f9d92a5af3555f9b0576fc5ee2e2132bd78d270550",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-port-map.tsv",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-port-map.tsv",
+      "sha256_before": "e95a833cb559e67ca44ee8cf48b25e03eac0efc340744c5a2593f03caf5634b6",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-preflight.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-preflight.md",
+      "sha256_before": "ed344a732973363ca2517230241975f5da7c012339044bd9d2d79984a26fce8e",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-source-locations.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-source-locations.md",
+      "sha256_before": "bf94f5617cd2f519d6e7c6f05bc6e62fe5c2fa868fba45a85ea113c0a2beab88",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-stage1-blaze.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-stage1-blaze.md",
+      "sha256_before": "f9b197765ad45fdf2d34a98e1fdb498358985bb1d49953340c8ec7ea79f67598",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-stage2-adapter.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-stage2-adapter.md",
+      "sha256_before": "8d9d2de798ebe4b91f9a2d9c973eebfcb8e12d0be973e3e8f388a0d2df4bca02",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-upgrade-retrospective.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-upgrade-retrospective.md",
+      "sha256_before": "c46bc65fad59191a56a909e3b23e0192af343971a5ae002242ba42cfacaee0ac",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-wireless.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-wireless.md",
+      "sha256_before": "5f711ec1e8cda56842f585abe37705081db8d18e91ce76c059d881d72d5e6d0f",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/beta9-worker-contracts.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-worker-contracts.md",
+      "sha256_before": "304648f7b9710728c0c12af6ef6f5b48e1ca8f501c4cfe1f58fb726889e53245",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/validation/beta9-annotation-foundation.md",
+      "new": "doc/archive/pre-beta10/doc/validation/beta9-annotation-foundation.md",
+      "sha256_before": "51bfb4a3add484e93b3449582acbe0b4b3e7fb865ea1437a05fe17a3310a4eb3",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/validation/beta9-device.md",
+      "new": "doc/archive/pre-beta10/doc/validation/beta9-device.md",
+      "sha256_before": "9cfeb7ca008eeb57272d79a8aba4e10245c0e3faaf049256fa60d4e3fd142f5c",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/validation/beta9-kosync-sleep.md",
+      "new": "doc/archive/pre-beta10/doc/validation/beta9-kosync-sleep.md",
+      "sha256_before": "b36d220dfecd88feb7140960dbc33a93a3953fbe06efd73af1e7e8cd6c8b027b",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/validation/beta9-note-editor.md",
+      "new": "doc/archive/pre-beta10/doc/validation/beta9-note-editor.md",
+      "sha256_before": "9a4502b04af1b53f9896fd839d9762098fb312ce5294aab154fcbed94ef75479",
+      "reason": "beta9-or-earlier report"
+    },
+    {
+      "old": "doc/reports/033d0be2-device-review.md",
+      "new": "doc/archive/pre-beta10/doc/reports/033d0be2-device-review.md",
+      "sha256_before": "3af98cdeaca1df2d2653518b5adc9c4afc341f6537df0398e724ad582a4a2258",
+      "reason": "retired-runtime investigation"
+    },
+    {
+      "old": "doc/reports/77564e9-device-issues.md",
+      "new": "doc/archive/pre-beta10/doc/reports/77564e9-device-issues.md",
+      "sha256_before": "81ecbaca5fc4fed8105050d4d33636cbb73d9dd1e03ae0e1b7f940de1e6c2818",
+      "reason": "retired-runtime investigation"
+    },
+    {
+      "old": "doc/reports/cfb8f51c-device-followup.md",
+      "new": "doc/archive/pre-beta10/doc/reports/cfb8f51c-device-followup.md",
+      "sha256_before": "b3ce4e200132b2a7ffd9f8b537748e9b067d5488da406446d22ccba1f8033864",
+      "reason": "retired-runtime investigation"
+    },
+    {
+      "old": "doc/reports/fb2-hybrid-preparation.md",
+      "new": "doc/archive/pre-beta10/doc/reports/fb2-hybrid-preparation.md",
+      "sha256_before": "7e62e22e203cc0911c743ea7e0f1bb0e691b415a5b3c9cfbba05842d8cc13a03",
+      "reason": "retired-runtime investigation"
+    },
+    {
+      "old": "doc/reports/fb2-post-refactor.md",
+      "new": "doc/archive/pre-beta10/doc/reports/fb2-post-refactor.md",
+      "sha256_before": "4d1e0ab280a8c5b71e9a85b7b856be12deb6cf39a7c767e88650f60219f4267f",
+      "reason": "retired-runtime investigation"
+    },
+    {
+      "old": "doc/reports/fb2-preview-position.md",
+      "new": "doc/archive/pre-beta10/doc/reports/fb2-preview-position.md",
+      "sha256_before": "abf33418ce2d016e52afabcc2fc741a809a36db8000a9b5b8f807a6458580127",
+      "reason": "retired-runtime investigation"
+    },
+    {
+      "old": "doc/reports/fb2-reliability-koreader.md",
+      "new": "doc/archive/pre-beta10/doc/reports/fb2-reliability-koreader.md",
+      "sha256_before": "d8b05f0155482b6e51aac1a09d08f861764cf4a4a51e904ea3b63e84c9440c23",
+      "reason": "retired-runtime investigation"
+    },
+    {
+      "old": "doc/reports/upstream-cleanup-stage1.md",
+      "new": "doc/archive/pre-beta10/doc/reports/upstream-cleanup-stage1.md",
+      "sha256_before": "7554e7c5c6d0faf35006212cf0b369b5af440c6710e5ed5bbd5fd64113239ac3",
+      "reason": "retired-runtime investigation"
+    },
+    {
+      "old": "doc/reports/upstream-panels-alignment.md",
+      "new": "doc/archive/pre-beta10/doc/reports/upstream-panels-alignment.md",
+      "sha256_before": "30a015057d9a9900f260550921e13897b4461d24e44fded651f66012ad8646e4",
+      "reason": "retired-runtime investigation"
+    },
+    {
+      "old": "doc/validation/033d0be2-followup.md",
+      "new": "doc/archive/pre-beta10/doc/validation/033d0be2-followup.md",
+      "sha256_before": "0643223733155efbd0072f2868969b2730874e95d57b8d838802ea71644e030d",
+      "reason": "retired-device checklist"
+    },
+    {
+      "old": "doc/validation/upstream-panels-device.md",
+      "new": "doc/archive/pre-beta10/doc/validation/upstream-panels-device.md",
+      "sha256_before": "de2abc866fbd088e09048e94ffc827eb0d2fc02cebe1a1f487cbac1d046eeea4",
+      "reason": "retired-device checklist"
+    },
+    {
+      "old": "doc/validation/upstream-presets-device.md",
+      "new": "doc/archive/pre-beta10/doc/validation/upstream-presets-device.md",
+      "sha256_before": "1933cad87f0b6b2595345b1d9db170f4a9ca9f0b3e1887556084d47ba9748aec",
+      "reason": "retired-device checklist"
+    },
+    {
+      "old": "doc/qt6-one-off.md",
+      "new": "doc/archive/pre-beta10/doc/qt6-one-off.md",
+      "sha256_before": "7ed1598a58df1947aa67d8935871456a3ea617b774fb301cafd7d78f6e653a85",
+      "reason": "historical build/results; not current acceptance"
+    },
+    {
+      "old": "doc/device-benchmarks.md",
+      "new": "doc/archive/pre-beta10/doc/device-benchmarks.md",
+      "sha256_before": "c244c99f8ca9b018ca6a76422bd027529c0f546d8ec9478754ea871354fd5923",
+      "reason": "historical build/results; not current acceptance"
+    },
+    {
+      "old": "test & diagnostic/033d0be2/diagnostics comics.zip",
+      "new": "test & diagnostic/archive/pre-beta10/033d0be2/diagnostics comics.zip",
+      "sha256_before": "8127adeec0873ff206621c68cbaec2831de636cf506e48507374dde0239e3314",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/033d0be2/diagnostics epub.zip",
+      "new": "test & diagnostic/archive/pre-beta10/033d0be2/diagnostics epub.zip",
+      "sha256_before": "bd46e9692c00d5e1425e57af3e59366963870fbbc401fb06a0df198772658316",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/033d0be2/diagnostics fb2.zip",
+      "new": "test & diagnostic/archive/pre-beta10/033d0be2/diagnostics fb2.zip",
+      "sha256_before": "569e70e437d4ab217e0404806fa26fa093dd57b467bd251f2cfde88a89643204",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/033d0be2/screenshot.zip",
+      "new": "test & diagnostic/archive/pre-beta10/033d0be2/screenshot.zip",
+      "sha256_before": "4afe24b8034aff251fcdb4e77ab861f11e074e88e74f782cb99ad8f2c5513cf0",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/116024c/README.md",
+      "new": "test & diagnostic/archive/pre-beta10/116024c/README.md",
+      "sha256_before": "232db1296befd92c4663959b106276be2f93c54ec98b4f1f43b9d4f61ac0c5d0",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/116024c/events.zip",
+      "new": "test & diagnostic/archive/pre-beta10/116024c/events.zip",
+      "sha256_before": "f6b5f83f2d622d4b5f4d19361b08e9bed4e2fc5df676317f89b2e586e793063a",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/116024c/screen_001.png",
+      "new": "test & diagnostic/archive/pre-beta10/116024c/screen_001.png",
+      "sha256_before": "570845cc798c01bf8e2c29ded81651b8fed3ed0098b28faecb44db47ad2cc110",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/116024c/screen_002.png",
+      "new": "test & diagnostic/archive/pre-beta10/116024c/screen_002.png",
+      "sha256_before": "c71a0a8b3cdc2e023be338e0be2951743ee2cc4fa817d57a4b002af93b58f478",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/116024c/screen_003.png",
+      "new": "test & diagnostic/archive/pre-beta10/116024c/screen_003.png",
+      "sha256_before": "a53b051100e8ecb43cea391061362ade83ca91cf7b5ea8ac4339fbe480ca69b1",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/116024c/screen_004.png",
+      "new": "test & diagnostic/archive/pre-beta10/116024c/screen_004.png",
+      "sha256_before": "0ab56efd4c9e238cf3f4f64bbe5e1b525003f4e44034ff63076cfc47aee40d8a",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/116024c/screen_005.png",
+      "new": "test & diagnostic/archive/pre-beta10/116024c/screen_005.png",
+      "sha256_before": "a6c9377b9bab53f99462959d028c641ac85c3bf748dca577be55d9fcc2058ce1",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/116024c/screen_006.png",
+      "new": "test & diagnostic/archive/pre-beta10/116024c/screen_006.png",
+      "sha256_before": "3a6ea13d072c6e3689d0c1645e77e2e9e053fb345f7f0fc654980d304000d47e",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/116024c/screen_007.png",
+      "new": "test & diagnostic/archive/pre-beta10/116024c/screen_007.png",
+      "sha256_before": "d36c07a4408e2bbd99cab0ecaee8150f2559ab484279913c8e30340e188882c0",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/116024c/screen_008.png",
+      "new": "test & diagnostic/archive/pre-beta10/116024c/screen_008.png",
+      "sha256_before": "4e3be87087a0d35f5e5d5ab1a2a4ba47eed921639ab2e6e329573d88b18e8af4",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/116024c/screen_009.png",
+      "new": "test & diagnostic/archive/pre-beta10/116024c/screen_009.png",
+      "sha256_before": "6845fd133ed9661de3acb1823136fe6b4692bbc91379cff3474c37b01dc49d34",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/1a56b68/diagnostics 1a56b68.zip",
+      "new": "test & diagnostic/archive/pre-beta10/1a56b68/diagnostics 1a56b68.zip",
+      "sha256_before": "ec6c18f629286a5f4f4d388379a1073a8328864cd55e505c8366a1e7935de882",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/1b09118/README.md",
+      "new": "test & diagnostic/archive/pre-beta10/1b09118/README.md",
+      "sha256_before": "353e542dcaf53671252bf0bc65d8d23535cb68fd0f0e76ecffe0a9dffb72a27e",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/1b09118/events.zip",
+      "new": "test & diagnostic/archive/pre-beta10/1b09118/events.zip",
+      "sha256_before": "eb6d0718af533158db9cab8f5ed917ee00a4b70d1164339136577968ed3a36ed",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/1b09118/screen_001.png",
+      "new": "test & diagnostic/archive/pre-beta10/1b09118/screen_001.png",
+      "sha256_before": "71e88a533023da9b97dbc5e2987be349fa77a3cb95e89844ea6cc41b74b3b6be",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/1b09118/screen_002.png",
+      "new": "test & diagnostic/archive/pre-beta10/1b09118/screen_002.png",
+      "sha256_before": "496eaa62f38e03b6bc33f1d49226d3da294d64a1cbca2b481d20f51d76eabbc4",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/1b09118/screen_003.png",
+      "new": "test & diagnostic/archive/pre-beta10/1b09118/screen_003.png",
+      "sha256_before": "259d0cd38932d174878137743ed3ec390091a6392babe444569587bb0dd7a008",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/1b09118/screen_004.png",
+      "new": "test & diagnostic/archive/pre-beta10/1b09118/screen_004.png",
+      "sha256_before": "1f6bbfc1ca510347b56f84b7df8c314f39a59273a2b116de37b88a5170d044f3",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/61dbfaa/Sin City vol 4.kepub.epub",
+      "new": "test & diagnostic/archive/pre-beta10/61dbfaa/Sin City vol 4.kepub.epub",
+      "sha256_before": "3128957bc51211b3497eda488d6846634bb9b656e0ed79930db67c1548994564",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/6a82161/diagnostics 2.zip",
+      "new": "test & diagnostic/archive/pre-beta10/6a82161/diagnostics 2.zip",
+      "sha256_before": "c38b5acf9e5d73050181fb90bedfc16b8fdf8757f08f0a8afdbd39e4dca80a51",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/6a82161/diagnostics.zip",
+      "new": "test & diagnostic/archive/pre-beta10/6a82161/diagnostics.zip",
+      "sha256_before": "8a8f321559803020fa5f2751f6d09ae7765765753002fa6d81e060cbc0fc2327",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/6a82161/screen_001.png",
+      "new": "test & diagnostic/archive/pre-beta10/6a82161/screen_001.png",
+      "sha256_before": "424e506b5d33beec8afce4f8904b072c9bb164d8ecb533c165e27bbb141aab72",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/Adventure.ttf",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/Adventure.ttf",
+      "sha256_before": "49692f3c65c27767ded4ccd357012091d4e2016dc44bc916bc58b6f0fe9ea8b9",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/Caveat/Caveat-Bold.ttf",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/Caveat/Caveat-Bold.ttf",
+      "sha256_before": "b42cc772f3528d9150c29d6051e2ed3fd472ad4e584c73fe1500ee628d6b1ac0",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/Caveat/Caveat-Medium.ttf",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/Caveat/Caveat-Medium.ttf",
+      "sha256_before": "2003781246d27c3ea281fb2e7dbd98e9d6ce22baae7ee5e60f35d5969e918a4a",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/Caveat/Caveat-Regular.ttf",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/Caveat/Caveat-Regular.ttf",
+      "sha256_before": "271ee7c4a60b1be2ba13a66990e7475c76c982ac6e906c9db25139976282f6b8",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/Caveat/Caveat-SemiBold.ttf",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/Caveat/Caveat-SemiBold.ttf",
+      "sha256_before": "1f44700f4362468de6f8b4d87fed36ad101d14696272dd1b5eceaa5d64b5baa8",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/MTCORSVA.TTF",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/MTCORSVA.TTF",
+      "sha256_before": "a6f6dacb871be365ad93fe1aab09332f768cd2aa35fdfca8e0053a38f5a2662b",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/Oranienbaum-Regular.ttf",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/Oranienbaum-Regular.ttf",
+      "sha256_before": "9d3c42bb47ea4f9c9456dfc84634f505b02933ca9bc07af110ac9e3a12f60f94",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/README.md",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/README.md",
+      "sha256_before": "2e42b746df8063cff64e56dd726af6289b903e099e9be4a2e052250954c1e0ec",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/ViaodaLibre-Regular.ttf",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/ViaodaLibre-Regular.ttf",
+      "sha256_before": "332d2199fecab1abb7867a6036bee3e05dd7d3110b04076d6bf8d09d02120ea0",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/diagnostics epub hibrid.zip",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/diagnostics epub hibrid.zip",
+      "sha256_before": "c98d350f6f7049c4dae8c7b7e6bba87cb40e69fb4ff491b500d3f2c2fa228920",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/diagnostics epub.zip",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/diagnostics epub.zip",
+      "sha256_before": "64f6b692c43e690fe9603ad1c975afdad85a4f8ca4580e9a1fbb49814c88d0aa",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/diagnostics freeze.zip",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/diagnostics freeze.zip",
+      "sha256_before": "156b54088b8d8fc481a3ae5516339dcdf6b24fd2e482c11305d58b4851ae1d4d",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/screen_001.png",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/screen_001.png",
+      "sha256_before": "c39f1c7368d80cc7117e9296a012f4a283bc1fb50b326c0f303236de4c126516",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/screen_002.png",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/screen_002.png",
+      "sha256_before": "52d396eb24fed85222652a365c8c21f44774fcb08042041150d7b0c1ef88e6ab",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/screen_005.png",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/screen_005.png",
+      "sha256_before": "b550bd100644c0a7ff29d1e6200a32d2aa7e14ef4dfb68ba3cfcb68264b966d2",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/screen_006.png",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/screen_006.png",
+      "sha256_before": "329cede1395234b5d4518301f07ef1fe1226e0d79d1c00a6a88b6c20a6dd8f69",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/screen_007.png",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/screen_007.png",
+      "sha256_before": "4a68165a4bd0b7210bcd277520e25d828e3b203ea6d04b70ff64b3517c0bec3c",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/77564e9/screen_008.png",
+      "new": "test & diagnostic/archive/pre-beta10/77564e9/screen_008.png",
+      "sha256_before": "bf42324f5ebf5031430704d0423bf2bbeb0a74de160186973123fcb6bdca0ac7",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/80ee8d7/diagnostics hibrid.zip",
+      "new": "test & diagnostic/archive/pre-beta10/80ee8d7/diagnostics hibrid.zip",
+      "sha256_before": "3196c2ab85ac5edd7f94ed3dc43de52c8c223c066d2141decc73cec41c08f826",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/cfb8f51c/events.zip",
+      "new": "test & diagnostic/archive/pre-beta10/cfb8f51c/events.zip",
+      "sha256_before": "92125151ca23c2d94edfd0e1795029b01d180c1adaf075a6165fe0b312cfc5d2",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/cfb8f51c/screen_001.png",
+      "new": "test & diagnostic/archive/pre-beta10/cfb8f51c/screen_001.png",
+      "sha256_before": "2dd8e8c1d3c33aeb015619a35d1ef82d541ca9c817ca8fd0af29aefc29216ac7",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/cfb8f51c/screen_002.png",
+      "new": "test & diagnostic/archive/pre-beta10/cfb8f51c/screen_002.png",
+      "sha256_before": "fc382ea4f071df1fe5fd9414264e4567deb1a38cdcef269f28af6ad66d792492",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/fb2-post-refactor/screen_002-11.png",
+      "new": "test & diagnostic/archive/pre-beta10/fb2-post-refactor/screen_002-11.png",
+      "sha256_before": "0e936af766e29a76b2b0e06006d3cddd30778fc7589df1ca7d389b13b49887be",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/fb2-post-refactor/screen_003-9.png",
+      "new": "test & diagnostic/archive/pre-beta10/fb2-post-refactor/screen_003-9.png",
+      "sha256_before": "2d7711b2b544b4d11659f2fad79e37e8ce31420dad31958a48640d15d210436b",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/reading-menu-counter/README.md",
+      "new": "test & diagnostic/archive/pre-beta10/reading-menu-counter/README.md",
+      "sha256_before": "5eaab0c682adaf64fa91986245eca5463178e8c7d8a9d9da6e9444d3b2226461",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/reading-menu-counter/screen_001-15.png",
+      "new": "test & diagnostic/archive/pre-beta10/reading-menu-counter/screen_001-15.png",
+      "sha256_before": "8929dba695343e6501bc0da9e2d82d3c0f2635d00c29a834ba06e792dbf2f4d2",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/reading-menu-counter/screen_001-16.png",
+      "new": "test & diagnostic/archive/pre-beta10/reading-menu-counter/screen_001-16.png",
+      "sha256_before": "4fdd70b4359498884a292df243a927604dd714ced9c7ab1b842921bf13b0a939",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/reading-menu-counter/screen_001-17.png",
+      "new": "test & diagnostic/archive/pre-beta10/reading-menu-counter/screen_001-17.png",
+      "sha256_before": "192839a534526526d2d8ea8984174c86eac13d283d9b26b094a4877ef1e04da4",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/reading-menu-counter/screen_001-18.png",
+      "new": "test & diagnostic/archive/pre-beta10/reading-menu-counter/screen_001-18.png",
+      "sha256_before": "8d5fb96864e7c79c3d8227d1af5bd84a13b52be036478424338d1f8a7dbe51bd",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/reading-menu-counter/screen_001-19.png",
+      "new": "test & diagnostic/archive/pre-beta10/reading-menu-counter/screen_001-19.png",
+      "sha256_before": "60bc6d551f840a05494cbc1cca49010bccebd926f76d61e657bb2837418b84ad",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/reading-menu-counter/screen_002-12.png",
+      "new": "test & diagnostic/archive/pre-beta10/reading-menu-counter/screen_002-12.png",
+      "sha256_before": "137311ec4545d7092f1bf3e0e1a89a8982e2898d895492b8be9ae263a7889c60",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/reading-menu-counter/screen_002-13.png",
+      "new": "test & diagnostic/archive/pre-beta10/reading-menu-counter/screen_002-13.png",
+      "sha256_before": "fe7dba82133a2ba9f7fa84001e23431b54ee38fb7353be97de96a89e143bdf02",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/diagnostics 61dbfaa.zip",
+      "new": "test & diagnostic/archive/pre-beta10/diagnostics 61dbfaa.zip",
+      "sha256_before": "3892c3757d2c71c3cc3dd09f3c975cd0646fdc17d18895adde5e0d24e1b01e41",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "test & diagnostic/diagnostics a170389.zip",
+      "new": "test & diagnostic/archive/pre-beta10/diagnostics a170389.zip",
+      "sha256_before": "597bb6d1fba0e95a82e81326ff149ebf14d26d7f8fc5e748e02cb7aba1935796",
+      "reason": "beta7/8/9 runtime or retired UI evidence"
+    },
+    {
+      "old": "platforms/eval/devices/clara-bw/2026-10-31-333c8fa.jsonl",
+      "new": "test & diagnostic/archive/pre-beta10/evaluation/clara-bw/2026-10-31-333c8fa.jsonl",
+      "sha256_before": "71c37b833b7859095b2744cbfaa67fe234a8c9d3337dc838e3d6676b3caa3824",
+      "reason": "startup declares beta5"
+    },
+    {
+      "old": "platforms/eval/devices/clara-bw/2026-10-31-f4d6060.jsonl",
+      "new": "test & diagnostic/archive/pre-beta10/evaluation/clara-bw/2026-10-31-f4d6060.jsonl",
+      "sha256_before": "f88fe21a4ab91ace5cafd49768f4b068292dbf467a518c2188ce15d2e858f704",
+      "reason": "startup declares beta5"
+    },
+    {
+      "old": "platforms/eval/devices/clara-colour/2026-10-31-f4d6060.jsonl",
+      "new": "test & diagnostic/archive/pre-beta10/evaluation/clara-colour/2026-10-31-f4d6060.jsonl",
+      "sha256_before": "29dc4e1628d6e60cd3178452fc64f26e0e4afb7e8c75b0b3e6237eec3be7e10a",
+      "reason": "startup declares beta5"
+    },
+    {
+      "old": "doc/reports/beta9-delta/README.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-delta/README.md",
+      "sha256_before": "e97445519d11b068d541d222a5b8f82504abff9cc23616653c38b4878642f183",
+      "reason": "beta9 migration ledger"
+    },
+    {
+      "old": "doc/reports/beta9-delta/changes.stat",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-delta/changes.stat",
+      "sha256_before": "96469e9d04d85774636cc50fd0a2cf519f0252835999bcffd5e9a474de9a5c6d",
+      "reason": "beta9 migration ledger"
+    },
+    {
+      "old": "doc/reports/beta9-delta/files.tsv",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-delta/files.tsv",
+      "sha256_before": "deb15284b031882e39b9c3d9eb9cfa03ab8539391525854b0c4aae2d455ebd4a",
+      "reason": "beta9 migration ledger"
+    },
+    {
+      "old": "doc/reports/beta9-delta/summary.json",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-delta/summary.json",
+      "sha256_before": "0032101400666507b91cf03d9bc9df7641ac25ade1f24ad0b338648ef33f520d",
+      "reason": "beta9 migration ledger"
+    },
+    {
+      "old": "doc/reports/beta9-delta-current/README.md",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-delta-current/README.md",
+      "sha256_before": "056491117cc2ee2b1f8fe893687a7deae6fde4ecd8d7b7e0379e619ca9969867",
+      "reason": "beta9 migration ledger"
+    },
+    {
+      "old": "doc/reports/beta9-delta-current/changes.stat",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-delta-current/changes.stat",
+      "sha256_before": "cc636786f19a2ff3367e1c9c4a0dc39349f5316d0c69185703240162cf330e41",
+      "reason": "beta9 migration ledger"
+    },
+    {
+      "old": "doc/reports/beta9-delta-current/files.tsv",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-delta-current/files.tsv",
+      "sha256_before": "5c18589da7b3a74e3f1deaaec3562abcadd982e73d004535f2b583e9e0c4bf75",
+      "reason": "beta9 migration ledger"
+    },
+    {
+      "old": "doc/reports/beta9-delta-current/summary.json",
+      "new": "doc/archive/pre-beta10/doc/reports/beta9-delta-current/summary.json",
+      "sha256_before": "1d00f99b6ae313c40672718ecec8a052f498e164f93999c357723b47d568f891",
+      "reason": "beta9 migration ledger"
+    }
+  ],
+  "snapshots": [
+    {
+      "old": "doc/forum-description.ru.bbcode.txt",
+      "new": "doc/archive/pre-beta10/doc/forum-description.ru.bbcode.txt",
+      "sha256_before": "ef603e5d5e6e4526d44ac186b38bfb7dedf14163ed888ce4825df555a85bc063",
+      "reason": "beta4/5/7 public changelog snapshot; active description replaced"
+    },
+    {
+      "old": "FB2_FORK_PLAN.md",
+      "new": "doc/archive/mixed-history/FB2_FORK_PLAN.md",
+      "sha256_before": "3bcdaf08dd109e6745de35fd5c863fc0fb55bf5bf2b1f5ff2fe87a1af546dd88",
+      "reason": "mixed-generation history; active document consolidated separately"
+    },
+    {
+      "old": "doc/fork-decisions.md",
+      "new": "doc/archive/mixed-history/doc/fork-decisions.md",
+      "sha256_before": "6c9e7e713cb284f29d90cba31a029bd56b24e2e289618272c45f137cc845eb7b",
+      "reason": "mixed-generation history; active document consolidated separately"
+    },
+    {
+      "old": "doc/fork-delta.md",
+      "new": "doc/archive/mixed-history/doc/fork-delta.md",
+      "sha256_before": "27594941662fcf1cc37e52f951f91a201ac5bb49345de3a80e67b21174be338c",
+      "reason": "mixed-generation history; active document consolidated separately"
+    }
+  ]
+}

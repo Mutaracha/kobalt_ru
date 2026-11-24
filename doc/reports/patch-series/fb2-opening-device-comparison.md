@@ -1,13 +1,16 @@
 # FB2 opening: device logs 6a82161 vs 08c66e4d
 
+> Поэтапный отчёт: статусы относятся к указанному runtime. Текущее состояние и
+> пакет — [сводный журнал](README.md), действующие проверки — [beta10](../../validation/beta10-device.md).
+
 ## Inputs
 
 User confirmed that 08c66e4d opens FB2 and comics on the device, but FB2 feels much
 slower than 6a82161. Supplied in commits 7c1d7acd / c80d66c3:
 
 - `test & diagnostic/08c66e4d/diagnostics.zip`
-- `test & diagnostic/6a82161/diagnostics.zip`
-- `test & diagnostic/6a82161/diagnostics 2.zip`
+- `test & diagnostic/archive/pre-beta10/6a82161/diagnostics.zip`
+- `test & diagnostic/archive/pre-beta10/6a82161/diagnostics 2.zip`
 - `Sorokin_Norma-Tridcataya-lyubov-Mariny-Goluboe-salo-Den-oprichnika-Saharnyy-Kreml.3nbKGQ.593957.fb2`
 
 Book size: 4,097,199 bytes. SHA256:

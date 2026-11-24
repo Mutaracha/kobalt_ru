@@ -1,5 +1,8 @@
 # Комиксы: последовательные патчи 030 → 031 → 032
 
+> Поэтапный отчёт: статусы относятся к указанному runtime. Текущее состояние и
+> пакет — [сводный журнал](README.md), действующие проверки — [beta10](../../validation/beta10-device.md).
+
 ## Реализованный объём
 
 031-comics-engine подключает effective comics layout к EngineDocument, source

@@ -1,5 +1,8 @@
 # 040 reader controls — pre-port audit
 
+> Поэтапный отчёт: статусы относятся к указанному runtime. Текущее состояние и
+> пакет — [сводный журнал](README.md), действующие проверки — [beta10](../../validation/beta10-device.md).
+
 Status: implemented and CI accepted as 040; physical-device toolbar review pending.
 Base: pristine beta10 `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`
 plus ordered patches 010–033. Retained reference:

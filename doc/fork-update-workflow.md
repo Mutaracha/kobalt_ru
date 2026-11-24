@@ -1,11 +1,13 @@
 # Постоянный порядок обновления kobalt_ru
 
 Это регламент каждого обновления upstream, не отчёт о завершённой работе.
-Канонические состояние, решения, согласования и результаты — в
+Каноническая очередь и ссылки на результаты — в
 [`FB2_FORK_PLAN.md`](../FB2_FORK_PLAN.md). Карта исходной дельты и владельцев модулей — [fork-delta](fork-delta.md).
 
 Для перехода beta9→beta10 использовать [зафиксированную карту](reports/beta10-fork-map/README.md):
-semantic features + exhaustive TSV + take-upstream list. Список неизменённых
+semantic features + exhaustive TSV + take-upstream list. Это исторический вход,
+не невыполненный план: текущая реализация — полная ordered серия 010–060.
+Действующие решения — doc/fork-decisions.md, закрытые исключения — doc/retired-decisions.md. Список неизменённых
 файлов означает отсутствие fork merge, а не освобождение от API/device проверок.
 
 ## 1. Зафиксировать исходную точку

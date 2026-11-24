@@ -14,7 +14,7 @@ and verified environment caveats, not feature decisions, a changelog or a task l
   has an ID, scope, decision, approval/source and validation or supersession note.
   Edit the canonical entry when a decision changes; name the superseded rule.
   Proposals are not approvals. Do not turn a test result into a product decision.
-- `doc/validation/` and `doc/beta8-device-check.md`: reproducible checks and current
+- `doc/validation/` and `doc/validation/beta10-device.md`: reproducible checks and current
   device acceptance/evidence. Record runtime source, CI run/artifact, scope,
   outcome and **unrun checks**. A docs-only commit is not a new tested binary.
 - `doc/reports/`: focused technical investigations/author-facing reports. Separate
@@ -72,74 +72,34 @@ newer overloads such as the two-argument `QScopedValueRollback` constructor.
 
 - Read `doc/building.md`, `doc/storage.md` and the affected validation guide.
 - Local SDK build: `KOBALT_FORK_NAME=kobalt_ru bash platforms/kobo/build.sh qt5`.
-- Branch pushes use `.github/workflows/kobo-qt5-device.yml`; the package artifact
-  is `Kobalt-qt5-device`. Native regressions and package validation must both pass
+- The current ordered-series build uses `.github/workflows/patch-series.yml`;
+  its artifact is `Kobalt-ru-beta10-series-qt5`. The legacy device workflow is not
+  proof that the complete ordered series was applied. Native regressions and package validation must both pass
   before offering a checked build. Do not claim a full/all-variant run from the
   focused workflow selection. Run relevant added tests in that selection.
 - `gh run list/view/watch` and checks annotations identify results; download/log
   redirects may be inaccessible from Arena. Do not call a failed fetch a pass.
   A manual workflow dispatch or cleanup can return 403; use the push-triggered
   run and report the permission limit instead of requesting credentials.
-- Qt6 is one-off/manual only; see `doc/qt6-one-off.md`. Do not enable it on every push.
+- Qt6 is one-off/manual only. Historical artifacts are archived, not current builds.
+  Do not enable it on every push.
 - Run available offline checks: `git diff --check`, the shared EN/RU string and
   placeholder checks (`platforms/strings.cmake`, `platforms/strings-test.cmake`),
   and `bash platforms/ci/test.sh` when its dependencies exist. Report missing tools.
 - For device handoff give build number, runtime source, artifact and test scope;
   physical validation remains separate. Follow the full-profile backup/schema
-  contract before installing or rolling back beta.8. Do not restore an old binary
+  contract before installing or rolling back a migrated profile. Do not restore an old binary
   over a migrated profile and call it a safe rollback.
 
 ## Shared-code and compatibility rules
 
-Use `doc/fork-delta.md` as the pinned beta.8 ownership/integration map. Keep
-fork algorithms in the owning layer's focused modules (`reader_fb2`,
-`reader_comics`, `column_view_comics`, `engine_document_comics`,
-`fork_reader_actions`, `reading_page_progress`, `fork_icon_geometry`,
-`reader_fork_styles`, `fb2_resources`, `string_locale`/`string_table`). Shared
-upstream files retain explicit API/lifecycle wiring, not copied implementations.
-Do not move these modules into a cross-layer mega-module or duplicate the
-upstream notes/standby pipeline. `page_draw_buffer.*` is the relocated common
-upstream primitive, not fork policy: ordinary pages, covers and comics must keep
-one implementation. Compare it with upstream's engine_document.cpp drawing
-block on updates, including equation/illustration helpers. Update the map when
-an integration point moves.
-
-Use cohesive fork modules and minimal upstream integration points, not copied
-classes or a generic hook framework. Read `doc/fork-decisions.md` before changing
-protected behavior. Use shared row/action/icon presentation; fix the common
-cause rather than adding per-screen pixel hacks. Do not alter stock About
-version/commit rendering or the fork UTC build row.
-
-Approve new/changed EN/RU wording before editing both `assets/en.strings` and
-`assets/ru.strings`. Preserve key/placeholder parity and Russian plural behavior.
-Do not silently rewrite accepted text. Shared strings tooling belongs under
-`platforms/`; storage compatibility belongs in `doc/storage.md`.
-
-Read `doc/storage.md` before touching saved state, settings, native save or caches.
-Preserve user data and unsupported original files; optional fields require
-explicit defaults, incompatible saved formats need migration/tests. Invalidate
-only disposable caches when parser/layout changes require it, not settings,
-bookmarks or annotations. Use the documented rendering/parsed/inspection cache
-policy owners, not release-version-based resets.
-
-Format first-party C/C++ with the repository `.clang-format`. State which checks
-ran, which were added but unrun, and which need hardware. Never infer physical
-acceptance, speedups or root causes solely from a successful build.
-
-## Upstream build and UI guidance
-
-The following general guidance remains applicable subject to the session-branch
-rule above and the document ownership rules (no worktree creation in Arena).
-
-Read [Building](doc/building.md) before running a build. Do not restore retired runners wholesale.
-
-## Build ownership
-
-Use CMake and presets for application builds. Do not add Python tooling or an internal build-support framework. Keep platform build definitions, presets and toolchains under `platforms/`. Shared application source remains under `src/`. Shared asset inputs live under root `assets/`; stage runtime bundles inside each platform output. Do not read runtime assets from another checkout.
-
-Kobo and Android builds use prepared `kobuild` images. Use native ARM64 Android containers on ARM64 hosts when the selected image supports them. The compiler, sysroot, Qt modules, Android SDK, NDK and JDK belong to kobuild. Fix missing SDK components in kobuild rather than building Qt modules or repairing SDKs in the application. Never compile Qt or any Qt module as part of a Kobalt build. Pin the Qt5, Qt6, Android and Linux images in `platforms/sdk-image.sh` from one and the same kobuild release tag, each by digest, and name that tag in [Building](doc/building.md).
-
-The Mac app uses an existing native Qt SDK. A Kobo cross SDK cannot replace the native Mac SDK. Application-specific dependencies such as CREngine remain application inputs, separate from Qt SDK production.
+Use `doc/fork-delta.md` and `platforms/patch-series/series.json` for current
+beta10 ownership. Always export pristine pinned upstream and apply the complete
+ordered series. Do not treat the retained dirty root source tree as that export.
+Keep format behavior in focused adapters; preserve upstream policy ownership.
+Retired features in `doc/retired-decisions.md` are closed, not a backlog. Historical
+beta9/earlier records and mixed chronological plans live in `doc/archive/`;
+never reinstate their pending tasks or superseded approvals automatically.
 
 Blaze library sources live in `src/engine/blaze/{crengine,extensions,data}` and
 are built by `dependencies/local-engine.cmake` into each platform output. Do not
@@ -154,7 +114,7 @@ subtrees (`blaze/crengine` and `blaze/extensions`), not the adapter. See
 
 Compiled third-party dependencies and their downloads live in the shared dependency cache, `build/dependency-cache/` in the main checkout, keyed by their content. It belongs to no worktree and is the only build state that worktrees share; using it is not dependence on another worktree. Application objects and all other outputs stay under each worktree's `build/`. Never edit, move or partly delete a published cache entry: change a pin, recipe or patch to get a new key. Release evaluation exports use their own cache. See [Dependency cache](doc/building.md#dependency-cache).
 
-The macOS and Linux desktop clients are tools for development and testing on desktop. They are not release versions of the app. Keep desktop builds and screenshot galleries local. CI runs the full native suite on Linux in the pinned kobuild Linux image (`platforms/ci/native-tests.sh`), and the Kobo and Android builds wait for it. Branch CI uses representative variants; tagged CI requires all variants. Release approval requires an all-variant pass (`KOBALT_TEST_ALL_VARIANTS=1`), recorded separately from representative coverage. Do not add desktop release packages or other desktop CI jobs unless the user explicitly requests them.
+The macOS and Linux desktop clients are tools for development and testing on desktop. They are not release versions of the app. Keep desktop builds and screenshot galleries local. Upstream CI can run the full native suite on Linux in the pinned kobuild Linux image (`platforms/ci/native-tests.sh`), and the Kobo and Android builds wait for it. Branch CI uses representative variants; tagged CI requires all variants. Release approval requires an all-variant pass (`KOBALT_TEST_ALL_VARIANTS=1`), recorded separately from representative coverage. Do not add desktop release packages or other desktop CI jobs unless the user explicitly requests them.
 
 Desktop development accepts Qt 6.11 or newer Qt 6 from one prepared native SDK. Linux uses the matching `linux`, `linux-light-tests`, `linux-fast-tests`, `linux-tests` and screenshot presets in `platforms/desktop/`; keep outputs under `build/desktop-linux/` and `build/screenshots/linux*/`. Desktop builds default to sensorless manual orientation; enable `KOBALT_DESKTOP_SENSORS` only when validating the real sensor adapter with a matching prepared Qt Sensors module. Mac development uses the `mac` presets. From `platforms/desktop/`, build `mac-tests` and run `ctest --preset mac` for native headless checks. Build `mac-screenshots` for the current captures in `build/screenshots/mac/`. Both paths use the same compiled desktop implementation as the app. Keep test profiles isolated and remove temporary fixture and capture state when a run ends. See [headless tests and screenshots](doc/building.md#headless-tests-and-screenshots) for scope and commands.
 
@@ -166,13 +126,15 @@ Use [Native validation](doc/validation.md) for the commands, guards, test invent
 
 When behavior changes, identify all affected test suites. Update the tests where the expected behavior changed, and run those suites before handing off.
 
-Use [Release evaluation](doc/release-evaluation.md) to compare a candidate with a baseline: `cmake -DRECORD_BASELINE=ON -P platforms/eval/run.cmake` on the baseline, `cmake -P platforms/eval/run.cmake` on the candidate, then `cmake -P platforms/eval/compare.cmake`. The quick profile is the default; `-DPROFILE=release` runs the full suite and gallery. Keep these scripts thin: they call the presets and the performance mode, and they never replace them. End-to-end performance scenarios live only in `platforms/eval/scenarios.json` and run through the built-in scenario player on every platform; add a scenario there, not as C++ test code. The player is compiled only into the test executable and into evaluation packages (`build.sh qt5-eval` or `qt6-eval`), never into release packages. Device timings come from an evaluation package on a Kobo, collected with `platforms/kobo/install-eval.cmake` and `collect-eval.cmake` or through an external runner passed with `DEVICE_RUNNER`. Keep that contract generic: everything must also work without a private runner. Never re-record a baseline to make a report pass. Real-device runs kept for comparing devices live in `platforms/eval/devices/`; see [Device benchmarks](doc/device-benchmarks.md).
+Use [Release evaluation](doc/release-evaluation.md) to compare a candidate with a baseline: `cmake -DRECORD_BASELINE=ON -P platforms/eval/run.cmake` on the baseline, `cmake -P platforms/eval/run.cmake` on the candidate, then `cmake -P platforms/eval/compare.cmake`. The quick profile is the default; `-DPROFILE=release` runs the full suite and gallery. Keep these scripts thin: they call the presets and the performance mode, and they never replace them. End-to-end performance scenarios live only in `platforms/eval/scenarios.json` and run through the built-in scenario player on every platform; add a scenario there, not as C++ test code. The player is compiled only into the test executable and into evaluation packages (`build.sh qt5-eval` or `qt6-eval`), never into release packages. Device timings come from an evaluation package on a Kobo, collected with `platforms/kobo/install-eval.cmake` and `collect-eval.cmake` or through an external runner passed with `DEVICE_RUNNER`. Keep that contract generic: everything must also work without a private runner. Never re-record a baseline to make a report pass. Real-device runs kept for comparing devices live in `platforms/eval/devices/`; see [Device benchmarks](doc/archive/pre-beta10/doc/device-benchmarks.md).
 
 Only the performance evaluation needs a quiet machine. It holds a lock that all worktrees share, waits for running Kobo builds before it measures, and makes new Kobo builds wait. Kobo build containers use at most `KOBALT_DOCKER_CPUS` CPUs. Do not lower the priority of the native tests or the evaluation. See [Machine load](doc/release-evaluation.md#machine-load).
 
 Flag suboptimal approaches before extending them. Identify duplicated build logic, application-side SDK workarounds, dependence on an old worktree, unnecessary rebuilds and unclear ownership. Explain the issue and propose a simpler approach.
 
-Direct Kobo builds enable verbose diagnostics by default; tagged CI release builds explicitly disable them. Branch, nightly and interim CI builds retain verbose diagnostics. `KOBALT_VERBOSE_DIAGNOSTICS=OFF` selects release logging for a direct build. Kobo diagnostic packages always enable verbose diagnostics and use the `qt5-diagnostic` and `qt6-diagnostic` presets. See [page-turn diagnostics](doc/validation/diagnostics.md#page-turn-diagnostics) for opt-in markers, event meanings and timing limits. They use the regular reader without the evaluation player.
+The current full-series Qt5 package uses KOBALT_VERBOSE_DIAGNOSTICS=OFF so the Debug
+checkbox can persistently switch detailed recording. OFF retains compact warning/error logs.
+Direct Kobo builds otherwise enable verbose diagnostics by default; tagged CI release builds explicitly disable them. Branch, nightly and interim CI builds retain verbose diagnostics. `KOBALT_VERBOSE_DIAGNOSTICS=OFF` selects release logging for a direct build. Kobo diagnostic packages always enable verbose diagnostics and use the `qt5-diagnostic` and `qt6-diagnostic` presets. See [page-turn diagnostics](doc/validation/diagnostics.md#page-turn-diagnostics) for opt-in markers, event meanings and timing limits. They use the regular reader without the evaluation player.
 
 Do not record fixed test, case, assertion or screenshot totals in documentation or these instructions. Describe coverage and verification commands instead. Use `ctest --preset mac -N`, with optional `-L` or `-R` filters, for the current test inventory. Keep meaningful fixture sizes, limits and measured durations.
 

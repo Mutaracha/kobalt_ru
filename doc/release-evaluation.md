@@ -200,7 +200,7 @@ If a sample fails with "Nickel did not start a sync", Nickel refused the sync, f
 
 ## Device reference
 
-`platforms/eval/devices/` keeps benchmark runs from real devices as a reference across devices. [Device benchmarks](device-benchmarks.md) explains the files and compares the devices.
+`platforms/eval/devices/` keeps benchmark runs from real devices as a reference across devices. [Device benchmarks](archive/pre-beta10/doc/device-benchmarks.md) explains the files and compares the devices.
 
 ## Sleep persistence benchmark
 

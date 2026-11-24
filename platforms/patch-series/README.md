@@ -5,6 +5,10 @@
 Последующий патч вправе изменять те же файлы и использовать код предыдущего.
 Деление нужно для review, адаптации и удаления заменённых upstream изменений.
 
+Текущие binary/CI/device acceptance: [журнал](../../doc/reports/patch-series/README.md).
+Порядок/hashes — series.json; ранние validation entries в нём являются историей
+этапа, а не актуальным статусом всего runtime.
+
 ## Базы
 
 - Целевой upstream beta10: `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`.
@@ -26,9 +30,11 @@
 | 030 | Комиксы: effective geometry, OPF center metadata, ColumnView spread geometry | Native + Qt5/package/qemu refresh CI PASS |
 | 031 | Комиксы: EngineDocument/source/render/cache/preview и synthetic fixtures | Native + Qt5 CI PASS |
 | 032 | Комиксы: appearance/session/UI и graphics refresh | Native/UI + Qt5/package/qemu refresh CI PASS |
-| 040 | Согласованные reader toolbar/навигация/presentation; только отсутствующее upstream | План |
-| 050 | Оставшиеся согласованные About/brand/UI/annotations/locale hooks | План; не дублировать 010 |
-| 060 | Итоговые CI/package/provenance для полной серии | План |
+| 033 | FB2 session parsed cache lifecycle | CI PASS; device сохранение/reuse проверено в последних циклах |
+| 034 | Эксперимент холодного FB2 startup prefix + background full model | CI PASS; speed/count подтверждены, расширенная проверка pending |
+| 040 | Согласованные reader controls/toolbar/swipe | Реализовано, CI PASS |
+| 050 | About/brand/UI/annotations/locale hooks | Реализовано, CI PASS; eafb6161 UI device pending |
+| 060 | Полные CI/package/provenance | Реализовано, CI PASS |
 
 Внутри каждого функционального патча находятся его build/source/test registration
 и тесты; нельзя откладывать необходимые CMake-регистрации до 060.

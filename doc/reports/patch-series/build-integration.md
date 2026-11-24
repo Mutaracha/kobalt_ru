@@ -1,5 +1,8 @@
 # 060 — complete ordered series packaging
 
+> Поэтапный отчёт: статусы относятся к указанному runtime. Текущее состояние и
+> пакет — [сводный журнал](README.md), действующие проверки — [beta10](../../validation/beta10-device.md).
+
 Status: **done / ready in CI; hardware acceptance pending**.
 Final build source: `df8e910a714e45132ad430d88fcda30b46acd0ee`.
 [Final CI 45378133723](https://github.com/Mutaracha/kobalt_ru/actions/runs/45378133723):

@@ -1,3 +1,6 @@
+> Карта входной дельты beta9 → beta10, не действующий план переноса.
+> Текущая реализация и очередность — [план](../../../FB2_FORK_PLAN.md) и полная ordered серия.
+
 # Карта доработок форка: beta9 → beta10
 
 ## Зафиксированные базы и полнота
@@ -120,7 +123,7 @@ byte-identical beta9. Исключение whole_book_failed больше не �
 ## Что НЕ является доработкой для сохранения
 
 - Fork progress renderer, chapter ticks, position/Top setting удалены. Нижняя on/off полоса и header/footer model — upstream beta9. Не возвращать старую модификацию из history или сохранённого `progress_top` в пользовательских preferences.
-- EPUB Hybrid algorithms — upstream-owned. Проверенная цепочка совпадает с beta9; симптом `~` после полного расчёта deferred до beta10. [Точный отчёт и границы вывода](../beta9-hybrid-counter.md). Это не доказательство работы/неработы чистого upstream на устройстве.
+- EPUB Hybrid algorithms — upstream-owned. Проверенная цепочка совпадает с beta9; симптом `~` после полного расчёта deferred до beta10. [Точный отчёт и границы вывода](../../archive/pre-beta10/doc/reports/beta9-hybrid-counter.md). Это не доказательство работы/неработы чистого upstream на устройстве.
 - Восстановленные quiet/lazy Settings/Reader/BookStatus/percentages/font loader/KOSync/lifecycle consumers не переносить как собственные альтернативные реализации. Их неизменённые файлы входят в take-upstream.
 - Отменённая page-count/time-to-end menu strip, quiet/frontlight diagnostics, FB2 Hybrid и собственный freeze fix не включать в перенос. Исторический TODO не является действующим требованием.
 

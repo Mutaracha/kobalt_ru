@@ -1,3 +1,6 @@
+> Fork beta10: current binary/device checks are in [beta10-device](validation/beta10-device.md).
+> Commands below describe general upstream validation; focused CI is not a full-suite pass.
+
 # Native validation
 
 Use a prepared native Qt 6.11 or newer Qt 6 SDK. Configure once as described in [Building](building.md). The examples below use Mac; Linux has corresponding `linux` presets. Desktop defaults to sensorless orientation. Enable `KOBALT_DESKTOP_SENSORS` for sensor lock/debounce and borrowed-sensor handoff checks; the default suite retains manual rotation and sensorless lifecycle assertions. Run the commands below from `platforms/desktop/`. They use this checkout's code, assets and incremental cache. No device, firmware, Python or private service is required.
