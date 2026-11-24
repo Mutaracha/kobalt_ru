@@ -87,15 +87,50 @@ jobs:
             echo "::error::$message"
           fi
           exit "$result"
+      - name: Replay archived Accurate FB2 sources with available Fira fixture
+        if: matrix.sdk == 'linux'
+        run: |
+          python3 - <<'PYCODE'
+          import json, zipfile, shutil
+          from pathlib import Path
+          root = Path('build/prepared-prefix/build/fb2-replay')
+          root.mkdir(parents=True, exist_ok=True)
+          with zipfile.ZipFile('test & diagnostic/FB2-034-test-inputs.zip') as z:
+              for name in ('034-1-ACCURATE.fb2', '034-2-ACCURATE.fb2'):
+                  (root / name).write_bytes(z.read(name))
+          with zipfile.ZipFile('test & diagnostic/1da4445c/diagnostics.zip') as z:
+              state = json.loads(z.read('state.json'))
+          keys = ('font_face', 'font_pixels', 'font_weight', 'font_optical_size', 'weight_steps',
+                  'line_spacing', 'line_spacing_version', 'reading_ppi', 'word_spacing',
+                  'hyphenation', 'text_alignment', 'margin_pixels', 'top_margin_pixels',
+                  'bottom_margin_pixels', 'rendering_mode', 'vertical_justification',
+                  'vertical_spacing_scope', 'paragraph_indent', 'paragraph_spacing',
+                  'inpage_footnotes', 'normalize_page_margins', 'reduce_chapter_spacing')
+          settings = {k: state.get(k, state.get('display_settings', {}).get(k)) for k in keys}
+          settings = {k: v for k, v in settings.items() if v is not None}
+          (root / 'settings.json').write_text(json.dumps(settings))
+          shutil.copytree('tests/fixtures/fonts/fira-sans', root / 'fonts', dirs_exist_ok=True)
+          PYCODE
+          root="$PWD/build/prepared-prefix"
+          image=$(sh "$root/platforms/sdk-image.sh" linux)
+          for book in 1 2; do
+            docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -e QT_QPA_PLATFORM=offscreen \
+              -e KOBALT_FB2_REPLAY_SOURCE="/work/build/fb2-replay/034-$book-ACCURATE.fb2" \
+              -e KOBALT_FB2_REPLAY_SETTINGS=/work/build/fb2-replay/settings.json \
+              -e KOBALT_FB2_REPLAY_FONTS=/work/build/fb2-replay/fonts \
+              -e KOBALT_CACHE_PROBE_OUTPUT="/work/build/cache-probe/A$book" \
+              -v "$root:/work" -w /work "$image" \
+              /work/build/desktop-linux/kobalt-fb2-cache-session-tests
+          done
       - name: Report host cache probe evidence
         if: always() && matrix.sdk == 'linux'
         run: |
           python3 - <<'PYCODE'
           import json
           from pathlib import Path
-          for path in sorted(Path('build/prepared-prefix/build/cache-probe').glob('*.json')):
+          for path in sorted(Path('build/prepared-prefix/build/cache-probe').rglob('*.json')):
               result = json.loads(path.read_text())
-              summary = json.dumps({'label': result['label'], 'layout': result['stats'].get('model_layout_check'), 'trace': result['hash_trace']}, ensure_ascii=True)
+              summary = json.dumps({'label': str(path.relative_to('build/prepared-prefix/build/cache-probe')), 'layout': result['stats'].get('model_layout_check'), 'trace': result['hash_trace']}, ensure_ascii=True)
               summary = summary.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
               print('::notice title=FB2 process cache probe::' + summary)
           PYCODE

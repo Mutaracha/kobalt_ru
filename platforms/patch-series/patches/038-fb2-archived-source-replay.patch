@@ -1,0 +1,73 @@
+diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.cpp
+--- a/tests/model/fb2_cache_session.cpp
++++ b/tests/model/fb2_cache_session.cpp
+@@ -72,7 +72,11 @@
+ {
+     QJsonObject state;
+     {
+-        ReaderSession reader(test::readerFonts(), test::readerPlaceholder());
++        auto fonts = test::readerFonts();
++        const auto replayFonts = QString::fromLocal8Bit(qgetenv("KOBALT_FB2_REPLAY_FONTS"));
++        if (!replayFonts.isEmpty())
++            fonts = engineFontInputs(test::readerAssets(), {}, replayFonts);
++        ReaderSession reader(fonts, test::readerPlaceholder());
+         auto lease = std::make_shared<SourceLease>();
+         OpenRequest request;
+         request.identity = request.path = path;
+@@ -127,13 +131,18 @@
+         if (arguments.size() == 6 && arguments[1] == "--cache-probe") {
+             const auto root = arguments[2], label = arguments[3];
+             const bool cold = label == "cold";
+-            auto saved = cold ? QJsonObject() : readJson(root + "/state.json");
++            const auto replaySettings = QString::fromLocal8Bit(qgetenv("KOBALT_FB2_REPLAY_SETTINGS"));
++            auto saved = cold ? (replaySettings.isEmpty() ? QJsonObject() : readJson(replaySettings))
++                              : readJson(root + "/state.json");
+             HashTrace trace;
+             QJsonObject stats;
+             const auto state = cycle(root + "/book.fb2", root + "/parsed", saved,
+-                                     !cold, &stats, {arguments[4].toInt(), 800});
++                                     !cold, &stats, {arguments[4].toInt(),
++                                         replaySettings.isEmpty() ? 800 : 1613});
+             QJsonObject result;
+             result["label"] = label;
++            result["font_face"] = state.value("font_face");
++            result["font_pixels"] = state.value("font_pixels");
+             result["stats"] = stats;
+             QJsonArray lines;
+             for (const auto &line : trace.lines) lines.append(line);
+@@ -158,6 +167,14 @@
+         // 64 KiB lookup threshold. A disabled cache during Render must not
+         // permanently poison the later close-time save.
+         book += "</section></body><!--" + QByteArray(2 * 1024 * 1024, 'x') + "--></FictionBook>";
++        const auto replaySource = QString::fromLocal8Bit(qgetenv("KOBALT_FB2_REPLAY_SOURCE"));
++        const bool replay = !replaySource.isEmpty();
++        if (replay) {
++            QFile source(replaySource);
++            require(source.open(QIODevice::ReadOnly), "open archived replay source");
++            book = source.readAll();
++            require(!book.isEmpty(), "empty replay source");
++        }
+         const auto write = [&] {
+             QFile file(path);
+             require(file.open(QIODevice::WriteOnly) && file.write(book) == book.size(), "write session fixture");
+@@ -172,7 +189,7 @@
+             const auto output = evidence + '/' + label + ".json";
+             QProcess process;
+             process.start(app.applicationFilePath(), {"--cache-probe", root.path(), label,
+-                                                       label == "width" ? "620" : "600", output});
++                                                       label == "width" ? (replay ? "1284" : "620") : (replay ? "1264" : "600"), output});
+             require(process.waitForStarted(10000) && process.waitForFinished(90000),
+                     "cache probe process timeout");
+             if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0)
+@@ -188,6 +205,11 @@
+                 require(check.value("reasons").toInt() & 16,
+                         "changed width must not reuse incompatible page geometry");
+         }
++        if (replay) {
++            std::puts("PASS: actual-source separate-process cache observation and width isolation");
++            app.quit();
++            return;
++        }
+         // Isolate the existing same-process cold/warm/source-mutation checks.
+         require(QDir(cache).removeRecursively(), "clear only the temporary test cache");
+         auto saved = cycle(path, cache, {}, false);
