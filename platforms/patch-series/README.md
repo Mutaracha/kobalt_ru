@@ -155,3 +155,9 @@ Workflow `Ordered patch series` теперь сохраняет проверен
 Qt5 build/check-package и qemu refresh PASS. Пакет **Beta10-series-prefix-qt5**,
 artifact `14904792738`, содержит 010–040 с toolbar dark/comics.
 Аппаратная проверка toolbar ещё не выполнена. Следующий патч — 050 presentation.
+
+
+050 — последний функциональный номер текущего плана, но не последний этап:
+после него остаётся 060 packaging/provenance/full-stack CI.
+[Подготовка 050 и остаток после 010–040](../../doc/reports/patch-series/presentation-preparation.md).
+050 пока не подготовлен как runtime patch; этот аудит не меняет тестовый пакет.

@@ -1,3 +1,21 @@
+## Текущая очередь ordered beta10 series
+
+- 010–040: done по CI; 040 проверен на `87530065`, CI45361473628.
+  Аппаратная проверка toolbar отдельно pending.
+- 050-fork-presentation: **in progress**, подготовлен аудит остатка после 010–040;
+  runtime patch ещё не сформирован, CI050 не запускался. Это последний
+  функциональный номер текущего плана, включая ещё отсутствующий Debug language
+  entry/markers/startup resolution, а не только косметику.
+- Следующее действие: перенос языка/CLDR и Debug entry с тестами, затем
+  annotation/sleep/presets/return-title/About hunks в одной ordered 050.
+  [Границы и проверки 050](doc/reports/patch-series/presentation-preparation.md),
+  [Git tree OID остатка](doc/reports/patch-series/presentation-residual.tsv).
+- 060-build-integration: planned; итоговая упаковка/provenance/full-stack CI,
+  не место для отложенных функциональных sources/tests.
+
+Ниже — сохранённые записи прежних этапов retained fork; их pending-статусы
+не заменяют текущую очередь ordered series выше.
+
 ## Текущая проверка Debug rail / языка
 
 Исправление Cyrillic ink box для stacked icon Button (боковая вкладка Debug),
