@@ -1,5 +1,5 @@
 diff --git a/assets/en.strings b/assets/en.strings
-index 5dcfb599a4d854c3cd2f969928af99a41c210923..5c5cf4bf6d7a42198303a51f1c62c53aecfa8827 100644
+index 5dcfb599a4d854c3cd2f969928af99a41c210923..6b6209880eb7584dd5dc6e873883fb3760abdda1 100644
 --- a/assets/en.strings
 +++ b/assets/en.strings
 @@ -190,7 +190,7 @@
@@ -29,7 +29,7 @@ index 5dcfb599a4d854c3cd2f969928af99a41c210923..5c5cf4bf6d7a42198303a51f1c62c53a
  "error.saved_data_unavailable" = "Saved data could not be loaded. The original files have been preserved.";
  "marks.sort_button" = "Sort";
  "marks.sort_newest" = "Newest first";
-@@ -2131,3 +2131,47 @@
+@@ -2131,3 +2131,49 @@
  "features.comics" = "Comics mode toggle";
  
  "features.comics_description" = "Hides the comics mode toggle in the reading menu. The current reading mode is preserved.";
@@ -64,6 +64,8 @@ index 5dcfb599a4d854c3cd2f969928af99a41c210923..5c5cf4bf6d7a42198303a51f1c62c53a
 +
 +"activity.hour_unit_many" = "hours";
 +
++"reader.link_dictionary" = "Dictionary";
++
 +"about.fork" = "%1";
 +
 +"about.fork_build" = "%1 · %2";
@@ -78,7 +80,7 @@ index 5dcfb599a4d854c3cd2f969928af99a41c210923..5c5cf4bf6d7a42198303a51f1c62c53a
 +
 +"activity.hour_unit_one" = "hour";
 diff --git a/assets/ru.strings b/assets/ru.strings
-index d32e1abcbbe2cfcd4d58fbf3984e5da7a8940497..e47bc0d96029433cd617c375e1e2bf508df80df0 100644
+index d32e1abcbbe2cfcd4d58fbf3984e5da7a8940497..5f3bf247202036a2f82d4e8d19f53d80f235b857 100644
 --- a/assets/ru.strings
 +++ b/assets/ru.strings
 @@ -213,7 +213,7 @@
@@ -108,7 +110,7 @@ index d32e1abcbbe2cfcd4d58fbf3984e5da7a8940497..e47bc0d96029433cd617c375e1e2bf50
  "library.cover_heading" = "Размер обложки";
  "library.cover_large" = "Большой";
  "library.cover_medium" = "Средний";
-@@ -1819,3 +1819,47 @@
+@@ -1819,3 +1819,49 @@
  "features.comics" = "Переключатель режима комиксов";
  
  "features.comics_description" = "Скрывает переключатель режима комиксов в меню чтения. Текущий режим чтения сохраняется.";
@@ -142,6 +144,8 @@ index d32e1abcbbe2cfcd4d58fbf3984e5da7a8940497..e47bc0d96029433cd617c375e1e2bf50
 +"activity.hour_unit_few" = "часа";
 +
 +"activity.hour_unit_many" = "часов";
++
++"reader.link_dictionary" = "Словарь";
 +
 +"about.fork" = "%1";
 +
