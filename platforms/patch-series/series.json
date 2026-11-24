@@ -87,9 +87,9 @@
       "id": "036-fb2-cache-layout-observation",
       "status": "ready",
       "path": "platforms/patch-series/patches/036-fb2-cache-layout-observation.patch",
-      "sha256": "d5ee2d3375d34683f4461c43fd412510fd52c7f3ce3eb1a35dfc0d4187ab8f86",
+      "sha256": "1090b6a8e0804f1b29085257f8d1fb290b44208cdf5e6a154e620bc2553d8413",
       "scope": "Observe render-context rejection reasons and saved/current operands without changing compatibility decisions, cache format or preload policy",
-      "validation": "Full apply and native/Qt5 CI pending; FB2 resource-session regression checks observation consistency. No speed or device acceptance claim."
+      "validation": "CI45489596816: series and native regressions PASS; Qt5 initializer-list incompatibility fixed using existing qt::object helper. Full CI rerun pending."
     },
     {
       "id": "040-reader-controls",

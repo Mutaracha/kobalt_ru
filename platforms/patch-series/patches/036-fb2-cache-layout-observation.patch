@@ -8,7 +8,7 @@ diff --git a/src/engine/blaze/adapter/reader_source.cpp b/src/engine/blaze/adapt
 +    document->koblazeResetRenderCheck();
      engine_->Render();
 +    const auto &renderCheck = document->koblazeRenderCheck();
-+    const QJsonObject layoutCheck {
++    const auto layoutCheck = qt::object({
 +        { "checks", renderCheck.checks }, { "rejected", renderCheck.rejected },
 +        { "reasons", renderCheck.reasons }, { "policy_match", sameRenderingPolicy },
 +        { "style", double(renderCheck.style) }, { "saved_style", double(renderCheck.savedStyle) },
@@ -16,7 +16,7 @@ diff --git a/src/engine/blaze/adapter/reader_source.cpp b/src/engine/blaze/adapt
 +        { "flags", double(renderCheck.flags) }, { "saved_flags", double(renderCheck.savedFlags) },
 +        { "width", renderCheck.width }, { "saved_width", renderCheck.savedWidth },
 +        { "height", renderCheck.height }, { "saved_height", renderCheck.savedHeight }
-+    };
++    });
 +    openingTimes_["model_layout_check"] = layoutCheck;
 +    if (loadingFb2)
 +        diagnostic("fb2-cache-layout-check", {
