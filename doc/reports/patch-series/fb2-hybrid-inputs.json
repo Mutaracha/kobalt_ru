@@ -1,0 +1,60 @@
+[
+  {
+    "file": "1. Виртуальный свет.fb2",
+    "bytes": 1104399,
+    "sha256": "9a3ea3f98a29523e96cf058b4ced846fb674cad0c18ccd56b2e2953d5031dea8",
+    "encoding": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<FictionBook xmlns:l=\"http://www.w3.org/1999/xlink\" xmlns=\"ht",
+    "elements": 3730,
+    "sections": 86,
+    "paragraphs": 3374,
+    "images": 1,
+    "links": 46,
+    "bodies": [
+      {
+        "name": "СОДЕРЖАНИЕ",
+        "characters": 558266,
+        "sections": 40,
+        "top_sections": 40,
+        "max_paragraph": 2945
+      },
+      {
+        "name": "notes",
+        "characters": 6066,
+        "sections": 46,
+        "top_sections": 46,
+        "max_paragraph": 422
+      }
+    ],
+    "binary_count": 1,
+    "base64_characters": 44464
+  },
+  {
+    "file": "Sorokin_Norma-Tridcataya-lyubov-Mariny-Goluboe-salo-Den-oprichnika-Saharnyy-Kreml.3nbKGQ.593957.fb2",
+    "bytes": 4097199,
+    "sha256": "b9742fa797a1736b9a4adb4132f137e06445a8f1fc000c41dc46ca3d21a22c90",
+    "encoding": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<FictionBook xmlns=\"http://www.gribuser.ru/xml/fictionbook/2.",
+    "elements": 22216,
+    "sections": 73,
+    "paragraphs": 19019,
+    "images": 2,
+    "links": 35,
+    "bodies": [
+      {
+        "name": "",
+        "characters": 2138635,
+        "sections": 38,
+        "top_sections": 5,
+        "max_paragraph": 67152
+      },
+      {
+        "name": "notes",
+        "characters": 2590,
+        "sections": 35,
+        "top_sections": 35,
+        "max_paragraph": 142
+      }
+    ],
+    "binary_count": 2,
+    "base64_characters": 143761
+  }
+]
