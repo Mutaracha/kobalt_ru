@@ -1,5 +1,5 @@
 diff --git a/assets/en.strings b/assets/en.strings
-index 5dcfb599a4d854c3cd2f969928af99a41c210923..d15d8013834f8ae5783154a816cb50b09b5040ed 100644
+index 5dcfb599a4d854c3cd2f969928af99a41c210923..5c5cf4bf6d7a42198303a51f1c62c53aecfa8827 100644
 --- a/assets/en.strings
 +++ b/assets/en.strings
 @@ -190,7 +190,7 @@
@@ -11,6 +11,15 @@ index 5dcfb599a4d854c3cd2f969928af99a41c210923..d15d8013834f8ae5783154a816cb50b0
  "library.search" = "Search library";
  "library.search_placeholder" = "Title, author or series";
  "library.close_search" = "Close search";
+@@ -1186,7 +1186,7 @@
+ "acknowledgments.projects" = "%1 projects";
+ /* Arguments: %1 */
+ "chapter_contents.summary" = "Contents · %1 chapters";
+-"chapter_contents.summary_one" = "Contents · 1 chapter";
++"chapter_contents.summary_one" = "Contents · %1 chapter";
+ "chapter_contents.page" = "Page";
+ "chapter_contents.location" = "Location";
+ "chapter_contents.chapters" = "Chapters";
 @@ -1784,7 +1784,7 @@
  "settings.chapter_spread_description" = "When a chapter starts on a new page, show it in the first column.";
  
@@ -20,7 +29,7 @@ index 5dcfb599a4d854c3cd2f969928af99a41c210923..d15d8013834f8ae5783154a816cb50b0
  "error.saved_data_unavailable" = "Saved data could not be loaded. The original files have been preserved.";
  "marks.sort_button" = "Sort";
  "marks.sort_newest" = "Newest first";
-@@ -2131,3 +2131,33 @@
+@@ -2131,3 +2131,47 @@
  "features.comics" = "Comics mode toggle";
  
  "features.comics_description" = "Hides the comics mode toggle in the reading menu. The current reading mode is preserved.";
@@ -54,8 +63,22 @@ index 5dcfb599a4d854c3cd2f969928af99a41c210923..d15d8013834f8ae5783154a816cb50b0
 +"activity.hour_unit_few" = "hours";
 +
 +"activity.hour_unit_many" = "hours";
++
++"about.fork" = "%1";
++
++"about.fork_build" = "%1 · %2";
++
++"annotations.color_section" = "Color";
++
++"annotations.style_section" = "Style";
++
++"annotations.actions_section" = "Actions";
++
++"activity.book_unit_one" = "book";
++
++"activity.hour_unit_one" = "hour";
 diff --git a/assets/ru.strings b/assets/ru.strings
-index d32e1abcbbe2cfcd4d58fbf3984e5da7a8940497..c97538cb4bfcc43f8f4d20d2e3854ed8e5529f87 100644
+index d32e1abcbbe2cfcd4d58fbf3984e5da7a8940497..e47bc0d96029433cd617c375e1e2bf508df80df0 100644
 --- a/assets/ru.strings
 +++ b/assets/ru.strings
 @@ -213,7 +213,7 @@
@@ -67,6 +90,15 @@ index d32e1abcbbe2cfcd4d58fbf3984e5da7a8940497..c97538cb4bfcc43f8f4d20d2e3854ed8
  "annotations.tab" = "Аннотации";
  "annotations.tap_boundary" = "Коснитесь текста или потяните маркер для корректировки.";
  "annotations.tap_end" = "Коснитесь другого слова или потяните любой маркер.";
+@@ -369,7 +369,7 @@
+ "chapter_contents.reset_start" = "Восстановить исходное начало";
+ "chapter_contents.start" = "Начало";
+ "chapter_contents.summary" = "Содержание · глав: %1";
+-"chapter_contents.summary_one" = "Содержание · 1 глава";
++"chapter_contents.summary_one" = "Содержание · %1 глава";
+ "chapter_contents.view_landmarks" = "Посмотреть ориентиры книги";
+ "chapter_graph.book_progress" = "Прогресс книги: %1";
+ "chapter_graph.chapter_lengths_are_unavailable" = "Длины глав недоступны";
 @@ -933,7 +933,7 @@
  "library.close_search" = "Закрыть поиск";
  "library.continue_reading" = "Продолжить чтение";
@@ -76,7 +108,7 @@ index d32e1abcbbe2cfcd4d58fbf3984e5da7a8940497..c97538cb4bfcc43f8f4d20d2e3854ed8
  "library.cover_heading" = "Размер обложки";
  "library.cover_large" = "Большой";
  "library.cover_medium" = "Средний";
-@@ -1819,3 +1819,33 @@
+@@ -1819,3 +1819,47 @@
  "features.comics" = "Переключатель режима комиксов";
  
  "features.comics_description" = "Скрывает переключатель режима комиксов в меню чтения. Текущий режим чтения сохраняется.";
@@ -110,6 +142,33 @@ index d32e1abcbbe2cfcd4d58fbf3984e5da7a8940497..c97538cb4bfcc43f8f4d20d2e3854ed8
 +"activity.hour_unit_few" = "часа";
 +
 +"activity.hour_unit_many" = "часов";
++
++"about.fork" = "%1";
++
++"about.fork_build" = "%1 · %2";
++
++"annotations.color_section" = "Цвет";
++
++"annotations.style_section" = "Стиль";
++
++"annotations.actions_section" = "Действия";
++
++"activity.book_unit_one" = "книга";
++
++"activity.hour_unit_one" = "час";
+diff --git a/platforms/android/CMakeLists.txt b/platforms/android/CMakeLists.txt
+index 69a70d14fd1191a95069f669d45eee8ab07e8ae4..9fda861d871fff45d472b38f100882b26a20ebad 100644
+--- a/platforms/android/CMakeLists.txt
++++ b/platforms/android/CMakeLists.txt
+@@ -51,6 +51,8 @@ endforeach()
+ include("${KOBALT_ROOT}/platforms/shared-inputs.cmake")
+ set(KOBALT_COMMIT "" CACHE STRING "Source commit, passed by the container launcher")
+ option(KOBALT_COMMIT_MODIFIED "Source has uncommitted changes" OFF)
++set(KOBALT_FORK_NAME "" CACHE STRING "Fork identifier; empty hides About fork row")
++string(TIMESTAMP KOBALT_BUILD_TIME "%Y-%m-%d %H:%M UTC" UTC)
+ configure_file("${source}/support/build_info.h.in" build_info.h @ONLY)
+ 
+ file(GLOB_RECURSE shared CONFIGURE_DEPENDS "${source}/*.cpp" "${source}/*.h")
 diff --git a/platforms/android/main.cpp b/platforms/android/main.cpp
 index cc88d2bf4e0790638088f9ac368dfcfe3637cd75..6b774699f4170b9b6f8f12bf41a79ff470c4974b 100644
 --- a/platforms/android/main.cpp
@@ -129,7 +188,7 @@ index cc88d2bf4e0790638088f9ac368dfcfe3637cd75..6b774699f4170b9b6f8f12bf41a79ff4
      app.setOrganizationName("Kobalt");
      app.setQuitOnLastWindowClosed(false);
 diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
-index 839f588fe2cbd11c32d545a5c1fd4dfb2e1bb680..3af7dfb4ab89e629e138a1e271ef7406dec94b3c 100644
+index 839f588fe2cbd11c32d545a5c1fd4dfb2e1bb680..d50a02972dbe724831d07d49632915ea2bcdf254 100644
 --- a/platforms/desktop/CMakeLists.txt
 +++ b/platforms/desktop/CMakeLists.txt
 @@ -107,6 +107,7 @@ add_library(kobalt-core OBJECT ${shared} display.cpp ../standalone/native_image.
@@ -153,7 +212,7 @@ index 839f588fe2cbd11c32d545a5c1fd4dfb2e1bb680..3af7dfb4ab89e629e138a1e271ef7406
          css_class_index compiled_hyphenation fallback_styles svg_limits image_proportions figure_layout whitespace links search word_selection reader publisher_markup local_reader document_word_count document_cache alternate_layout)
      kobalt_regressions(component ui acknowledgments kosync_ui comics_ui reader_controls)
 -    kobalt_regressions(component ru_control_ui)
-+    kobalt_regressions(component ru_control_ui debug_language_ui)
++    kobalt_regressions(component ru_control_ui debug_language_ui fork_presentation)
      target_sources(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}/platforms/kobo/display/page_animation.cpp")
      target_include_directories(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}" "${source}")
      target_link_libraries(kobalt-ui-tests PRIVATE Qt6::GuiPrivate)
@@ -162,7 +221,7 @@ index 839f588fe2cbd11c32d545a5c1fd4dfb2e1bb680..3af7dfb4ab89e629e138a1e271ef7406
          "reading:^model[.]fb2-cache-session$"
          "reading:^engine[.](fb2-engine|comics-layout|comics)$"
 -        "settings:^component[.](ru-control-ui|comics-ui|reader-controls)$"
-+        "settings:^component[.](ru-control-ui|comics-ui|reader-controls|debug-language-ui)$"
++        "settings:^component[.](ru-control-ui|comics-ui|reader-controls|debug-language-ui|fork-presentation)$"
 +        "settings:^model[.]strings-locale$"
          "gallery:^(build\\.screenshotBooks|desktop\\.(gallery.*|phoneFrame|primaryViews))$"
          "evaluation:^(build\\.(loadLock|eval-device-outcomes)|desktop\\.(scenarioCacheRemoval|scenarioResultFile|timingEvents|fastLocateText|deviceChecks)|platform\\.scenario-sleep|lifecycle\\.benchmarkNoticeAfterRun)$"
@@ -185,6 +244,19 @@ index 0d4674e6e358099104b435eee67e02e0fc667fa3..b97ce5289cb5860195418594f7011633
      app.setApplicationName(QStringLiteral(KOBALT_PROFILE_NAME));
      app.setOrganizationName("Kobalt");
      app.setStyle("Fusion");
+diff --git a/platforms/kobo/CMakeLists.txt b/platforms/kobo/CMakeLists.txt
+index 79b65064e58a6e6b3a99d5a7aa4463bdff1e2444..02c6e12682683d768ed8155f6255b5ecc9ab6090 100644
+--- a/platforms/kobo/CMakeLists.txt
++++ b/platforms/kobo/CMakeLists.txt
+@@ -55,6 +55,8 @@ endforeach()
+ include("${KOBALT_ROOT}/platforms/shared-inputs.cmake")
+ set(KOBALT_COMMIT "" CACHE STRING "Source commit, passed by the container launcher")
+ option(KOBALT_COMMIT_MODIFIED "Source has uncommitted changes" OFF)
++set(KOBALT_FORK_NAME "" CACHE STRING "Fork identifier; empty hides About fork row")
++string(TIMESTAMP KOBALT_BUILD_TIME "%Y-%m-%d %H:%M UTC" UTC)
+ configure_file("${source}/support/build_info.h.in" build_info.h @ONLY)
+ 
+ # The source lists, compile options and definitions, which the syntax check
 diff --git a/platforms/kobo/common/reader_coordinator.cpp b/platforms/kobo/common/reader_coordinator.cpp
 index 910adb5b1de195af6cef40b8a6b2c70134af38a8..4bda858f951a488cc47ad0c57247fb1aece11887 100644
 --- a/platforms/kobo/common/reader_coordinator.cpp
@@ -205,6 +277,94 @@ index 910adb5b1de195af6cef40b8a6b2c70134af38a8..4bda858f951a488cc47ad0c57247fb1a
      // A preload that is still running gives way to the book that was tapped.
      // One that finished is the kept book in run.session.
      cancelPreload();
+diff --git a/platforms/source-info.cmake b/platforms/source-info.cmake
+index b92eb7fad2d39c6e164817c7f11b853a453c4b16..1ccda2d659360ee9e3ee883f92d177a0fef4fe3a 100644
+--- a/platforms/source-info.cmake
++++ b/platforms/source-info.cmake
+@@ -25,15 +25,18 @@ endfunction()
+ 
+ function(kobalt_build_info_header root header)
+     kobalt_source_info("${root}")
++    set(KOBALT_FORK_NAME "" CACHE STRING "Fork identifier; empty hides About fork row")
++    string(TIMESTAMP KOBALT_BUILD_TIME "%Y-%m-%d %H:%M UTC" UTC)
+     configure_file("${root}/src/support/build_info.h.in" "${header}" @ONLY)
+ endfunction()
+ 
+ function(kobalt_desktop_build_info root)
++    set(KOBALT_FORK_NAME "" CACHE STRING "Fork identifier; empty hides About fork row")
+     set(header "${CMAKE_CURRENT_BINARY_DIR}/build_info.h")
+     # The Kobo syntax check can use the header immediately after configuration.
+     kobalt_build_info_header("${root}" "${header}")
+     add_custom_target(kobalt-build-info
+-        COMMAND "${CMAKE_COMMAND}" "-DKOBALT_BUILD_INFO_HEADER=${header}"
++        COMMAND "${CMAKE_COMMAND}" "-DKOBALT_BUILD_INFO_HEADER=${header}" "-DKOBALT_FORK_NAME=${KOBALT_FORK_NAME}"
+             -P "${root}/platforms/source-info.cmake"
+         BYPRODUCTS "${header}"
+         VERBATIM)
+diff --git a/src/app/about/about_page.cpp b/src/app/about/about_page.cpp
+index 94a02c26f5b0020740fddc99b4cf823623483fe1..3d4509faa8769cbe689b64d140bb810fb5b8bacd 100644
+--- a/src/app/about/about_page.cpp
++++ b/src/app/about/about_page.cpp
+@@ -1,4 +1,5 @@
+ #include "about_page.h"
++#include "fork_about.h"
+ #include "ui/controls/buttons.h"
+ #include "ui/controls/panels.h"
+ #include "ui/controls/rows.h"
+@@ -70,6 +71,7 @@ AboutPage::AboutPage(QWidget *parent) : QWidget(parent)
+     commit->setAlignment(Qt::AlignCenter);
+     build->addWidget(commit);
+     commit->setVisible(kobaltCommit[0] != '\0');
++    reader::appendForkBuildRow(this, build, window());
+     buildRule("rrAboutBuildBottom");
+     aboutRows->addSpacing(metrics::about::sectionGap);
+     description = new ui::InterfaceLabel(strings::get("about.description"), this);
+diff --git a/src/app/about/fork_about.cpp b/src/app/about/fork_about.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..31397e2ff1d78b0853110ca7bd42bc9818985c16
+--- /dev/null
++++ b/src/app/about/fork_about.cpp
+@@ -0,0 +1,26 @@
++#include "fork_about.h"
++#include "build_info.h"
++#include "support/strings.h"
++#include "ui/controls/text.h"
++#include "ui/style/metrics.h"
++#include "ui/style/styles.h"
++#include "ui/style/theme.h"
++#include <QBoxLayout>
++
++namespace kobalt::reader {
++void appendForkBuildRow(QWidget *page, QBoxLayout *rows, QWidget *host)
++{
++    if (kobaltForkName[0] == '\0')
++        return;
++    const auto name = QString::fromLatin1(kobaltForkName);
++    const auto stamp = QString::fromLatin1(kobaltBuildTime);
++    const auto text = stamp.isEmpty() ? strings::get("about.fork").arg(name)
++                                      : strings::get("about.fork_build").arg(name, stamp);
++    auto *label = new ui::InterfaceLabel(text, page);
++    label->setObjectName("rrAboutFork");
++    label->setAlignment(Qt::AlignCenter);
++    ui::readerStyle(label, ui::styles::font(ui::metrics::about::commitText));
++    rows->addWidget(label);
++    Q_UNUSED(host);
++}
++} // namespace kobalt::reader
+diff --git a/src/app/about/fork_about.h b/src/app/about/fork_about.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..63950b938811099b619835677f24c18681a64459
+--- /dev/null
++++ b/src/app/about/fork_about.h
+@@ -0,0 +1,8 @@
++#pragma once
++class QWidget;
++class QBoxLayout;
++
++namespace kobalt::reader {
++// Append only the fork build line in the shared About page. Stock rendering stays upstream.
++void appendForkBuildRow(QWidget *page, QBoxLayout *rows, QWidget *host);
++} // namespace kobalt::reader
 diff --git a/src/app/library/library_view.cpp b/src/app/library/library_view.cpp
 index c816badcea7d8677f4b54ea92d6603a90999d389..f6cd6fcc3bb1e0c5b25191758ee883af86cdd143 100644
 --- a/src/app/library/library_view.cpp
@@ -219,6 +379,127 @@ index c816badcea7d8677f4b54ea92d6603a90999d389..f6cd6fcc3bb1e0c5b25191758ee883af
  }
  
  QString statusText(const Book &book)
+diff --git a/src/app/reader/panels/activity_view.cpp b/src/app/reader/panels/activity_view.cpp
+index c7d3e79dd44dc7954d13138ce92219ee5078f5ac..24bd1d25ad705f3d9fa03859297436ba3e857e58 100644
+--- a/src/app/reader/panels/activity_view.cpp
++++ b/src/app/reader/panels/activity_view.cpp
+@@ -108,6 +108,16 @@ QString plural(const char *one, const char *many, qint64 count)
+     return strings::get(count == 1 ? one : many).arg(count);
+ }
+ 
++// Units carry no number slot; choose CLDR without QString::arg on a bare unit.
++QString countedUnit(const char *base, qint64 count)
++{
++    QByteArray key(base);
++    key += strings::locale() == strings::Locale::Russian
++            ? strings::pluralSuffix(int(count % 100))
++            : count == 1 ? QByteArray("_one") : QByteArray("_many");
++    return strings::get(key.constData());
++}
++
+ QString authorCaption(const QString &author)
+ {
+     static const QRegularExpression lineBreak(QStringLiteral("\\s*\\R\\s*"),
+@@ -452,7 +462,7 @@ public:
+                         : QString());
+         const qint64 hours = summary.totalMilliseconds / hour;
+         if (hours >= 10)
+-            totals[0]->set(QString::number(hours), strings::get("activity.hours"),
++            totals[0]->set(QString::number(hours), countedUnit("activity.hour_unit", hours),
+                            summary.daysSince ? strings::get("activity.per_day")
+                                                        .arg(duration(summary.totalMilliseconds
+                                                                      / summary.daysSince))
+@@ -464,8 +474,7 @@ public:
+                                                                   / summary.daysSince))
+                                           : QString());
+         totals[1]->set(QString::number(summary.finished),
+-                       summary.finished == 1 ? strings::get("activity.book")
+-                                             : strings::get("activity.books_unit"),
++                       countedUnit("activity.book_unit", summary.finished),
+                        strings::get("activity.in_progress").arg(summary.inProgress));
+         totals[2]->set(
+                 QString::number(summary.sessions), QString(),
+@@ -721,7 +730,7 @@ public:
+             for (; it != values.cend() && it.key() <= last; ++it)
+                 read += level(it.value()) > 0;
+             readingDays += read;
+-            entries << chartValue(strings::formatLocale().monthName(start.month()),
++            entries << chartValue(strings::formatLocale().standaloneMonthName(start.month()),
+                                   plural("activity.day_read", "activity.days_read_count", read));
+             start = last.addDays(1);
+         }
+@@ -770,7 +779,7 @@ protected:
+             const int week = int(start.daysTo(QDate(today.year(), month, 1))) / 7;
+             drawCaption(painter,
+                         QRect(left + week * step, top + 7 * step + ui::px(4), step * 4, labels),
+-                        strings::formatLocale().monthName(month, QLocale::ShortFormat).left(1),
++                        strings::formatLocale().standaloneMonthName(month, QLocale::ShortFormat).left(1),
+                         Qt::AlignLeft | Qt::AlignTop, ui::noteColor(this),
+                         chrome::captionLabelText);
+         }
+@@ -887,14 +896,14 @@ private:
+         const bool thisMonth =
+                 shown.year() == summary.today.year() && shown.month() == summary.today.month();
+         month->caption->setText(thisMonth ? strings::get("activity.this_month")
+-                                          : strings::formatLocale().monthName(shown.month()));
++                                          : strings::formatLocale().standaloneMonthName(shown.month()));
+         setDuration(month, total,
+                     strings::get(days == 1 ? "activity.days_of_one" : "activity.days_of")
+                             .arg(read)
+                             .arg(days));
+         grid->setMonth(shown, summary.days, summary.today, summary.since);
+         months->setPage(monthIndex(shown), monthIndex(summary.today) + 1,
+-                        strings::formatLocale().toString(shown, QStringLiteral("MMMM yyyy")), false, {}, true);
++                        strings::formatLocale().standaloneMonthName(shown.month()) + QStringLiteral(" ") + QString::number(shown.year()), false, {}, true);
+     }
+ 
+     void arrange()
+@@ -1309,7 +1318,7 @@ private:
+                     auto *header = bands[bandsUsed++];
+                     setBand(header,
+                             month.month.isValid()
+-                                    ? strings::formatLocale().toString(month.month, QStringLiteral("MMMM yyyy"))
++                                    ? strings::formatLocale().standaloneMonthName(month.month.month()) + QStringLiteral(" ") + QString::number(month.month.year())
+                                     : strings::get("activity.hidden"),
+                             (showCopySource
+                                      ? strings::get("activity.copies_count").arg(month.books.size())
+@@ -2596,7 +2605,7 @@ public:
+             lastCell->caption->setText(strings::get("activity.last_read"));
+             const auto last = total.last ? activity::localDate(total.last) : QDate();
+             lastCell->set(last.isValid() ? QString::number(last.day()) : QString(),
+-                          last.isValid() ? strings::formatLocale().monthName(last.month(), QLocale::ShortFormat)
++                          last.isValid() ? strings::formatLocale().standaloneMonthName(last.month(), QLocale::ShortFormat)
+                                          : QString(),
+                           last.isValid() && last.year() != today.year()
+                                   ? QString::number(last.year())
+diff --git a/src/app/reader/panels/chapter_contents.cpp b/src/app/reader/panels/chapter_contents.cpp
+index 0315df1e6c581e1ca541512fbbe21fb28a94af3e..0fd41dcf116ff553ad37d2870ac5d4b0f8a26e40 100644
+--- a/src/app/reader/panels/chapter_contents.cpp
++++ b/src/app/reader/panels/chapter_contents.cpp
+@@ -529,9 +529,7 @@ void ChapterContents::redraw()
+ {
+     page = qBound(0, page, pageCount() - 1);
+     empty->setVisible(items.isEmpty());
+-    summary->setText(items.size() == 1
+-                             ? strings::get("chapter_contents.summary_one")
+-                             : strings::get("chapter_contents.summary").arg(items.size()));
++    summary->setText(strings::plural(items.size(), "chapter_contents.summary"));
+     if (listMode != ContentsList::Chapters)
+         summary->setText((listMode == ContentsList::Landmarks
+                                   ? strings::get("chapter_contents.landmark_count")
+diff --git a/src/app/reader/panels/search_panel.cpp b/src/app/reader/panels/search_panel.cpp
+index 15f04b5e90ef338d2de54301007fcb997eac265b..804cd846144bf3140aa8efbea86cb6ba8badafad 100644
+--- a/src/app/reader/panels/search_panel.cpp
++++ b/src/app/reader/panels/search_panel.cpp
+@@ -705,7 +705,7 @@ void SearchPanel::redraw()
+                                                : "search_panel.page_detail")
+                                   .arg(locationPageLabel(hit.page, hit.printedPage))
+                                   .arg(hit.text)
+-                        : strings::get("search_panel.chapter_detail")
++                        : strings::get("header_footer.slot_value")
+                                   .arg(hit.chapter.simplified(), hit.text));
+     }
+ }
 diff --git a/src/app/reader/settings/debug_language_dialog.cpp b/src/app/reader/settings/debug_language_dialog.cpp
 new file mode 100644
 index 0000000000000000000000000000000000000000..26796d377219203e14ec1c9abf0743b1e678c588
@@ -383,6 +664,360 @@ index 9242f5db332b0c182159931e41d4c54f8b6bd6ac..9b35a83cb14c81028e35091c1588f0ae
      section(debugPage, debugRows, "rrDebugCacheSection", strings::get("debug.section_caches"));
      evictBookCacheButton = listAction(
              debugPage, debugRows, "rrDebugEvictCache", strings::get("debug.evict_cache"), [] { },
+diff --git a/src/app/reader/views/sleep_designs.cpp b/src/app/reader/views/sleep_designs.cpp
+index 089c5b74c348641353ee28efd31f1e7581089878..e078dac31550632b0d5f56a447a5f9c8196e283f 100644
+--- a/src/app/reader/views/sleep_designs.cpp
++++ b/src/app/reader/views/sleep_designs.cpp
+@@ -125,11 +125,13 @@ QFont body(const QString &family, qreal pixels)
+ void text(QPainter &painter, const QFont &font, const QColor &color, const QRectF &area,
+           const QString &value, Qt::Alignment alignment = Qt::AlignLeft | Qt::AlignVCenter)
+ {
+-    const auto fitted = ui::fittedLocaleFont(font, value, qFloor(area.width()), qFloor(area.height()));
++    auto fitted = ui::fittedLocaleFont(font, value, qFloor(area.width()), qFloor(area.height()));
++    const int minimum = qMax(1, font.pixelSize() / 2);
++    while (fitted.pixelSize() > minimum && ui::interfaceTextWidth(value, fitted) > area.width())
++        fitted.setPixelSize(fitted.pixelSize() - 1);
+     painter.setFont(fitted);
+     painter.setPen(color);
+-    const auto shown = strings::locale() == strings::Locale::Russian
+-            ? ui::elideInterfaceText(value, fitted, qMax(1, qFloor(area.width()))) : value;
++    const auto shown = ui::elideInterfaceText(value, fitted, qMax(1, qFloor(area.width())));
+     ui::drawInterfaceText(painter, area.toAlignedRect(), shown, alignment);
+ }
+ 
+diff --git a/src/app/reader/views/sleep_ribbon_text.cpp b/src/app/reader/views/sleep_ribbon_text.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..ac49d9ed89809b3bf8f5175acfb182829869e835
+--- /dev/null
++++ b/src/app/reader/views/sleep_ribbon_text.cpp
+@@ -0,0 +1,26 @@
++#include "sleep_screen.h"
++#include "support/strings.h"
++namespace kobalt::reader {
++QStringList sleepRibbonRemainingLines(const QString &remaining) {
++    if (remaining.isEmpty())
++        return {};
++    const auto pattern = strings::get("sleep.time_left");
++    const int slot = pattern.indexOf(QStringLiteral("%1"));
++    if (slot >= 0) {
++        const auto prefix = pattern.left(slot), suffix = pattern.mid(slot + 2);
++        if (remaining.startsWith(prefix) && remaining.endsWith(suffix) &&
++            remaining.size() >= prefix.size() + suffix.size()) {
++            const auto duration = remaining.mid(prefix.size(), remaining.size() - prefix.size() - suffix.size()).trimmed();
++            const auto caption = (prefix + suffix).trimmed();
++            if (!duration.isEmpty() && !caption.isEmpty()) {
++                // Keep the language's order (RU: caption first; EN: time first).
++                if (prefix.trimmed().isEmpty())
++                    return {duration, caption};
++                return {caption, duration};
++            }
++        }
++    }
++    // Older saved snapshots may have been produced in another language.
++    return {remaining};
++}
++}
+diff --git a/src/app/reader/views/sleep_screen.cpp b/src/app/reader/views/sleep_screen.cpp
+index 5032af96de8692ca913576a4161032f571595f51..f230c211c010cbca85ebac934f9dad98aa9413b6 100644
+--- a/src/app/reader/views/sleep_screen.cpp
++++ b/src/app/reader/views/sleep_screen.cpp
+@@ -171,7 +171,7 @@ struct RibbonLines
+         detailHeight = ui::interfaceLineHeight(detail),
+         batteryHeight = ui::interfaceLineHeight(battery);
+ 
+-    int detailRows() const { return strings::locale() == strings::Locale::Russian ? 2 : 1; }
++    int detailRows() const { return 2; }
+ 
+     int height() const
+     {
+@@ -216,7 +216,10 @@ void paintBookmark(QPainter &painter, const QRect &ribbon, const Content &conten
+     const int textLeft = ribbon.left() + padding;
+     const int width = ribbon.width() - 2 * padding;
+     const auto centered = [&](const QString &text, const QFont &font, int y, int height) {
+-        const auto fitted = ui::fittedLocaleFont(font, text, width, height);
++        auto fitted = ui::fittedLocaleFont(font, text, width, height);
++        const int minimum = qMax(1, font.pixelSize() / 2);
++        while (fitted.pixelSize() > minimum && ui::interfaceTextWidth(text, fitted) > width)
++            fitted.setPixelSize(fitted.pixelSize() - 1);
+         painter.setFont(fitted);
+         ui::drawInterfaceText(painter, QRect(textLeft, y, width, height),
+                               ui::elideInterfaceText(text, fitted, width),
+@@ -237,25 +240,7 @@ void paintBookmark(QPainter &painter, const QRect &ribbon, const Content &conten
+     else
+         centered(content.progress, lines.detail, y, lines.figureHeight);
+     y += lines.figureHeight + int(sleepMetrics::ribbonGap) / 2;
+-    QStringList remainingLines;
+-    if (!content.remaining.isEmpty())
+-        remainingLines.append(content.remaining);
+-    if (strings::locale() == strings::Locale::Russian && !content.remaining.isEmpty()) {
+-        const auto pattern = strings::get("sleep.time_left");
+-        const int slot = pattern.indexOf(QStringLiteral("%1"));
+-        if (slot >= 0) {
+-            const auto prefix = pattern.left(slot), suffix = pattern.mid(slot + 2);
+-            if (content.remaining.startsWith(prefix) && content.remaining.endsWith(suffix)
+-                && content.remaining.size() >= prefix.size() + suffix.size()) {
+-                const auto duration = content.remaining.mid(prefix.size(),
+-                        content.remaining.size() - prefix.size() - suffix.size()).trimmed();
+-                const auto caption = (prefix + suffix).trimmed();
+-                if (!duration.isEmpty() && !caption.isEmpty())
+-                    remainingLines = prefix.trimmed().isEmpty() ? QStringList{ duration, caption }
+-                                                                : QStringList{ caption, duration };
+-            }
+-        }
+-    }
++    const auto remainingLines = sleepRibbonRemainingLines(content.remaining);
+     for (const auto &line : remainingLines) {
+         centered(line, lines.detail, y, lines.detailHeight);
+         y += lines.detailHeight;
+diff --git a/src/app/reader/views/sleep_screen.h b/src/app/reader/views/sleep_screen.h
+index b9ef681b7bcc2b26725966c2cf4508a5d52edce6..b1e3131de28b9e14b426390e42822aedba9625fb 100644
+--- a/src/app/reader/views/sleep_screen.h
++++ b/src/app/reader/views/sleep_screen.h
+@@ -4,6 +4,7 @@
+ 
+ #include <QImage>
+ #include <QString>
++#include <QStringList>
+ #include <QRect>
+ #include <QVector>
+ 
+@@ -21,6 +22,7 @@ void portraitSleepSnapshot(sleep::Snapshot &snapshot);
+ // Approximate rounds up to quarter-hours below an hour, then whole hours.
+ // Negative estimates have no label; Approximate also omits zero.
+ QString sleepTimeLeft(qint64 milliseconds, bool approximate = false);
++QStringList sleepRibbonRemainingLines(const QString &remaining);
+ // The same duration without "to go", for sentences that phrase it themselves.
+ QString sleepDuration(qint64 milliseconds, bool approximate = false);
+ // Fits the cover without cropping. Unused space is always black.
+diff --git a/src/app/reader/window/reader_annotations.cpp b/src/app/reader/window/reader_annotations.cpp
+index cd439b9b71a5f8e10a62cf9826713e4eb1c5dac5..bd40f2bc4b43f6c55eedcefea2816fd09575d5bb 100644
+--- a/src/app/reader/window/reader_annotations.cpp
++++ b/src/app/reader/window/reader_annotations.cpp
+@@ -360,13 +360,28 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
+         rows->addWidget(noteRow);
+         desiredWidth = qMax(desiredWidth, ui::px(700));
+     }
++    const auto section = [card, rows](const char *name, const char *key, bool divider = false) {
++        auto *header = new ui::Panel(card);
++        header->setDividers(ui::Edges(Qt::BottomEdge)
++                            | (divider ? ui::Edges(Qt::TopEdge) : ui::Edges{}));
++        header->setObjectName(name);
++        header->setFixedHeight(ui::px(40));
++        auto *layout = new QHBoxLayout(header);
++        layout->setContentsMargins(metrics::chrome::inset, 0, metrics::chrome::inset, 0);
++        auto *label = new ui::InterfaceLabel(strings::get(key), header);
++        ui::captionLabel(label);
++        layout->addWidget(label);
++        rows->addWidget(header);
++    };
+     if (colorAnnotations() && colorChanged) {
++        section("rrAnnotationColorSection", "annotations.color_section");
+         auto *palette = new ui::HighlightPalette(paletteColor, colorChanged, card);
+         rows->addWidget(palette);
+         palette->show();
+         desiredWidth = qMax(desiredWidth, ui::px(700));
+     }
+     if (styleChanged) {
++        section("rrAnnotationStyleSection", "annotations.style_section");
+         rows->addWidget(new ui::HighlightStylePicker(selectedStyle, styleChanged, card));
+         desiredWidth = qMax(desiredWidth, ui::px(700));
+     }
+@@ -378,7 +393,7 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
+         menuActions.append(
+                 { "rrAnnotationCancel",
+                   adjusting ? ui::ControlIcon::Undo : ui::ControlIcon::ClearSelection,
+-                  strings::get(adjusting ? "annotations.discard" : "annotations.cancel_selection"),
++                  strings::get(adjusting ? "common.cancel" : "annotations.cancel_selection"),
+                   [this] { clearAnnotationDraft(); } });
+     }
+     if (compactActions && annotationMode && minimalAnnotationMode() && !quickAnnotations()) {
+@@ -394,6 +409,8 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
+                    int(metrics::links::actionHeight));
+     // Load failures can open this menu with no actions: then there is no strip.
+     const bool compact = compactActions && !menuActions.isEmpty() && menuActions.size() <= 6;
++    if (styleChanged)
++        section("rrAnnotationActionsSection", "annotations.actions_section", true);
+     QGridLayout *buttons = nullptr;
+     int columns = menuActions.size();
+     if (compact) {
+@@ -929,7 +946,7 @@ void Reader::showAnnotationActions()
+         bounds = topControls->geometry();
+     if (!annotationMode) {
+         QVector<AnnotationAction> actions{ { "rrSelectionLookup", ui::ControlIcon::Dictionary,
+-                                             strings::get("annotations.look_up"), [this] {
++                                             strings::get("reader.link_dictionary"), [this] {
+                                                  annotationPopover->hide();
+                                                  lookupSelection();
+                                              } } };
+@@ -991,7 +1008,7 @@ void Reader::showAnnotationActions()
+         // selection. Both leave annotation mode first, as the hold had not
+         // entered it in toggleable mode.
+         actions.append({ "rrSelectionLookup", ui::ControlIcon::Dictionary,
+-                         strings::get("annotations.look_up"), [this] {
++                         strings::get("reader.link_dictionary"), [this] {
+                              annotationPopover->hide();
+                              annotationMode = false;
+                              annotationColor = annotationSelectedColor;
+@@ -1589,7 +1606,7 @@ void Reader::showSavedAppearance(const QString &id, QRect anchor, bool navigate,
+     if (colorStep) {
+         // Discard leaves the choices unsaved and returns to the note.
+         actions.append(
+-                { "rrAnnotationDiscard", ui::ControlIcon::Undo, strings::get("annotations.discard"),
++                { "rrAnnotationDiscard", ui::ControlIcon::Undo, strings::get("common.cancel"),
+                   [this, id, anchor, navigate] { showSavedAnnotationAt(id, anchor, navigate); } });
+     } else {
+         actions.append({ "rrAnnotationAddNote", ui::ControlIcon::Note,
+diff --git a/src/app/reader/window/reader_build.cpp b/src/app/reader/window/reader_build.cpp
+index 70deed4f2ec5c86c0b963483f6376f4f23c16886..2fdf201590e22397608ce8449a470fb705847bbe 100644
+--- a/src/app/reader/window/reader_build.cpp
++++ b/src/app/reader/window/reader_build.cpp
+@@ -23,6 +23,7 @@
+ #include "support/diagnostics.h"
+ #include "ui/style/metrics.h"
+ #include "ui/panel_timing.h"
++#include "ui/controls/return_title_text.h"
+ #include "storage/reader_storage.h"
+ #include "app/reader/settings/settings_panel.h"
+ #include "render/page_refresh_regions.h"
+@@ -102,6 +103,8 @@ class ReturnTitle final : public ui::InterfaceLabel
+ {
+ public:
+     using ui::InterfaceLabel::InterfaceLabel;
++    QSize sizeHint() const override { return ui::returnTitleSizeHint(*this); }
++    QSize minimumSizeHint() const override { return sizeHint(); }
+ 
+ protected:
+     void paintEvent(QPaintEvent *) override
+@@ -119,8 +122,7 @@ protected:
+                                                       : QPalette::WindowText));
+         const auto bounds = contentsRect().adjusted(margin(), margin(), -margin(), -margin());
+         // Font line boxes include padding above and below the visible letters.
+-        ui::drawOpticalText(painter, bounds.translated(0, metrics::chrome::returnTitleOffset),
+-                            text(), true);
++        ui::paintReturnTitle(painter, bounds, *this);
+     }
+ };
+ 
+@@ -839,7 +841,7 @@ void Reader::buildToolbar()
+     returnTitle->setAttribute(Qt::WA_TransparentForMouseEvents);
+     returnTitle->setAlignment(Qt::AlignCenter);
+     returnTitle->setContentsMargins(0, 0, metrics::chrome::inset, 0);
+-    readerStyle(returnTitle, styles::brand(metrics::chrome::titleText) + "background:transparent;");
++    readerStyle(returnTitle, styles::font(metrics::chrome::titleText) + "font-weight:400;background:transparent;");
+     returnTitle->ensurePolished();
+     returnRow->addSpacing(back->labelStart(returnTitle->font()));
+     returnRow->addWidget(returnTitle, 1);
+diff --git a/src/app/reader/window/reader_text_presets.cpp b/src/app/reader/window/reader_text_presets.cpp
+index 19d8d2d05b8fb2ba93fb00a0f8d6d91a6f3ddbb4..81d14187e563c82f9c8e57a311ec9d631424742f 100644
+--- a/src/app/reader/window/reader_text_presets.cpp
++++ b/src/app/reader/window/reader_text_presets.cpp
+@@ -1,4 +1,5 @@
+ #include "reader_p.h"
++#include "reading/fork_text_preset_names.h"
+ #include "platform/api/kobo_refresh.h"
+ #include "app/reader/settings/settings_panel.h"
+ #include "app/reader/settings/text_presets_panel.h"
+@@ -167,7 +168,7 @@ TextPresetView Reader::textPresetView(const Preset &preset)
+ {
+     TextPresetView view;
+     view.id = preset.id;
+-    view.name = preset.name;
++    view.name = textpresets::displayName(preset);
+     view.detail = presetDetail(preset);
+     const auto face =
+             preset.fontFace.isEmpty() ? QString::fromLatin1(defaultFontFace) : preset.fontFace;
+@@ -263,7 +264,8 @@ void Reader::syncTextPresets()
+     if (selectedIndex >= TextPresetSection::cardCount && !cards.isEmpty())
+         cards.last() = textPresetView(presets[selectedIndex]);
+     const auto *chosen = textpresets::find(presets, selected);
+-    textPresetSection->setState(cards, selected, chosen ? chosen->name : QString(), modified,
++    textPresetSection->setState(cards, selected,
++                                chosen ? textpresets::displayName(*chosen) : QString(), modified,
+                                 preferences.value(textpresets::rowKey).toBool(false));
+     if (!textPresetChoosingNewBook)
+         textPresetGalleryEntries = presets;
+@@ -387,7 +389,8 @@ void Reader::editTextPresetName(const QString &id)
+     editor->setObjectName("rrTextPresetNameInput");
+     dialog->setFocusProxy(editor);
+     editor->setMaxLength(textpresets::maximumName);
+-    editor->setText(existing ? preset.name : textpresets::suggestedName(presets, preset));
++    editor->setText(existing ? textpresets::displayName(preset)
++                             : textpresets::suggestedName(presets, preset));
+     editor->selectAll();
+     editor->setAccessibleName(strings::get("text_presets.name"));
+     editor->setInputMethodHints(Qt::ImhNoPredictiveText);
+@@ -542,7 +545,7 @@ void Reader::showTextPresetActions(const QString &id)
+                        ui::ControlIcon::Trash, [this, id] { confirmDeleteTextPreset(id); }),
+     };
+     ui::ActionMenuHeader header;
+-    header.title = preset->name;
++    header.title = textpresets::displayName(*preset);
+     header.caption = presetSummary(*preset);
+     if (textpresets::newBookChoice(preferences) == id)
+         header.detail = strings::get("text_presets.used_for_new_books");
+@@ -578,7 +581,7 @@ void Reader::confirmDeleteTextPreset(const QString &id)
+     auto *dialog = new ui::ChoiceModal(
+             this,
+             { strings::get("text_presets.delete_detail"),
+-              strings::get("text_presets.delete_prompt").arg(preset->name),
++              strings::get("text_presets.delete_prompt").arg(textpresets::displayName(*preset)),
+               {} },
+             { strings::get("common.cancel"), "rrTextPresetDeleteCancel" },
+             { strings::get("text_presets.delete"), "rrTextPresetDeleteConfirm" });
+@@ -814,7 +817,7 @@ void Reader::showTextPresetSettings()
+     const auto choice = textpresets::newBookChoice(preferences);
+     const auto *chosen = textpresets::find(presets, choice);
+     panel->textForNewBooksButton->setCaption(
+-            chosen ? chosen->name
++            chosen ? textpresets::displayName(*chosen)
+                    : strings::get(choice == "book" ? "settings.new_book_book_default"
+                                                    : "settings.new_book_last_used"));
+ }
+diff --git a/src/reading/fork_text_preset_names.h b/src/reading/fork_text_preset_names.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..a128d117f52af3dda369ce85074ce718bdc0c949
+--- /dev/null
++++ b/src/reading/fork_text_preset_names.h
+@@ -0,0 +1,26 @@
++#pragma once
++#include "text_presets.h"
++#include "support/strings.h"
++
++namespace kobalt::textpresets {
++// Example names were saved in the UI language that first created the list.
++// Localize only recognized shipped names at presentation time; never rename
++// user presets, rewrite saved data, or discard edited typography.
++inline QString displayName(const Preset &preset)
++{
++    if (!preset.example
++        || (preset.id != "kobalt" && preset.id != "bookish" && preset.id != "modern"
++            && preset.id != "classic"))
++        return preset.name;
++    const auto key = QByteArray("text_presets.example_") + preset.id.toUtf8();
++    int count = 0;
++    const auto *table = strings::entries(&count);
++    const auto *english = strings::detail::find(table, count, key.constData());
++    table = strings::detail::russianTable(&count);
++    const auto *russian = strings::detail::find(table, count, key.constData());
++    if ((english && preset.name == QString::fromUtf8(english->value))
++        || (russian && preset.name == QString::fromUtf8(russian->value)))
++        return strings::get(key.constData());
++    return preset.name;
++}
++} // namespace kobalt::textpresets
+diff --git a/src/support/build_info.h.in b/src/support/build_info.h.in
+index e3d4f09f37c28c543180b2db73ad499d4524dd89..f2ab9e0ab9a55491583a436e600b6120c50cf705 100644
+--- a/src/support/build_info.h.in
++++ b/src/support/build_info.h.in
+@@ -3,3 +3,8 @@
+ constexpr auto kobaltCommit = "@KOBALT_COMMIT@";
+ // Whether the sources had uncommitted changes.
+ #cmakedefine01 KOBALT_COMMIT_MODIFIED
++// Fork distribution identifier shown on the About page. Empty in generic
++// builds, which keeps the upstream About layout unchanged.
++constexpr auto kobaltForkName = "@KOBALT_FORK_NAME@";
++// Configure-time UTC timestamp, rendered on the fork's About row.
++constexpr auto kobaltBuildTime = "@KOBALT_BUILD_TIME@";
 diff --git a/src/support/debug_language.cpp b/src/support/debug_language.cpp
 new file mode 100644
 index 0000000000000000000000000000000000000000..eec862311f78a3e174eccd95ee4df47200db72a0
@@ -782,6 +1417,236 @@ index 2a6938d0706894111dbd202830a8af5c541f1d34..689f86919c57b276d14ae90b3408b106
 +    return get(key.constData()).arg(count);
 +}
  } // namespace kobalt::strings
+diff --git a/src/ui/controls/highlight_palette.h b/src/ui/controls/highlight_palette.h
+index 6caa8147fcd67ef647d21455aafca4f4376fe46f..83e4238f6b95ca0598d6b932ce5ea51c105f8122 100644
+--- a/src/ui/controls/highlight_palette.h
++++ b/src/ui/controls/highlight_palette.h
+@@ -16,8 +16,6 @@
+ #include <functional>
+ 
+ namespace kobalt::ui {
+-// The swatch's name is its accessible name. The circles carry no labels, so
+-// that the popover stays small.
+ class HighlightSwatch : public QAbstractButton
+ {
+ public:
+@@ -28,9 +26,10 @@ public:
+         setText(label);
+         setAccessibleName(label);
+         setCheckable(true);
+-        setFixedHeight(px(76));
++        setFixedHeight(px(88));
+         setMinimumWidth(0);
+         setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
++        setFont(interfaceFont(px(23)));
+     }
+ 
+ protected:
+@@ -44,8 +43,16 @@ protected:
+         const auto ink = palette().color(QPalette::WindowText);
+         const int pen = px(2), ring = px(5);
+         const int inset = ring + (pen + 1) / 2 + px(2);
+-        const int diameter = qMax(px(24), qMin(px(48), qMin(width(), height()) - 2 * inset));
+-        const QRect chip((width() - diameter) / 2, (height() - diameter) / 2, diameter, diameter);
++        const int diameter = qMax(px(24), qMin(px(48), width() - 2 * inset));
++        auto labelFont = font();
++        labelFont.setPixelSize(qMin(px(23), qMax(px(16), width() / 3)));
++        const auto labelLine = interfaceInkBounds(QStringLiteral("Ag"), labelFont);
++        const int ringExtent = ring + (pen + 1) / 2;
++        const int gap = px(5);
++        // Center the visible circle, selection ring and label as one group.
++        const int contentHeight = 2 * ringExtent + diameter + gap + labelLine.height();
++        const int top = (height() - contentHeight) / 2;
++        const QRect chip((width() - diameter) / 2, top + ringExtent, diameter, diameter);
+         p.setPen(QPen(ink, pen));
+         p.setBrush(render::highlightTint(key));
+         p.drawEllipse(chip);
+@@ -57,6 +64,16 @@ protected:
+             p.drawLine(chip.center() + QPoint(-px(3), px(10)),
+                        chip.center() + QPoint(px(14), -px(13)));
+         }
++        p.setPen(ink);
++        p.setFont(labelFont);
++        // The layout above reserves the ink of "Ag" below the chip. The text is
++        // drawn from its line box, which starts above the ink, so raise the
++        // box by that distance. Otherwise the descenders of "Yellow" and
++        // "Gray" fall below the swatch and are cut off.
++        const int inkTop = chip.y() + diameter + ringExtent + gap;
++        const int lineTop = inkTop - (interfaceLineAscent(labelFont) + labelLine.top());
++        drawInterfaceText(p, QRect(0, lineTop, width(), interfaceLineHeight(labelFont)), text(),
++                          Qt::AlignHCenter | Qt::AlignTop);
+     }
+ 
+ private:
+@@ -74,7 +91,7 @@ public:
+         parent->installEventFilter(this);
+         setFixedHeight(compactHeight());
+         auto *layout = new QVBoxLayout(this);
+-        layout->setContentsMargins(px(28), px(4), px(28), px(4));
++        layout->setContentsMargins(px(28), px(12), px(28), px(12));
+         layout->setSpacing(px(4));
+         auto *row = new QHBoxLayout;
+         row->setSpacing(px(12));
+@@ -106,7 +123,7 @@ public:
+         error->hide();
+     }
+ 
+-    static int compactHeight() { return px(84); }
++    static int compactHeight() { return px(112); }
+ 
+     void setError(const QString &message)
+     {
+@@ -207,21 +224,19 @@ class HighlightStyleSample : public Button
+ {
+ public:
+     HighlightStyleSample(const QString &style, const QString &label, bool last, QWidget *parent)
+-        : Button(parent), style(style), last(last)
++        : Button(parent), style(style), label(label), last(last)
+     {
+         setObjectName("rrAnnotationStyle_" + style);
+         setAccessibleName(label);
+         setCheckable(true);
+         setPaintMode(ButtonPaintMode::ToolbarCell);
+-        setFixedHeight(height());
++        setFixedHeight(px(104));
+         setMinimumWidth(0);
+         setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+-        setFont(interfaceFont(px(21)));
+-        readerStyle(this, styles::font(px(21)));
++        setFont(interfaceFont(px(23)));
++        readerStyle(this, styles::font(px(23)));
+     }
+ 
+-    static int height() { return px(80); }
+-
+     void setColor(const QString &key)
+     {
+         color = render::highlightTint(key);
+@@ -234,17 +249,16 @@ protected:
+         QPainter p(this);
+         p.fillRect(rect(), isDown() ? sectionColor(this) : palette().color(QPalette::Window));
+         const auto ink = palette().color(QPalette::WindowText);
+-        // The sample is its own label; its name is the accessible name. The
+-        // check sits beside the sample, centered on it.
+-        const int sampleWidth = px(76), gap = px(10), side = px(20);
+-        const QRect sample((width() - sampleWidth) / 2, (QWidget::height() - px(44)) / 2,
+-                           sampleWidth, px(44));
+-        p.setFont(interfaceFont(px(30)));
++        const QRect sample((width() - px(90)) / 2, px(8), px(90), px(44));
++        p.setFont(interfaceFont(px(32)));
+         p.setPen(ink);
+         drawInterfaceText(p, sample, QStringLiteral("Abc"), Qt::AlignCenter);
+         render::paintHighlightMark(p, { sample }, QRegion(sample), color, style, darkTheme(this));
++        p.setFont(font());
++        drawInterfaceText(p, QRect(px(6), px(62), width() - px(12), px(30)), label,
++                          Qt::AlignCenter);
+         if (isChecked()) {
+-            const QRect check(sample.right() + 1 + gap, sample.center().y() - side / 2, side, side);
++            const QRect check(width() - px(40), px(10), px(24), px(24));
+             p.setRenderHint(QPainter::Antialiasing);
+             p.setPen(QPen(ink, px(3), Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+             QPolygonF mark;
+@@ -257,7 +271,7 @@ protected:
+     }
+ 
+ private:
+-    QString style;
++    QString style, label;
+     QColor color = render::highlightTint("gray");
+     bool last;
+ };
+@@ -296,7 +310,7 @@ public:
+         error->setContentsMargins(px(20), px(4), px(20), px(12));
+         layout->addWidget(error);
+         error->hide();
+-        setFixedHeight(HighlightStyleSample::height());
++        setFixedHeight(px(104));
+     }
+ 
+     void setSelectedStyle(const QString &selected)
+@@ -317,7 +331,7 @@ public:
+         setSelectedStyle(selected);
+         error->setText(message);
+         error->show();
+-        setFixedHeight(HighlightStyleSample::height()
++        setFixedHeight(px(104)
+                        + qMax(error->sizeHint().height(), error->heightForWidth(qMax(1, width()))));
+     }
+ 
+diff --git a/src/ui/controls/return_title_text.h b/src/ui/controls/return_title_text.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..a2fd46e77d71a9aba095ce3e75293e41fb4c9a2e
+--- /dev/null
++++ b/src/ui/controls/return_title_text.h
+@@ -0,0 +1,68 @@
++#pragma once
++#include "ui/controls/text.h"
++#include "ui/style/fonts.h"
++#include "ui/style/private_text.h"
++#include "ui/style/metrics.h"
++#include <QPainter>
++#include <QVector>
++#include <QPair>
++
++namespace kobalt::ui {
++// Shared measurement/painting of an interface caption with a serif brand run.
++inline QVector<QPair<QString, QFont>> returnTitleRuns(const InterfaceLabel &label) {
++    QVector<QPair<QString, QFont>> runs;
++    const int at = label.text().indexOf(QStringLiteral("Kobalt"), 0, Qt::CaseInsensitive);
++    if (at < 0) {
++        runs.append({label.text(), label.font()});
++    } else {
++        if (at) runs.append({label.text().left(at), label.font()});
++        runs.append({label.text().mid(at, 6), brandFont(label.font().pixelSize())});
++        if (at + 6 < label.text().size()) runs.append({label.text().mid(at + 6), label.font()});
++    }
++    return runs;
++}
++
++inline QSize returnTitleSizeHint(const InterfaceLabel &label) {
++    label.ensurePolished();
++    int width = 0, height = 0;
++    for (const auto &run : returnTitleRuns(label)) {
++        width += interfaceTextWidth(run.first, run.second);
++        height = qMax(height, interfaceLineHeight(run.second));
++    }
++    const auto margins = label.contentsMargins();
++    return {width + margins.left() + margins.right() + 2 * label.margin(),
++            height + margins.top() + margins.bottom() + 2 * label.margin()};
++}
++
++inline void paintReturnTitle(QPainter &painter, const QRect &bounds, const InterfaceLabel &label) {
++    // Preserve the brand word, but draw the surrounding interface text
++    // in Sans. Measure and paint the same runs on a common baseline.
++    const auto runs = returnTitleRuns(label);
++    QRect ink;
++    int advance = 0;
++    for (const auto &run : runs) {
++        ink |= interfaceInkBounds(run.first, run.second).translated(advance, 0);
++        advance += interfaceTextWidth(run.first, run.second);
++    }
++    const int x = bounds.center().x() - ink.center().x();
++    const int baseline = bounds.center().y() - ink.center().y() + int(metrics::chrome::returnTitleOffset);
++    painter.setClipRect(bounds);
++    advance = 0;
++    for (const auto &run : runs) {
++        painter.setFont(run.second);
++        if (needsPrivateText(run.first, run.second)) {
++            auto rendered = renderPrivateText(run.first, run.second);
++            if (!rendered.image.isNull()) {
++                QPainter tint(&rendered.image);
++                tint.setCompositionMode(QPainter::CompositionMode_SourceIn);
++                tint.fillRect(rendered.image.rect(), painter.pen().color());
++                tint.end();
++                painter.drawImage(QPoint(x + advance, baseline) + rendered.origin, rendered.image);
++            }
++        } else {
++            painter.drawText(QPoint(x + advance, baseline), run.first);
++        }
++        advance += interfaceTextWidth(run.first, run.second);
++    }
++}
++} // namespace kobalt::ui
 diff --git a/tests/model/debug_language_ui.cpp b/tests/model/debug_language_ui.cpp
 new file mode 100644
 index 0000000000000000000000000000000000000000..e17b951e8064417e7fad1ac0b5f8a8108ad3796f
@@ -851,6 +1716,90 @@ index 0000000000000000000000000000000000000000..e17b951e8064417e7fad1ac0b5f8a810
 +    cancel->click();
 +    require(!popup->isVisible(), "saved language chooser did not close");
 +    std::puts("PASS: language chooser cancellation, reopen and asynchronous save");
++}
+diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..6f2e1c00fb5f1dab59a5d1374d4344812d52e2a8
+--- /dev/null
++++ b/tests/model/fork_presentation.cpp
+@@ -0,0 +1,78 @@
++#include "check.h"
++#include "reader_inputs.h"
++#include "app/about/about_page.h"
++#include "app/reader/views/sleep_screen.h"
++#include "reading/fork_text_preset_names.h"
++#include "ui/controls/highlight_palette.h"
++#include "ui/controls/return_title_text.h"
++#include "ui/style/scale.h"
++#include "build_info.h"
++#include <QApplication>
++#include <cstdio>
++using namespace kobalt;
++// Checks retained presentation on both languages/densities without changing saved presets.
++int main(int argc, char **argv)
++{
++    QApplication app(argc, argv);
++    require(ui::initializeInterfaceFonts(test::readerAssets()), "presentation fonts unavailable");
++    for (auto locale : {strings::Locale::English, strings::Locale::Russian}) {
++        strings::setLocale(locale);
++        const auto duration = QStringLiteral("123 h 45 min");
++        const auto remaining = strings::get("sleep.time_left").arg(duration);
++        const auto lines = reader::sleepRibbonRemainingLines(remaining);
++        require(lines.size() == 2 && lines.join(' ').contains(duration),
++                "ribbon did not retain duration in two localized lines");
++        require(lines[locale == strings::Locale::English ? 0 : 1] == duration,
++                "ribbon reversed language order");
++        require(reader::sleepRibbonRemainingLines({}).isEmpty(), "empty remaining gained a caption");
++        require(reader::sleepRibbonRemainingLines("legacy unrelated status")
++                        == QStringList{"legacy unrelated status"}, "old snapshot status misparsed");
++        auto presets = textpresets::examples();
++        require(!presets.isEmpty(), "shipped presets unavailable");
++        auto preset = presets.first();
++        const auto saved = preset;
++        require(textpresets::displayName(preset) == strings::get("text_presets.example_kobalt")
++                        && preset == saved, "example localization changed saved values");
++        preset.name = QStringLiteral("My custom name");
++        require(textpresets::displayName(preset) == preset.name, "renamed preset translated");
++        preset.id = "user-defined";
++        require(textpresets::displayName(preset) == preset.name, "unknown preset translated");
++        AboutPage about;
++        require(bool(about.findChild<QLabel *>("rrAboutFork")) == (kobaltForkName[0] != '\0'),
++                "About fork row ignored configured distribution");
++        require(!about.findChild<QPushButton *>("rrDebugLanguageButton"),
++                "language entry returned to About");
++        for (int ppi : {212, 300}) {
++            ui::setDensity(ppi);
++            ui::InterfaceLabel title(QString::fromUtf8("Вернуться в Kobalt"));
++            title.setFont(ui::interfaceFont(ui::px(36)));
++            require(ui::returnTitleSizeHint(title).width() > 0, "return title not measured");
++            for (bool dark : {false, true}) {
++                QWidget host;
++                host.setProperty("reader_dark", dark);
++                host.setPalette(ui::readerPalette(host.palette(), dark));
++                for (int width : {ui::px(110), ui::px(160)}) {
++                    ui::HighlightSwatch swatch("gray", strings::get("annotations.color_gray"), &host);
++                    swatch.resize(width, swatch.height());
++                    swatch.setChecked(dark);
++                    const auto image = swatch.grab().toImage();
++                    const auto paper = image.pixelColor(ui::px(4), ui::px(4));
++                    auto inked = [&](int y) {
++                        for (int x = 0; x < image.width(); ++x)
++                            if (qAbs(qGray(image.pixel(x,y)) - paper.lightness()) > 100) return true;
++                        return false;
++                    };
++                    bool label = false;
++                    for (int y = image.height()*2/3; y < image.height()-1; ++y) label |= inked(y);
++                    require(label && !inked(image.height()-1), "annotation label missing or clipped");
++                }
++                QImage page(800, 1200, QImage::Format_RGB32);
++                page.fill(Qt::white);
++                const auto frame = reader::sleepScreenImage(page, "99%", remaining, dark,
++                        99, reader::SleepStatus::Sleeping, true, sleep::Tile::Bookmark, 99);
++                require(!frame.isNull() && frame.size() == page.size(), "sleep ribbon render failed");
++            }
++        }
++    }
++    std::puts("PASS: bilingual sleep ribbon, annotation labels, About and preset presentation");
 +}
 diff --git a/tests/model/strings_locale.cpp b/tests/model/strings_locale.cpp
 new file mode 100644
@@ -1134,3 +2083,44 @@ index 0000000000000000000000000000000000000000..9303ec8957d0cf24016b510c618e47d2
 +    strings::setLocale(strings::Locale::English);
 +    std::puts("PASS: locale normalization, translated lookup, key mode, Russian plurals and config resolution");
 +}
+diff --git a/tests/model/text_presets.cpp b/tests/model/text_presets.cpp
+index 824e502c0bfe171a9d5ab3cb1776049b92df1c14..d9273e4bbb1b77bbb7fefe99b0488786a1238d13 100644
+--- a/tests/model/text_presets.cpp
++++ b/tests/model/text_presets.cpp
+@@ -1,6 +1,7 @@
+ #include "reading/appearance_settings.h"
+ #include "reading/reading_density.h"
+ #include "reading/text_presets.h"
++#include "reading/fork_text_preset_names.h"
+ #include "storage/reader_storage.h"
+ #include "support/qt_compat.h"
+ #include "check.h"
+@@ -30,6 +31,28 @@ int main()
+     require(shipped[0].fontFace == defaultFontFace && shipped[0].halfPoints == 22
+                     && shipped[0].lineSpacing == defaultLineSpacing,
+             "Kobalt no longer matches the book defaults");
++    // A saved example follows EN/RU at display time, without rewriting its name or values.
++    auto localized = shipped[1];
++    strings::setLocale(strings::Locale::Russian);
++    const auto russianName = strings::get("text_presets.example_bookish");
++    require(displayName(localized) == russianName, "An English example did not display in Russian");
++    localized.name = russianName;
++    QJsonObject russianSaved;
++    store(russianSaved, { localized });
++    strings::setLocale(strings::Locale::English);
++    const auto localizedRestored = load(russianSaved);
++    require(localizedRestored.size() == 1 && displayName(localizedRestored[0]) == "Bookish"
++                    && localizedRestored[0] == localized && localizedRestored[0].name == russianName,
++            "A Russian saved example did not display in English without mutation");
++    localized.name = "My custom name";
++    require(displayName(localized) == localized.name, "A renamed example lost its custom name");
++    localized.name = russianName;
++    localized.example = false;
++    require(displayName(localized) == russianName, "A user preset was translated");
++    localized.example = true;
++    localized.id = "user-defined";
++    require(displayName(localized) == russianName, "An unknown example id was translated");
++
+     // An empty saved list stays empty: deleting every preset is respected.
+     QJsonObject empty;
+     store(empty, {});

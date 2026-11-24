@@ -83,6 +83,7 @@ class SeriesTests(unittest.TestCase):
             plural_updates = {
                 'library.count_one': '"library.count_one" = "%1 книга";',
                 'annotations.summary_one': '"annotations.summary_one" = "%1 аннотация";',
+                'chapter_contents.summary_one': '"chapter_contents.summary_one" = "Содержание · %1 глава";',
             }
             for line in overlay.splitlines():
                 match = re.match(r'^"([^"\n]+)"\s*=', line)
