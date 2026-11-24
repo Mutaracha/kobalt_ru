@@ -427,7 +427,7 @@ index 77689548fef1233e9eb81418863fd0747e52866d..a3621d22378025b27e3cd6b47fa905f0
      if ( node == body && length > _koblazeSpineItemChars )
          _koblazeSpineItemChars = length;
 diff --git a/tests/model/fb2_engine.cpp b/tests/model/fb2_engine.cpp
-index 496968440278edb0bd2fd5153206b201715d3c12..f6688753e8da7db35e85866374e871e1ecc705ba 100644
+index 496968440278edb0bd2fd5153206b201715d3c12..663f3f7ced5ba37b582bf528a8f27a385ba0fa74 100644
 --- a/tests/model/fb2_engine.cpp
 +++ b/tests/model/fb2_engine.cpp
 @@ -10,6 +10,7 @@
@@ -438,7 +438,7 @@ index 496968440278edb0bd2fd5153206b201715d3c12..f6688753e8da7db35e85866374e871e1
  
  using namespace kobalt;
  namespace {
-@@ -156,6 +157,49 @@ void cachedFictionBook()
+@@ -156,6 +157,64 @@ void cachedFictionBook()
          require(!document.openedFromCache(), "FB2 cache eviction left the mapped book available");
      }
  }
@@ -456,7 +456,14 @@ index 496968440278edb0bd2fd5153206b201715d3c12..f6688753e8da7db35e85866374e871e1
 +    QString error;
 +    EngineDocument accurate(test::readerFonts());
 +    require(accurate.open(bytes, {600, 800}, {{"koblaze_first_spine_item", -1}}, &error), qPrintable(error));
++    QTemporaryDir cacheRoot;
++    require(cacheRoot.isValid(), "prefix cache directory");
++    const auto configureCache = [&](EngineDocument &document) {
++        document.setDocumentCache(cacheRoot.filePath("parsed"), QByteArray(64, 'd'),
++                                  "fb2-prefix-test", bytes.size());
++    };
 +    EngineDocument prefix(test::readerFonts());
++    configureCache(prefix);
 +    require(prefix.open(bytes, {600, 800}, {}, &error), qPrintable(error));
 +    require(prefix.partOfBook(), "FB2 cold prefix not active");
 +    require(prefix.continuesAfter(), "FB2 prefix did not retain continuation");
@@ -467,6 +474,14 @@ index 496968440278edb0bd2fd5153206b201715d3c12..f6688753e8da7db35e85866374e871e1
 +    auto current = [] { return true; };
 +    require(prefix.prepareFullDocument(current) == Engine::FullDocument::Ready, "FB2 full build failed");
 +    require(prefix.wholeBookPageCount() == accurate.pages(), "background full count mismatch");
++    require(prefix.saveDocumentCache(), "completed FB2 full build not saved through prefix");
++    {
++        EngineDocument warm(test::readerFonts());
++        configureCache(warm);
++        require(warm.open(bytes, {600, 800}, {}, &error), qPrintable(error));
++        require(warm.openedFromCache() && !warm.partOfBook() && warm.pages() == accurate.pages(),
++                "warm FB2 lost full cache or entered prefix");
++    }
 +    require(prefix.setChapterMode(false, appearance::Patch(), {600, 800}), "FB2 full adoption failed");
 +    require(!prefix.partOfBook() && prefix.position() == anchor, "FB2 adoption lost native anchor");
 +    EngineDocument jump(test::readerFonts());
@@ -488,7 +503,7 @@ index 496968440278edb0bd2fd5153206b201715d3c12..f6688753e8da7db35e85866374e871e1
  }
  int main(int argc, char **argv)
  {
-@@ -163,6 +207,7 @@ int main(int argc, char **argv)
+@@ -163,6 +222,7 @@ int main(int argc, char **argv)
      setChapterModeOverride(1);
      engineAndResources();
      cachedFictionBook();
