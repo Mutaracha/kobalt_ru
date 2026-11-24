@@ -68,6 +68,14 @@
       "validation": "CI 45278312375 on 08c66e4d: native FB2/comics/layout/UI/resources/appearance/columns/chapter-parity tests PASS; Qt5 build/check-package and qemu pewter.qt5-refresh PASS. Beta10-series-prefix-qt5 artifact published. Physical device and Qt6 firmware/Android acceptance pending."
     },
     {
+      "id": "033-fb2-session-cache",
+      "status": "prepared",
+      "path": "platforms/patch-series/patches/033-fb2-session-cache.patch",
+      "sha256": "0e4e42064e48e8731a8556d93dc5394e1bf536e151e9d9817d025135833f7567",
+      "scope": "Authorize the existing parsed-cache path for the single FB2 resource in OpeningJob; real resource-backed ReaderSession close/reopen regression; no Hybrid changes",
+      "validation": "Clean apply and Python tests locally; native session/cache and Qt5 CI pending."
+    },
+    {
       "id": "040-reader-controls",
       "status": "planned",
       "scope": "Approved dark/comics toolbar and reader presentation; audit upstream swipe inversion before porting"
