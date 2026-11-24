@@ -511,3 +511,91 @@ index 496968440278edb0bd2fd5153206b201715d3c12..663f3f7ced5ba37b582bf528a8f27a38
      setChapterModeOverride(-1);
      std::puts("PASS: FB2 engine sources, metadata, cover, encoding, preview, EPUB reuse and parsed cache");
  }
+diff --git a/src/engine/blaze/crengine/src/lvdocview.cpp b/src/engine/blaze/crengine/src/lvdocview.cpp
+--- a/src/engine/blaze/crengine/src/lvdocview.cpp
++++ b/src/engine/blaze/crengine/src/lvdocview.cpp
+@@ -3348,7 +3348,10 @@
+ 			CRLog::info(
+ 					"Check whether to swap: file size = %d, min size to cache = %d",
+ 					fs, mfs);
+-			if (fs >= mfs) {
++			// The host enables the process cache only inside a scoped load/save.
++            // Rendering outside that scope must not poison the document with
++            // a permanent map error: an explicit close-time save can still work.
++            if (fs >= mfs && ldomDocCache::enabled()) {
+                 CRTimerUtil timeout(100); // 0.1 seconds
+                 swapToCache(timeout);
+                 m_swapDone = true;
+diff --git a/src/reading/reader_session.cpp b/src/reading/reader_session.cpp
+--- a/src/reading/reader_session.cpp
++++ b/src/reading/reader_session.cpp
+@@ -119,6 +119,24 @@
+ }
+ } // namespace
+ 
++// Partial provenance must accompany every frame, including initial/neighbour frames.
++void captureBookCoordinates(QJsonObject &state, Engine &engine)
++{
++    if (const double fraction = engine.bookFraction(); fraction >= 0 || engine.partOfBook()) {
++        state["book_fraction"] = qMax(0.0, fraction);
++        state["whole_book_failed"] = engine.fullDocumentFailed();
++        state["whole_book_ready"] = engine.fullDocumentReady();
++        state["slice_start"] = engine.pageStart(0);
++        const auto rough = engine.roughPages();
++        state["rough_page"] = rough.page;
++        state["rough_pages"] = rough.pages;
++        state["rough_item_page"] = rough.itemPage;
++        state["rough_item_pages"] = rough.itemPages;
++        state["rough_pages_estimated"] = rough.pagesEstimated;
++        state["rough_item_pages_estimated"] = rough.itemPagesEstimated;
++    }
++}
++
+ void captureChapters(ReaderFrame &result, Engine &engine, const std::function<bool()> &current)
+ {
+     const auto chapter = engine.chapterProgress();
+@@ -217,19 +235,7 @@
+     result.state["main_text_first"] = firstPage;
+     result.state["main_text_last"] = lastPage;
+     result.chapterTicks = wholeBookTicks(engine, first, after, deferred, current);
+-    if (const double fraction = engine.bookFraction(); fraction >= 0) {
+-        result.state["book_fraction"] = fraction;
+-        result.state["whole_book_failed"] = engine.fullDocumentFailed();
+-        result.state["whole_book_ready"] = engine.fullDocumentReady();
+-        result.state["slice_start"] = engine.pageStart(0);
+-        const auto rough = engine.roughPages();
+-        result.state["rough_page"] = rough.page;
+-        result.state["rough_pages"] = rough.pages;
+-        result.state["rough_item_page"] = rough.itemPage;
+-        result.state["rough_item_pages"] = rough.itemPages;
+-        result.state["rough_pages_estimated"] = rough.pagesEstimated;
+-        result.state["rough_item_pages_estimated"] = rough.itemPagesEstimated;
+-    }
++    captureBookCoordinates(result.state, engine);
+ }
+ 
+ namespace {
+@@ -324,6 +330,7 @@
+ 
+ void capturePageCoordinates(QJsonObject &state, Engine &engine)
+ {
++    captureBookCoordinates(state, engine);
+     state["page"] = engine.page();
+     state["pages"] = engine.pages();
+     state["next_page"] = engine.turnTarget(engine.page(), 1);
+diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.cpp
+--- a/tests/model/fb2_cache_session.cpp
++++ b/tests/model/fb2_cache_session.cpp
+@@ -81,8 +81,10 @@
+                         "<lang>en</lang></title-info></description><body><section>");
+         for (int i = 0; i < 60; ++i)
+             book += "<p>Session cache paragraph " + QByteArray::number(i) + " with readable words.</p>";
+-        // Preserve upstream's 64 KiB cache-lookup threshold without expensive layout.
+-        book += "</section></body><!--" + QByteArray(128 * 1024, 'x') + "--></FictionBook>";
++        // Exceed the 1 MiB automatic render-swap threshold, not merely the
++        // 64 KiB lookup threshold. A disabled cache during Render must not
++        // permanently poison the later close-time save.
++        book += "</section></body><!--" + QByteArray(2 * 1024 * 1024, 'x') + "--></FictionBook>";
+         const auto write = [&] {
+             QFile file(path);
+             require(file.open(QIODevice::WriteOnly) && file.write(book) == book.size(), "write session fixture");

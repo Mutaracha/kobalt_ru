@@ -79,9 +79,9 @@
       "id": "034-fb2-startup-experiment",
       "status": "ready",
       "path": "platforms/patch-series/patches/034-fb2-startup-experiment.patch",
-      "sha256": "6193d7161e3e2e18fcd40eaba11d62083b789e741abcad5aba991b3768064cac",
+      "sha256": "0832019aa1394442d1b5186c70e50f089a68fe648c2bcf7bd6006018045336bd",
       "scope": "Experimental native FB2 cold new-book prefix layout and background full build; no EPUB spine emulation",
-      "validation": "Device experiment; CI pending. Warm cache and saved-position openings remain full-document."
+      "validation": "Device experiment; CI pending. Warm cache and saved-position openings remain full-document. Follow-up: skip automatic Render swap while process cache is disabled; publish partial coordinates on every frame. Oversize close/reopen regression expanded above 1 MiB. Native CI/device validation pending."
     },
     {
       "id": "040-reader-controls",
