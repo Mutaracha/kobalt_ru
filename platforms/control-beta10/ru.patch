@@ -9022,7 +9022,7 @@ index 0000000000000000000000000000000000000000..edb3ec4a65a69562a9be53e81a49395c
 +"reader.embedded_fonts" = "Встроенных шрифтов: %1";
 +"reader.enable_page_animations" = "Анимация перелистывания";
 +"reader.enabling_bold_reading" = "Включение бионического чтения...";
-+"reader.exit" = "Выйти из Kobalt";
++"reader.exit" = "Закрыть Kobalt";
 +"reader.expand_book_map" = "Развернуть карту всей книги";
 +"reader.fail_next_native_save" = "Сбой следующего системного сохранения";
 +"reader.follow_link" = "Перейти по ссылке";

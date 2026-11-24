@@ -8,7 +8,7 @@
       "id": "010-ru",
       "status": "ready",
       "path": "platforms/control-beta10/ru.patch",
-      "sha256": "e6c7c07670ce35f676cda7c06e99c7a5e71a3fc35f8211a24d3a218fc0b10d72",
+      "sha256": "a2b4ca0a9fd47bebaedb2a6cd7be2e4d19116206af135c2b5c7ca81296255899",
       "scope": "Reviewed beta10 RU overlay, including its existing font/presentation fixes"
     },
     {
@@ -74,6 +74,14 @@
       "sha256": "0e4e42064e48e8731a8556d93dc5394e1bf536e151e9d9817d025135833f7567",
       "scope": "Authorize the existing parsed-cache path for the single FB2 resource in OpeningJob; real resource-backed ReaderSession close/reopen regression; no Hybrid changes",
       "validation": "CI 45356010249 on 1285624d: ready-prefix validation, native session/cache regression suite and Qt5 build/check-package PASS; Beta10-series-prefix-qt5 artifact 14903311145. Hardware repeat-open timings pending; no Hybrid changes."
+    },
+    {
+      "id": "034-fb2-startup-experiment",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/034-fb2-startup-experiment.patch",
+      "sha256": "7e5ae5e891066bbb18e85513a5ae6698061e9bf293c272e10a9e5f9a289e9dec",
+      "scope": "Experimental native FB2 cold new-book prefix layout and background full build; no EPUB spine emulation",
+      "validation": "Device experiment; CI pending. Warm cache and saved-position openings remain full-document."
     },
     {
       "id": "040-reader-controls",
