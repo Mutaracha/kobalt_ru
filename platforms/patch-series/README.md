@@ -191,3 +191,7 @@ Beta10-series-prefix-qt5 относится только к предыдущим
 035 (отключение FB2 Home preload) отозван пользователем после сравнения: в активной
 серии его нет, исходный эксперимент сохранён в doc/archive/beta10-experiments/.
 Предзагрузка FB2 в итоговой конфигурации разрешена, как и до эксперимента.
+
+036 — не оптимизация: наблюдение причин checkRenderContext в FB2 opening stats,
+без изменения cache guards/формата/preload. Runtime1da4445c, CI45491097786 PASS;
+[границы и device шаг](../../doc/reports/patch-series/037-fb2-layout-observation.md).

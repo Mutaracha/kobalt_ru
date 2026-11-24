@@ -3,20 +3,21 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010–060 (включая 033/034), все патчи применяются вместе.
-Последний проверенный бинарник: **f87e2a7f**, [CI45482986925](https://github.com/Mutaracha/kobalt_ru/actions/runs/45482986925),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45482986925/artifacts/14963356876).
+Последний проверенный бинарник: **1da4445c**, [CI45491097786](https://github.com/Mutaracha/kobalt_ru/actions/runs/45491097786),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45491097786/artifacts/14965972454).
 CI: series/native/Qt5/package/qemu PASS; не полная аппаратная приёмка.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-[Новый разбор 4d9985e2](doc/reports/patch-series/036-4d9985e2-device-review.md):
-OFF после reboot и RU cleanup wording приняты. About Kobalt требует брендового
-Instrument Serif. Сравнение без preload: manual A1 11.20 / A2 22.32 s, parsed cache
-читается, но повторный layout остаётся (~3.7 / 16.5 s). По указанию пользователя
-035 убран из активной серии: предзагрузка возвращается для FB2. Shared wordmark
-исправлен для About/opening/exit, heading role не меняется; CI45482986925 PASS,
-визуальная device-проверка About pending. Новая матрица таймингов сейчас не требуется.
+[Точечная диагностика layout-кэша](doc/reports/patch-series/037-fb2-layout-observation.md):
+036 добавляет фактические результаты checkRenderContext (маска причин и saved/current
+операнды) в opening resource stats. Решения/guards/формат кэша и FB2 preload не меняются.
+Runtime1da4445c, CI45491097786 все jobs PASS. Это не исправление скорости: точная
+причина repagination на устройстве ещё не установлена. Узкий device шаг: с логами ON
+и прежним layout/cache вручную A1→A2→A1, без reboot/очистки, затем diagnostics.
+Секундомер необязателен; нужно новое evidence, которого нет в старом архиве.
+OFF persistence и cleanup wording уже приняты; About font fixed, visual pending.
 
 ## Очередь — порядок закрытия
 
@@ -28,7 +29,7 @@ Instrument Serif. Сравнение без preload: manual A1 11.20 / A2 22.32 
 |---|---|---|
 | 1 / B10-UI | partial device accepted | Exit-wordmark, OFF persistence и cleanup wording приняты. About wordmark исправлен через shared Instrument Serif role; CI PASS/device visual pending. |
 | 2 / B10-CACHE | done: observed save/read lifecycle | 46ecb8f: все 12 saves=true; измеренные H1/H2/A1/A2 имеют disk hits, retained отдельно. Низкая стабильная задержка A1 не заявлена: это B10-CACHED-LAYOUT. |
-| 3 / B10-CACHED-LAYOUT | in progress: bounded investigation | 035 — завершённый эксперимент, отозван по указанию пользователя; FB2 preload возвращён. Без него disk-hit repagination остаётся (~3.7/16.5 s). Причина invalidation пока не установлена; не ослаблять guards, не обещать ускорение. |
+| 3 / B10-CACHED-LAYOUT | in progress: bounded investigation | 035 — завершённый эксперимент, отозван по указанию пользователя; FB2 preload возвращён. Без него disk-hit repagination остаётся (~3.7/16.5 s). 036 наблюдает причины checkRenderContext; native/Qt5 CI PASS, device evidence pending. Причина invalidation пока не установлена; не ослаблять guards, не обещать ускорение. |
 | 4 / B10-HYBRID-COVERAGE | planned: bounded validation | Сверить существующие тесты; закрыть конкретные пробелы prefix/full anchors/count, notes/images и close/cancel/lease revocation. Не строить большую новую матрицу ради незаявленного ускорения. Допустим безопасный full fallback. |
 | 5 / B10-FONTS | planned: integration | Подключить полное новое семейство monotype-corsiva.zip в RU-роли с проверкой внутренних имён/начертаний и regressions. Instrument Serif exit-wordmark не менять. |
 | 6 / B10-MENU-STATUS | planned: implementation | Общий для всех книг toggle существующей строки состояния: часы + батарея остаются, время текущего сеанса ↔ страница в книге по нажатию. Persistent global preference, формат/estimated/pending как у BookPage колонтитула. Подробный контракт ниже. |

@@ -53,3 +53,9 @@ skipped, но новые времена 11.20/22.32 s не закрывают ca
 и wording приняты. По решению пользователя 035 удалён из active series, а не стал
 постоянным отключением FB2 preload. Runtime f87e2a7f: About shared wordmark исправлен, CI45482986925 все jobs PASS,
 [пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45482986925/artifacts/14963356876). Device visual pending; preload FB2 восстановлен.
+
+## FB2: наблюдение layout-кэша, runtime1da4445c
+
+[Отчёт037](037-fb2-layout-observation.md): 036 добавляет checkRenderContext operands/reasons,
+не ослабляет guards. CI45491097786 all jobs PASS. Узкая device-проверка A1→A2→A1
+с прежним cache/layout и логами ON; не очередная cold/reboot-матрица. Скорость ещё не исправлена.
