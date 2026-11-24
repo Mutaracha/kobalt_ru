@@ -393,7 +393,7 @@ index c816badcea7d8677f4b54ea92d6603a90999d389..f6cd6fcc3bb1e0c5b25191758ee883af
  
  QString statusText(const Book &book)
 diff --git a/src/app/reader/panels/activity_view.cpp b/src/app/reader/panels/activity_view.cpp
-index c7d3e79dd44dc7954d13138ce92219ee5078f5ac..24bd1d25ad705f3d9fa03859297436ba3e857e58 100644
+index c7d3e79dd44dc7954d13138ce92219ee5078f5ac..1500a602f3b913441bf7b84abdcc555abb733225 100644
 --- a/src/app/reader/panels/activity_view.cpp
 +++ b/src/app/reader/panels/activity_view.cpp
 @@ -108,6 +108,16 @@ QString plural(const char *one, const char *many, qint64 count)
@@ -485,10 +485,67 @@ index c7d3e79dd44dc7954d13138ce92219ee5078f5ac..24bd1d25ad705f3d9fa03859297436ba
                                           : QString(),
                            last.isValid() && last.year() != today.year()
                                    ? QString::number(last.year())
+@@ -2763,7 +2772,7 @@ ActivityView::ActivityView(QWidget *parent) : ui::Panel(parent)
+     title = new reader::SettingsTitle(strings::get("activity.title"), header);
+     title->setObjectName("rrActivityTitle");
+     title->setContentsMargins(chrome::inset, 0, chrome::inset, 0);
+-    ui::readerStyle(title, ui::styles::brand(chrome::titleText) + "background:transparent;");
++    ui::readerStyle(title, ui::styles::heading(chrome::titleText) + "background:transparent;");
+     // A book's page can hide the book from the lists or delete its activity.
+     hideCell = new ui::CellButton(ui::ControlIcon::Hidden, header);
+     hideCell->setObjectName("rrActivityHideBook");
+@@ -3073,7 +3082,7 @@ void ActivityView::arrange()
+                            : detail == Detail::Hidden ? strings::get("activity.hidden_title")
+                                                       : strings::get("activity.title"));
+     // The section cells give way to the title on a narrow screen.
+-    const int titleWidth = ui::interfaceTextWidth(title->text(), ui::brandFont(chrome::titleText))
++    const int titleWidth = ui::interfaceTextWidth(title->text(), ui::interfaceFont(chrome::titleText))
+             + 2 * chrome::inset;
+     const int cell = sub ? int(chrome::cellWidth)
+                          : qBound(int(chrome::compactCellWidth), (width() - titleWidth) / 5,
+diff --git a/src/app/reader/panels/bookmark_list.cpp b/src/app/reader/panels/bookmark_list.cpp
+index a1186de7b581fb67479c79cb4215e0741cb7b7fa..9d717f3748c320b0c202dad15f727235d07894d9 100644
+--- a/src/app/reader/panels/bookmark_list.cpp
++++ b/src/app/reader/panels/bookmark_list.cpp
+@@ -91,10 +91,10 @@ BookmarkList::BookmarkList(QWidget *parent, KeyboardFactory factory)
+     for (auto *tab : { bookmarksTab, annotationsTab }) {
+         tab->setCheckable(true);
+         static_cast<ui::Button *>(tab)->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
+-        tab->setFont(ui::brandFont(chrome::titleText));
++        tab->setFont(ui::interfaceFont(chrome::titleText));
+         ui::readerStyle(tab,
+                         "QPushButton{border:none;padding:0;min-height:0;"
+-                                + ui::styles::brand(chrome::titleText) + "}");
++                                + ui::styles::heading(chrome::titleText) + "}");
+     }
+     connect(bookmarksTab, &QPushButton::clicked, this, [this] {
+         if (tabRequested)
+@@ -155,10 +155,10 @@ void BookmarkList::setWordsView(QWidget *view)
+     wordsTab->setObjectName("rrWordsTab");
+     wordsTab->setCheckable(true);
+     static_cast<ui::Button *>(wordsTab)->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
+-    wordsTab->setFont(ui::brandFont(chrome::titleText));
++    wordsTab->setFont(ui::interfaceFont(chrome::titleText));
+     ui::readerStyle(wordsTab,
+                     "QPushButton{border:none;padding:0;min-height:0;"
+-                            + ui::styles::brand(chrome::titleText) + "}");
++                            + ui::styles::heading(chrome::titleText) + "}");
+     connect(wordsTab, &QPushButton::clicked, this, [this] {
+         if (wordsRequested)
+             wordsRequested();
 diff --git a/src/app/reader/panels/chapter_contents.cpp b/src/app/reader/panels/chapter_contents.cpp
-index 0315df1e6c581e1ca541512fbbe21fb28a94af3e..0fd41dcf116ff553ad37d2870ac5d4b0f8a26e40 100644
+index 0315df1e6c581e1ca541512fbbe21fb28a94af3e..4e82c9e57e77630a9a7e7f94c7989882f71d1d9f 100644
 --- a/src/app/reader/panels/chapter_contents.cpp
 +++ b/src/app/reader/panels/chapter_contents.cpp
+@@ -228,7 +228,7 @@ ChapterContents::ChapterContents(QWidget *parent, QWidget *overlayHost)
+     title = new ContentsTitle(strings::get("chapter_contents.chapters"), this);
+     title->setObjectName("rrContentsTitle");
+     title->setTextFormat(Qt::PlainText);
+-    ui::readerStyle(title, ui::styles::brand(chrome::titleText) + "background:transparent;");
++    ui::readerStyle(title, ui::styles::heading(chrome::titleText) + "background:transparent;");
+     moreButton = new ui::CellButton(ui::ControlIcon::More, this);
+     moreButton->setObjectName("rrContentsMore");
+     moreButton->setRule(Qt::LeftEdge);
 @@ -529,9 +529,7 @@ void ChapterContents::redraw()
  {
      page = qBound(0, page, pageCount() - 1);
@@ -513,6 +570,19 @@ index 15f04b5e90ef338d2de54301007fcb997eac265b..804cd846144bf3140aa8efbea86cb6ba
                                    .arg(hit.chapter.simplified(), hit.text));
      }
  }
+diff --git a/src/app/reader/panels/word_list.cpp b/src/app/reader/panels/word_list.cpp
+index 08af48186e5d13524ddd505272f57d7b9a9bc9f9..d89b55d35ad208d3760be4fcae6982f49bde85e7 100644
+--- a/src/app/reader/panels/word_list.cpp
++++ b/src/app/reader/panels/word_list.cpp
+@@ -64,7 +64,7 @@ WordList::WordList(QWidget *parent, Scope scope) : ui::Panel(parent), scope(scop
+         });
+         title = new ui::InterfaceLabel(strings::get("words.title"), this);
+         title->setTextFormat(Qt::PlainText);
+-        ui::readerStyle(title, ui::styles::brand(chrome::titleText) + "background:transparent;");
++        ui::readerStyle(title, ui::styles::heading(chrome::titleText) + "background:transparent;");
+         count = new ui::InterfaceLabel({}, this);
+         count->setObjectName("rrMyWordsCount");
+         count->setTextFormat(Qt::PlainText);
 diff --git a/src/app/reader/settings/acknowledgments.cpp b/src/app/reader/settings/acknowledgments.cpp
 index 7312df088c28265e881a60e034290de0e5950f51..15dd83c0887ac2f40fc3b42cd07c394c83eb22ab 100644
 --- a/src/app/reader/settings/acknowledgments.cpp
@@ -752,14 +822,16 @@ index 8fd7926a26b6579d198c256830acd9f0ee842912..908c29c82acab46a0ea47b295c65b4e9
      auto *close = new ui::CellButton(ui::ControlIcon::Close, heading);
      close->setObjectName("rrTextPresetGalleryClose");
 diff --git a/src/app/reader/views/image_viewer.cpp b/src/app/reader/views/image_viewer.cpp
-index c4612bacc21a55a6b206f669d577c41c4855f147..cbebbaf0d69b2a0d425def2d116b825519910108 100644
+index c4612bacc21a55a6b206f669d577c41c4855f147..d166fd8f98c252b2af106236754b76644a109ab7 100644
 --- a/src/app/reader/views/image_viewer.cpp
 +++ b/src/app/reader/views/image_viewer.cpp
-@@ -325,7 +325,7 @@ ImageViewer::ImageViewer(QWidget *parent) : Panel(parent)
+@@ -324,8 +324,8 @@ ImageViewer::ImageViewer(QWidget *parent) : Panel(parent)
+     row->setSpacing(0);
      auto *title = new ui::InterfaceLabel(strings::get("image.title"), header);
      title->setObjectName("rrImageTitle");
-     title->setFont(ui::brandFont(chrome::titleText));
+-    title->setFont(ui::brandFont(chrome::titleText));
 -    ui::readerStyle(title, ui::styles::brand(chrome::titleText) + "background:transparent;");
++    title->setFont(ui::interfaceFont(chrome::titleText));
 +    ui::readerStyle(title, ui::styles::heading(chrome::titleText) + "background:transparent;");
      title->setAlignment(Qt::AlignCenter);
      row->addSpacing(chrome::cellWidth);
@@ -1921,10 +1993,10 @@ index 0000000000000000000000000000000000000000..e17b951e8064417e7fad1ac0b5f8a810
 +}
 diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..194ad89cc5be2bcfc704607c2e5a956ea7dbda56
+index 0000000000000000000000000000000000000000..69abda679a4af56dff2b672289351a4cbbb1affa
 --- /dev/null
 +++ b/tests/model/fork_presentation.cpp
-@@ -0,0 +1,85 @@
+@@ -0,0 +1,87 @@
 +#include "check.h"
 +#include "reader_inputs.h"
 +#include "app/about/about_page.h"
@@ -1965,7 +2037,9 @@ index 0000000000000000000000000000000000000000..194ad89cc5be2bcfc704607c2e5a956e
 +        require(textpresets::displayName(preset) == preset.name, "renamed preset translated");
 +        preset.id = "user-defined";
 +        require(textpresets::displayName(preset) == preset.name, "unknown preset translated");
-+        const auto runs = ui::returnTitleRuns(ui::InterfaceLabel(QString::fromUtf8("Выйти из Kobalt")));
++        ui::InterfaceLabel exitTitle(QString::fromUtf8("Выйти из Kobalt"));
++        exitTitle.setFont(ui::interfaceFont(36));
++        const auto runs = ui::returnTitleRuns(exitTitle);
 +        require(runs.size() == 2 && !runs[0].second.italic()
 +                        && runs[0].second.family() == ui::interfaceFont(36).family()
 +                        && runs[1].second.family() == "Instrument Serif"
