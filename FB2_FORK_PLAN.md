@@ -10,15 +10,16 @@ Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-[Device evidence1da4445c](doc/reports/patch-series/038-1da4445c-layout-evidence.md):
-первые manual A1/A2 действительно отвергают layout по style-hash (reasons2), при
-совпадении размеров/flags/stylesheet/policy. Повтор A1 — **дисковый**, retained=false,
-reasons0, paginate10ms против3659ms; после нового startup preload A1 снова reasons2.
-Пять saves успешны. Причина внутри style-hash пока не установлена; не ослаблять guard.
-Новый device-запуск сейчас не нужен. Следующий bounded шаг — host cross-process/font-manager
-reinitialization reproduction и разложение составляющих style-hash до следующей сборки.
-Runtime1da4445c/CI45491097786 остаётся последним проверенным; новой runtime-правки нет.
-OFF persistence/cleanup wording приняты; About visual acceptance явно не сообщена.
+[Host cross-process probe039](doc/reports/patch-series/039-host-cross-process-cache-probe.md):
+037 — только тест, без изменения production cache/preload. Отдельные cold/warm1/warm2
+процессы: короткий и длинный (>250000 символов текста) FB2 оба дают стабильные
+node/global/style hashes и warm reasons0. Changed width отвергается reasons16,
+changed-source isolation сохранена. CI45498201010 и45499862360 все jobs PASS.
+Device mismatch не воспроизведён: нельзя объявить random per-process hash или исправление.
+Следующее bounded действие — реальные source/typography/font inputs, startup/manual ordering.
+Новый device запуск/обновление сейчас не нужны: оставаться на1da4445c. f6c68d26 —
+проверенный test-only revision, не новый performance fix. OFF/cleanup wording приняты,
+About visual acceptance отдельно пока явно не сообщена.
 
 ## Очередь — порядок закрытия
 
@@ -30,7 +31,7 @@ OFF persistence/cleanup wording приняты; About visual acceptance явно
 |---|---|---|
 | 1 / B10-UI | partial device accepted | Exit-wordmark, OFF persistence и cleanup wording приняты. About wordmark исправлен через shared Instrument Serif role; CI PASS/device visual pending. |
 | 2 / B10-CACHE | done: observed save/read lifecycle | 46ecb8f: все 12 saves=true; измеренные H1/H2/A1/A2 имеют disk hits, retained отдельно. Низкая стабильная задержка A1 не заявлена: это B10-CACHED-LAYOUT. |
-| 3 / B10-CACHED-LAYOUT | in progress: bounded investigation | 035 — завершённый эксперимент, отозван по указанию пользователя; FB2 preload возвращён. Без него disk-hit repagination остаётся (~3.7/16.5 s). 036 device: style-hash mismatch подтверждён; repeat A1 disk reuse работает, после startup mismatch возвращается. Причина внутри hash пока не установлена; не ослаблять guards, не обещать ускорение. |
+| 3 / B10-CACHED-LAYOUT | in progress: bounded investigation | 035 — завершённый эксперимент, отозван по указанию пользователя; FB2 preload возвращён. Без него disk-hit repagination остаётся (~3.7/16.5 s). 036 device: style-hash mismatch подтверждён; repeat A1 disk reuse работает, после startup mismatch возвращается. Host separate-process short/long fixtures stable (037/CI PASS), device mismatch не воспроизведён. Причина внутри hash пока не установлена; не ослаблять guards, не обещать ускорение. |
 | 4 / B10-HYBRID-COVERAGE | planned: bounded validation | Сверить существующие тесты; закрыть конкретные пробелы prefix/full anchors/count, notes/images и close/cancel/lease revocation. Не строить большую новую матрицу ради незаявленного ускорения. Допустим безопасный full fallback. |
 | 5 / B10-FONTS | planned: integration | Подключить полное новое семейство monotype-corsiva.zip в RU-роли с проверкой внутренних имён/начертаний и regressions. Instrument Serif exit-wordmark не менять. |
 | 6 / B10-MENU-STATUS | planned: implementation | Общий для всех книг toggle существующей строки состояния: часы + батарея остаются, время текущего сеанса ↔ страница в книге по нажатию. Persistent global preference, формат/estimated/pending как у BookPage колонтитула. Подробный контракт ниже. |

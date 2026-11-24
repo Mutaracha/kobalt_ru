@@ -66,3 +66,10 @@ skipped, но новые времена 11.20/22.32 s не закрывают ca
 reasons0/paginate10ms; после startup preload A1 снова reasons2. Размеры/flags/stylesheet/
 policy совпадают на каждой проверке. Следующий шаг — host hash decomposition и
 cross-process воспроизведение, не новый широкий device-тест. Guard остаётся неизменным.
+
+## Host probe037: отдельные процессы
+
+[Отчёт039](039-host-cross-process-cache-probe.md), [точные hash excerpts](039-host-cache-probe-evidence.json).
+CI45498201010 и45499862360 all jobs PASS. Short/long actual-text fixtures: warm reasons0,
+width isolation reasons16. Device mismatch не воспроизведён; production не менялся,
+нового device-запуска не требуется. Следующий шаг — приблизить source/fonts/typography/order.

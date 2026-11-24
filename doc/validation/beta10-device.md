@@ -30,3 +30,12 @@ Exit-wordmark, cache-cleanup wording и persistence OFF после reboot под
 
 Источники: [4d9985e2](../reports/patch-series/036-4d9985e2-device-review.md),
 [каталог](../../test%20%26%20diagnostic/README.md).
+
+## Host продолжение, без нового device-update
+
+037 добавил отдельные cold/warm процессы и сохранение hash evidence в CI.
+[Host результаты039](../reports/patch-series/039-host-cross-process-cache-probe.md):
+short/long warm reasons0, changed-width reasons16, source isolation PASS; device fault
+не воспроизведён. f6c68d26 test-only, installing generated package не является новым
+диагностическим шагом. На устройстве пока оставаться на1da4445c. Следующее действие
+на host — реальные input/fonts/settings и startup/manual ordering.

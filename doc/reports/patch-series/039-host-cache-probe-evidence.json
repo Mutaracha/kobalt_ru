@@ -1,0 +1,218 @@
+{
+  "short": {
+    "run": 45498201010,
+    "observations": [
+      {
+        "label": "width",
+        "layout": {
+          "checks": 1,
+          "flags": 27,
+          "height": 752,
+          "policy_match": true,
+          "reasons": 16,
+          "rejected": 1,
+          "saved_flags": 27,
+          "saved_height": 752,
+          "saved_style": 201348428,
+          "saved_stylesheet": 1433549502,
+          "saved_width": 504,
+          "style": 201348428,
+          "stylesheet": 1433549502,
+          "width": 524
+        },
+        "trace": [
+          "Calculating style hash...  elemCount=68, globalHash=f577c6a6, docFlags=0000001b, nodeStyleHash=074c3075",
+          "checkRenderContext: Width doesn't match 20c!=1f8",
+          "Calculating style hash...  elemCount=68, globalHash=f577c6a6, docFlags=0000001b, nodeStyleHash=074c3075",
+          "Updating render properties: styleHash=c00554c, stylesheetHash=55723abe, docflags=1b, width=20c, height=2f0, nodeDisplayStyleHash=91b676a1",
+          "Calculating style hash...  elemCount=68, globalHash=f577c6a6, docFlags=0000001b, nodeStyleHash=074c3075",
+          "Updating render properties: styleHash=c00554c, stylesheetHash=55723abe, docflags=1b, width=20c, height=2f0, nodeDisplayStyleHash=91b676a1"
+        ]
+      },
+      {
+        "label": "warm2",
+        "layout": {
+          "checks": 1,
+          "flags": 27,
+          "height": 752,
+          "policy_match": true,
+          "reasons": 0,
+          "rejected": 0,
+          "saved_flags": 27,
+          "saved_height": 752,
+          "saved_style": 201348428,
+          "saved_stylesheet": 1433549502,
+          "saved_width": 504,
+          "style": 201348428,
+          "stylesheet": 1433549502,
+          "width": 504
+        },
+        "trace": [
+          "Calculating style hash...  elemCount=68, globalHash=f577c6a6, docFlags=0000001b, nodeStyleHash=074c3075"
+        ]
+      },
+      {
+        "label": "warm1",
+        "layout": {
+          "checks": 1,
+          "flags": 27,
+          "height": 752,
+          "policy_match": true,
+          "reasons": 0,
+          "rejected": 0,
+          "saved_flags": 27,
+          "saved_height": 752,
+          "saved_style": 201348428,
+          "saved_stylesheet": 1433549502,
+          "saved_width": 504,
+          "style": 201348428,
+          "stylesheet": 1433549502,
+          "width": 504
+        },
+        "trace": [
+          "Calculating style hash...  elemCount=68, globalHash=f577c6a6, docFlags=0000001b, nodeStyleHash=074c3075"
+        ]
+      },
+      {
+        "label": "cold",
+        "layout": {
+          "checks": 1,
+          "flags": 27,
+          "height": 752,
+          "policy_match": false,
+          "reasons": 7,
+          "rejected": 1,
+          "saved_flags": 27,
+          "saved_height": 752,
+          "saved_style": 0,
+          "saved_stylesheet": 1433547966,
+          "saved_width": 504,
+          "style": 1635058960,
+          "stylesheet": 1433549502,
+          "width": 504
+        },
+        "trace": [
+          "Calculating style hash...  elemCount=68, globalHash=7ea52b53, docFlags=0000001b, nodeStyleHash=11435461",
+          "Updating render properties: styleHash=22940bd3, stylesheetHash=557234be, docflags=1b, width=1f8, height=2f0, nodeDisplayStyleHash=ffffffff",
+          "Calculating style hash...  elemCount=68, globalHash=7ea52b53, docFlags=0000001b, nodeStyleHash=11435461",
+          "Updating render properties: styleHash=22940bd3, stylesheetHash=557234be, docflags=1b, width=1f8, height=2f0, nodeDisplayStyleHash=ffffffff",
+          "checkRenderContext: style is not set for root node",
+          "Calculating style hash...  elemCount=68, globalHash=7ea52b53, docFlags=0000001b, nodeStyleHash=aeb29284",
+          "checkRenderContext: Style hash doesn't match 61750510!=0",
+          "Calculating style hash...  elemCount=68, globalHash=7ea52b53, docFlags=0000001b, nodeStyleHash=074c3075",
+          "Updating render properties: styleHash=a87f863f, stylesheetHash=55723abe, docflags=1b, width=1f8, height=2f0, nodeDisplayStyleHash=ffffffff",
+          "Calculating style hash...  elemCount=68, globalHash=f577c6a6, docFlags=0000001b, nodeStyleHash=074c3075",
+          "Updating render properties: styleHash=c00554c, stylesheetHash=55723abe, docflags=1b, width=1f8, height=2f0, nodeDisplayStyleHash=ffffffff"
+        ]
+      }
+    ]
+  },
+  "long": {
+    "run": 45499862360,
+    "observations": [
+      {
+        "label": "width",
+        "layout": {
+          "checks": 1,
+          "flags": 27,
+          "height": 752,
+          "policy_match": true,
+          "reasons": 16,
+          "rejected": 1,
+          "saved_flags": 27,
+          "saved_height": 752,
+          "saved_style": 506298336,
+          "saved_stylesheet": 1433549502,
+          "saved_width": 504,
+          "style": 506298336,
+          "stylesheet": 1433549502,
+          "width": 524
+        },
+        "trace": [
+          "Calculating style hash...  elemCount=6008, globalHash=f577c6a6, docFlags=0000001b, nodeStyleHash=2ced0f61",
+          "checkRenderContext: Width doesn't match 20c!=1f8",
+          "Calculating style hash...  elemCount=6008, globalHash=f577c6a6, docFlags=0000001b, nodeStyleHash=2ced0f61",
+          "Updating render properties: styleHash=1e2d7fe0, stylesheetHash=55723abe, docflags=1b, width=20c, height=2f0, nodeDisplayStyleHash=44236521",
+          "Calculating style hash...  elemCount=6008, globalHash=f577c6a6, docFlags=0000001b, nodeStyleHash=2ced0f61",
+          "Updating render properties: styleHash=1e2d7fe0, stylesheetHash=55723abe, docflags=1b, width=20c, height=2f0, nodeDisplayStyleHash=44236521"
+        ]
+      },
+      {
+        "label": "warm2",
+        "layout": {
+          "checks": 1,
+          "flags": 27,
+          "height": 752,
+          "policy_match": true,
+          "reasons": 0,
+          "rejected": 0,
+          "saved_flags": 27,
+          "saved_height": 752,
+          "saved_style": 506298336,
+          "saved_stylesheet": 1433549502,
+          "saved_width": 504,
+          "style": 506298336,
+          "stylesheet": 1433549502,
+          "width": 504
+        },
+        "trace": [
+          "Calculating style hash...  elemCount=6008, globalHash=f577c6a6, docFlags=0000001b, nodeStyleHash=2ced0f61"
+        ]
+      },
+      {
+        "label": "warm1",
+        "layout": {
+          "checks": 1,
+          "flags": 27,
+          "height": 752,
+          "policy_match": true,
+          "reasons": 0,
+          "rejected": 0,
+          "saved_flags": 27,
+          "saved_height": 752,
+          "saved_style": 506298336,
+          "saved_stylesheet": 1433549502,
+          "saved_width": 504,
+          "style": 506298336,
+          "stylesheet": 1433549502,
+          "width": 504
+        },
+        "trace": [
+          "Calculating style hash...  elemCount=6008, globalHash=f577c6a6, docFlags=0000001b, nodeStyleHash=2ced0f61"
+        ]
+      },
+      {
+        "label": "cold",
+        "layout": {
+          "checks": 1,
+          "flags": 27,
+          "height": 752,
+          "policy_match": false,
+          "reasons": 7,
+          "rejected": 1,
+          "saved_flags": 27,
+          "saved_height": 752,
+          "saved_style": 0,
+          "saved_stylesheet": 1433547966,
+          "saved_width": 504,
+          "style": 868217628,
+          "stylesheet": 1433549502,
+          "width": 504
+        },
+        "trace": [
+          "Calculating style hash...  elemCount=6008, globalHash=7ea52b53, docFlags=0000001b, nodeStyleHash=5df85f91",
+          "Updating render properties: styleHash=472096a3, stylesheetHash=557234be, docflags=1b, width=1f8, height=2f0, nodeDisplayStyleHash=ffffffff",
+          "Calculating style hash...  elemCount=6008, globalHash=7ea52b53, docFlags=0000001b, nodeStyleHash=5df85f91",
+          "Updating render properties: styleHash=472096a3, stylesheetHash=557234be, docflags=1b, width=1f8, height=2f0, nodeDisplayStyleHash=ffffffff",
+          "checkRenderContext: style is not set for root node",
+          "Calculating style hash...  elemCount=6008, globalHash=7ea52b53, docFlags=0000001b, nodeStyleHash=a69d66f8",
+          "checkRenderContext: Style hash doesn't match 33bff31c!=0",
+          "Calculating style hash...  elemCount=6008, globalHash=7ea52b53, docFlags=0000001b, nodeStyleHash=2ced0f61",
+          "Updating render properties: styleHash=baacb0d3, stylesheetHash=55723abe, docflags=1b, width=1f8, height=2f0, nodeDisplayStyleHash=ffffffff",
+          "Calculating style hash...  elemCount=6008, globalHash=f577c6a6, docFlags=0000001b, nodeStyleHash=2ced0f61",
+          "Updating render properties: styleHash=1e2d7fe0, stylesheetHash=55723abe, docflags=1b, width=1f8, height=2f0, nodeDisplayStyleHash=ffffffff"
+        ]
+      }
+    ]
+  }
+}

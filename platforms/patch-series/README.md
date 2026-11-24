@@ -195,3 +195,8 @@ Beta10-series-prefix-qt5 относится только к предыдущим
 036 — не оптимизация: наблюдение причин checkRenderContext в FB2 opening stats,
 без изменения cache guards/формата/preload. Runtime1da4445c, CI45491097786 PASS;
 [границы и device шаг](../../doc/reports/patch-series/037-fb2-layout-observation.md).
+
+037 — host-only cold/warm cross-process cache probe, включая changed-width и source
+isolation. Короткий и длинный FB2: warm reasons0, device fault не воспроизведён.
+[Отчёт039](../../doc/reports/patch-series/039-host-cross-process-cache-probe.md),
+CI45499862360 PASS; production поведение не меняется, device-update не запрашивается.
