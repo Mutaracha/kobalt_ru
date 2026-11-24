@@ -80,7 +80,7 @@ index 5dcfb599a4d854c3cd2f969928af99a41c210923..6b6209880eb7584dd5dc6e873883fb37
 +
 +"activity.hour_unit_one" = "hour";
 diff --git a/assets/ru.strings b/assets/ru.strings
-index d32e1abcbbe2cfcd4d58fbf3984e5da7a8940497..5f3bf247202036a2f82d4e8d19f53d80f235b857 100644
+index 89b52de7d0a1a8e4dd2984e050ecc409443042c5..c64f790d50c9c3707f6ce26e33c29b39cb6c62b6 100644
 --- a/assets/ru.strings
 +++ b/assets/ru.strings
 @@ -213,7 +213,7 @@
@@ -1854,14 +1854,14 @@ index 0000000000000000000000000000000000000000..e7a0b05e6d24667a93c2080f8474e163
 +}
 +} // namespace kobalt::ui
 diff --git a/src/ui/style/fonts.cpp b/src/ui/style/fonts.cpp
-index 3b8a8269c7b43c8a6ae5fae70f5791440934cb64..10176b16069f69ace6a9d6bcc39b4adcef4874e3 100644
+index 3b8a8269c7b43c8a6ae5fae70f5791440934cb64..fb29f00eb7806df3cf0fe82eb8bca940242ffb02 100644
 --- a/src/ui/style/fonts.cpp
 +++ b/src/ui/style/fonts.cpp
 @@ -55,6 +55,8 @@ const QVector<Family> &families()
      };
      static const QVector<Family> russian = [] {
          auto result = value;
-+        // The literal Kobalt wordmark keeps Instrument Serif in every locale.
++        // Keep the original face available without overriding the locale serif role.
 +        result.append(value[int(FamilyIndex::Serif)]);
          result[int(FamilyIndex::Serif)] = { "Monotype Corsiva", { { "MTCORSVA.TTF", "Regular" } } };
          return result;
@@ -1873,7 +1873,7 @@ index 3b8a8269c7b43c8a6ae5fae70f5791440934cb64..10176b16069f69ace6a9d6bcc39b4adc
 +QFont wordmarkFont(int pixels)
 +{
 +    registerFaces();
-+    QFont font(QStringLiteral("Instrument Serif"));
++    QFont font(family(FamilyIndex::Serif, "serif"));
 +    font.setPixelSize(pixels);
 +    font.setWeight(QFont::Normal);
 +    font.setItalic(false);
@@ -1993,10 +1993,10 @@ index 0000000000000000000000000000000000000000..e17b951e8064417e7fad1ac0b5f8a810
 +}
 diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..69abda679a4af56dff2b672289351a4cbbb1affa
+index 0000000000000000000000000000000000000000..c8a469d34cd7d444565bebac3dc6ae8c235beb39
 --- /dev/null
 +++ b/tests/model/fork_presentation.cpp
-@@ -0,0 +1,87 @@
+@@ -0,0 +1,88 @@
 +#include "check.h"
 +#include "reader_inputs.h"
 +#include "app/about/about_page.h"
@@ -2037,12 +2037,13 @@ index 0000000000000000000000000000000000000000..69abda679a4af56dff2b672289351a4c
 +        require(textpresets::displayName(preset) == preset.name, "renamed preset translated");
 +        preset.id = "user-defined";
 +        require(textpresets::displayName(preset) == preset.name, "unknown preset translated");
-+        ui::InterfaceLabel exitTitle(QString::fromUtf8("Выйти из Kobalt"));
++        ui::InterfaceLabel exitTitle(strings::get("reader.exit"));
 +        exitTitle.setFont(ui::interfaceFont(36));
 +        const auto runs = ui::returnTitleRuns(exitTitle);
 +        require(runs.size() == 2 && !runs[0].second.italic()
 +                        && runs[0].second.family() == ui::interfaceFont(36).family()
-+                        && runs[1].second.family() == "Instrument Serif"
++                        && runs[1].second.family() == (locale == strings::Locale::Russian
++                                ? "Monotype Corsiva" : "Instrument Serif")
 +                        && !runs[1].second.italic(), "return title mixed interface/wordmark roles");
 +        require(ui::styles::heading(36).contains("font-style:normal"), "heading inherited italics");
 +        AboutPage about;
@@ -2084,6 +2085,21 @@ index 0000000000000000000000000000000000000000..69abda679a4af56dff2b672289351a4c
 +    }
 +    std::puts("PASS: bilingual sleep ribbon, annotation labels, About and preset presentation");
 +}
+diff --git a/tests/model/ru_control_ui.cpp b/tests/model/ru_control_ui.cpp
+index 1295131c0df09dc0aae87aec11ae40b0c1821809..c77682e2e3cc12ba48da865d8ba369706e90d801 100644
+--- a/tests/model/ru_control_ui.cpp
++++ b/tests/model/ru_control_ui.cpp
+@@ -35,6 +35,10 @@ int main(int argc, char **argv)
+     require(ui::initializeInterfaceFonts(test::readerAssets()), "Control fonts unavailable");
+     require(ui::brandFont(40).family() == (language == strings::Locale::Russian
+                     ? "Monotype Corsiva" : "Instrument Serif"), "Wrong locale serif family");
++    require(ui::wordmarkFont(40).family() == ui::brandFont(40).family(),
++            "Wordmark bypassed the locale serif replacement");
++    require(reader::themePreset("classic").mainFace.isEmpty(),
++            "Handwriting replacement changed the ordinary UI default");
+     require(reader::themePreset("playful").mainFace == (language == strings::Locale::Russian
+                     ? "Caveat" : "Kalam"), "Wrong locale handwriting preset");
+     require(ui::localeStatisticPixels(100) == (language == strings::Locale::Russian ? 80 : 100),
 diff --git a/tests/model/strings_locale.cpp b/tests/model/strings_locale.cpp
 new file mode 100644
 index 0000000000000000000000000000000000000000..9303ec8957d0cf24016b510c618e47d2772d48fc

@@ -8,7 +8,7 @@
       "id": "010-ru",
       "status": "ready",
       "path": "platforms/control-beta10/ru.patch",
-      "sha256": "a2b4ca0a9fd47bebaedb2a6cd7be2e4d19116206af135c2b5c7ca81296255899",
+      "sha256": "47f077c7e65e092c0641a9437a064129a842593b0e88835f1fa37a12a4b352dc",
       "scope": "Reviewed beta10 RU overlay, including its existing font/presentation fixes"
     },
     {
@@ -96,8 +96,8 @@
       "status": "ready",
       "scope": "Remaining approved brand/About/annotation/UI/locale differences, excluding those already in 010-ru; exclude redundant Russian_EnUS.pattern and its fork-only manifest/notice/list entries, preserve Russian.pattern and translation dictionaries",
       "path": "platforms/patch-series/patches/050-fork-presentation.patch",
-      "sha256": "178cf9d9c1a3ae1a898ce49fb99e5c48d78afb04d75b12b0bad3f054205257c6",
-      "validation": "CI 45375027889 on 489ee408: full 010–050 apply/strings/assets/inventory checks, native locale/Debug UI/presentation/preset/RU controls and prior FB2/cache/comics suites PASS; Qt5 build/check-package/qemu refresh PASS. Beta10-series-prefix-qt5 artifact 14910054747. Physical-device and Qt6/Android validation pending. Hardware df8e910a: book startup/raw FB2 accepted by user. UI font-role correction awaiting CI and device review. Hardware df8e910a: book startup/raw FB2 accepted by user. UI font-role correction awaiting CI and device review."
+      "sha256": "79617ce7612e2adfee4f254e237cea165307819f27a08877c9292fa4884eb0db",
+      "validation": "CI 45375027889 on 489ee408: full 010–050 apply/strings/assets/inventory checks, native locale/Debug UI/presentation/preset/RU controls and prior FB2/cache/comics suites PASS; Qt5 build/check-package/qemu refresh PASS. Beta10-series-prefix-qt5 artifact 14910054747. Physical-device and Qt6/Android validation pending. Hardware df8e910a: book startup/raw FB2 accepted by user. UI font-role correction awaiting CI and device review. Hardware df8e910a: book startup/raw FB2 accepted by user. UI font-role correction awaiting CI and device review. Follow-up: wordmark respects RU Monotype Corsiva; bilingual role regression added. Caveat remains the RU replacement for the playful/Kalam default, not for ordinary Sans UI."
     },
     {
       "id": "060-build-integration",

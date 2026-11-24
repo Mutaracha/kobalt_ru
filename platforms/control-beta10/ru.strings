@@ -1438,7 +1438,7 @@
 "settings.rendering_accurate" = "Точный";
 "settings.rendering_accurate_description" = "Сразу рассчитывает всю книгу при её открытии. Медленнее.";
 "settings.rendering_description" = "После закрытия настроек книга перезагрузится на текущем месте.";
-"settings.rendering_fast" = "Быстрее";
+"settings.rendering_fast" = "Быстро";
 "settings.rendering_fast_description" = "Рассчитывает только текущую главу. Страницы приблизительные. Быстрее всего.";
 "settings.rendering_hybrid" = "Гибридный";
 "settings.rendering_hybrid_description" = "Рассчитывает текущую главу, затем всю книгу в фоне. Быстро.";
