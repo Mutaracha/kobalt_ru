@@ -118,7 +118,7 @@ index 90c2847baa0b2485a0270e0657844f2e6d7a97a0..dba0ee94a91a932446591ce4b3f06220
 +}
 +} // namespace kobalt
 diff --git a/src/engine/blaze/adapter/reader_slices.cpp b/src/engine/blaze/adapter/reader_slices.cpp
-index 16e0bd8b2c78507c9743a30636a44869960e4c6e..641c9983b425f7d44d6044068f06a15d882b3667 100644
+index 16e0bd8b2c78507c9743a30636a44869960e4c6e..e23921f1776cd94c4b60a843f7c63f738f567226 100644
 --- a/src/engine/blaze/adapter/reader_slices.cpp
 +++ b/src/engine/blaze/adapter/reader_slices.cpp
 @@ -1,4 +1,5 @@
@@ -147,7 +147,18 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..641c9983b425f7d44d6044068f06a15d
      if (windowFirst_ < 0 || spineItemCount_ <= 0)
          return -1;
      const auto rough = roughPages();
-@@ -810,7 +817,8 @@ int EngineDocument::textBefore(const QString &position) const
+@@ -792,6 +799,10 @@ double EngineDocument::bookFraction() const
+ int EngineDocument::spineItemText() const
+ {
+ #if __has_include(<koblaze.h>)
++    if (fb2StartupSlice_) {
++        auto *body = fb2MainBody();
++        return body ? engine_->getDocument()->koblazeTextLength(body) : 0;
++    }
+     return engine_ ? engine_->getDocument()->getKoblazeSpineItemChars() : 0;
+ #else
+     return 0;
+@@ -810,7 +821,8 @@ int EngineDocument::textBefore(const QString &position) const
          fragment = fragment->getParentNode();
      // The engine counts the text of the body. The styles of the spine item
      // are text beside it.
@@ -157,7 +168,7 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..641c9983b425f7d44d6044068f06a15d
      if (!body)
          return -1;
      int count = 0;
-@@ -925,7 +933,8 @@ bool EngineDocument::pageStartsBlock(int page, int *before) const
+@@ -925,7 +937,8 @@ bool EngineDocument::pageStartsBlock(int page, int *before) const
      // A slice holds whole blocks of the text flow. A table, a float or
      // another such block is laid out as one, so a slice cannot start in it.
      auto *child = block;
@@ -167,7 +178,7 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..641c9983b425f7d44d6044068f06a15d
           child = parent, parent = parent->getParentNode()) {
          // Restarting with only the tail of a flex row changes wrapping and
          // alignment. A slice may start at the first item in the container.
-@@ -984,7 +993,8 @@ bool EngineDocument::earlierContentOnPage(ldomNode *block, int page) const
+@@ -984,7 +997,8 @@ bool EngineDocument::earlierContentOnPage(ldomNode *block, int page) const
      // first text block. Starting the slice at that text would omit the space.
      lvRect first;
      block->getAbsRect(first);
@@ -177,7 +188,7 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..641c9983b425f7d44d6044068f06a15d
           parent = parent->getParentNode()) {
          lvRect box;
          parent->getAbsRect(box);
-@@ -1186,6 +1196,8 @@ bool EngineDocument::enterNextSlice(const std::function<bool()> &current)
+@@ -1186,6 +1200,8 @@ bool EngineDocument::enterNextSlice(const std::function<bool()> &current)
  
  void EngineDocument::prepareAhead(const std::function<bool()> &current)
  {
@@ -186,7 +197,7 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..641c9983b425f7d44d6044068f06a15d
      enterNextSlice(current);
      if (!current || current()) {
          if (page() == 0 && windowFirst_ > 0 && (!slices() || sliceFirst_ == 0))
-@@ -1215,6 +1227,10 @@ bool EngineDocument::showSliceOf(const QString &position)
+@@ -1215,6 +1231,10 @@ bool EngineDocument::showSliceOf(const QString &position)
      };
      if (before >= sliceFirst_ && before < sliceEnd_ && laidOut())
          return true;
@@ -197,7 +208,7 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..641c9983b425f7d44d6044068f06a15d
      if (!showSliceAt(before))
          return false;
      // A block belongs to the slice in which it starts. A position late in
-@@ -1316,6 +1332,9 @@ QVector<int> EngineDocument::bookPages(const QStringList &positions,
+@@ -1316,6 +1336,9 @@ QVector<int> EngineDocument::bookPages(const QStringList &positions,
  {
      if (!engine_)
          return QVector<int>(positions.size(), -1);
@@ -207,7 +218,7 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..641c9983b425f7d44d6044068f06a15d
      if (windowFirst_ < 0) {
          auto pages = pagesOf(positions, rangeEndpoints, nullptr, current);
          for (int &page : pages)
-@@ -1346,6 +1365,7 @@ QVector<int> EngineDocument::wholeBookPages(const QStringList &positions,
+@@ -1346,6 +1369,7 @@ QVector<int> EngineDocument::wholeBookPages(const QStringList &positions,
  
  int EngineDocument::wholeBookPageCount() const
  {
@@ -215,7 +226,7 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..641c9983b425f7d44d6044068f06a15d
      if (windowFirst_ < 0)
          return pages();
      return fullDocumentReady() ? full_->pages() : 0;
-@@ -1356,7 +1376,7 @@ void EngineDocument::prepareWholeBookText(const QString &first, const QString &a
+@@ -1356,7 +1380,7 @@ void EngineDocument::prepareWholeBookText(const QString &first, const QString &a
  {
      // The whole book finds its own main text and counts its own words: both
      // are kept with it, and the chapter document's figures can differ.
@@ -224,7 +235,7 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..641c9983b425f7d44d6044068f06a15d
          return;
      full_->mainTextHints();
      full_->wordsInMainText(first, after, current);
-@@ -1364,6 +1384,7 @@ void EngineDocument::prepareWholeBookText(const QString &first, const QString &a
+@@ -1364,6 +1388,7 @@ void EngineDocument::prepareWholeBookText(const QString &first, const QString &a
  
  QVector<ChapterLink> EngineDocument::wholeBookChapters() const
  {
@@ -370,10 +381,18 @@ index 77689548fef1233e9eb81418863fd0747e52866d..a3621d22378025b27e3cd6b47fa905f0
      if ( node == body && length > _koblazeSpineItemChars )
          _koblazeSpineItemChars = length;
 diff --git a/tests/model/fb2_engine.cpp b/tests/model/fb2_engine.cpp
-index 496968440278edb0bd2fd5153206b201715d3c12..16f21c487cb8603b5bc07294a1a62e5378f9a2c5 100644
+index 496968440278edb0bd2fd5153206b201715d3c12..37e00bcbe59ac7c8f1831f2fae44bea8c8342dac 100644
 --- a/tests/model/fb2_engine.cpp
 +++ b/tests/model/fb2_engine.cpp
-@@ -156,6 +156,41 @@ void cachedFictionBook()
+@@ -10,6 +10,7 @@
+ #include <QFile>
+ #include <QTemporaryDir>
+ #include <QDir>
++#include <QJsonDocument>
+ 
+ using namespace kobalt;
+ namespace {
+@@ -156,6 +157,43 @@ void cachedFictionBook()
          require(!document.openedFromCache(), "FB2 cache eviction left the mapped book available");
      }
  }
@@ -392,7 +411,9 @@ index 496968440278edb0bd2fd5153206b201715d3c12..16f21c487cb8603b5bc07294a1a62e53
 +    require(accurate.open(bytes, {600, 800}, {{"koblaze_first_spine_item", -1}}, &error), qPrintable(error));
 +    EngineDocument prefix(test::readerFonts());
 +    require(prefix.open(bytes, {600, 800}, {}, &error), qPrintable(error));
-+    require(prefix.partOfBook() && prefix.continuesAfter(), "FB2 cold prefix not active");
++    std::fprintf(stderr, "PREFIX active=%d continues=%d pages=%d full=%d stats=%s\n", prefix.partOfBook(), prefix.continuesAfter(), prefix.pages(), accurate.pages(), QJsonDocument(prefix.resourceStats()).toJson(QJsonDocument::Compact).constData());
++    require(prefix.partOfBook(), "FB2 cold prefix not active");
++    require(prefix.continuesAfter(), "FB2 prefix did not retain continuation");
 +    require(prefix.wholeBookPageCount() == 0 && prefix.pages() < accurate.pages(), "prefix claimed full pages");
 +    require(!prefix.image(0).isNull(), "prefix first frame blank");
 +    require(!prefix.saveDocumentCache(), "prefix allowed full-book cache save");
@@ -415,7 +436,7 @@ index 496968440278edb0bd2fd5153206b201715d3c12..16f21c487cb8603b5bc07294a1a62e53
  }
  int main(int argc, char **argv)
  {
-@@ -163,6 +198,7 @@ int main(int argc, char **argv)
+@@ -163,6 +201,7 @@ int main(int argc, char **argv)
      setChapterModeOverride(1);
      engineAndResources();
      cachedFictionBook();
