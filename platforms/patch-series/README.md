@@ -160,4 +160,5 @@ artifact `14904792738`, содержит 010–040 с toolbar dark/comics.
 050 — последний функциональный номер текущего плана, но не последний этап:
 после него остаётся 060 packaging/provenance/full-stack CI.
 [Подготовка 050 и остаток после 010–040](../../doc/reports/patch-series/presentation-preparation.md).
-050 пока не подготовлен как runtime patch; этот аудит не меняет тестовый пакет.
+050 prepared: первый runtime-срез языка/Debug/markers с тестами включён;
+полный presentation-остаток ещё не перенесён, 050 не ready.

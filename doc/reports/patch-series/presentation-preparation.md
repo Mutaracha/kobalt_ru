@@ -1,6 +1,6 @@
 # 050 — подготовка последнего функционального патча
 
-Статус: **in progress — аудит остатка, runtime-патч ещё не подготовлен**.
+Статус: **in progress — первый runtime-срез 050 подготовлен; весь 050 не завершён**.
 Проверяемый вход: pristine beta10 `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`
 плюс ready 010–040 из `41c11e37d6da34255d875109638fe1aea2799283`.
 Retained reference: `ca50dd358386e9fccc5122b464f74003caa51e75`.
@@ -108,7 +108,37 @@ hooks против нового beta10, сохранить arrow placement и RU
 5. SHA256 патча, clean apply 010–050, локальные series tests, native suites,
    Qt5 build/check-package/qemu и новый Beta10-series-prefix-qt5 artifact.
 
-050 остаётся planned в series.json до появления воспроизводимого runtime
-патча. Этот документ не меняет binary, не является результатом CI для 050 и не
-объявляет весь retained fork перенесённым. После ready 050 — 060 full-stack
+050 теперь prepared в series.json: в патче первая языковая часть. Это ещё не
+полный 050 и не завершение переноса. После ready 050 — 060 full-stack
 packaging/CI и отдельная аппаратная проверка.
+
+
+## Первый runtime-срез 050
+
+Подготовлены support locale/markers, canonical English diagnostics table,
+RU CLDR suffixes и fallback, async settings-owned language dialog, стандартная
+первая Debug action row и startup/session hooks desktop/Android/Kobo. Убрана
+жёсткая установка Russian из контрольного 010; default/fallback теперь English,
+а Russian выбирается устройством/ENV/markers. Формы library count используют
+CLDR вместо литерала «1 книга» (включая 21/101). Остальные CLDR consumers ещё
+нужно пройти вместе с presentation-остатком.
+
+Регистрируются `model.strings-locale` (normalization, tables, dates/numbers,
+plural forms, config, markers, async lifetime) и `component.debug-language-ui`
+(отмена без записи, повторное открытие, async choice и отсутствие live смены
+locale). Qt5 компилирует helper через Kobo source glob; desktop core имеет
+явную регистрацию support sources. Выбор языка не добавлен в About.
+
+В language modal оставлены штатные beta10 RadioList dividers вместо переноса
+старой реализации RadioList, чтобы не потерять новые two-column/layout rules.
+Общий Settings action style берётся из текущего beta10 listAction.
+
+Локальные 10 series tests проходят. В первом CI Qt5 build/package/qemu прошёл,
+но native configure остановился на незарегистрированных area labels двух новых
+тестов; labels добавлены, тесты не убраны. Итоговый native/runtime результат
+следующего прогона пока pending. Не считать первый успешный Qt5 job приёмкой
+языковой формы на устройстве.
+
+Legacy device workflow остаётся отключённым. Ordered workflow больше не
+собирает binary на report-only изменения и отменяет устаревший прогон своей
+группы при новом push, чтобы не тратить время на заменённые сборки.

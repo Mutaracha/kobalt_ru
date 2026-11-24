@@ -205,6 +205,20 @@ index 910adb5b1de195af6cef40b8a6b2c70134af38a8..4bda858f951a488cc47ad0c57247fb1a
      // A preload that is still running gives way to the book that was tapped.
      // One that finished is the kept book in run.session.
      cancelPreload();
+diff --git a/src/app/library/library_view.cpp b/src/app/library/library_view.cpp
+index c816badcea7d8677f4b54ea92d6603a90999d389..f6cd6fcc3bb1e0c5b25191758ee883af86cdd143 100644
+--- a/src/app/library/library_view.cpp
++++ b/src/app/library/library_view.cpp
+@@ -92,8 +92,7 @@ QSize listCells(QSize screen, int availableHeight)
+ 
+ QString countText(int count)
+ {
+-    return count == 1 ? strings::get("library.count_one")
+-                      : strings::get("library.count").arg(count);
++    return strings::plural(count, "library.count");
+ }
+ 
+ QString statusText(const Book &book)
 diff --git a/src/app/reader/settings/debug_language_dialog.cpp b/src/app/reader/settings/debug_language_dialog.cpp
 new file mode 100644
 index 0000000000000000000000000000000000000000..26796d377219203e14ec1c9abf0743b1e678c588
