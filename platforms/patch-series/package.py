@@ -30,7 +30,8 @@ def prepare(root, output):
         raise ValueError('Checkout differs from workflow source commit')
     output.mkdir(parents=True)
     apply_to(root, manifest, output, ready_only=True)
-    provenance = dict(schema=1, policy='full-series-hardware-unverified',
+    version = json.loads((output / 'assets/manifest.json').read_text())['version']
+    provenance = dict(version=version, schema=1, policy='full-series-hardware-unverified',
                       commit=commit, upstream=data['upstream'], fork_source=data['fork_source'],
                       manifest_sha256=hashlib.sha256(manifest.read_bytes()).hexdigest(),
                       patches=data['patches'], run_url=os.environ.get('GITHUB_SERVER_URL', 'https://github.com')
@@ -38,7 +39,7 @@ def prepare(root, output):
                       + '/actions/runs/' + os.environ.get('GITHUB_RUN_ID', 'local'))
     (output / 'series-provenance.json').write_text(json.dumps(provenance, indent=2) + '\n')
     # Used by desktop's source-info.cmake too; Kobo receives the same commit explicitly.
-    (output / 'source-info.json').write_text(json.dumps({'commit': commit}) + '\n')
+    (output / 'source-info.json').write_text(json.dumps({'commit': commit, 'version': version}) + '\n')
 
 
 def collect(source, destination, instructions):
