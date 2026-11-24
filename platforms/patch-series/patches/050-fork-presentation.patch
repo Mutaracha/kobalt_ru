@@ -2404,3 +2404,80 @@ index 824e502c0bfe171a9d5ab3cb1776049b92df1c14..d9273e4bbb1b77bbb7fefe99b0488786
      // An empty saved list stays empty: deleting every preset is respected.
      QJsonObject empty;
      store(empty, {});
+diff --git a/src/ui/controls/return_title_text.h b/src/ui/controls/return_title_text.h
+--- a/src/ui/controls/return_title_text.h
++++ b/src/ui/controls/return_title_text.h
+@@ -18,7 +18,10 @@
+         runs.append({label.text(), face});
+     } else {
+         if (at) runs.append({label.text().left(at), face});
+-        runs.append({label.text().mid(at, 6), wordmarkFont(label.font().pixelSize())});
++        auto wordmark = wordmarkFont(label.font().pixelSize());
++        // The Latin application name is not a localized serif caption.
++        wordmark.setFamily(QStringLiteral("Instrument Serif"));
++        runs.append({label.text().mid(at, 6), wordmark});
+         if (at + 6 < label.text().size()) runs.append({label.text().mid(at + 6), face});
+     }
+     return runs;
+@@ -38,7 +41,7 @@
+ 
+ inline void paintReturnTitle(QPainter &painter, const QRect &bounds, const InterfaceLabel &label) {
+     // Preserve the brand word, but draw the surrounding interface text
+-    // in Sans. Measure and paint the same runs on a common baseline.
++    // in the locale UI face. Measure and paint the same runs on a common baseline.
+     const auto runs = returnTitleRuns(label);
+     QRect ink;
+     int advance = 0;
+diff --git a/src/ui/style/private_text.cpp b/src/ui/style/private_text.cpp
+--- a/src/ui/style/private_text.cpp
++++ b/src/ui/style/private_text.cpp
+@@ -684,8 +684,7 @@
+     };
+     static const QStringList russian = [] {
+         auto files = english;
+-        files.removeAll("InstrumentSerif-Regular.ttf");
+-        files.removeAll("InstrumentSerif-Italic.ttf");
++        // The exit-title Latin wordmark still uses Instrument Serif.
+         files.append("MTCORSVA.TTF");
+         return files;
+     }();
+diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
+--- a/tests/model/fork_presentation.cpp
++++ b/tests/model/fork_presentation.cpp
+@@ -43,8 +43,7 @@
+         const auto runs = ui::returnTitleRuns(exitTitle);
+         require(runs.size() == 2 && !runs[0].second.italic()
+                         && runs[0].second.family() == ui::brandFont(36, false).family()
+-                        && runs[1].second.family() == (locale == strings::Locale::Russian
+-                                ? "Monotype Corsiva" : "Instrument Serif")
++                        && runs[1].second.family() == QStringLiteral("Instrument Serif")
+                         && !runs[1].second.italic(), "return title mixed interface/wordmark roles");
+         require(ui::styles::heading(36).contains("font-style:normal"), "heading inherited italics");
+         AboutPage about;
+diff --git a/tests/model/diagnostics.cpp b/tests/model/diagnostics.cpp
+--- a/tests/model/diagnostics.cpp
++++ b/tests/model/diagnostics.cpp
+@@ -68,6 +68,23 @@
+         qFatal("No temporary directory");
+     if (kobalt::diagnosticsActive())
+         qFatal("Diagnostics reported active before initialization");
++    kobalt::initializeDiagnostics(directory.path());
++#ifndef KOBALT_VERBOSE_DIAGNOSTICS
++    // Release/device builds must permit the Debug checkbox to persist both states.
++    qunsetenv("KOBALT_DIAGNOSTICS");
++    kobalt::setDiagnosticsMarker(directory.path());
++    if (kobalt::diagnosticsMarker().isEmpty() || kobalt::diagnosticsRequested(directory.path()))
++        qFatal("Fresh diagnostic profile is not switchable/off");
++    kobalt::setDetailedDiagnostics(true);
++    kobalt::flushDiagnostics();
++    if (!kobalt::detailedDiagnostics() || !kobalt::diagnosticsRequested(directory.path()))
++        qFatal("Enabling diagnostics was not persisted");
++    kobalt::setDetailedDiagnostics(false);
++    kobalt::flushDiagnostics();
++    if (kobalt::detailedDiagnostics() || kobalt::diagnosticsRequested(directory.path()))
++        qFatal("Disabling diagnostics was not persisted");
++    kobalt::setDiagnosticsMarker({});
++#endif
+     kobalt::initializeDiagnostics(directory.path());
+     if (!kobalt::diagnosticsActive())
+         qFatal("Initialized diagnostics reported inactive");

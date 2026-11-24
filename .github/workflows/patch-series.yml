@@ -65,14 +65,14 @@ jobs:
               if [[ "$SDK" == linux ]]; then
                 cd platforms/desktop
                 cmake --preset linux -DKOBALT_FORK_NAME=kobalt_ru -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
-                cmake --build --preset linux --parallel 4 --target kobalt-local-resources-tests kobalt-zip-resource-tests kobalt-plain-archive-tests kobalt-fb2-engine-tests kobalt-fb2-cache-session-tests kobalt-nickel-book-menu-tests kobalt-appearance-settings-tests kobalt-comics-layout-tests kobalt-comics-tests kobalt-resource-cache-tests kobalt-comics-ui-tests kobalt-reader-controls-tests kobalt-strings-locale-tests kobalt-debug-language-ui-tests kobalt-fork-presentation-tests kobalt-text-presets-tests kobalt-ru-control-ui-tests kobalt-columns-tests kobalt-chapter-parity-tests
-                for test in local-resources zip-resource plain-archive fb2-engine; do
+                cmake --build --preset linux --parallel 4 --target kobalt-diagnostics-tests kobalt-local-resources-tests kobalt-zip-resource-tests kobalt-plain-archive-tests kobalt-fb2-engine-tests kobalt-fb2-cache-session-tests kobalt-nickel-book-menu-tests kobalt-appearance-settings-tests kobalt-comics-layout-tests kobalt-comics-tests kobalt-resource-cache-tests kobalt-comics-ui-tests kobalt-reader-controls-tests kobalt-strings-locale-tests kobalt-debug-language-ui-tests kobalt-fork-presentation-tests kobalt-text-presets-tests kobalt-ru-control-ui-tests kobalt-columns-tests kobalt-chapter-parity-tests
+                for test in diagnostics local-resources zip-resource plain-archive fb2-engine; do
                   QT_QPA_PLATFORM=offscreen "/work/build/desktop-linux/kobalt-$test-tests"
                 done
                 QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^((model|platform)\.(nickel-book-menu|appearance-settings|resource-cache|fb2-cache-session|strings-locale|text-presets)|engine\.(comics-layout|comics|columns|chapter-parity)|component\.(comics-ui|reader-controls|debug-language-ui|fork-presentation|ru-control-ui))$"
               else
                 cd platforms/kobo
-                cmake --preset qt5 -DKOBALT_FORK_NAME=kobalt_ru -DKOBALT_COMMIT="$SOURCE_COMMIT" -DKOBALT_COMMIT_MODIFIED=OFF -DKOBALT_VERBOSE_DIAGNOSTICS=ON -DKOBALT_BUILD_TESTS=ON -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
+                cmake --preset qt5 -DKOBALT_FORK_NAME=kobalt_ru -DKOBALT_COMMIT="$SOURCE_COMMIT" -DKOBALT_COMMIT_MODIFIED=OFF -DKOBALT_VERBOSE_DIAGNOSTICS=OFF -DKOBALT_BUILD_TESTS=ON -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
                 cmake --build --preset qt5 --parallel 4
                 cmake --build --preset qt5 --target check-package kobalt-qt5-refresh-tests
                 ctest --test-dir /work/build/kobo-qt5 --output-on-failure --no-tests=error -R "^pewter[.]qt5-refresh$"
