@@ -79,7 +79,7 @@
       "id": "034-fb2-startup-experiment",
       "status": "ready",
       "path": "platforms/patch-series/patches/034-fb2-startup-experiment.patch",
-      "sha256": "d85e2e70a50647b315215f4821b5962210065efe622001055ccadf2523a5c46f",
+      "sha256": "c8f52c727e3f4d33f3049eb95c7c0b8b4222eda7eb8869ac557251e6f13182c6",
       "scope": "Experimental native FB2 cold new-book prefix layout and background full build; no EPUB spine emulation",
       "validation": "Device experiment; CI pending. Warm cache and saved-position openings remain full-document."
     },

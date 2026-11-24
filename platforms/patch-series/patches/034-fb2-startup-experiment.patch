@@ -421,7 +421,7 @@ index 77689548fef1233e9eb81418863fd0747e52866d..a3621d22378025b27e3cd6b47fa905f0
      if ( node == body && length > _koblazeSpineItemChars )
          _koblazeSpineItemChars = length;
 diff --git a/tests/model/fb2_engine.cpp b/tests/model/fb2_engine.cpp
-index 496968440278edb0bd2fd5153206b201715d3c12..0bdbfac42c82f9f63ac7eb12cf991584b6464cf4 100644
+index 496968440278edb0bd2fd5153206b201715d3c12..e4ebaaf165679666758bbe30e039935d2e017c6f 100644
 --- a/tests/model/fb2_engine.cpp
 +++ b/tests/model/fb2_engine.cpp
 @@ -10,6 +10,7 @@
@@ -446,7 +446,7 @@ index 496968440278edb0bd2fd5153206b201715d3c12..0bdbfac42c82f9f63ac7eb12cf991584
 +        paragraphs += "<p>Cold prefix paragraph " + QByteArray::number(i)
 +                + " contains words for a long native FictionBook layout test. More words here.</p>";
 +    bytes.replace("</section>\n", paragraphs + "</section>\n");
-+    bytes.replace("<body>", "<body name="MAIN">");
++    bytes.replace("<body>", "<body name='MAIN'>");
 +    QString error;
 +    EngineDocument accurate(test::readerFonts());
 +    require(accurate.open(bytes, {600, 800}, {{"koblaze_first_spine_item", -1}}, &error), qPrintable(error));
