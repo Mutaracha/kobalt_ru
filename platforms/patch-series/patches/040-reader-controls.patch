@@ -1,0 +1,771 @@
+diff --git a/assets/acknowledgments.json b/assets/acknowledgments.json
+index 9658884b7b7f4be5c38ea0a9c5eb7e7e7b62431c..7963db7f1dc5035e1503d2eaa885826d8a75ec8d 100644
+--- a/assets/acknowledgments.json
++++ b/assets/acknowledgments.json
+@@ -341,6 +341,17 @@
+       "Instrument-Serif-OFL"
+     ]
+   },
++  {
++    "group": "icons",
++    "name": "Fluent UI System Icons",
++    "version": "ic_fluent_dark_theme_24_regular",
++    "description": "Dark mode quick-toggle glyph in the reading menu, by Microsoft Corporation.",
++    "license": "MIT",
++    "url": "https://github.com/microsoft/fluentui-system-icons",
++    "notices": [
++      "Fluent-MIT"
++    ]
++  },
+   {
+     "group": "icons",
+     "name": "Phosphor Icons",
+diff --git a/assets/en.strings b/assets/en.strings
+index bff23aba2b9328336d5bb5c107323b5a0b88906e..5dcfb599a4d854c3cd2f969928af99a41c210923 100644
+--- a/assets/en.strings
++++ b/assets/en.strings
+@@ -2123,3 +2123,11 @@
+ "reader.comics_reading_mode" = "Comics reading mode";
+ 
+ "reader.comics_reading_mode_description" = "Hides margins, headers and footers, ignoring the current layout settings.";
++
++"features.dark_mode" = "Dark theme toggle";
++
++"features.dark_mode_description" = "Hides the dark theme toggle in the reading menu. Your current theme is kept.";
++
++"features.comics" = "Comics mode toggle";
++
++"features.comics_description" = "Hides the comics mode toggle in the reading menu. The current reading mode is preserved.";
+diff --git a/assets/notices/Fluent-MIT b/assets/notices/Fluent-MIT
+new file mode 100644
+index 0000000000000000000000000000000000000000..48bc6bb4996ac924359e8e28b9ae88970e5ed3fc
+--- /dev/null
++++ b/assets/notices/Fluent-MIT
+@@ -0,0 +1,21 @@
++MIT License
++
++Copyright (c) Microsoft Corporation
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
+diff --git a/assets/ru.strings b/assets/ru.strings
+index 6b66a12a77b0629c3d4475abac7a1e9a66479825..d32e1abcbbe2cfcd4d58fbf3984e5da7a8940497 100644
+--- a/assets/ru.strings
++++ b/assets/ru.strings
+@@ -1811,3 +1811,11 @@
+ "reader.comics_reading_mode" = "Режим чтения комиксов";
+ 
+ "reader.comics_reading_mode_description" = "Убирает поля и колонтитулы, игнорируя текущие настройки раскладки.";
++
++"features.dark_mode" = "Переключатель тёмной темы";
++
++"features.dark_mode_description" = "Скрывает переключатель тёмной темы в меню чтения. Текущая тема сохраняется.";
++
++"features.comics" = "Переключатель режима комиксов";
++
++"features.comics_description" = "Скрывает переключатель режима комиксов в меню чтения. Текущий режим чтения сохраняется.";
+diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
+index 1a5d40c35c76521e6c768e36c9bf37917c43d59a..839f588fe2cbd11c32d545a5c1fd4dfb2e1bb680 100644
+--- a/platforms/desktop/CMakeLists.txt
++++ b/platforms/desktop/CMakeLists.txt
+@@ -816,7 +816,7 @@ if(BUILD_TESTING)
+     kobalt_regressions(engine fb2_engine comics_layout comics)
+     kobalt_regressions(engine epub_compatibility large_toc vertical_spacing source_index location_round_trip engine_contract text_sample page_estimate layout_interrupt spine_window chapter_slices chapter_parity fast_surfaces fast_shaping columns advanced_text paragraph_spacing beautifier alignment indentation page_layout vertical_writing mathml line_breaking
+         css_class_index compiled_hyphenation fallback_styles svg_limits image_proportions figure_layout whitespace links search word_selection reader publisher_markup local_reader document_word_count document_cache alternate_layout)
+-    kobalt_regressions(component ui acknowledgments kosync_ui comics_ui)
++    kobalt_regressions(component ui acknowledgments kosync_ui comics_ui reader_controls)
+     kobalt_regressions(component ru_control_ui)
+     target_sources(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}/platforms/kobo/display/page_animation.cpp")
+     target_include_directories(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}" "${source}")
+@@ -845,7 +845,7 @@ if(BUILD_TESTING)
+     set(kobalt_test_areas
+         "reading:^model[.]fb2-cache-session$"
+         "reading:^engine[.](fb2-engine|comics-layout|comics)$"
+-        "settings:^component[.](ru-control-ui|comics-ui)$"
++        "settings:^component[.](ru-control-ui|comics-ui|reader-controls)$"
+         "gallery:^(build\\.screenshotBooks|desktop\\.(gallery.*|phoneFrame|primaryViews))$"
+         "evaluation:^(build\\.(loadLock|eval-device-outcomes)|desktop\\.(scenarioCacheRemoval|scenarioResultFile|timingEvents|fastLocateText|deviceChecks)|platform\\.scenario-sleep|lifecycle\\.benchmarkNoticeAfterRun)$"
+         "kosync:^(lifecycle\\.(kosync.*|wifi.*)|desktop\\.(fastKosyncChoice|kosyncChoice|syncChoiceView)|model\\.(kosync|sync-coordinator)|component\\.kosync-ui|platform\\.native-sync-network)$"
+diff --git a/src/app/reader/settings/settings_panel.cpp b/src/app/reader/settings/settings_panel.cpp
+index c11b502668ec285f87ddb83442a4bd7c3bc96f6f..9242f5db332b0c182159931e41d4c54f8b6bd6ac 100644
+--- a/src/app/reader/settings/settings_panel.cpp
++++ b/src/app/reader/settings/settings_panel.cpp
+@@ -84,6 +84,8 @@ constexpr FeatureOption featureOptions[] = {
+     { features::Bookmarks, "features.bookmarks", ui::ControlIcon::Bookmark },
+     { features::HighlightLinks, "features.highlight_links", ui::ControlIcon::Link },
+     { features::Words, "features.words", ui::ControlIcon::Note },
++    { features::DarkMode, "features.dark_mode", ui::ControlIcon::DarkTheme },
++    { features::Comics, "features.comics", ui::ControlIcon::Comics },
+ };
+ static_assert(sizeof(featureOptions) / sizeof(*featureOptions)
+                       == sizeof(features::keys) / sizeof(*features::keys),
+diff --git a/src/app/reader/views/fork_navigation.cpp b/src/app/reader/views/fork_navigation.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..40dd3a68e4ac7a24bf2b08348c50140a23d7e419
+--- /dev/null
++++ b/src/app/reader/views/fork_navigation.cpp
+@@ -0,0 +1,67 @@
++#include "ui/controls/rows.h"
++#include <QEvent>
++#include "fork_navigation.h"
++#include "navigation.h"
++#include "support/strings.h"
++#include "ui/style/fonts.h"
++#include "ui/style/styles.h"
++#include "ui/controls/text.h"
++#include <QPushButton>
++
++namespace kobalt::reader {
++namespace chrome = ui::metrics::chrome;
++
++// Use one shared ink height for all translated labels. Latin H alone is
++// shorter than Cyrillic Д (in НАВИГАЦИЯ/РАСКЛАДКА); the private text painter
++// clips to this area after centering, otherwise cutting both edges of Д.
++QRect forkui::tabInkBounds(int pixels)
++{
++    QString sample = QStringLiteral("H");
++    for (const auto *key : { "navigation.chapters", "navigation.seek", "navigation.text",
++                             "navigation.layout", "navigation.light", "navigation.stats" })
++        sample += QLatin1Char(' ') + strings::get(key);
++    return ui::interfaceInkBounds(sample, ui::interfaceFont(pixels));
++}
++
++void Navigation::styleForkToolbarActions()
++{
++    if (darkTheme) {
++        darkThemeStyle = darkTheme->styleSheet();
++        ui::readerStyle(darkTheme, "QPushButton{border:none;padding:0;}");
++        darkTheme->setFixedSize(chrome::cellWidth, chrome::actionHeight);
++        if (auto *button = dynamic_cast<ui::Button *>(darkTheme)) {
++            darkThemePaint = button->paintMode();
++            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
++        }
++    }
++    if (comics) {
++        comicsStyle = comics->styleSheet();
++        ui::readerStyle(comics, "QPushButton{border:none;padding:0;}");
++        comics->setFixedSize(chrome::cellWidth, chrome::actionHeight);
++        if (auto *button = dynamic_cast<ui::Button *>(comics)) {
++            comicsPaint = button->paintMode();
++            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
++        }
++    }
++}
++
++void Navigation::restoreForkToolbarActions()
++{
++    if (darkTheme) {
++        darkTheme->setStyleSheet(darkThemeStyle);
++        darkTheme->setFixedSize(ui::metrics::control::toolbarButtonSize,
++                                ui::metrics::control::toolbarButtonSize);
++        if (auto *button = dynamic_cast<ui::Button *>(darkTheme)) {
++            button->setPaintMode(darkThemePaint);
++        }
++    }
++    if (comics) {
++        comics->setStyleSheet(comicsStyle);
++        comics->setFixedSize(ui::metrics::control::toolbarButtonSize,
++                             ui::metrics::control::toolbarButtonSize);
++        if (auto *button = dynamic_cast<ui::Button *>(comics)) {
++            button->setPaintMode(comicsPaint);
++        }
++    }
++}
++} // namespace kobalt::reader
+diff --git a/src/app/reader/views/fork_navigation.h b/src/app/reader/views/fork_navigation.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..4109ca844f6d0e8fd3b54ba3b6dfabf3e13df1ef
+--- /dev/null
++++ b/src/app/reader/views/fork_navigation.h
+@@ -0,0 +1,5 @@
++#pragma once
++#include <QRect>
++namespace kobalt::reader::forkui {
++QRect tabInkBounds(int pixels);
++} // namespace kobalt::reader::forkui
+diff --git a/src/app/reader/views/navigation.cpp b/src/app/reader/views/navigation.cpp
+index 9dc5203e8090b13ceb6f936b279f9477eee9ab54..d270982e90f40cab233559a17cc9d3cd3b47d4b2 100644
+--- a/src/app/reader/views/navigation.cpp
++++ b/src/app/reader/views/navigation.cpp
+@@ -819,7 +819,7 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
+       wifi(controls.wifi),
+       formattingWarning(controls.formattingWarning),
+       search(controls.search),
+-      sync(controls.sync)
++      sync(controls.sync), darkTheme(controls.darkTheme), comics(controls.comics)
+ {
+     zenViewBase = new ZenViewBase(parent);
+     zenViewBase->setObjectName("rrZenViewBase");
+@@ -866,6 +866,7 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
+             button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
+         }
+     }
++    styleForkToolbarActions();
+     if (sync) {
+         syncStyle = sync->styleSheet();
+         ui::readerStyle(sync, "QPushButton{border:none;padding:0;}");
+@@ -945,6 +946,7 @@ Navigation::~Navigation()
+             button->setPaintMode(searchPaint);
+         }
+     }
++    restoreForkToolbarActions();
+     session->setStyleSheet(sessionStyle);
+     if (sync) {
+         sync->setStyleSheet(syncStyle);
+@@ -1100,6 +1102,7 @@ void Navigation::placeToolbar(QSize size, const QVector<QWidget *> &actions)
+     }
+     clock->setVisible(statusVisible);
+     updateBatteryVisibility();
++    // Page count belongs to the separate reading-menu strip, not the status line.
+     settings->setFixedWidth(chrome::cellWidth);
+     int rightActions = 0;
+     for (auto *action : actions)
+@@ -1184,7 +1187,7 @@ void Navigation::update(QSize size, const NavigationState &state)
+     rules->show();
+     rules->raise();
+     const QVector<QWidget *> actions{
+-        settings, bookmarks, annotate, search, sync, formattingWarning
++        settings, bookmarks, annotate, darkTheme, comics, search, sync, formattingWarning
+     };
+     if (zenTop)
+         placeZenToolbar(size, actions, state);
+@@ -1324,10 +1327,12 @@ void Navigation::updateSessionGeometry()
+     if (wifi && wifi->active())
+         right = qMin(right, wifi->x());
+     right = qMax(0, right - int(chrome::inset));
+-    const int left = qMin(right, clock->geometry().right() + 1 + int(chrome::inset));
+-    // Center the session in the gap after the time text, without reserving
+-    // the clock's unused width or moving the status icons.
+-    session->setGeometry(left, clock->y(), right - left, ui::metrics::panel::statusHeight);
++    const int inset = qMax(clock->geometry().right() + 1 + int(chrome::inset),
++                           toolbar->width() - right);
++    // Symmetric bounds keep the session caption centered on the screen,
++    // independently of battery/connectivity widths.
++    session->setGeometry(inset, clock->y(), qMax(0, toolbar->width() - 2 * inset),
++                         ui::metrics::panel::statusHeight);
+ }
+ 
+ bool Navigation::contains(QPoint global) const
+diff --git a/src/app/reader/views/navigation.h b/src/app/reader/views/navigation.h
+index eac1a57e258cd6d11577a820074e4d3b6eda1ef6..91cfaae3ce7a98d53c899398aa83a006a4fa0d49 100644
+--- a/src/app/reader/views/navigation.h
++++ b/src/app/reader/views/navigation.h
+@@ -36,6 +36,7 @@ struct ToolbarComposition
+     ui::WifiIndicator *wifi = nullptr;
+     QPushButton *formattingWarning = nullptr;
+     QPushButton *search = nullptr, *sync = nullptr;
++    QPushButton *darkTheme = nullptr, *comics = nullptr;
+ };
+ // Search, Annotate and Bookmarks are tabs only in Zen mode.
+ enum class NavigationDestination {
+@@ -201,6 +202,8 @@ public:
+     bool contains(QPoint global) const;
+ 
+ private:
++    void styleForkToolbarActions();
++    void restoreForkToolbarActions();
+     void placeToolbar(QSize size, const QVector<QWidget *> &actions);
+     void placeZenToolbar(QSize size, const QVector<QWidget *> &actions,
+                          const NavigationState &state);
+@@ -226,6 +229,10 @@ private:
+     QPushButton *formattingWarning;
+     QPushButton *search, *sync;
+     QString searchStyle, syncStyle;
++    QPushButton *darkTheme = nullptr, *comics = nullptr;
++    QString darkThemeStyle, comicsStyle;
++    ui::ButtonPaintMode darkThemePaint = ui::ButtonPaintMode::Native;
++    ui::ButtonPaintMode comicsPaint = ui::ButtonPaintMode::Native;
+     ui::ButtonPaintMode syncPaint = ui::ButtonPaintMode::Native;
+     ui::ButtonPaintMode searchPaint = ui::ButtonPaintMode::Native;
+     QString sessionStyle, settingsStyle, bookmarksStyle, annotateStyle, formattingWarningStyle;
+diff --git a/src/app/reader/window/fork_reader_actions.cpp b/src/app/reader/window/fork_reader_actions.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..a2b646e48322cbb48a5032f797089d2fe1e52de9
+--- /dev/null
++++ b/src/app/reader/window/fork_reader_actions.cpp
+@@ -0,0 +1,74 @@
++#include "app/reader/views/fork_navigation.h"
++#include "ui/controls/rows.h"
++#include "reader_p.h"
++#include "support/strings.h"
++#include "ui/controls/icons.h"
++#include "platform/api/kobo_refresh.h"
++#include "support/qt_compat.h"
++#include "support/diagnostics.h"
++#include <QScopedValueRollback>
++
++namespace kobalt::reader {
++void Reader::styleForkToolbarActions()
++{
++    toolbarComposition.darkTheme->setCheckable(true);
++    static_cast<kobalt::ui::Button *>(toolbarComposition.darkTheme)->setHighlightChecked(false);
++    toolbarComposition.comics->setCheckable(true);
++    auto *comicsButton = static_cast<ui::Button *>(toolbarComposition.comics);
++    comicsButton->setHighlightChecked(false);
++    ui::ButtonIcon comicsIcon{ ui::ControlIcon::Comics, ui::IconRendition::Action };
++    comicsIcon.stateInkOnly = true;
++    comicsButton->setIconConfiguration(comicsIcon);
++}
++
++void Reader::refreshForkToolbarActions(bool settingsOpen, bool zen)
++{
++    if (toolbarComposition.darkTheme) {
++        toolbarComposition.darkTheme->setChecked(session->state().value("dark_mode").toBool(false));
++        toolbarComposition.darkTheme->setVisible(
++                !settingsOpen && !zen && features::enabled(preferences, features::DarkMode));
++    }
++    if (toolbarComposition.comics) {
++        auto *source = appearanceEdit.edited() && appearanceEdit.ready() ? appearanceEdit.preview()
++                                                                         : session;
++        // Keep mode ink stable while a preview session is being prepared/reflowed.
++        if (!appearanceEdit.edited() || appearanceEdit.ready())
++            toolbarComposition.comics->setChecked(source->requestedAppearance()
++                                                          .fields()
++                                                          .value(appearance::comicsModeKey)
++                                                          .toBool(false));
++        toolbarComposition.comics->setVisible(!settingsOpen && !zen
++                                              && features::enabled(preferences, features::Comics));
++    }
++}
++
++void Reader::toggleComicsMode()
++{
++    auto *source = appearanceEdit.preview() ? appearanceEdit.preview() : session;
++    if (source->busy()) {
++        refresh();
++        return;
++    }
++    if (appearanceEdit.panelOpen()) {
++        if (auto *option = findChild<QCheckBox *>("rrComicsReadingMode"))
++            option->click();
++        return;
++    }
++    const bool enabled = !session->requestedAppearance()
++                                  .fields()
++                                  .value(kobalt::appearance::comicsModeKey)
++                                  .toBool(false);
++    QSize viewport;
++    {
++        QScopedValueRollback<bool> mode(page->comicsMode);
++        page->comicsMode = enabled;
++        viewport = bodySize();
++    }
++    session->editAppearance(kobalt::appearance::Patch(kobalt::qt::object(
++                                    { { kobalt::appearance::comicsModeKey, enabled } })),
++                            viewport);
++    refresh();
++}
++
++
++} // namespace kobalt::reader
+diff --git a/src/app/reader/window/reader_build.cpp b/src/app/reader/window/reader_build.cpp
+index d94abf8b6b5cbe3d6a4a643613423e9e21828bdf..70deed4f2ec5c86c0b963483f6376f4f23c16886 100644
+--- a/src/app/reader/window/reader_build.cpp
++++ b/src/app/reader/window/reader_build.cpp
+@@ -892,6 +892,15 @@ void Reader::buildToolbar()
+             iconButton(topControls, top, "rrGraph", strings::get("reader.chapter_lengths"),
+                        ControlIcon::Graph, [this] { toggleGraph(); });
+     toolbarButtons.graph->setCheckable(true);
++    toolbarComposition.darkTheme = iconButton(topControls, top, "rrDarkTheme",
++            strings::get("reader.dark_mode"), ControlIcon::DarkTheme, [this] {
++                applyDarkMode(!preferences.value("dark_mode").toBool(false));
++            });
++    toolbarComposition.comics = iconButton(topControls, top, "rrComicsToggle",
++            strings::get("reader.comics_reading_mode"), ControlIcon::Comics, [this] {
++                toggleComicsMode();
++            });
++    styleForkToolbarActions();
+     toolbarComposition.search =
+             iconButton(topControls, top, "rrSearchOpen", strings::get("reader.search_book"),
+                        ControlIcon::Search,
+@@ -945,9 +954,9 @@ void Reader::buildToolbar()
+          topControls->findChildren<QPushButton *>(QString(), Qt::FindDirectChildrenOnly)) {
+         if (button == back)
+             continue;
+-        if (button->objectName() != "rrSettings" && button->objectName() != "rrBookmarks"
+-            && button->objectName() != "rrAnnotate" && button->objectName() != "rrFormattingWarning"
+-            && button->objectName() != "rrSearchOpen" && button->objectName() != "rrKosyncManual")
++        if (button->objectName() != "rrSettings" && button->objectName() != "rrBookmarks" &&
++            button->objectName() != "rrAnnotate" && button->objectName() != "rrFormattingWarning" &&
++            button->objectName() != "rrSearchOpen" && button->objectName() != "rrKosyncManual" && button->objectName() != "rrDarkTheme" && button->objectName() != "rrComicsToggle")
+             topActions.append(button);
+         if (auto *action = dynamic_cast<kobalt::ui::Button *>(button))
+             action->setPaintMode(kobalt::ui::ButtonPaintMode::ToolbarSquare);
+diff --git a/src/app/reader/window/reader_p.h b/src/app/reader/window/reader_p.h
+index b5e457c2a68523bdd34862fe63a639f55ceb8078..9d32ffeae94bbfb679a49a0d06b4f6b7c8a11bdc 100644
+--- a/src/app/reader/window/reader_p.h
++++ b/src/app/reader/window/reader_p.h
+@@ -382,6 +382,9 @@ private:
+     void startDeviceObservers();
+     // The sleep cover, overlay and wallpapers, and today's reading for them.
+     void prepareSleepImages();
++    void toggleComicsMode();
++    void styleForkToolbarActions();
++    void refreshForkToolbarActions(bool settingsOpen, bool zen);
+     void buildToolbar();
+     void buildBottomControls();
+     kobalt::reader::AppearanceLayout buildMenu();
+diff --git a/src/app/reader/window/reader_refresh.cpp b/src/app/reader/window/reader_refresh.cpp
+index a8cd809fa7f14339036cd427db103846985e05b7..21acfb654345fab6f107b94dd3d7628b055e6d13 100644
+--- a/src/app/reader/window/reader_refresh.cpp
++++ b/src/app/reader/window/reader_refresh.cpp
+@@ -796,6 +796,7 @@ void Reader::syncReadingControls()
+         if (action)
+             action->setVisible(!settingsOpen);
+     toolbarComposition.search->setVisible(!settingsOpen && !zen);
++    refreshForkToolbarActions(settingsOpen, zen);
+     const bool bookmarksShown = features::enabled(preferences, features::Bookmarks);
+     const bool annotationsShown = features::enabled(preferences, features::Annotations);
+     const bool wordsShown = savedWords && features::enabled(preferences, features::Words);
+diff --git a/src/reading/features.h b/src/reading/features.h
+index f3778b67b33e366668b5dba150ff8cb53dfc7f9e..69b29eb2ac088f324881980593989a0f6c0731a0 100644
+--- a/src/reading/features.h
++++ b/src/reading/features.h
+@@ -5,9 +5,10 @@ namespace kobalt::features {
+ inline constexpr const char *keys[] = { "disable_navigate",        "disable_stats",
+                                         "disable_annotations",     "disable_bookmarks",
+                                         "disable_kosync",          "disable_words",
+-                                        "disable_highlight_links", "disable_activity" };
++                                        "disable_highlight_links", "disable_activity",
++                                        "disable_dark_mode", "disable_comics" };
+ 
+-enum Feature { Navigate, Stats, Annotations, Bookmarks, Kosync, Words, HighlightLinks, Activity };
++enum Feature { Navigate, Stats, Annotations, Bookmarks, Kosync, Words, HighlightLinks, Activity, DarkMode, Comics };
+ 
+ // Settings > System > Developer. Debug mode shows the Debug tab, the debug
+ // fields of the header and footer picker and the Fast rendering engine.
+diff --git a/src/ui/controls/buttons.cpp b/src/ui/controls/buttons.cpp
+index cf85c10188c3376d00a889dfa44e4c43a8cae8d0..733b3afadf8768cd5178772fd495e229df2e29e7 100644
+--- a/src/ui/controls/buttons.cpp
++++ b/src/ui/controls/buttons.cpp
+@@ -22,6 +22,8 @@ namespace kobalt::ui {
+ void Button::initStyleOption(QStyleOptionButton *option) const
+ {
+     QPushButton::initStyleOption(option);
++    if (!highlightChecked)
++        option->state &= ~QStyle::State_On;
+     // Keep keyboard focus without drawing Nickel's focus frame on reader buttons.
+     option->state &= ~QStyle::State_HasFocus;
+ }
+@@ -80,7 +82,7 @@ void Button::paintEvent(QPaintEvent *)
+             // Checkable controls, keyboard keys and primary actions use inverted content.
+             const bool invertPressed = isCheckable() || property("reader_invert_pressed").toBool();
+             const bool active = isEnabled()
+-                    && (primary ? !isDown() : invertPressed && (isChecked() || isDown()));
++                    && (primary ? !isDown() : invertPressed && ((highlightChecked && isChecked()) || isDown()));
+             const auto colors = primary
+                     ? readerPalette(palette(), darkTheme(this), interfacePalette(this))
+                     : palette();
+@@ -103,7 +105,7 @@ void Button::paintEvent(QPaintEvent *)
+                 }
+                 icon().paint(&painter, area, Qt::AlignCenter,
+                              isEnabled() ? QIcon::Normal : QIcon::Disabled,
+-                             active ? QIcon::On : QIcon::Off);
++                             (iconShowsStateWithoutFill() ? isChecked() : active) ? QIcon::On : QIcon::Off);
+             };
+             if (iconAboveLabel) {
+                 // Capitals' height is the label's ink, so the icon and that
+@@ -162,7 +164,8 @@ void Button::paintEvent(QPaintEvent *)
+         return;
+     }
+     QPainter painter(this);
+-    const bool active = isEnabled() && (isChecked() || isDown());
++    const bool active = !iconShowsStateWithoutFill() && isEnabled()
++            && ((highlightChecked && isChecked()) || isDown());
+     const auto ink = palette().color(isEnabled() ? QPalette::WindowText : QPalette::Mid);
+     const auto paper = fill == QPalette::Midlight ? sectionColor(this) : palette().color(fill);
+     const bool toolbar =
+@@ -202,7 +205,7 @@ void Button::paintEvent(QPaintEvent *)
+             paintStyledIcon(painter, style, configuredIcon.glyph, bounds, active ? paper : ink);
+         } else {
+             icon().paint(&painter, bounds, Qt::AlignCenter, QIcon::Normal,
+-                         active ? QIcon::On : QIcon::Off);
++                         (iconShowsStateWithoutFill() ? isChecked() : active) ? QIcon::On : QIcon::Off);
+         }
+     }
+ }
+diff --git a/src/ui/controls/buttons.h b/src/ui/controls/buttons.h
+index 7c8820247a4077fe366e24f8fbe8d71bc4669aba..afe35446b1863f231a48695d437a0bc0af9b6bb2 100644
+--- a/src/ui/controls/buttons.h
++++ b/src/ui/controls/buttons.h
+@@ -22,7 +22,11 @@ class Button : public QPushButton
+ public:
+     using QPushButton::QPushButton;
+     void setPaintMode(ButtonPaintMode mode);
+-
++    // Theme toggles already express their state through the global palette.
++    void setHighlightChecked(bool enabled) {
++        highlightChecked = enabled;
++        update();
++    }
+     // Content stays vertically centered in either horizontal alignment.
+     void setContentAlignment(Qt::Alignment alignment)
+     {
+@@ -53,6 +57,9 @@ public:
+     }
+ 
+     void refreshIcon();
++    bool iconShowsStateWithoutFill() const {
++        return hasConfiguredIcon && configuredIcon.stateInkOnly;
++    }
+ 
+     void setIconLabelGap(int pixels)
+     {
+@@ -93,6 +100,7 @@ private:
+     Qt::Alignment contentAlignment = Qt::AlignHCenter;
+     int iconLabelGap = 0;
+     bool iconAboveLabel = false;
++    bool highlightChecked = true;
+     bool hasConfiguredIcon = false, hasIconTheme = false;
+     QColor iconInk;
+ };
+diff --git a/src/ui/controls/fork_icon_geometry.cpp b/src/ui/controls/fork_icon_geometry.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..5924d595956aa24264f8639d10f815812e3f376c
+--- /dev/null
++++ b/src/ui/controls/fork_icon_geometry.cpp
+@@ -0,0 +1,36 @@
++#include "fork_icon_geometry.h"
++#include <QPainterPath>
++
++namespace kobalt::ui::forkicons {
++void comicsGeometry(QPainterPath &path)
++{
++    // A flattened oval and swept, curved tail follow the user's reference.
++    path.moveTo(112, 184);
++    path.cubicTo(61, 184, 24, 157, 24, 118);
++    path.cubicTo(24, 79, 70, 48, 128, 48);
++    path.cubicTo(186, 48, 232, 79, 232, 118);
++    path.cubicTo(232, 153, 201, 178, 158, 184);
++    path.cubicTo(142, 208, 108, 222, 70, 228);
++    path.cubicTo(96, 213, 112, 200, 112, 184);
++    path.closeSubpath();
++}
++
++// Microsoft Fluent UI "ic_fluent_dark_theme_24_regular" (MIT), re-scaled from
++// its 24 unit viewBox to the shared 256 unit toolbar canvas. The two subpaths
++// wind in opposite directions, so the overlapping right half stays hollow
++// under either fill rule and the glyph reads as a half-filled contrast circle.
++void darkThemeGeometry(QPainterPath &path)
++{
++    path.moveTo(128, 234.6667);
++    path.cubicTo(186.9104, 234.6667, 234.6667, 186.9104, 234.6667, 128);
++    path.cubicTo(234.6667, 69.0896, 186.9104, 21.3333, 128, 21.3333);
++    path.cubicTo(69.0896, 21.3333, 21.3333, 69.0896, 21.3333, 128);
++    path.cubicTo(21.3333, 186.9104, 69.0896, 234.6667, 128, 234.6667);
++    path.closeSubpath();
++    path.moveTo(128, 218.6667);
++    path.lineTo(128, 37.3333);
++    path.cubicTo(178.0738, 37.3333, 218.6667, 77.9262, 218.6667, 128);
++    path.cubicTo(218.6667, 178.0738, 178.0738, 218.6667, 128, 218.6667);
++    path.closeSubpath();
++}
++} // namespace kobalt::ui::forkicons
+diff --git a/src/ui/controls/fork_icon_geometry.h b/src/ui/controls/fork_icon_geometry.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..5fa2a8799fef12c2c996aa4a95d1e07c2d1e6e57
+--- /dev/null
++++ b/src/ui/controls/fork_icon_geometry.h
+@@ -0,0 +1,8 @@
++#pragma once
++class QPainterPath;
++
++namespace kobalt::ui::forkicons {
++// Shared action canvas, colours and stroke remain owned by icons.cpp.
++void comicsGeometry(QPainterPath &path);
++void darkThemeGeometry(QPainterPath &path);
++} // namespace kobalt::ui::forkicons
+diff --git a/src/ui/controls/icons.cpp b/src/ui/controls/icons.cpp
+index c369dbc3dbf56a13fa20384bd35567d8290418c7..987fccd673cc8f7e2aaf8a415af5052a58285871 100644
+--- a/src/ui/controls/icons.cpp
++++ b/src/ui/controls/icons.cpp
+@@ -1,4 +1,5 @@
+ #include "icons.h"
++#include "fork_icon_geometry.h"
+ #include "buttons.h"
+ #include "ui/style/metrics.h"
+ #include "ui/style/theme.h"
+@@ -692,6 +693,17 @@ Geometry geometry(ControlIcon icon, bool sideButtons)
+         transform.rotate(-90 * (int(icon) - int(ControlIcon::Portrait)));
+         transform.translate(-12, -12);
+         path = transform.map(path);
++    } else if (icon == ControlIcon::Comics) {
++        // Speech bubble, using the same canvas and stroke as regular action icons.
++        result.canvas = 256;
++        result.stroke = 16;
++        forkicons::comicsGeometry(path);
++    } else if (icon == ControlIcon::DarkTheme) {
++        // The Fluent dark-theme asset ships beside the checked Phosphor set
++        // but uses its own snapshot instead of the Phosphor name table.
++        result.canvas = 256;
++        result.filled = true;
++        forkicons::darkThemeGeometry(path);
+     } else {
+         static const char *const names[] = { "magnifying-glass",
+                                              "sun",
+@@ -744,7 +756,7 @@ Geometry geometry(ControlIcon icon, bool sideButtons)
+ }
+ 
+ void paintGeometry(QPainter &painter, const Geometry &shape, ControlIcon glyph, const QRectF &rect,
+-                   QColor color, IconRendition rendition)
++                   QColor color, IconRendition rendition, bool fill = false)
+ {
+     if (rect.isEmpty() || shape.path.isEmpty())
+         return;
+@@ -782,7 +794,7 @@ void paintGeometry(QPainter &painter, const Geometry &shape, ControlIcon glyph,
+         painter.scale(side / shape.canvas, side / shape.canvas);
+     painter.setPen(shape.filled ? QPen(Qt::NoPen)
+                                 : QPen(color, shape.stroke, Qt::SolidLine, shape.cap, shape.join));
+-    painter.setBrush(shape.filled ? QBrush(color) : QBrush(Qt::NoBrush));
++    painter.setBrush(shape.filled || fill ? QBrush(color) : QBrush(Qt::NoBrush));
+     painter.drawPath(shape.path);
+     painter.restore();
+ }
+@@ -891,7 +903,8 @@ private:
+         painter->save();
+         if (mode == QIcon::Disabled)
+             painter->setOpacity(painter->opacity() * .4);
+-        paintGeometry(*painter, shape, glyph, rect, state == QIcon::On ? active : color, rendition);
++        paintGeometry(*painter, shape, glyph, rect, state == QIcon::On ? active : color, rendition,
++                      glyph == ControlIcon::Comics && state == QIcon::On);
+         painter->restore();
+     }
+ 
+@@ -977,9 +990,9 @@ void Button::refreshIcon()
+     if (hasIconTheme && iconInk == colors.ink)
+         return;
+     const auto &configuration = configuredIcon;
+-    setIcon(QIcon(new VectorIconEngine(configuration.glyph, colors.ink,
++    setIcon(QIcon(new VectorIconEngine(configuration.glyph, configuration.stateInkOnly ? colors.disabledInk : colors.ink,
+                                        configuration.rotationSideButtons, configuration.rendition,
+-                                       colors.paper)));
++                                       configuration.stateInkOnly ? colors.ink : colors.paper)));
+     iconInk = colors.ink;
+     hasIconTheme = true;
+ }
+diff --git a/src/ui/controls/icons.h b/src/ui/controls/icons.h
+index 40d3b1e8da45744c306367ff2442f0fb6f4bfee1..1e3dedaf23c24d1bc144871eb2ce51589d069e3f 100644
+--- a/src/ui/controls/icons.h
++++ b/src/ui/controls/icons.h
+@@ -91,6 +91,9 @@ enum class ControlIcon {
+     SpreadVertical,
+     MagicWand,
+     Hidden,
++    // Fork-only quick toggle for the display settings' dark mode.
++    DarkTheme,
++    Comics,
+     WidowsOrphans,
+     HangingPunctuation,
+     Star,
+@@ -206,11 +209,14 @@ struct ButtonIcon
+     ControlIcon glyph;
+     IconRendition rendition = IconRendition::OriginalAsset;
+     bool rotationSideButtons = false;
++    // State is shown by ink only, never an inverted checked/pressed background.
++    bool stateInkOnly = false;
+ 
+     bool operator==(const ButtonIcon &other) const
+     {
+         return glyph == other.glyph && rendition == other.rendition
+-                && rotationSideButtons == other.rotationSideButtons;
++                && rotationSideButtons == other.rotationSideButtons
++                && stateInkOnly == other.stateInkOnly;
+     }
+ };
+ 
+diff --git a/tests/model/reader_controls.cpp b/tests/model/reader_controls.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..f19eb03c4b43b540ed5e11302d3425494fe687ec
+--- /dev/null
++++ b/tests/model/reader_controls.cpp
+@@ -0,0 +1,75 @@
++#include "check.h"
++#include "app/reader/views/navigation.h"
++#include "reading/features.h"
++#include "reading/page_navigation.h"
++#include "ui/controls/buttons.h"
++#include "ui/controls/panels.h"
++#include "ui/style/metrics.h"
++#include <QApplication>
++#include <QHBoxLayout>
++#include <QLabel>
++#include <cstdio>
++
++using namespace kobalt;
++int main(int argc, char **argv)
++{
++    QApplication app(argc, argv);
++    QJsonObject preferences;
++    require(features::enabled(preferences, features::Activity)
++                    && features::enabled(preferences, features::DarkMode)
++                    && features::enabled(preferences, features::Comics),
++            "optional toolbar features changed upstream defaults");
++    preferences["disable_comics"] = true;
++    require(!features::enabled(preferences, features::Comics)
++                    && features::enabled(preferences, features::DarkMode)
++                    && features::enabled(preferences, features::Activity),
++            "comics feature is not independent");
++    require(QString::fromLatin1(pageNavigation::reverseSwipesKey) == "reverse_page_swipes",
++            "upstream independent swipe preference replaced");
++
++    QWidget parent;
++    ui::Panel toolbar(&parent, Qt::BottomEdge);
++    auto *rows = new QHBoxLayout(&toolbar);
++    ui::Button settings(&toolbar), bookmarks(&toolbar), dark(&toolbar), comics(&toolbar);
++    QLabel caption(&toolbar);
++    reader::ToolbarComposition controls;
++    controls.panel = &toolbar;
++    controls.rows = rows;
++    controls.settings = &settings;
++    controls.bookmarks = &bookmarks;
++    controls.session = &caption;
++    controls.darkTheme = &dark;
++    controls.comics = &comics;
++    dark.setStyleSheet("QPushButton { padding: 1px; }");
++    comics.setStyleSheet("QPushButton { padding: 2px; }");
++    dark.setPaintMode(ui::ButtonPaintMode::ToolbarSquare);
++    comics.setPaintMode(ui::ButtonPaintMode::ToolbarSquare);
++    const auto darkStyle = dark.styleSheet(), comicsStyle = comics.styleSheet();
++    {
++        reader::Navigation navigation(&parent, controls);
++        require(dark.paintMode() == ui::ButtonPaintMode::ToolbarCell
++                        && comics.paintMode() == ui::ButtonPaintMode::ToolbarCell,
++                "quick actions not adapted to navigation cells");
++    }
++    require(dark.styleSheet() == darkStyle && comics.styleSheet() == comicsStyle
++                    && dark.paintMode() == ui::ButtonPaintMode::ToolbarSquare
++                    && comics.paintMode() == ui::ButtonPaintMode::ToolbarSquare,
++            "navigation did not restore borrowed quick actions");
++    const int size = ui::metrics::control::toolbarButtonSize;
++    require(dark.size() == QSize(size, size) && comics.size() == QSize(size, size),
++            "navigation left quick action cell dimensions behind");
++
++    comics.setCheckable(true);
++    comics.setHighlightChecked(false);
++    ui::ButtonIcon icon{ui::ControlIcon::Comics, ui::IconRendition::Action};
++    icon.stateInkOnly = true;
++    comics.setIconConfiguration(icon);
++    require(comics.iconShowsStateWithoutFill(), "comics icon lost ink-only state policy");
++    const auto before = comics.icon().pixmap(QSize(64, 64), QIcon::Normal, QIcon::Off).toImage();
++    const auto after = comics.icon().pixmap(QSize(64, 64), QIcon::Normal, QIcon::On).toImage();
++    require(!before.isNull() && !after.isNull() && before != after,
++            "comics icon does not distinguish on and off");
++    dark.setIconConfiguration({ui::ControlIcon::DarkTheme, ui::IconRendition::Action});
++    require(!dark.icon().pixmap(QSize(64, 64)).isNull(), "dark theme glyph missing");
++    std::puts("PASS: quick action ownership, feature independence and state glyphs");
++}

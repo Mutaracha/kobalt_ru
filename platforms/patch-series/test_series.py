@@ -106,8 +106,14 @@ class SeriesTests(unittest.TestCase):
             self.assertIn('frameImage()', (destination / 'src/reading/reader_session.cpp').read_text())
             refresh = (destination / 'platforms/kobo/nickel-qt5/refresh.cpp').read_text()
             self.assertIn('clean || graphics ? repairPolicy(dark) : ordinaryPolicy(dark)', refresh)
-            self.assertNotIn('rrComicsToggle',
-                             (destination / 'src/app/reader/window/reader_build.cpp').read_text())
+            controls = (destination / 'src/app/reader/window/reader_build.cpp').read_text()
+            self.assertIn('rrComicsToggle', controls)
+            self.assertIn('rrDarkTheme', controls)
+            self.assertIn('pageNavigation::reverseSwipesKey', controls)
+            self.assertNotIn('invert_page_swipes', controls)
+            features = (destination / 'src/reading/features.h').read_text()
+            self.assertIn('HighlightLinks, Activity, DarkMode, Comics', features)
+            self.assertIn('reader_controls', cmake)
 
 
             self.assertIn('appearance::migrateLegacyNotes(saved);',
