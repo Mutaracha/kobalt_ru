@@ -1,0 +1,1112 @@
+diff --git a/assets/en.strings b/assets/en.strings
+index 5dcfb599a4d854c3cd2f969928af99a41c210923..d15d8013834f8ae5783154a816cb50b09b5040ed 100644
+--- a/assets/en.strings
++++ b/assets/en.strings
+@@ -190,7 +190,7 @@
+ "library.about" = "About Kobalt";
+ /* Arguments: %1 */
+ "library.count" = "%1 books";
+-"library.count_one" = "1 book";
++"library.count_one" = "%1 book";
+ "library.search" = "Search library";
+ "library.search_placeholder" = "Title, author or series";
+ "library.close_search" = "Close search";
+@@ -1784,7 +1784,7 @@
+ "settings.chapter_spread_description" = "When a chapter starts on a new page, show it in the first column.";
+ 
+ "annotations.mode" = "Annotation mode";
+-"annotations.summary_one" = "1 annotation";
++"annotations.summary_one" = "%1 annotation";
+ "error.saved_data_unavailable" = "Saved data could not be loaded. The original files have been preserved.";
+ "marks.sort_button" = "Sort";
+ "marks.sort_newest" = "Newest first";
+@@ -2131,3 +2131,33 @@
+ "features.comics" = "Comics mode toggle";
+ 
+ "features.comics_description" = "Hides the comics mode toggle in the reading menu. The current reading mode is preserved.";
++
++"library.count_few" = "%1 books";
++
++"library.count_many" = "%1 books";
++
++"chapter_contents.summary_few" = "Contents · %1 chapters";
++
++"chapter_contents.summary_many" = "Contents · %1 chapters";
++
++"annotations.summary_few" = "%1 annotations";
++
++"annotations.summary_many" = "%1 annotations";
++
++"debug.language_title" = "Interface language";
++
++"debug.language_restart" = "Select a language for the next reader launch. The current interface will not change.";
++
++"debug.language_automatic" = "Automatic (device language)";
++
++"debug.language_saved" = "Saved. Exit Kobalt and open a book again to apply the language.";
++
++"debug.language_failed" = "Could not save the language. Check the diagnostics folder and try again.";
++
++"activity.book_unit_few" = "books";
++
++"activity.book_unit_many" = "books";
++
++"activity.hour_unit_few" = "hours";
++
++"activity.hour_unit_many" = "hours";
+diff --git a/assets/ru.strings b/assets/ru.strings
+index d32e1abcbbe2cfcd4d58fbf3984e5da7a8940497..c97538cb4bfcc43f8f4d20d2e3854ed8e5529f87 100644
+--- a/assets/ru.strings
++++ b/assets/ru.strings
+@@ -213,7 +213,7 @@
+ "annotations.style_shaded" = "Заливка";
+ "annotations.style_underline" = "Сплошное подчёркивание";
+ "annotations.summary" = "Аннотаций: %1";
+-"annotations.summary_one" = "1 аннотация";
++"annotations.summary_one" = "%1 аннотация";
+ "annotations.tab" = "Аннотации";
+ "annotations.tap_boundary" = "Коснитесь текста или потяните маркер для корректировки.";
+ "annotations.tap_end" = "Коснитесь другого слова или потяните любой маркер.";
+@@ -933,7 +933,7 @@
+ "library.close_search" = "Закрыть поиск";
+ "library.continue_reading" = "Продолжить чтение";
+ "library.count" = "%1 книг";
+-"library.count_one" = "1 книга";
++"library.count_one" = "%1 книга";
+ "library.cover_heading" = "Размер обложки";
+ "library.cover_large" = "Большой";
+ "library.cover_medium" = "Средний";
+@@ -1819,3 +1819,33 @@
+ "features.comics" = "Переключатель режима комиксов";
+ 
+ "features.comics_description" = "Скрывает переключатель режима комиксов в меню чтения. Текущий режим чтения сохраняется.";
++
++"library.count_few" = "%1 книги";
++
++"library.count_many" = "%1 книг";
++
++"chapter_contents.summary_few" = "Содержание · главы: %1";
++
++"chapter_contents.summary_many" = "Содержание · глав: %1";
++
++"annotations.summary_few" = "Аннотации: %1";
++
++"annotations.summary_many" = "Аннотаций: %1";
++
++"debug.language_title" = "Язык интерфейса";
++
++"debug.language_restart" = "Выберите язык для следующего запуска ридера. Текущий интерфейс не изменится.";
++
++"debug.language_automatic" = "Автоматически (язык устройства)";
++
++"debug.language_saved" = "Сохранено. Выйдите из Kobalt и снова откройте книгу, чтобы применить язык.";
++
++"debug.language_failed" = "Не удалось сохранить язык. Проверьте папку diagnostics и повторите попытку.";
++
++"activity.book_unit_few" = "книги";
++
++"activity.book_unit_many" = "книг";
++
++"activity.hour_unit_few" = "часа";
++
++"activity.hour_unit_many" = "часов";
+diff --git a/platforms/android/main.cpp b/platforms/android/main.cpp
+index cc88d2bf4e0790638088f9ac368dfcfe3637cd75..6b774699f4170b9b6f8f12bf41a79ff470c4974b 100644
+--- a/platforms/android/main.cpp
++++ b/platforms/android/main.cpp
+@@ -1,3 +1,4 @@
++#include "support/locale.h"
+ #include "platform/posix/diagnostics.h"
+ #include "annotation_export.h"
+ #include "app/reader/views/annotation_exporter.h"
+@@ -592,7 +593,7 @@ int main(int argc, char **argv)
+     if (onyx("MANUFACTURER") || onyx("BRAND"))
+         qputenv("QT_ANDROID_SURFACE_CONTAINER_TYPE", "0");
+     QApplication app(argc, argv);
+-    strings::setLocale(strings::Locale::Russian);
++    strings::setLocale(resolveLocale());
+     app.setApplicationName("Kobalt");
+     app.setOrganizationName("Kobalt");
+     app.setQuitOnLastWindowClosed(false);
+diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
+index 839f588fe2cbd11c32d545a5c1fd4dfb2e1bb680..c81e653b959409eb0714e3f4b4e26c11c3b12b98 100644
+--- a/platforms/desktop/CMakeLists.txt
++++ b/platforms/desktop/CMakeLists.txt
+@@ -107,6 +107,7 @@ add_library(kobalt-core OBJECT ${shared} display.cpp ../standalone/native_image.
+     "${source}/assets/assets.cpp" "${source}/assets/bundled_fonts.cpp" "${source}/assets/font_catalog.cpp"
+     "${source}/assets/system_fonts.cpp"
+     "${source}/support/diagnostics.cpp" "${source}/support/main_thread.cpp"
++    "${source}/support/locale.cpp" "${source}/support/debug_language.cpp"
+     "${source}/publication/publication.cpp" "${source}/publication/zip_resource.cpp"
+     "${source}/publication/publication_fb2.cpp"
+     "${source}/publication/fb2_resources.cpp"
+@@ -810,14 +811,14 @@ if(BUILD_TESTING)
+         local_resources fb2_cache_session zip_resource diagnostics crash_reports dictionary_store image_damage page_pixels
+         logical_word_counter brightness_gesture qt_compat page_refresh_regions screen_refresh plain_archive reading_progress
+         library kosync sync_coordinator annotation_draft chapter_progress style_sample_cache preview_store save_wait saved_words reading_activity)
+-    kobalt_regressions(model font_axes touch_rotation)
++    kobalt_regressions(model font_axes touch_rotation strings_locale)
+     kobalt_regressions(platform reader_orientation font_sources system_fonts nickel_dictionary_selection
+         nickel_reading_pace_cache nickel_save_trace nickel_account nickel_session_calls nickel_session_volume nickel_book_menu nickel_font_scale native_progress native_sync_network native_dialog_overlay native_lifecycle standby_input standby_diagnostics usb_removal page_transition_native page_animation)
+     kobalt_regressions(engine fb2_engine comics_layout comics)
+     kobalt_regressions(engine epub_compatibility large_toc vertical_spacing source_index location_round_trip engine_contract text_sample page_estimate layout_interrupt spine_window chapter_slices chapter_parity fast_surfaces fast_shaping columns advanced_text paragraph_spacing beautifier alignment indentation page_layout vertical_writing mathml line_breaking
+         css_class_index compiled_hyphenation fallback_styles svg_limits image_proportions figure_layout whitespace links search word_selection reader publisher_markup local_reader document_word_count document_cache alternate_layout)
+     kobalt_regressions(component ui acknowledgments kosync_ui comics_ui reader_controls)
+-    kobalt_regressions(component ru_control_ui)
++    kobalt_regressions(component ru_control_ui debug_language_ui)
+     target_sources(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}/platforms/kobo/display/page_animation.cpp")
+     target_include_directories(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}" "${source}")
+     target_link_libraries(kobalt-ui-tests PRIVATE Qt6::GuiPrivate)
+diff --git a/platforms/desktop/main.cpp b/platforms/desktop/main.cpp
+index 0d4674e6e358099104b435eee67e02e0fc667fa3..b97ce5289cb5860195418594f70116333cf5979b 100644
+--- a/platforms/desktop/main.cpp
++++ b/platforms/desktop/main.cpp
+@@ -1,3 +1,4 @@
++#include "support/locale.h"
+ #include "platform/posix/diagnostics.h"
+ #include "window.h"
+ #include "engine_monitor.h"
+@@ -47,7 +48,7 @@ int main(int argc, char **argv)
+ #endif
+     FontCopies copies;
+     Application app(argc, argv);
+-    strings::setLocale(strings::Locale::Russian);
++    strings::setLocale(resolveLocale());
+     app.setApplicationName(QStringLiteral(KOBALT_PROFILE_NAME));
+     app.setOrganizationName("Kobalt");
+     app.setStyle("Fusion");
+diff --git a/platforms/kobo/common/reader_coordinator.cpp b/platforms/kobo/common/reader_coordinator.cpp
+index 910adb5b1de195af6cef40b8a6b2c70134af38a8..4bda858f951a488cc47ad0c57247fb1aece11887 100644
+--- a/platforms/kobo/common/reader_coordinator.cpp
++++ b/platforms/kobo/common/reader_coordinator.cpp
+@@ -1,3 +1,4 @@
++#include "support/locale.h"
+ #include "diagnostics.h"
+ #include "clocks.h"
+ #include "native_tile_cover.h"
+@@ -546,8 +547,8 @@ bool ReaderCoordinator::begin(const RetainOpening &retainOpening)
+         return false;
+     if (!readerBookFormatSupported(request->volume()))
+         return false;
+-    // This control build keeps the interface Russian for every reading session.
+-    kobalt::strings::setLocale(kobalt::strings::Locale::Russian);
++    // Resolve only between active reading sessions, never partially retranslate a reader.
++    kobalt::strings::setLocale(kobalt::resolveLocale(environment_.paths.directory + "/diagnostics"));
+     // A preload that is still running gives way to the book that was tapped.
+     // One that finished is the kept book in run.session.
+     cancelPreload();
+diff --git a/src/app/reader/settings/debug_language_dialog.cpp b/src/app/reader/settings/debug_language_dialog.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..26796d377219203e14ec1c9abf0743b1e678c588
+--- /dev/null
++++ b/src/app/reader/settings/debug_language_dialog.cpp
+@@ -0,0 +1,119 @@
++#include "debug_language_dialog.h"
++#include "ui/dialogs/modals.h"
++#include "ui/controls/options.h"
++#include "ui/style/metrics.h"
++#include "support/debug_language.h"
++#include "support/strings.h"
++#include "support/diagnostics.h"
++#include <QApplication>
++#include <QPointer>
++#include <QPushButton>
++#include <utility>
++
++namespace kobalt::reader {
++namespace {
++class DebugLanguageDialog final : public QObject
++{
++public:
++    DebugLanguageDialog(QPushButton *button, QWidget *host, QString directory)
++        : QObject(button), button(button), host(host), directory(std::move(directory))
++    {
++        connect(button, &QPushButton::clicked, this, [this] { showChoices(); });
++        host->installEventFilter(this);
++    }
++
++protected:
++    bool eventFilter(QObject *object, QEvent *event) override
++    {
++        if (object == host && event->type() == QEvent::Resize && dialog)
++            dialog->setGeometry(host->rect());
++        return false;
++    }
++
++private:
++    void showChoices()
++    {
++        if (dialog || !host || !button->isVisible())
++            return;
++        auto *popup = new ui::ModalOverlay(host);
++        dialog = popup;
++        popup->setObjectName("rrDebugLanguage");
++        popup->setProperty("reader_standard_modal", true);
++        popup->setDimmed(true);
++        popup->setGeometry(host->rect());
++        auto *card = popup->card();
++        card->title(strings::get("debug.language_title"));
++        auto *message = card->message(strings::get("debug.language_restart"));
++        auto *choices = new ui::RadioList(card);
++        choices->add("rrDebugLanguageEnglish", QStringLiteral("English"));
++        choices->add("rrDebugLanguageRussian", QString::fromUtf8("Русский"));
++        choices->add("rrDebugLanguageAutomatic", strings::get("debug.language_automatic"));
++        // Show the persisted override, not the effective interface locale:
++        // Automatic may also resolve to Russian on a localized device.
++        const auto language = debugLanguage(directory);
++        choices->setCurrent(language == DebugLanguage::English           ? 0
++                                    : language == DebugLanguage::Russian ? 1
++                                                                         : 2);
++        card->rows()->addWidget(choices);
++        auto *cancel = ui::makeModalButton(
++                card, { strings::get("common.cancel"), "rrDebugLanguageClose" }, false);
++        // ModalButton has no intrinsic minimum height: the standard adaptive
++        // action layout must measure its text/padding at the current scale.
++        card->adaptiveActions({ cancel });
++        const auto dismiss = [this, popup] {
++            diagnostic("debug-language-dialog", { { "phase", "dismiss" } });
++            popup->hide();
++            popup->deleteLater();
++            dialog.clear();
++        };
++        connect(cancel, &QPushButton::clicked, this, dismiss);
++        popup->dismissed = dismiss;
++        choices->chosen = [this, choices, message, popup, cancel](int index) {
++            diagnostic("debug-language-dialog", { { "phase", "write-start" } });
++            choices->setEnabled(false);
++            cancel->setEnabled(false);
++            popup->dismissed = {}; // Do not submit another choice until this write completes.
++            const auto language = index == 0 ? DebugLanguage::English
++                    : index == 1             ? DebugLanguage::Russian
++                                             : DebugLanguage::Automatic;
++            writeDebugLanguageAsync(
++                    directory, language, this, [this, choices, message, popup, cancel](bool saved) {
++                        diagnostic("debug-language-dialog",
++                                   { { "phase", "write-end" }, { "saved", saved } });
++                        if (!dialog || dialog != popup)
++                            return;
++                        message->setText(strings::get(saved ? "debug.language_saved"
++                                                            : "debug.language_failed"));
++                        choices->setVisible(!saved);
++                        choices->setEnabled(true);
++                        cancel->setText(strings::get("common.ok"));
++                        cancel->setEnabled(true);
++                        popup->dismissed = [this, popup] {
++                            diagnostic("debug-language-dialog", { { "phase", "dismiss" } });
++                            popup->hide();
++                            popup->deleteLater();
++                            dialog.clear();
++                        };
++                        popup->fitCard();
++                    });
++        };
++        popup->fitCard();
++        popup->show();
++        popup->raise();
++        popup->setFocus();
++        diagnostic("debug-language-dialog", { { "phase", "show" } });
++    }
++
++    QPushButton *button;
++    QPointer<QWidget> host;
++    QString directory;
++    QPointer<ui::ModalOverlay> dialog;
++};
++} // namespace
++
++void installDebugLanguageChooser(QPushButton *button, QWidget *host, const QString &directory)
++{
++    if (button && host && !directory.isEmpty())
++        new DebugLanguageDialog(button, host, directory);
++}
++} // namespace kobalt::reader
+diff --git a/src/app/reader/settings/debug_language_dialog.h b/src/app/reader/settings/debug_language_dialog.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..68588edb380855180d3c34f1ab950730109bb6e7
+--- /dev/null
++++ b/src/app/reader/settings/debug_language_dialog.h
+@@ -0,0 +1,9 @@
++#pragma once
++#include <QString>
++class QWidget;
++class QPushButton;
++
++namespace kobalt::reader {
++// Connects the Debug-page action to the existing persistent language chooser.
++void installDebugLanguageChooser(QPushButton *button, QWidget *host, const QString &directory);
++} // namespace kobalt::reader
+diff --git a/src/app/reader/settings/settings_panel.cpp b/src/app/reader/settings/settings_panel.cpp
+index 9242f5db332b0c182159931e41d4c54f8b6bd6ac..9b35a83cb14c81028e35091c1588f0aed447b3ee 100644
+--- a/src/app/reader/settings/settings_panel.cpp
++++ b/src/app/reader/settings/settings_panel.cpp
+@@ -10,6 +10,8 @@
+ #include "ui/style/theme.h"
+ #include "ui/panel_timing.h"
+ #include "settings_panel.h"
++#include "debug_language_dialog.h"
++#include "support/debug_language.h"
+ #include "ui/dialogs/choice_sheet.h"
+ #include "support/qt_compat.h"
+ #include "reading/text_presets.h"
+@@ -1315,6 +1317,10 @@ void SettingsPanel::buildDebug(QWidget *debugPage)
+     auto *debugRows = new QVBoxLayout(debugPage);
+     debugRows->setContentsMargins(0, 0, 0, 0);
+     debugRows->setSpacing(0);
++    auto *languageButton = listAction(debugPage, debugRows, "rrDebugLanguageButton",
++                                      strings::get("debug.language_title"), [] { });
++    installDebugLanguageChooser(languageButton, window(),
++                                QString::fromLatin1(debugLanguageDirectory));
+     section(debugPage, debugRows, "rrDebugCacheSection", strings::get("debug.section_caches"));
+     evictBookCacheButton = listAction(
+             debugPage, debugRows, "rrDebugEvictCache", strings::get("debug.evict_cache"), [] { },
+diff --git a/src/support/debug_language.cpp b/src/support/debug_language.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..eec862311f78a3e174eccd95ee4df47200db72a0
+--- /dev/null
++++ b/src/support/debug_language.cpp
+@@ -0,0 +1,94 @@
++#include "debug_language.h"
++#include "support/main_thread.h"
++#include "support/qt_compat.h"
++#include <QCoreApplication>
++#include <QDir>
++#include <QFile>
++#include <QFileInfo>
++#include <QPointer>
++#include <QRunnable>
++#include <QSaveFile>
++#include <QThreadPool>
++#include <utility>
++
++namespace kobalt {
++DebugLanguage debugLanguage(const QString &directory) {
++    if (directory.isEmpty()) return DebugLanguage::Automatic;
++    const QDir dir(directory);
++    if (QFileInfo(dir.filePath(".lang_en")).isFile()) return DebugLanguage::English;
++    if (QFileInfo(dir.filePath(".lang_ru")).isFile()) return DebugLanguage::Russian;
++    // Read older markers only as a fallback. The next UI choice removes them.
++    if (QFileInfo(dir.filePath("lang_en")).isFile()) return DebugLanguage::English;
++    if (QFileInfo(dir.filePath("lang_ru")).isFile()) return DebugLanguage::Russian;
++    return DebugLanguage::Automatic;
++}
++bool writeDebugLanguage(const QString &directory, DebugLanguage language) {
++    mainthread::BlockingOperation operation("debug-language-write");
++    if (directory.isEmpty()) return false;
++    const QDir dir(directory);
++    const auto remove = [&dir](const char *name) {
++        const auto path = dir.filePath(QString::fromLatin1(name));
++        const QFileInfo info(path);
++        return (!info.exists() && !info.isSymLink()) || QFile::remove(path);
++    };
++    if (language == DebugLanguage::Automatic) {
++        bool ok = true;
++        for (const auto *name : {".lang_en", ".lang_ru", "lang_en", "lang_ru"})
++            ok = remove(name) && ok;
++        return ok;
++    }
++    if (!QDir().mkpath(directory)) return false;
++    // Commit the new marker before removing the old one: a failed create must
++    // not silently discard a working override. Report any cleanup failure.
++    const auto target = dir.filePath(language == DebugLanguage::English ? ".lang_en" : ".lang_ru");
++    const QFileInfo info(target);
++    if (info.isSymLink() || (info.exists() && !info.isFile())) return false;
++    QSaveFile marker(target);
++    if (!marker.open(QIODevice::WriteOnly) || !marker.commit()) return false;
++    bool ok = remove(language == DebugLanguage::English ? ".lang_ru" : ".lang_en");
++    for (const auto *legacy : {"lang_en", "lang_ru"}) ok = remove(legacy) && ok;
++    return ok;
++}
++namespace {
++QThreadPool &languagePool() {
++    struct Pool {
++        QThreadPool threads;
++        Pool() {
++            threads.setMaxThreadCount(1); // Serialize choices even across reader lifetimes.
++            threads.setExpiryTimeout(0);
++            const auto drain = [this] {
++                mainthread::AllowBlocking allow("application quits");
++                mainthread::BlockingOperation operation("debug-language-shutdown");
++                threads.waitForDone();
++            };
++            QObject::connect(qApp, &QCoreApplication::aboutToQuit, &threads, drain, Qt::DirectConnection);
++            QObject::connect(qApp, &QObject::destroyed, &threads, drain, Qt::DirectConnection);
++        }
++    };
++    static Pool pool;
++    return pool.threads;
++}
++class SaveLanguage final : public QRunnable {
++public:
++    SaveLanguage(QString directory, DebugLanguage language, QObject *context, std::function<void(bool)> finished)
++        : directory(std::move(directory)), language(language), guard(context), finished(std::move(finished)) {}
++    void run() override {
++        const bool saved = writeDebugLanguage(directory, language);
++        // The worker owns its storage operation; closing the dialog or reader
++        // neither waits for it nor gives it a dangling UI pointer.
++        kobalt::qt::invoke(qApp, [guard = guard, finished = finished, saved] {
++            if (guard && finished) finished(saved);
++        }, Qt::QueuedConnection);
++    }
++private:
++    QString directory;
++    DebugLanguage language;
++    QPointer<QObject> guard;
++    std::function<void(bool)> finished;
++};
++}
++void writeDebugLanguageAsync(const QString &directory, DebugLanguage language, QObject *context,
++                             std::function<void(bool)> finished) {
++    languagePool().start(new SaveLanguage(directory, language, context, std::move(finished)));
++}
++} // namespace kobalt
+diff --git a/src/support/debug_language.h b/src/support/debug_language.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..8a845eef58ce897bba15a2545951bacb225675ec
+--- /dev/null
++++ b/src/support/debug_language.h
+@@ -0,0 +1,17 @@
++#pragma once
++#include <QString>
++#include <functional>
++class QObject;
++
++namespace kobalt {
++inline constexpr auto debugLanguageDirectory = "/mnt/onboard/.adds/kobalt/diagnostics";
++enum class DebugLanguage { Automatic, English, Russian };
++// Hidden .lang_en/.lang_ru markers; English wins if both exist.
++// Legacy unprefixed markers are read only when no hidden marker exists.
++DebugLanguage debugLanguage(const QString &directory);
++// Worker-only write helper. Never touches other diagnostics/profile files.
++bool writeDebugLanguage(const QString &directory, DebugLanguage language);
++// Completion on the GUI thread, dropped if context has gone away. No GUI waits.
++void writeDebugLanguageAsync(const QString &directory, DebugLanguage language, QObject *context,
++                             std::function<void(bool)> finished);
++} // namespace kobalt
+diff --git a/src/support/locale.cpp b/src/support/locale.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..64f8e0465f2e021bbdda96012049b678522e4b33
+--- /dev/null
++++ b/src/support/locale.cpp
+@@ -0,0 +1,58 @@
++#include "support/locale.h"
++
++#include "support/qt_compat.h"
++
++#include <QFileInfo>
++#include <QLocale>
++#include <QSettings>
++#include <QString>
++#include <QStringList>
++
++namespace kobalt {
++namespace {
++constexpr auto koboReaderConf = "/mnt/onboard/.kobo/Kobo/Kobo eReader.conf";
++} // namespace
++
++strings::Locale localeFromKoboConfig(const QString &confPath) {
++    const QFileInfo info(confPath);
++    if (!info.isFile() || !info.isReadable())
++        return strings::Locale::English;
++    const QSettings settings(confPath, QSettings::IniFormat);
++    // Localization patches always register their language in ExtraLocales,
++    // while older patches leave CurrentLocale at the placeholder "C". The
++    // value is a comma-separated list (e.g. "ru" or "en_GB, ru_RU"), so a
++    // Russian token there is the most reliable sign of a Russian device.
++    // QSettings parses unquoted comma-separated INI values as QStringList;
++    // a quoted list stays a single QString. Accept both representations.
++    const auto extraLocales = settings.value("ApplicationPreferences/ExtraLocales").toStringList();
++    for (const auto &locales : extraLocales) {
++        for (const auto &token : locales.split(QLatin1Char(','), kobalt::qt::skipEmptyParts)) {
++            if (strings::normalizeLocaleCode(token.trimmed()) == strings::Locale::Russian)
++                return strings::Locale::Russian;
++        }
++    }
++    const auto code = settings.value("ApplicationPreferences/CurrentLocale").toString();
++    // "C" and "POSIX" mean no real locale selection, as shipped by old patches.
++    if (code.isEmpty() || code == QLatin1String("C") || code == QLatin1String("POSIX"))
++        return strings::Locale::English;
++    return strings::normalizeLocaleCode(code);
++}
++
++strings::Locale resolveLocale(const QString &diagnosticsDirectory) {
++    // A persistent explicit debug choice wins even if Nickel's environment
++    // carries a locale override. Automatic retains the previous ENV/config chain.
++    switch (debugLanguage(diagnosticsDirectory)) {
++    case DebugLanguage::English: return strings::Locale::English;
++    case DebugLanguage::Russian: return strings::Locale::Russian;
++    case DebugLanguage::Automatic: break;
++    }
++    const auto forced = qgetenv("KOBALT_LANGUAGE");
++    if (!forced.isEmpty())
++        return strings::normalizeLocaleCode(QString::fromLatin1(forced));
++    // On a Kobo the firmware config is authoritative when it exists. Desktop
++    // and Android builds have no such file and follow the system locale.
++    if (QFileInfo::exists(QString::fromLatin1(koboReaderConf)))
++        return localeFromKoboConfig(QString::fromLatin1(koboReaderConf));
++    return strings::normalizeLocaleCode(QLocale::system().name());
++}
++} // namespace kobalt
+diff --git a/src/support/locale.h b/src/support/locale.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..4d759e6e068f2527c8ea1324bab95a5fee20cec7
+--- /dev/null
++++ b/src/support/locale.h
+@@ -0,0 +1,16 @@
++#pragma once
++#include "support/strings.h"
++#include "support/debug_language.h"
++
++
++namespace kobalt {
++// Resolve the interface locale once at startup. The order is:
++// diagnostics .lang_en/.lang_ru markers, KOBALT_LANGUAGE, Kobo config,
++// then the operating-system locale. Every unknown value falls back to English.
++strings::Locale resolveLocale(const QString &diagnosticsDirectory = QString::fromLatin1(debugLanguageDirectory));
++// Read a Kobo-style INI file. A Russian entry in ApplicationPreferences/
++// ExtraLocales wins first (localization patches always set it, while old
++// patches leave CurrentLocale at "C"); CurrentLocale is consulted afterwards.
++// A missing file or key is an English fallback, never a startup failure.
++strings::Locale localeFromKoboConfig(const QString &confPath);
++} // namespace kobalt
+diff --git a/src/support/string_locale.h b/src/support/string_locale.h
+index c775f4c9cce27a7814197156a5841b3580d63db0..c62a2943e1aa3e18e241460966b76179450425b6 100644
+--- a/src/support/string_locale.h
++++ b/src/support/string_locale.h
+@@ -1,9 +1,12 @@
+ #pragma once
+ #include "string_table.h"
++#include <QByteArray>
++#include <QString>
+ #include <QLocale>
+ #include <atomic>
+ 
+ namespace kobalt::strings {
++// Fork policy only. The shared entry point owns English fallback and key display.
+ enum class Locale { English, Russian };
+ 
+ namespace detail {
+@@ -19,7 +22,7 @@ inline const Entry *russianTable(int *count)
+ 
+ inline std::atomic_int &localeStore()
+ {
+-    static std::atomic_int value(int(Locale::Russian));
++    static std::atomic_int value(int(Locale::English));
+     return value;
+ }
+ 
+@@ -33,8 +36,8 @@ inline Locale locale()
+     return Locale(localeStore().load());
+ }
+ 
+-// Dates and grouped figures follow the selected UI language rather than the
+-// process locale configured by the host.
++// Dates and grouped figures follow the selected UI language, not Nickel's
++// process locale (which may still be C even with Russian ExtraLocales).
+ inline const QLocale &formatLocale()
+ {
+     static const QLocale english(QLocale::English, QLocale::UnitedStates);
+@@ -42,4 +45,40 @@ inline const QLocale &formatLocale()
+     return locale() == Locale::Russian ? russian : english;
+ }
+ 
++// Nickel stores codes such as "ru", "ru_RU" and occasionally "ru-RU". Only the
++// language prefix matters; an unknown language safely resolves to English.
++inline Locale normalizeLocaleCode(const QString &code)
++{
++    return code.left(2).toLower() == QLatin1String("ru") ? Locale::Russian : Locale::English;
++}
++
++namespace detail {
++inline const Entry *localizedEntry(const char *key)
++{
++    if (locale() != Locale::Russian)
++        return nullptr;
++    int count = 0;
++    const auto *table = russianTable(&count);
++    return find(table, count, key);
++}
++} // namespace detail
++
++// Russian plurals follow CLDR: one (1 книга), few (2 книги), many (5 книг).
++// English keeps its existing one/base split. The base key holds the many form.
++inline QByteArray pluralSuffix(int count)
++{
++    QByteArray suffix;
++    if (locale() == Locale::Russian) {
++        const int ten = count % 10, hundred = count % 100;
++        if (ten == 1 && hundred != 11)
++            suffix = "_one";
++        else if (ten >= 2 && ten <= 4 && !(hundred >= 12 && hundred <= 14))
++            suffix = "_few";
++        else
++            suffix = "_many";
++    } else if (count == 1) {
++        suffix = "_one";
++    }
++    return suffix;
++}
+ } // namespace kobalt::strings
+diff --git a/src/support/string_table.h b/src/support/string_table.h
+index 671db5b448b6e8859dcd5e68dc60191a1e3aec37..54112f52c07adedbd05b9f64fd0e9fc5031f2e91 100644
+--- a/src/support/string_table.h
++++ b/src/support/string_table.h
+@@ -1,4 +1,6 @@
+ #pragma once
++#include <algorithm>
++#include <cstring>
+ 
+ namespace kobalt::strings {
+ struct Entry
+@@ -6,4 +8,17 @@ struct Entry
+     const char *key;
+     const char *value;
+ };
++
++namespace detail {
++inline const Entry *find(const Entry *begin, int count, const char *name)
++{
++    const auto *entry =
++            std::lower_bound(begin, begin + count, name, [](const Entry &item, const char *key) {
++                return std::strcmp(item.key, key) < 0;
++            });
++    if (entry == begin + count || std::strcmp(entry->key, name) != 0)
++        return nullptr;
++    return entry;
++}
++} // namespace detail
+ } // namespace kobalt::strings
+diff --git a/src/support/strings.h b/src/support/strings.h
+index 2a6938d0706894111dbd202830a8af5c541f1d34..689f86919c57b276d14ae90b3408b1061f31bc0e 100644
+--- a/src/support/strings.h
++++ b/src/support/strings.h
+@@ -1,24 +1,27 @@
+ #pragma once
+-#include "string_locale.h"
+ #include <QString>
+ #include <QStringList>
+ #include <QRegularExpression>
+-#include <algorithm>
++#include "string_locale.h"
+ #include <atomic>
+-#include <cstring>
+ 
+ namespace kobalt::strings {
+-inline const Entry *entries(int *count)
+-{
++namespace detail {
++inline const Entry *englishTable(int *count) {
+     static const Entry values[] = {
+ #include <kobalt_strings.inc>
+     };
+-    *count = sizeof(values) / sizeof(values[0]);
++    *count = int(sizeof(values) / sizeof(values[0]));
+     return values;
+ }
++} // namespace detail
+ 
+-inline std::atomic_bool &keyDisplay()
+-{
++// Diagnostics persist the canonical English key/value mapping, so it keeps the
++// English table regardless of the active interface locale.
++inline const Entry *entries(int *count) {
++    return detail::englishTable(count);
++}
++inline std::atomic_bool &keyDisplay() {
+     static std::atomic_bool enabled(qgetenv("KOBALT_SHOW_STRING_KEYS") == "1");
+     return enabled;
+ }
+@@ -28,22 +31,19 @@ inline void showKeys(bool enabled)
+ {
+     keyDisplay().store(enabled);
+ }
+-
+ // Mark deferred display-copy keys without translating them at the producer.
+ inline constexpr const char *key(const char *value)
+ {
+     return value;
+ }
+-
+-inline QString get(const char *key)
+-{
+-    int count = 0;
+-    const auto *begin = locale() == Locale::Russian ? detail::russianTable(&count) : entries(&count);
+-    const auto *entry =
+-            std::lower_bound(begin, begin + count, key, [](const Entry &item, const char *name) {
+-                return std::strcmp(item.key, name) < 0;
+-            });
+-    if (entry == begin + count || std::strcmp(entry->key, key) != 0)
++inline QString get(const char *key) {
++    const Entry *entry = detail::localizedEntry(key);
++    if (!entry) {
++        int count = 0;
++        const auto *table = detail::englishTable(&count);
++        entry = detail::find(table, count, key);
++    }
++    if (!entry)
+         return QString::fromLatin1(key);
+     const QString value = QString::fromUtf8(entry->value);
+     if (!keyDisplay().load())
+@@ -62,4 +62,11 @@ inline QString get(const char *key)
+         result += " [" + seen.join(", ") + "]";
+     return result;
+ }
++// Locale-specific inflection is owned by string_locale.h.
++inline QString plural(int count, const char *baseKey)
++{
++    QByteArray key = baseKey;
++    key += pluralSuffix(count);
++    return get(key.constData()).arg(count);
++}
+ } // namespace kobalt::strings
+diff --git a/tests/model/debug_language_ui.cpp b/tests/model/debug_language_ui.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..e17b951e8064417e7fad1ac0b5f8a8108ad3796f
+--- /dev/null
++++ b/tests/model/debug_language_ui.cpp
+@@ -0,0 +1,64 @@
++#include "check.h"
++#include "app/reader/settings/debug_language_dialog.h"
++#include "support/debug_language.h"
++#include "support/strings.h"
++#include "ui/controls/options.h"
++#include <QApplication>
++#include <QDir>
++#include <QEventLoop>
++#include <QPushButton>
++#include <QTemporaryDir>
++#include <QTimer>
++#include <cstdio>
++using namespace kobalt;
++int main(int argc, char **argv)
++{
++    QApplication app(argc, argv);
++    QTemporaryDir directory;
++    require(directory.isValid(), "language UI directory");
++    strings::setLocale(strings::Locale::Russian);
++    QWidget host;
++    host.resize(1000, 1200);
++    QPushButton button(&host);
++    button.setGeometry(0, 0, 200, 60);
++    reader::installDebugLanguageChooser(&button, &host, directory.path());
++    host.show();
++    button.click();
++    app.processEvents();
++    auto *popup = host.findChild<QWidget *>("rrDebugLanguage");
++    require(popup && popup->isVisible(), "language chooser did not open");
++    auto *cancel = popup->findChild<QPushButton *>("rrDebugLanguageClose");
++    require(cancel, "language chooser cancel missing");
++    cancel->click();
++    require(!popup->isVisible() && debugLanguage(directory.path()) == DebugLanguage::Automatic,
++            "cancel changed persistent locale or left chooser visible");
++    button.click();
++    app.processEvents();
++    // The previous popup is pending deleteLater: select the visible one only.
++    popup = nullptr;
++    for (auto *candidate : host.findChildren<QWidget *>("rrDebugLanguage"))
++        if (candidate->isVisible()) popup = candidate;
++    require(popup, "language chooser did not reopen");
++    auto *english = popup->findChild<QCheckBox *>("rrDebugLanguageEnglish");
++    cancel = popup->findChild<QPushButton *>("rrDebugLanguageClose");
++    require(english && cancel, "language choices missing");
++    english->click();
++    require(!cancel->isEnabled(), "async language save did not disable submission");
++    QEventLoop loop;
++    QTimer poll, timeout;
++    timeout.setSingleShot(true);
++    QObject::connect(&poll, &QTimer::timeout, &loop, [&] {
++        if (cancel->isEnabled()) loop.quit();
++    });
++    QObject::connect(&timeout, &QTimer::timeout, &loop, &QEventLoop::quit);
++    poll.start(10);
++    timeout.start(5000);
++    loop.exec();
++    require(cancel->isEnabled() && debugLanguage(directory.path()) == DebugLanguage::English,
++            "language choice not saved asynchronously");
++    require(strings::locale() == strings::Locale::Russian,
++            "language chooser partially retranslated live UI");
++    cancel->click();
++    require(!popup->isVisible(), "saved language chooser did not close");
++    std::puts("PASS: language chooser cancellation, reopen and asynchronous save");
++}
+diff --git a/tests/model/strings_locale.cpp b/tests/model/strings_locale.cpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..9303ec8957d0cf24016b510c618e47d2772d48fc
+--- /dev/null
++++ b/tests/model/strings_locale.cpp
+@@ -0,0 +1,276 @@
++#include "check.h"
++#include "support/locale.h"
++#include "support/strings.h"
++
++#include <QCoreApplication>
++#include <QFile>
++#include <QFileInfo>
++#include <QTemporaryDir>
++#include <QTextStream>
++#include <QDir>
++#include <QEventLoop>
++#include <QTimer>
++#include "support/main_thread.h"
++
++using namespace kobalt;
++
++namespace {
++void normalizeCodes() {
++    using strings::Locale;
++    require(strings::normalizeLocaleCode(QStringLiteral("ru")) == Locale::Russian, "ru must select Russian");
++    require(strings::normalizeLocaleCode(QStringLiteral("ru_RU")) == Locale::Russian, "ru_RU must select Russian");
++    require(strings::normalizeLocaleCode(QStringLiteral("ru-RU")) == Locale::Russian, "ru-RU must select Russian");
++    require(strings::normalizeLocaleCode(QStringLiteral("RU")) == Locale::Russian, "RU must select Russian");
++    require(strings::normalizeLocaleCode(QStringLiteral("en")) == Locale::English, "en must select English");
++    require(strings::normalizeLocaleCode(QStringLiteral("en_GB")) == Locale::English, "en_GB must select English");
++    require(strings::normalizeLocaleCode(QStringLiteral("fr_FR")) == Locale::English, "unknown locale falls back to English");
++    require(strings::normalizeLocaleCode(QString()) == Locale::English, "empty locale falls back to English");
++}
++
++void translatedLookup() {
++    using strings::Locale;
++    strings::setLocale(Locale::Russian);
++    require(strings::locale() == Locale::Russian, "Russian locale was not stored");
++    require(strings::formatLocale().language() == QLocale::Russian
++                    && strings::formatLocale().standaloneMonthName(11)
++                            == QString::fromUtf8("ноябрь"),
++            "Activity dates must follow the selected Russian UI, not the process locale");
++    require(strings::formatLocale().toString(285644)
++                    == QLocale(QLocale::Russian, QLocale::Russia).toString(285644),
++            "Russian grouped word totals use the wrong locale");
++    require(strings::get("common.cancel") == QString::fromUtf8("Отмена"), "Russian lookup returned the wrong copy");
++    require(strings::get("library.title") == QString::fromUtf8("Библиотека"), "Russian library title mismatch");
++    require(strings::get("settings.paragraph_choices_description")
++                    == QString::fromUtf8(
++                            "«Из книги» сохраняет соответствующее оформление книги. "
++                            "Штриховка обозначает дополнительный интервал между абзацами."),
++            "Paragraph help must name the visible From book choice consistently");
++    require(strings::get("settings.font_families") == QString::fromUtf8("Резервные шрифты"),
++            "Approved reserve-font label mismatch: settings.font_families");
++    require(strings::get("settings.serif_font") == QString::fromUtf8("Резервный шрифт с засечками"),
++            "Approved reserve-font label mismatch: settings.serif_font");
++    require(strings::get("settings.sans_font") == QString::fromUtf8("Резервный шрифт без засечек"),
++            "Approved reserve-font label mismatch: settings.sans_font");
++    require(strings::get("settings.mono_font") == QString::fromUtf8("Резервный моноширинный шрифт"),
++            "Approved reserve-font label mismatch: settings.mono_font");
++    strings::setLocale(Locale::English);
++    require(strings::get("common.cancel") == QStringLiteral("Cancel"), "English lookup returned the wrong copy");
++    require(strings::formatLocale().language() == QLocale::English
++                    && strings::formatLocale().standaloneMonthName(11) == QStringLiteral("November")
++                    && strings::formatLocale().toString(285644) == QStringLiteral("285,644"),
++            "Switching back to English must restore upstream dates and number formatting");
++    require(strings::get("missing.unknown.key") == QStringLiteral("missing.unknown.key"),
++            "An unknown key must resolve to itself");
++}
++
++// Exercise both compiled tables, including their first/last entries. Lookup
++// must not depend on which argument the compiler evaluates first.
++void completeTableLookup() {
++    strings::showKeys(false);
++    for (const auto locale : {strings::Locale::English, strings::Locale::Russian}) {
++        strings::setLocale(locale);
++        int count = 0;
++        const auto *table = locale == strings::Locale::English ? strings::detail::englishTable(&count)
++                                                              : strings::detail::russianTable(&count);
++        require(count > 0, "Compiled locale table is empty");
++        for (int i = 0; i < count; ++i)
++            require(strings::get(table[i].key) == QString::fromUtf8(table[i].value), table[i].key);
++    }
++    int count = 0;
++    const auto *english = strings::entries(&count);
++    strings::setLocale(strings::Locale::Russian);
++    int russianCount = 0;
++    const auto *canonical = strings::entries(&russianCount);
++    require(canonical == english && russianCount == count,
++            "Diagnostic entries must stay canonical English in Russian mode");
++    strings::setLocale(strings::Locale::English);
++}
++
++void keyDisplayMode() {
++    using strings::Locale;
++    strings::setLocale(Locale::Russian);
++    strings::showKeys(true);
++    require(strings::get("common.cancel") == QStringLiteral("common.cancel"), "Key mode must show the key, not Russian copy");
++    const auto count = strings::get("library.count");
++    require(count == QStringLiteral("library.count [%1]"), qPrintable(QString("Key mode lost slots: %1").arg(count)));
++    strings::showKeys(false);
++    require(strings::get("common.cancel") == QString::fromUtf8("Отмена"), "Key mode did not switch back to Russian copy");
++}
++
++void russianPlurals() {
++    using strings::Locale;
++    strings::setLocale(Locale::Russian);
++    struct Case {
++        int count;
++        const char *expected;
++    };
++    const Case cases[]{{1, "1 книга"},    {2, "2 книги"},     {5, "5 книг"},      {0, "0 книг"},
++                       {11, "11 книг"},   {21, "21 книга"},   {22, "22 книги"},   {25, "25 книг"},
++                       {101, "101 книга"}, {111, "111 книг"}, {102, "102 книги"}};
++    for (const auto &test : cases) {
++        require(strings::plural(test.count, "library.count") == QString::fromUtf8(test.expected),
++                qPrintable(QString("Russian plural for %1").arg(test.count)));
++    }
++    require(strings::plural(1, "annotations.summary") == QString::fromUtf8("1 аннотация"),
++            "Russian annotation singular mismatch");
++    require(strings::plural(3, "annotations.summary") == QString::fromUtf8("Аннотации: 3"),
++            "Russian annotation few-form mismatch");
++    require(strings::plural(5, "annotations.summary") == QString::fromUtf8("Аннотаций: 5"),
++            "Russian annotation many-form mismatch");
++    strings::setLocale(Locale::English);
++    require(strings::plural(1, "library.count") == QStringLiteral("1 book"), "English singular mismatch");
++    require(strings::plural(2, "library.count") == QStringLiteral("2 books"), "English plural mismatch");
++}
++
++void koboConfig() {
++    using strings::Locale;
++    QTemporaryDir directory;
++    require(directory.isValid(), "temporary directory");
++
++    struct ConfigCase
++    {
++        const char *content;
++        Locale expected;
++        const char *failure;
++    };
++
++    const ConfigCase cases[] = {
++        { "[ApplicationPreferences]\nCurrentLocale=ru_RU\n", Locale::Russian,
++          "ru_RU config must select Russian" },
++        { "[ApplicationPreferences]\nCurrentLocale=en_GB\n", Locale::English,
++          "en_GB config must select English" },
++        { "[Reading]\nSideloadedMode=true\n", Locale::English,
++          "Missing CurrentLocale must fall back to English" },
++        { "[ApplicationPreferences]\nCurrentLocale=C\nExtraLocales=ru\n", Locale::Russian,
++          "ExtraLocales=ru must select Russian even when CurrentLocale is C" },
++        { "[ApplicationPreferences]\nExtraLocales=ru_RU\n", Locale::Russian,
++          "ExtraLocales=ru_RU without CurrentLocale must select Russian" },
++        { "[ApplicationPreferences]\nCurrentLocale=C\nExtraLocales=en_GB, ru-RU\n", Locale::Russian,
++          "A Russian token inside a comma-separated ExtraLocales must select Russian" },
++        { "[ApplicationPreferences]\nCurrentLocale=C\nExtraLocales=\"en_GB, ru-RU\"\n",
++          Locale::Russian, "A quoted ExtraLocales string must also select Russian" },
++        { "[ApplicationPreferences]\nCurrentLocale=en_GB\nExtraLocales=fr_FR\n", Locale::English,
++          "ExtraLocales without a Russian token must follow CurrentLocale and stay English" },
++        { "[ApplicationPreferences]\nCurrentLocale=C\n", Locale::English,
++          "CurrentLocale=C without ExtraLocales must fall back to English" },
++        { "[ApplicationPreferences]\nCurrentLocale=POSIX\n", Locale::English,
++          "CurrentLocale=POSIX without ExtraLocales must fall back to English" },
++    };
++    int index = 0;
++    for (const auto &test : cases) {
++        // Distinct paths isolate parsing cases from QSettings' process-wide
++        // cache: same-size rewrites within one timestamp tick can look unchanged.
++        const auto confPath = directory.filePath(QString("Kobo-%1.conf").arg(index++));
++        {
++            QFile file(confPath);
++            require(file.open(QIODevice::WriteOnly | QIODevice::Text),
++                    "create Kobo config fixture");
++            QTextStream stream(&file);
++            stream << test.content;
++        }
++        require(kobalt::localeFromKoboConfig(confPath) == test.expected, test.failure);
++    }
++    require(kobalt::localeFromKoboConfig(directory.path() + "/missing.conf") == Locale::English,
++            "Missing config file must fall back to English");
++}
++
++void diagnosticOverride() {
++    QTemporaryDir directory;
++    require(directory.isValid(), "debug language directory");
++    const auto path = directory.path();
++    const auto originalEnvironment = qgetenv("KOBALT_LANGUAGE");
++    qunsetenv("KOBALT_LANGUAGE");
++    const auto automatic = resolveLocale(path);
++    require(debugLanguage(path) == DebugLanguage::Automatic, "Missing markers must be automatic");
++    require(writeDebugLanguage(path, DebugLanguage::Russian) && resolveLocale(path) == strings::Locale::Russian,
++            ".lang_ru must override automatic locale");
++    require(writeDebugLanguage(path, DebugLanguage::English) && resolveLocale(path) == strings::Locale::English &&
++                !QFileInfo::exists(path + "/.lang_ru"), "English selection must replace the Russian marker");
++    { QFile ru(path + "/.lang_ru"); require(ru.open(QIODevice::WriteOnly), "second marker"); }
++    require(resolveLocale(path) == strings::Locale::English, "Both markers must deterministically select English");
++    qputenv("KOBALT_LANGUAGE", "ru");
++    require(resolveLocale(path) == strings::Locale::English, "Explicit marker must override the inherited environment");
++    qunsetenv("KOBALT_LANGUAGE");
++    { QFile legacy(path + "/lang_en"); require(legacy.open(QIODevice::WriteOnly), "legacy marker"); }
++    require(writeDebugLanguage(path, DebugLanguage::Russian) && !QFileInfo::exists(path + "/lang_en") &&
++                QFileInfo::exists(path + "/.lang_ru") && resolveLocale(path) == strings::Locale::Russian,
++            "New selection must use hidden files and remove legacy markers");
++    // Simulate the next reader opening: both resolved strings and locale must
++    // change, not just the marker file. The live UI writer never does this.
++    const auto before = strings::locale();
++    strings::setLocale(strings::Locale::Russian);
++    require(writeDebugLanguage(path, DebugLanguage::English), "save next-opening English");
++    strings::setLocale(resolveLocale(path));
++    require(strings::locale() == strings::Locale::English &&
++                strings::get("common.cancel") == QStringLiteral("Cancel"), "Next opening did not use English strings");
++    strings::setLocale(before);
++    { QFile other(path + "/keep.json"); require(other.open(QIODevice::WriteOnly), "other diagnostic file"); }
++    require(writeDebugLanguage(path, DebugLanguage::Automatic) && debugLanguage(path) == DebugLanguage::Automatic &&
++                resolveLocale(path) == automatic && QFileInfo::exists(path + "/keep.json"),
++            "Automatic must remove only language markers and restore normal resolution");
++    { QFile legacy(path + "/lang_en"); require(legacy.open(QIODevice::WriteOnly), "legacy fallback marker"); }
++    require(resolveLocale(path) == strings::Locale::English, "Legacy English marker no longer works");
++    { QFile hidden(path + "/.lang_ru"); require(hidden.open(QIODevice::WriteOnly), "hidden priority marker"); }
++    require(resolveLocale(path) == strings::Locale::Russian, "Legacy marker overrode an explicit hidden marker");
++    require(writeDebugLanguage(path, DebugLanguage::Automatic) && !QFileInfo::exists(path + "/lang_en"),
++            "Automatic must also remove legacy overrides");
++    qputenv("KOBALT_LANGUAGE", "ru");
++    require(resolveLocale(path) == strings::Locale::Russian, "Automatic lost environment fallback");
++    qunsetenv("KOBALT_LANGUAGE");
++    require(QDir().mkpath(path + "/.lang_ru"), "blocking marker directory");
++    require(debugLanguage(path) == DebugLanguage::Automatic &&
++                !writeDebugLanguage(path, DebugLanguage::Russian), "Marker directories must not be accepted or removed");
++    require(QDir().rmdir(path + "/.lang_ru"), "remove marker directory");
++    require(!writeDebugLanguage(QString(), DebugLanguage::English), "Empty diagnostics path accepted");
++    qputenv("KOBALT_LANGUAGE", originalEnvironment);
++}
++
++void asynchronousDiagnosticOverride() {
++    QTemporaryDir directory;
++    require(directory.isValid(), "async language directory");
++    QEventLoop loop;
++    QTimer timeout;
++    timeout.setSingleShot(true);
++    QObject::connect(&timeout, &QTimer::timeout, &loop, [] { qFatal("Debug language writer timed out"); });
++    timeout.start(10000);
++    bool stale = false, finished = false;
++    auto *gone = new QObject;
++    mainthread::Interaction interactive([] { return true; });
++    writeDebugLanguageAsync(directory.path(), DebugLanguage::English, gone, [&](bool) { stale = true; });
++    delete gone;
++    writeDebugLanguageAsync(directory.path(), DebugLanguage::Russian, &loop, [&](bool ok) {
++        require(ok, "async marker write failed");
++        finished = true;
++        loop.quit();
++    });
++    require(!finished, "Debug language completion was synchronous");
++    loop.exec();
++    require(finished && !stale && debugLanguage(directory.path()) == DebugLanguage::Russian,
++            "Async writes raced, lost completion or called a deleted UI owner");
++}
++
++void environmentOverride() {
++    using strings::Locale;
++    qputenv("KOBALT_LANGUAGE", "ru_RU");
++    require(kobalt::resolveLocale() == Locale::Russian, "KOBALT_LANGUAGE=ru_RU must force Russian");
++    qputenv("KOBALT_LANGUAGE", "fr");
++    require(kobalt::resolveLocale() == Locale::English, "Unknown KOBALT_LANGUAGE must fall back to English");
++    qunsetenv("KOBALT_LANGUAGE");
++}
++} // namespace
++
++int main(int argc, char **argv) {
++    QCoreApplication app(argc, argv);
++    normalizeCodes();
++    translatedLookup();
++    completeTableLookup();
++    keyDisplayMode();
++    russianPlurals();
++    koboConfig();
++    environmentOverride();
++    diagnosticOverride();
++    asynchronousDiagnosticOverride();
++    // Do not leak the selector into any later in-process use.
++    strings::setLocale(strings::Locale::English);
++    std::puts("PASS: locale normalization, translated lookup, key mode, Russian plurals and config resolution");
++}
