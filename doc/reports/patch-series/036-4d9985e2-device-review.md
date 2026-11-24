@@ -35,3 +35,13 @@ The shared literal-wordmark role now selects regular Instrument Serif independen
 Local complete-series application to pinned pristine beta10 passes. Active series has no 035 gate and retains preloadLastBook. Native/Qt5 CI and About visual acceptance pending at initial publication. Full new Corsiva family and menu-status toggle are still separate pending tasks, not included by implication.
 
 A new broad timing matrix is not requested. After a verified next package, visually check About Kobalt and preserve preload behavior. Existing diagnostics suffice to establish remaining cached repagination; only request another narrowly targeted run if new instrumentation or a concrete remedy requires it.
+
+## Verified package
+
+Runtime **f87e2a7f23991d4506f692d2284392eec76e5317**, CI45482986925: all three jobs PASS
+(series validation/ordered apply/inventory; native selected regressions including resolved
+About wordmark in both languages; Qt5 compile/check-package/qemu/package collection).
+[Artifact14963356876](https://github.com/Mutaracha/kobalt_ru/actions/runs/45482986925/artifacts/14963356876),
+Kobalt-ru-beta10-series-qt5, 44,588,369 bytes. This package restores FB2 preload and fixes
+shared branding; it is not a fix for remaining cached-layout invalidation.
+Only About visual check is requested now, not another four-book timing matrix.

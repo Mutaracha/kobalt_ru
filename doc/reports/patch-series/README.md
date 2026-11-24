@@ -45,3 +45,11 @@
 Подготовлены 035 (skip speculative raw-FB2 preload) и RU «Kobalt закроется».
 Runtime 4d9985e2 / CI45477082472 все jobs PASS; [пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45477082472/artifacts/14959364274).
 Device-проверка 035/новых сообщений pending. Новое семейство Corsiva/menu-status ещё не включены.
+
+## 4d9985e2: эксперимент завершён, preload возвращается
+
+[Отчёт и ограничения](036-4d9985e2-device-review.md). No-preload подтверждён событиями
+skipped, но новые времена 11.20/22.32 s не закрывают cached-layout defect. OFF persistence
+и wording приняты. По решению пользователя 035 удалён из active series, а не стал
+постоянным отключением FB2 preload. Runtime f87e2a7f: About shared wordmark исправлен, CI45482986925 все jobs PASS,
+[пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45482986925/artifacts/14963356876). Device visual pending; preload FB2 восстановлен.

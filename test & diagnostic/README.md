@@ -11,6 +11,7 @@
 | `df8e910a-ui/` | Full-series beta10: пользователь подтвердил запуск/raw FB2; UI screenshots — отдельное evidence, не общий PASS. |
 | `ace3c3c/` | 034: первая серия cold Hybrid/Accurate, retained повторы и UI review. |
 | `4f2cecd1/` | Вторая серия, stopwatch/reboot: обнаружены отказ cache-save книги1 и ложный prefix total. Историческое наблюдение, исправлено позже. |
+| `4d9985e2/` | Эксперимент без Home preload: manual A1 11.20/A2 22.32 s, disk hits с повторной пагинацией; OFF/cleanup wording приняты, About wordmark требует исправления. FB2 preload возвращается по решению пользователя. |
 | `eafb6161/` | Upload 46ecb8f: раздельные H/A архивы, manual timings, exit-wordmark принят; A1 background-preload wait и отдельная repagination. |
 | `7f47164/` | Диагностика также содержит 4f2cecd1; успешные saves/disk reuse книги1, пользователь подтвердил исправление счётчика. Последний disk hit не имеет session reading total. |
 | `FB2-034-test-inputs.zip` | Пользовательский согласованный набор холодных копий; оригинальный архив не менять. |
@@ -25,5 +26,5 @@ README/catalog/SHA256SUMS не включают сами себя в checksum-н
 
 Новые данные добавлять отдельной runtime-папкой с контекстом сценария. До диагностики
 включить подробные логи в Debug; не удалять профиль/кэши. Source commit брать из
-startup/About, а не из имени upload commit. Последний diagnostic upload eafb6161 — 46ecb8f; измеренные запуски ручные. Общие portable fixtures и opt-in
+startup/About, а не из имени upload commit. Последний diagnostic upload 4d9985e2 — 7bbb6aef; измеренные запуски ручные. Общие portable fixtures и opt-in
 `tests/manual/books` остаются на месте: они не являются результатами старой сборки.

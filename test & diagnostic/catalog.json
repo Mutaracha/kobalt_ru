@@ -1,5 +1,5 @@
 {
-  "baseline": "46ecb8f67e551c40af1b13f701d3eaa39ef3e82c",
+  "baseline": "7bbb6aef72a7c798668304a180d53936f352bed4",
   "note": "Versions from startup/context incl. rotated logs. Empty means no startup metadata; not proof of current runtime.",
   "files": [
     {
@@ -20,6 +20,26 @@
       "path": "test & diagnostic/1. Виртуальный свет.fb2",
       "bytes": 1104399,
       "sha256": "9a3ea3f98a29523e96cf058b4ced846fb674cad0c18ccd56b2e2953d5031dea8",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/4d9985e2/diagnostics.zip",
+      "bytes": 158864,
+      "sha256": "7ce45c3d49d607eab19c2bd5ffed06f43bb3d0d52706eff4bdd4a6e384f888c7",
+      "versions": [
+        "v1.0-beta.10"
+      ],
+      "source_commits": [
+        "4d9985e2c2432bc177556af169931b323b22a33e"
+      ],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/4d9985e2/screen_001-24.png",
+      "bytes": 96998,
+      "sha256": "6ca116e1b2823578fd52fee89cf4d023265508369331ac8a27cee87af60ebb5d",
       "versions": [],
       "source_commits": [],
       "archived": false

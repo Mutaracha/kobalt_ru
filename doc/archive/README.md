@@ -16,3 +16,5 @@
 
 Проверка консолидации из корня: `python3 doc/tools/check-materials.py`.
 Итоговая запись: [отчёт](../reports/materials-consolidation.md).
+
+- `beta10-experiments/` — завершённые/отозванные сравнительные runtime-эксперименты; не активная серия.
