@@ -142,3 +142,20 @@ locale). Qt5 компилирует helper через Kobo source glob; desktop 
 Legacy device workflow остаётся отключённым. Ordered workflow больше не
 собирает binary на report-only изменения и отменяет устаревший прогон своей
 группы при новом push, чтобы не тратить время на заменённые сборки.
+
+
+### Итог проверки первого среза
+
+[CI45372368929](https://github.com/Mutaracha/kobalt_ru/actions/runs/45372368929)
+на `b9713968a1c495de66ca0efcb310dc00e16901ed` завершился успешно:
+series validation, native suites (включая model.strings-locale и
+component.debug-language-ui), Qt5 build/check-package и qemu refresh.
+Артефакт `Beta10-series-prefix-qt5`, ID `14910157343`, 44,572,875 bytes.
+Это префикс с **частичным prepared 050**, не финальный полный форк;
+проверка запуска и language UI на устройстве не выполнена.
+
+Не менять 050 на ready по этому результату: остаются прочие CLDR consumers,
+About/annotation/sleep/preset/return-title hunks и их проверки. Для продолжения
+патч расширять поверх того же входа 010–040, а не накладывать новый diff поверх
+уже применённого 050. Текущие source/test changes и CMake registration находятся
+в самом 050; legacy workflow остаётся отключённым.

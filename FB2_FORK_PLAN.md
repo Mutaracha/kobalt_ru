@@ -14,12 +14,11 @@
 - 010–040: done по CI; 040 проверен на `87530065`, CI45361473628.
   Аппаратная проверка toolbar отдельно pending.
 - 050-fork-presentation: **in progress**, первый runtime-срез языка/Debug/markers
-  подготовлен; Qt5 первого прогона PASS, native configure area labels исправлены,
-  итоговый повторный CI pending. Это последний
+  подготовлен; итоговый CI45372368929 на `b9713968` — native locale/UI и
+  Qt5/package/qemu PASS. Устройство не проверено. Это последний
   функциональный номер текущего плана, включая ещё отсутствующий Debug language
   entry/markers/startup resolution, а не только косметику.
-- Следующее действие: завершить native/UI проверку первого среза 050, затем
-  остальные CLDR consumers и annotation/sleep/presets/return-title/About hunks
+- Следующее действие: остальные CLDR consumers и annotation/sleep/presets/return-title/About hunks
   в той же ordered 050. Полный 050 пока не ready.
   [Границы и проверки 050](doc/reports/patch-series/presentation-preparation.md),
   [Git tree OID остатка](doc/reports/patch-series/presentation-residual.tsv).
