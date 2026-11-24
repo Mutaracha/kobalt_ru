@@ -140,3 +140,11 @@ Workflow `Ordered patch series` теперь сохраняет проверен
 Проверенный пакет с FB2 и comics Layout setting: [CI 45278312375](https://github.com/Mutaracha/kobalt_ru/actions/runs/45278312375),
 артефакт `Beta10-series-prefix-qt5`, исходный коммит `08c66e4d`. Это prefix 010–032,
 не legacy package и пока не полный форк. Toolbar из 040 ещё отсутствует.
+
+
+033 (FB2 session cache) принят по [CI 45356010249](https://github.com/Mutaracha/kobalt_ru/actions/runs/45356010249)
+на `1285624d`: native cache/session regression и Qt5 package checks PASS.
+Обновлённый `Beta10-series-prefix-qt5`, artifact `14903311145`, содержит 010–033.
+Скорость повторного открытия на устройстве ещё требует проверки.
+
+[040 — границы переноса и аудит upstream controls](../../doc/reports/patch-series/reader-controls-audit.md).

@@ -89,3 +89,25 @@ No runtime code changed as part of this log comparison. No old opening accelerat
 Hybrid change, new FB2.ZIP support or excluded Russian_EnUS.pattern is restored.
 Existing native/Qt5 CI acceptance of 010–032 remains a compile/test milestone, not
 acceptance of repeat-opening performance on hardware.
+
+
+## Cache regression resolved in ordered patch 033
+
+The missing boundary was `OpeningJob::bindResources`: its readable-resource
+probe selected HTML/XHTML only. The single FB2 resource was therefore not
+eligible for the existing session parsed-cache path. Patch 033 adds that exact
+resource to the probe; fingerprints, production size thresholds and Hybrid
+remain unchanged.
+
+A resource-backed ReaderSession regression exercises cold opening, retained()
+close/save, destruction of the retained engine, a fresh session reopening from
+disk (cache hit), and a changed source (cache miss). It is registered and run by
+the ordered-prefix workflow, not just a standalone engine fixture.
+
+CI [45356010249](https://github.com/Mutaracha/kobalt_ru/actions/runs/45356010249)
+on `1285624d5b8e258cbf74df5822f8d8cc18ae9b0e` passed all three jobs: prefix
+validation, native tests, Qt5 compilation/package checks. Patch 033 is ready.
+The hardware package is **Beta10-series-prefix-qt5**, artifact `14903311145`
+(44,557,362 bytes), containing 010–033. Do not substitute the legacy device
+artifact. Repeat-open timing on the physical reader remains unverified; the CI
+result is not a claim that every cold-open pagination delay is eliminated.
