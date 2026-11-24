@@ -85,11 +85,11 @@
     },
     {
       "id": "050-fork-presentation",
-      "status": "prepared",
+      "status": "ready",
       "scope": "Remaining approved brand/About/annotation/UI/locale differences, excluding those already in 010-ru; exclude redundant Russian_EnUS.pattern and its fork-only manifest/notice/list entries, preserve Russian.pattern and translation dictionaries",
       "path": "platforms/patch-series/patches/050-fork-presentation.patch",
       "sha256": "b154a7acaa9cd89e2cea459ca3b531f9a3279a879560af54a47936b7eddb231d",
-      "validation": "Full presentation scope implemented: locale/Debug, remaining CLDR consumers, About build row, annotations, sleep ribbon/fitting, localized presets and return title; final native/Qt5 CI pending."
+      "validation": "CI 45375027889 on 489ee408: full 010–050 apply/strings/assets/inventory checks, native locale/Debug UI/presentation/preset/RU controls and prior FB2/cache/comics suites PASS; Qt5 build/check-package/qemu refresh PASS. Beta10-series-prefix-qt5 artifact 14910054747. Physical-device and Qt6/Android validation pending."
     },
     {
       "id": "060-build-integration",

@@ -13,15 +13,15 @@
 
 - 010–040: done по CI; 040 проверен на `87530065`, CI45361473628.
   Аппаратная проверка toolbar отдельно pending.
-- 050-fork-presentation: **in progress**, первый runtime-срез языка/Debug/markers
-  подготовлен; итоговый CI45372368929 на `b9713968` — native locale/UI и
-  Qt5/package/qemu PASS. Устройство не проверено. Это последний
-  функциональный номер текущего плана, включая ещё отсутствующий Debug language
-  entry/markers/startup resolution, а не только косметику.
-- Следующее действие: остальные CLDR consumers и annotation/sleep/presets/return-title/About hunks
-  в той же ordered 050. Полный 050 пока не ready.
-  [Границы и проверки 050](doc/reports/patch-series/presentation-preparation.md),
-  [Git tree OID остатка](doc/reports/patch-series/presentation-residual.tsv).
+- 050-fork-presentation: **done / ready по CI**, весь функциональный объём
+  реализован в одном ordered patch. Runtime `489ee408`, CI45375027889:
+  native language/Debug/presentation/preset/RU checks и Qt5/package/qemu PASS.
+  Аппаратная проверка не выполнена; статус не означает устранение старого
+  device-startup сбоя или однократного touch-зависания.
+  [Реализация и доказательства 050](doc/reports/patch-series/presentation-preparation.md),
+  [Hunk dispositions исходного остатка](doc/reports/patch-series/presentation-residual.tsv).
+- Следующее действие: 060 — финальная упаковка/provenance/CI всей серии;
+  затем отдельная аппаратная приёмка. Функции в 060 не отложены.
 - 060-build-integration: planned; итоговая упаковка/provenance/full-stack CI,
   не место для отложенных функциональных sources/tests.
 

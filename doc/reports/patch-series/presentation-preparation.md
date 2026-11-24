@@ -1,161 +1,89 @@
-# 050 — подготовка последнего функционального патча
+# 050 — последний функциональный патч: реализация и проверка
 
-Статус: **in progress — первый runtime-срез 050 подготовлен; весь 050 не завершён**.
-Проверяемый вход: pristine beta10 `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`
-плюс ready 010–040 из `41c11e37d6da34255d875109638fe1aea2799283`.
-Retained reference: `ca50dd358386e9fccc5122b464f74003caa51e75`.
-Сравнение выполнено по Git trees, не по грязному корню checkout.
+Статус: **done / ready по CI; аппаратная проверка не выполнена**.
+Вход: pristine beta10 `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`
+плюс ready 010–040. Retained reference:
+`ca50dd358386e9fccc5122b464f74003caa51e75`.
+Результат проверен на `489ee40878ed27491255e246f0802f95705cb178`.
+Сравнивались Git trees, не грязный корень checkout.
 
-050 — последний функциональный номер текущего плана. 060 остаётся отдельным
-этапом итоговой упаковки/provenance/CI; функциональные зависимости и регистрация
-тестов не откладываются в 060. Все патчи применяются одной упорядоченной серией,
-отдельная работоспособность частей не требуется.
+050 завершает функциональный объём текущего плана. 060 остаётся отдельным
+этапом итоговой упаковки/provenance/CI, а не местом для отложенных функций.
+Патчи применяются одной упорядоченной серией; автономность не требуется.
 
-## Остаток после 010–040
+## Выполненный объём
 
-### Язык и CLDR — обязательная часть 050
+| Группа | Перенос / сохранение |
+| --- | --- |
+| Язык | English/Русский/Automatic первой стандартной action row Debug; settings-owned modal, async marker writes, отмена без записи, без live retranslation и без входа в About |
+| Locale resolution | Hidden markers, legacy fallback, ENV, Kobo config, system locale; desktop/Android startup и Kobo session boundary; English fallback вместо forced-Russian control policy |
+| Strings / CLDR | Canonical English diagnostics table, RU fallback/plurals, формы library/chapter counts и Activity book/hour units; новые captions согласованы EN/RU; уже перенесённые dates/grouped digits из 010 сохранены |
+| Activity | Standalone month captions и units добавлены выборочно; новая beta10 Activity и её поведение не заменены старым файлом |
+| About | Fork distribution/build row, UTC metadata на desktop/Kobo/Android; generic empty name скрывает строку; desktop rebuild-time header сохраняет fork name |
+| Аннотации | Color/Style/Actions section captions, видимые подписи swatches/styles, Cancel/Dictionary copy; новый beta10 draft/actions pipeline сохранён |
+| Сон | Две строки remaining в ribbon в языковом порядке; fallback для старой/неразбираемой строки; фиксированное место battery; bounded fitting/elision обоих языков поверх RU height fitting из 010 |
+| Пресеты | Локализация известных shipped names только при отображении; пользовательские имена, неизвестные IDs, сохранённые значения/типографика не переписываются |
+| Return title | Согласованные measurement/painting runs: Sans вокруг serif brand word; sizeHint использует те же runs; upstream arrow placement сохранён |
 
-В префиксе есть `string_locale.h`, RU/EN resource tables и RU ink helpers из
-010, но **нет** `support/locale.*`, `support/debug_language.*` и
-`settings/debug_language_dialog.*`. Значение localeStore сейчас по умолчанию
-Russian. Поэтому наличие перевода не означает, что переключение языка уже
-перенесено.
+Runtime sources, translations, CMake registrations и тесты включены в сам 050.
+Новые support sources desktop регистрируются явно; Kobo/Android используют свои
+source globs. Не требуется функциональный follow-up в 060.
 
-Нужно перенести согласованную цепочку выбора: hidden markers `.lang_en` /
-`.lang_ru`, затем KOBALT_LANGUAGE, Kobo config и системная локаль, сохранив
-правила fallback/legacy markers из retained. Выбор English/Русский/Automatic —
-первой action row Debug, подпись «Язык интерфейса», стандартный Settings style.
-Диалог и запись принадлежат settings/support, не About. Запись async,
-завершение через GUI context; отмена не пишет markers. Применение только на
-границе запуска/открытия новой reading session, без частичного live retranslate.
+## Что не дублировалось и не возвращалось
 
-Entry points: desktop/main.cpp, android/main.cpp и Kobo ReaderCoordinator.
-Новые source files должны попасть в source lists/globs **в 050** на всех
-платформах; наличие файла само по себе не доказывает компиляцию в Qt5 core.
-Проверить consumers plural/date/чисел поверх нового beta10, не заменять их
-старыми файлами целиком. Сохранить forced verbose diagnostics.
+- RU tables, шрифты и locale ink/fitting из 010 сохранены, а не заменены wholesale.
+- Dark/comics actions, vector geometry и Fluent MIT acknowledgment уже в 040.
+  Не добавлялся неиспользуемый SVG asset второй раз.
+- Checkbox helper/tick из 032 не дублировались. Language modal использует
+  штатные beta10 RadioList dividers; старый RadioList с потерей новых
+  two-column/layout rules не переносился ради одного footer rule.
+- `Russian_EnUS.pattern`, его fork-only manifest/list/notice entries и старый
+  Libra2/NickelFix mapping не возвращались. `Russian.pattern` и переводной
+  ru-en dictionary сохранены; новые upstream assets/notice не откатывались.
+- FB2.ZIP, собственный Hybrid, opening acceleration и chapter-progress
+  labels/ticks/setting/top variant не добавлялись.
+- Upstream reverse_page_swipes, физические кнопки, Activity, chapter-start
+  spread, dark/i.MX animation и BOOX behavior не менялись этим патчем.
+- Старые fork diff удаляли некоторые upstream tests: эти удаления не перенесены.
+  В частности, PPI/rounding loop в text_presets.cpp сохранён полностью.
+- Root README пользователя не редактировался. Legacy device-workflow остаётся
+  отключённым; successful CI не объявляется аппаратной приёмкой.
 
-Тесты: strings_locale (EN/RU 1/2/5/11/21, даты и normalize), markers priority,
-Automatic/English/Russian, отмена, отсутствующий/недоступный каталог, async
-completion/context lifetime; UI entry только первым пунктом Debug, не About.
-Однократная потеря реакции touch после language form ранее не воспроизводилась;
-не называть её исправленной без установленной причины.
+Подробная классификация исходного path-level остатка:
+[presentation-residual.tsv](presentation-residual.tsv). Это карта provenance,
+не требование добиться побайтового совпадения нового beta10 со старым форком.
 
-### About / branding
+## Проверки
 
-В префиксе нет fork About row и её `kobaltForkName` / `kobaltBuildTime`.
-Перенести build row, translation keys и configure-time значения вместе.
-Пустой fork name не должен добавлять строку в generic build; timestamp — UTC,
-не строка времени, зашитая агентом. Не возвращать language chooser в About.
-Шрифты/brand сначала сверить с 010: это не повод повторно копировать manifest
-или откатывать новые upstream assets. README пользователя не изменять.
+[CI 45375027889](https://github.com/Mutaracha/kobalt_ru/actions/runs/45375027889)
+на `489ee40878ed27491255e246f0802f95705cb178`: **все три jobs PASS**.
 
-### Аннотации
+- Clean ordered application, SHA validation, 10 Python series tests и inventory.
+- EN/RU key/placeholder parity, production string references и asset hashes.
+- Native `model.strings-locale`, `component.debug-language-ui`,
+  `component.fork-presentation`, `model.text-presets`, `component.ru-control-ui`,
+  предыдущие FB2/cache/comics/reader-controls/columns/chapter-parity suites.
+- Presentation test проходит EN/RU, 212/300 PPI и light/dark: наличие/границы
+  swatch label, ribbon rendering/line order/legacy fallback, display-only
+  preset names, About fork-row presence и отсутствие language entry в About.
+- Qt5 build/check-package и qemu refresh PASS. Metadata включена через
+  `KOBALT_FORK_NAME=kobalt_ru`; это не переименование приложения/системного hook.
 
-Выборочные retained hunks: секции Color / Style / Actions, видимые подписи
-swatches, согласованные подписи Cancel / Dictionary. Сопоставить с новым
-beta10 `annotationActionsFor`, `showAnnotationActions`, saved appearance menu.
-Сохранить новую upstream логику draft/actions/selection; не копировать весь
-reader_annotations.cpp или highlight_palette.h.
+Первые попытки выявили missing area labels новых тестов и отсутствующую пару
+`reader.link_dictionary` в EN/RU catalog. Исправлены регистрация и строки,
+не удалены tests/validation. Первый языковой срез отдельно прошёл
+CI45372368929 на `b9713968`; итоговый прогон выше включает весь 050.
 
-Тесты должны проверять наличие подписей и raster/geometry на EN/RU, selected /
-unselected, узкой ширине и разных PPI. Старый fork diff содержит также удаления
-upstream тестов: они не являются частью одобренного оформления.
+Артефакт **Beta10-series-prefix-qt5**, ID `14910054747`, 44,578,677 bytes,
+содержит 010–050 и provenance applied-prefix.json / source-commit.txt / SHA256SUMS.
+Это не старый `Kobalt-qt5-device` и ещё не финальная упаковка 060.
+Документационное принятие статуса ready не создаёт нового проверенного binary.
 
-### Сон
+## Невыполненные проверки
 
-Оставлены для переноса ранее запрошенные F07: две строки remaining в ribbon,
-языковой порядок caption/duration, bounded text fitting с elision и сохранение
-battery space. helper `sleepRibbonRemainingLines` отсутствует в 010–040.
-Нельзя вместе с оформлением менять sleep refresh/cache/opening pipeline.
-Неподходящая строка из snapshot другого языка должна сохраняться как один
-текст, без ошибочного разбора. Проверить пустой estimate, длинные EN/RU,
-battery on/off, все designs и portrait/landscape. Device-приёмка не заявлена.
-
-### Пресеты и return title
-
-`fork_text_preset_names.h` отсутствует. Встроенные известные имена должны
-локализоваться при отображении без изменения сохранённых имени/типографики.
-Переименованные пользователем и неизвестные presets не переводить. В retained
-`tests/model/text_presets.cpp` помимо полезных новых assertions есть удаление
-PPI/rounding regression loop — **не переносить это удаление**.
-
-`return_title_text.h` также отсутствует. Проверить необходимые sizeHint/paint
-hooks против нового beta10, сохранить arrow placement и RU ink из 010. Не
-возвращать fork chapter-progress labels/ticks/setting/top variant.
-
-## Уже покрыто / исключено
-
-- Dark/comics quick actions, icon geometry, Fluent notice/acknowledgment — 040;
-  не добавлять второй вариант механизма и не переупорядочивать ControlIcon.
-- Checkbox helper/пропорциональный tick — 032; не дублировать его ради языка.
-  Возможный `RadioList::setBottomDivider` для language modal переносить только
-  вместе с действительным consumer и тестом в 050.
-- Русские resources, font/presentation fixes из 010 сохраняются; новые строки
-  выравниваются EN/RU с приоритетом ранее утверждённых screenshots.
-- `Russian_EnUS.pattern` и его fork-only manifest/list/notice entries исключены.
-  `Russian.pattern` и переводной ru-en dictionary не удалять.
-- FB2.ZIP, собственный Hybrid, Libra2 mapping и opening acceleration не входят.
-- Upstream reverse_page_swipes, Activity, chapter spread, dark/i.MX animation и
-  BOOX поведение должны остаться без регрессии.
-
-## Порядок подготовки и критерий ready
-
-1. Языковая инфраструктура + Debug entry + startup consumers и тесты.
-2. Preset/annotation/sleep/return-title presentation hunks и их тесты.
-3. About configure/build row и только ещё отсутствующие assets/strings.
-4. Сверка остатка по inventory и provenance каждого перенесённого hunk.
-5. SHA256 патча, clean apply 010–050, локальные series tests, native suites,
-   Qt5 build/check-package/qemu и новый Beta10-series-prefix-qt5 artifact.
-
-050 теперь prepared в series.json: в патче первая языковая часть. Это ещё не
-полный 050 и не завершение переноса. После ready 050 — 060 full-stack
-packaging/CI и отдельная аппаратная проверка.
-
-
-## Первый runtime-срез 050
-
-Подготовлены support locale/markers, canonical English diagnostics table,
-RU CLDR suffixes и fallback, async settings-owned language dialog, стандартная
-первая Debug action row и startup/session hooks desktop/Android/Kobo. Убрана
-жёсткая установка Russian из контрольного 010; default/fallback теперь English,
-а Russian выбирается устройством/ENV/markers. Формы library count используют
-CLDR вместо литерала «1 книга» (включая 21/101). Остальные CLDR consumers ещё
-нужно пройти вместе с presentation-остатком.
-
-Регистрируются `model.strings-locale` (normalization, tables, dates/numbers,
-plural forms, config, markers, async lifetime) и `component.debug-language-ui`
-(отмена без записи, повторное открытие, async choice и отсутствие live смены
-locale). Qt5 компилирует helper через Kobo source glob; desktop core имеет
-явную регистрацию support sources. Выбор языка не добавлен в About.
-
-В language modal оставлены штатные beta10 RadioList dividers вместо переноса
-старой реализации RadioList, чтобы не потерять новые two-column/layout rules.
-Общий Settings action style берётся из текущего beta10 listAction.
-
-Локальные 10 series tests проходят. В первом CI Qt5 build/package/qemu прошёл,
-но native configure остановился на незарегистрированных area labels двух новых
-тестов; labels добавлены, тесты не убраны. Итоговый native/runtime результат
-следующего прогона пока pending. Не считать первый успешный Qt5 job приёмкой
-языковой формы на устройстве.
-
-Legacy device workflow остаётся отключённым. Ordered workflow больше не
-собирает binary на report-only изменения и отменяет устаревший прогон своей
-группы при новом push, чтобы не тратить время на заменённые сборки.
-
-
-### Итог проверки первого среза
-
-[CI45372368929](https://github.com/Mutaracha/kobalt_ru/actions/runs/45372368929)
-на `b9713968a1c495de66ca0efcb310dc00e16901ed` завершился успешно:
-series validation, native suites (включая model.strings-locale и
-component.debug-language-ui), Qt5 build/check-package и qemu refresh.
-Артефакт `Beta10-series-prefix-qt5`, ID `14910157343`, 44,572,875 bytes.
-Это префикс с **частичным prepared 050**, не финальный полный форк;
-проверка запуска и language UI на устройстве не выполнена.
-
-Не менять 050 на ready по этому результату: остаются прочие CLDR consumers,
-About/annotation/sleep/preset/return-title hunks и их проверки. Для продолжения
-патч расширять поверх того же входа 010–040, а не накладывать новый diff поверх
-уже применённого 050. Текущие source/test changes и CMake registration находятся
-в самом 050; legacy workflow остаётся отключённым.
+На физическом устройстве остаются: запуск пакета, Debug language
+cancel/save/reopen/restart, normal/Zen/hidden-feature toolbar, длинные EN/RU
+captions/annotations, сон/пробуждение с ribbon/battery, пользовательские presets.
+Предыдущее однократное touch-зависание не имеет установленной причины и не
+объявляется исправленным. Qt6 firmware/Android build/runtime не проверены этим
+Qt5/native workflow. Дальше — 060 packaging/provenance/full-stack CI.
