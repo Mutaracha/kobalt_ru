@@ -103,9 +103,9 @@
       "id": "038-fb2-archived-source-replay",
       "status": "ready",
       "path": "platforms/patch-series/patches/038-fb2-archived-source-replay.patch",
-      "sha256": "b97fbc0d76c3d46728053140711c6aadbf06c93b241a70a5d7164aa7a9e99f31",
+      "sha256": "198b3660620783a4d90688db50a9b90eb12d536dc407958f42efed8914b98442",
       "scope": "Host-only optional replay of archived A1/A2 with available Fira fixture and device typography; no production behavior change",
-      "validation": "CI pending; source inputs extracted only into ignored CI build tree, original archive unchanged."
+      "validation": "First replay CI45503168248 PASS but first-open appearance from saved was dropped by source-fingerprint guard (default geometry observed); not accepted as device-typography reproduction. Use existing pinned appearance and assert actual font/pixels/margin. CI rerun pending."
     },
     {
       "id": "040-reader-controls",

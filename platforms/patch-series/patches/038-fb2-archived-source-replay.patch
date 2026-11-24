@@ -1,7 +1,7 @@
 diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.cpp
 --- a/tests/model/fb2_cache_session.cpp
 +++ b/tests/model/fb2_cache_session.cpp
-@@ -72,7 +72,11 @@
+@@ -72,12 +72,19 @@
  {
      QJsonObject state;
      {
@@ -14,7 +14,30 @@ diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.c
          auto lease = std::make_shared<SourceLease>();
          OpenRequest request;
          request.identity = request.path = path;
-@@ -127,13 +131,18 @@
+         request.size = size;
+         request.saved = std::move(saved);
++        const auto settingsPath = QString::fromLocal8Bit(qgetenv("KOBALT_FB2_REPLAY_SETTINGS"));
++        if (!settingsPath.isEmpty())
++            request.temporaryAppearance = readJson(settingsPath);
+         request.lease = lease;
+         request.resources = localResourceFactory(path, lease);
+         request.documentCachePath = cache;
+@@ -107,6 +114,14 @@
+                     check.value("width").toInt(), check.value("saved_width").toInt(),
+                     check.value("height").toInt(), check.value("saved_height").toInt(),
+                     int(check.value("policy_match").toBool()));
++        if (!settingsPath.isEmpty()) {
++            const auto requested = readJson(settingsPath);
++            const auto actual = reader.state();
++            require(actual.value("font_face") == requested.value("font_face")
++                            && actual.value("font_pixels") == requested.value("font_pixels")
++                            && actual.value("margin_pixels") == requested.value("margin_pixels"),
++                    "replay typography was dropped instead of applied");
++        }
+         if (observed) *observed = stats;
+         state = reader.state();
+         // Exercise the real host close path. Discard the retained facade so the
+@@ -127,13 +142,18 @@
          if (arguments.size() == 6 && arguments[1] == "--cache-probe") {
              const auto root = arguments[2], label = arguments[3];
              const bool cold = label == "cold";
@@ -35,7 +58,7 @@ diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.c
              result["stats"] = stats;
              QJsonArray lines;
              for (const auto &line : trace.lines) lines.append(line);
-@@ -158,6 +167,14 @@
+@@ -158,6 +178,14 @@
          // 64 KiB lookup threshold. A disabled cache during Render must not
          // permanently poison the later close-time save.
          book += "</section></body><!--" + QByteArray(2 * 1024 * 1024, 'x') + "--></FictionBook>";
@@ -50,7 +73,7 @@ diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.c
          const auto write = [&] {
              QFile file(path);
              require(file.open(QIODevice::WriteOnly) && file.write(book) == book.size(), "write session fixture");
-@@ -172,7 +189,7 @@
+@@ -172,7 +200,7 @@
              const auto output = evidence + '/' + label + ".json";
              QProcess process;
              process.start(app.applicationFilePath(), {"--cache-probe", root.path(), label,
@@ -59,7 +82,7 @@ diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.c
              require(process.waitForStarted(10000) && process.waitForFinished(90000),
                      "cache probe process timeout");
              if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0)
-@@ -188,6 +205,11 @@
+@@ -188,6 +216,11 @@
                  require(check.value("reasons").toInt() & 16,
                          "changed width must not reuse incompatible page geometry");
          }
