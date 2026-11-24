@@ -18,7 +18,7 @@ All measured openings were manual from the UI; all stopwatch readings were manua
 
 Stopwatch and session totals have different boundaries and are not averaged together. In particular the retained repeat's resource stats preserve the previous parse/paginate times; they must not be counted as repeated 4.5 s pagination.
 
-A archive also contains successful `all_books=true` cache eviction at 19:38:07–08, followed by two full uncached opens (8.593 / 26.951 s). These are preparation/background context, not the user's measured cached A1/A2 pair. No source/position deletion is inferred. All 12 cache-save events across A/H have saved=true. This confirms save/read lifecycle improvement, not consistently fast A1 layout reuse.
+A archive also contains successful `all_books=true` cache eviction at 19:38:07–08, followed by two full uncached opens (8.593 / 26.951 s). These are additional opens without corresponding stopwatch values, not the user's measured cached A1/A2 pair; no automatic UI launch is assigned to them. No source/position deletion is inferred. All 12 cache-save events across A/H have saved=true. This confirms save/read lifecycle improvement, not consistently fast A1 layout reuse.
 
 ## Confirmed source of the large A1 wait: background preload, not automatic UI open
 
@@ -51,3 +51,19 @@ RU cache-eviction action descriptions and both confirmation messages now explici
 ## Next device check after a successful 035 build
 
 No new cold corpus or broad A/B. Keep logs ON and the same layout. Close A1 last, reboot, manually open A1; export logs with local time/stopwatch and confirm position/count. Repeat once after closing A2 last (reboot, manually open A1): this covers both preceding-last-book cases. Expected: `book-preload-skipped` for an FB2 last book, no FB2 `book-preload-start` occupying the worker before the tap. Compare queue wait separately from A1 pagination. A2 quick check is optional unless it regresses. Open (then cancel) the two cache-cleanup confirmations to inspect wording; do not clear caches for this timing test.
+
+## Verified next package
+
+Runtime **4d9985e2c2432bc177556af169931b323b22a33e**.
+[CI45477082472](https://github.com/Mutaracha/kobalt_ru/actions/runs/45477082472): all jobs PASS,
+including canonical overlay/ordered apply/inventory, native regressions (routing/preload policy,
+cache and RU prompt presentation), Qt5 build/check-package/qemu and package collection.
+Standalone RU overlay check CI45476997918 PASS. The initial 348db6cd validation exposed
+unsynchronized canonical `platforms/control-beta10/ru.strings`/output hash metadata;
+bb6c27f2 synchronizes those, and the full rerun is green. No failed intermediate package
+is recommended. No claim of complete/all-variant native or device acceptance.
+
+[Artifact14959364274](https://github.com/Mutaracha/kobalt_ru/actions/runs/45477082472/artifacts/14959364274),
+Kobalt-ru-beta10-series-qt5, 44,590,029 bytes. New fonts/menu-status are not included.
+Source guards and cache compatibility remain unchanged. Follow-up device check is
+specified above; do not clear caches as part of that timing test.

@@ -43,4 +43,5 @@
 принят, cache save/read подтверждены. Задержка A1 включает явную Home preload,
 отменяемую при ручном tap (7.4/13.2 s ожидания), и отдельную ~4.5 s repagination.
 Подготовлены 035 (skip speculative raw-FB2 preload) и RU «Kobalt закроется».
-CI/device этих коррекций пока pending; eafb6161 остаётся последним готовым бинарником.
+Runtime 4d9985e2 / CI45477082472 все jobs PASS; [пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45477082472/artifacts/14959364274).
+Device-проверка 035/новых сообщений pending. Новое семейство Corsiva/menu-status ещё не включены.

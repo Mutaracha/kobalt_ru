@@ -3,8 +3,8 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010–060 (включая 033/034), все патчи применяются вместе.
-Последний проверенный бинарник: **eafb6161**, [CI45456569246](https://github.com/Mutaracha/kobalt_ru/actions/runs/45456569246),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45456569246/artifacts/14952120554).
+Последний проверенный бинарник: **4d9985e2**, [CI45477082472](https://github.com/Mutaracha/kobalt_ru/actions/runs/45477082472),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45477082472/artifacts/14959364274).
 CI: series/native/Qt5/package/qemu PASS; не полная аппаратная приёмка.
 Docs-only обновления не меняют этот бинарник.
 
@@ -15,8 +15,9 @@ Docs-only обновления не меняют этот бинарник.
 disk reuse обеих книг подтверждены; большие задержки A1 связаны с отменяемой фоновой
 Home preload, отдельно остаётся ~4.5 s repagination при parsed-cache hit.
 Подготовлен 035: не выполнять speculative Home preload raw FB2; EPUB и обычное
-ручное открытие не меняются. CI/device этой коррекции pending. Уточнение RU очистки
-кэша: закрывается Kobalt, не «книга». Нового готового пакета пока нет.
+ручное открытие не меняются. CI45477082472 все jobs PASS, standalone RU-overlay CI45476997918 PASS; device pending.
+Уточнение RU очистки кэша: закрывается Kobalt, не «книга». Следующий прогон —
+две ручные A1-проверки после reboot с разной последней FB2, без очистки кэша.
 
 ## Очередь — порядок закрытия
 
@@ -26,9 +27,9 @@ Home preload, отдельно остаётся ~4.5 s repagination при parse
 
 | Порядок / ID | Статус | Следующее действие / критерий закрытия |
 |---|---|---|
-| 1 / B10-UI | partial device accepted | Exit-wordmark принят на eafb6161. Подробные логи ON работают через reboot; явный результат OFF после reboot не сообщён. Уточнение RU cache-cleanup сообщений подготовлено, CI/device pending. |
+| 1 / B10-UI | partial device accepted | Exit-wordmark принят на eafb6161. Подробные логи ON работают через reboot; явный результат OFF после reboot не сообщён. RU cache-cleanup сообщения исправлены в 4d9985e2, CI PASS/device pending. |
 | 2 / B10-CACHE | done: observed save/read lifecycle | 46ecb8f: все 12 saves=true; измеренные H1/H2/A1/A2 имеют disk hits, retained отдельно. Низкая стабильная задержка A1 не заявлена: это B10-CACHED-LAYOUT. |
-| 3 / B10-CACHED-LAYOUT | in progress: local correction | Два A1: 7.4/13.2 s ожидания отменяемого FB2 preload, плюс ~4.5 s собственная пагинация. 035 исключает только speculative FB2 preload; затем короткая проверка. Причина различия layout reuse A1/H1 ещё не установлена, guards не ослаблять. |
+| 3 / B10-CACHED-LAYOUT | in progress: local correction | Два A1: 7.4/13.2 s ожидания отменяемого FB2 preload, плюс ~4.5 s собственная пагинация. 035 исключает только speculative FB2 preload; CI PASS, затем короткая device-проверка. Причина различия layout reuse A1/H1 ещё не установлена, guards не ослаблять. |
 | 4 / B10-HYBRID-COVERAGE | planned: bounded validation | Сверить существующие тесты; закрыть конкретные пробелы prefix/full anchors/count, notes/images и close/cancel/lease revocation. Не строить большую новую матрицу ради незаявленного ускорения. Допустим безопасный full fallback. |
 | 5 / B10-FONTS | planned: integration | Подключить полное новое семейство monotype-corsiva.zip в RU-роли с проверкой внутренних имён/начертаний и regressions. Instrument Serif exit-wordmark не менять. |
 | 6 / B10-MENU-STATUS | planned: implementation | Общий для всех книг toggle существующей строки состояния: часы + батарея остаются, время текущего сеанса ↔ страница в книге по нажатию. Persistent global preference, формат/estimated/pending как у BookPage колонтитула. Подробный контракт ниже. |
