@@ -32,6 +32,7 @@
 | 032 | Комиксы: appearance/session/UI и graphics refresh | Native/UI + Qt5/package/qemu refresh CI PASS |
 | 033 | FB2 session parsed cache lifecycle | CI PASS; device сохранение/reuse проверено в последних циклах |
 | 034 | Эксперимент холодного FB2 startup prefix + background full model | CI PASS; speed/count подтверждены, расширенная проверка pending |
+| 035 | Raw FB2: не занимать worker скрытой Home preload до ручного открытия | Подготовлено по 46ecb8f; CI/device pending |
 | 040 | Согласованные reader controls/toolbar/swipe | Реализовано, CI PASS |
 | 050 | About/brand/UI/annotations/locale hooks | Реализовано, CI PASS; eafb6161 UI device pending |
 | 060 | Полные CI/package/provenance | Реализовано, CI PASS |

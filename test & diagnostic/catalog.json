@@ -1,5 +1,5 @@
 {
-  "baseline": "25aac587f7ede39b5f2a89712ac7380501d1ae82",
+  "baseline": "46ecb8f67e551c40af1b13f701d3eaa39ef3e82c",
   "note": "Versions from startup/context incl. rotated logs. Empty means no startup metadata; not proof of current runtime.",
   "files": [
     {
@@ -668,6 +668,46 @@
       "path": "test & diagnostic/df8e910a-ui/screen_003-11.png",
       "bytes": 665706,
       "sha256": "b477ee2b0a78bb74a0df12cf0b945f8a54862ad594da744cf9665a82a4050b9d",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/eafb6161/diagnostics A.zip",
+      "bytes": 175603,
+      "sha256": "b97eae0551f0d7ae6cb4984357873210b02af0c6db06cb838a7aaddbdf97b2f8",
+      "versions": [
+        "v1.0-beta.10"
+      ],
+      "source_commits": [
+        "eafb6161a39518dd6ac750e640bceb37d15b27e0"
+      ],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/eafb6161/diagnostics H.zip",
+      "bytes": 52174,
+      "sha256": "baa937a983de05a13b157790d45ad826e401a700097e634ca84d220056ecf0a9",
+      "versions": [
+        "v1.0-beta.10"
+      ],
+      "source_commits": [
+        "eafb6161a39518dd6ac750e640bceb37d15b27e0"
+      ],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/eafb6161/screen_001 (2).png",
+      "bytes": 189886,
+      "sha256": "6a0f721e18c2f8b44c0c048e8ab436e24fec2b1eeb0385b279039a893bd072c6",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/eafb6161/screen_001.png",
+      "bytes": 288130,
+      "sha256": "3a6e12c5a6dd3dd09c85ae12403fa47a2328f9b17bb9f382efc57b08573294a5",
       "versions": [],
       "source_commits": [],
       "archived": false

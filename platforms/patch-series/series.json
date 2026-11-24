@@ -8,7 +8,7 @@
       "id": "010-ru",
       "status": "ready",
       "path": "platforms/control-beta10/ru.patch",
-      "sha256": "47f077c7e65e092c0641a9437a064129a842593b0e88835f1fa37a12a4b352dc",
+      "sha256": "570f89db2713fa6687a56a43a615252bfae97571b1f0e3fb8caf858f51254b75",
       "scope": "Reviewed beta10 RU overlay, including its existing font/presentation fixes"
     },
     {
@@ -84,6 +84,14 @@
       "validation": "Device experiment; CI pending. Warm cache and saved-position openings remain full-document. Follow-up: skip automatic Render swap while process cache is disabled; publish partial coordinates on every frame. Oversize close/reopen regression expanded above 1 MiB. Native CI/device validation pending."
     },
     {
+      "id": "035-fb2-preload-policy",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/035-fb2-preload-policy.patch",
+      "sha256": "8df65d0acf5bfa72c8f33e228f66ec9ec638a9381c65928d428cebf7f836fcc4",
+      "scope": "Skip speculative Home preload for raw FB2 only; preserve manual routing/cache and upstream EPUB preload",
+      "validation": "46ecb8f device evidence: cancelled preloads delay manual A1 by ~7.4/~13.2 s. Eligibility regression added; CI and device validation pending."
+    },
+    {
       "id": "040-reader-controls",
       "status": "ready",
       "scope": "Approved dark/comics toolbar and reader presentation; upstream reverse_page_swipes already provides independent swipe inversion, so omit fork invert_page_swipes and preserve upstream Activity feature",
@@ -96,7 +104,7 @@
       "status": "ready",
       "scope": "Remaining approved brand/About/annotation/UI/locale differences, excluding those already in 010-ru; exclude redundant Russian_EnUS.pattern and its fork-only manifest/notice/list entries, preserve Russian.pattern and translation dictionaries",
       "path": "platforms/patch-series/patches/050-fork-presentation.patch",
-      "sha256": "4b552ce67a0254dac626d0acbf4fc79182c622e434bada175127bbb5110b0a50",
+      "sha256": "4668615d64aad2a2f30767461ae384eb40d9ab2ce1b1884eaba0b69ac33353f2",
       "validation": "CI 45375027889 on 489ee408: full 010–050 apply/strings/assets/inventory checks, native locale/Debug UI/presentation/preset/RU controls and prior FB2/cache/comics suites PASS; Qt5 build/check-package/qemu refresh PASS. Beta10-series-prefix-qt5 artifact 14910054747. Physical-device and Qt6/Android validation pending. Hardware df8e910a: book startup/raw FB2 accepted by user. UI font-role correction awaiting CI and device review. Hardware df8e910a: book startup/raw FB2 accepted by user. UI font-role correction awaiting CI and device review. Follow-up: wordmark respects RU Monotype Corsiva; bilingual role regression added. Caveat remains the RU replacement for the playful/Kalam default, not for ordinary Sans UI. Restored serif heading/opening-caption roles (regular face), rather than replacing those roles with Sans. Follow-up: exit-title Latin Kobalt explicitly uses Instrument Serif in both locales; Russian prefix remains Monotype Corsiva. Shipping CI build uses switchable marker-based diagnostics (forced verbose OFF), with persistence regression. CI/device checks pending."
     },
     {

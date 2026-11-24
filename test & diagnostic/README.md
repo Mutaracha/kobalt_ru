@@ -11,6 +11,7 @@
 | `df8e910a-ui/` | Full-series beta10: пользователь подтвердил запуск/raw FB2; UI screenshots — отдельное evidence, не общий PASS. |
 | `ace3c3c/` | 034: первая серия cold Hybrid/Accurate, retained повторы и UI review. |
 | `4f2cecd1/` | Вторая серия, stopwatch/reboot: обнаружены отказ cache-save книги1 и ложный prefix total. Историческое наблюдение, исправлено позже. |
+| `eafb6161/` | Upload 46ecb8f: раздельные H/A архивы, manual timings, exit-wordmark принят; A1 background-preload wait и отдельная repagination. |
 | `7f47164/` | Диагностика также содержит 4f2cecd1; успешные saves/disk reuse книги1, пользователь подтвердил исправление счётчика. Последний disk hit не имеет session reading total. |
 | `FB2-034-test-inputs.zip` | Пользовательский согласованный набор холодных копий; оригинальный архив не менять. |
 | `1. Виртуальный свет.fb2`, `Sorokin_*.fb2` | Реальные исходные книги, opt-in device regression, не portable CI fixtures и не installer assets. |
@@ -24,6 +25,5 @@ README/catalog/SHA256SUMS не включают сами себя в checksum-н
 
 Новые данные добавлять отдельной runtime-папкой с контекстом сценария. До диагностики
 включить подробные логи в Debug; не удалять профиль/кэши. Source commit брать из
-startup/About, а не из имени upload commit. Текущий бинарник eafb6161 ещё не имеет
-нового пользовательского diagnostic upload. Общие portable fixtures и opt-in
+startup/About, а не из имени upload commit. Последний diagnostic upload eafb6161 — 46ecb8f; измеренные запуски ручные. Общие portable fixtures и opt-in
 `tests/manual/books` остаются на месте: они не являются результатами старой сборки.

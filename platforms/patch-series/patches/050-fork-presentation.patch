@@ -2481,3 +2481,19 @@ diff --git a/tests/model/diagnostics.cpp b/tests/model/diagnostics.cpp
      kobalt::initializeDiagnostics(directory.path());
      if (!kobalt::diagnosticsActive())
          qFatal("Initialized diagnostics reported inactive");
+diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
+--- a/tests/model/fork_presentation.cpp
++++ b/tests/model/fork_presentation.cpp
+@@ -18,6 +18,12 @@
+     require(ui::initializeInterfaceFonts(test::readerAssets()), "presentation fonts unavailable");
+     for (auto locale : {strings::Locale::English, strings::Locale::Russian}) {
+         strings::setLocale(locale);
++        if (locale == strings::Locale::Russian) {
++            for (auto key : {"debug.evict_cache_description", "debug.evict_cache_confirm_description",
++                             "debug.clear_caches_description", "debug.clear_caches_confirm_description"})
++                require(strings::get(key).contains(QStringLiteral("Kobalt")),
++                        "Cache eviction must identify Kobalt as the application being closed");
++        }
+         const auto duration = QStringLiteral("123 h 45 min");
+         const auto remaining = strings::get("sleep.time_left").arg(duration);
+         const auto lines = reader::sleepRibbonRemainingLines(remaining);

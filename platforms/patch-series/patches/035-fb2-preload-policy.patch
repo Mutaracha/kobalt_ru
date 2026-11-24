@@ -1,0 +1,49 @@
+diff --git a/platforms/kobo/common/book_menu.h b/platforms/kobo/common/book_menu.h
+--- a/platforms/kobo/common/book_menu.h
++++ b/platforms/kobo/common/book_menu.h
+@@ -4,6 +4,14 @@
+ class QMenu;
+ 
+ namespace kobalt {
++// Speculative Home-screen work is not an opening request. Raw FB2 can spend
++// seconds in full Render after cancellation, blocking the book the user taps.
++// Keep the normal manual FB2 route and upstream EPUB preload unchanged.
++inline bool readerBookPreloadAllowed(const QString &path)
++{
++    return !path.endsWith(QLatin1String(".fb2"), Qt::CaseInsensitive);
++}
++
+ bool previewBook(const void *volume);
+ // Metadata only: enough to show feedback, never permission to read a book.
+ bool readerBookFormatSupported(const void *volume);
+diff --git a/platforms/kobo/common/reader_coordinator.cpp b/platforms/kobo/common/reader_coordinator.cpp
+--- a/platforms/kobo/common/reader_coordinator.cpp
++++ b/platforms/kobo/common/reader_coordinator.cpp
+@@ -1447,6 +1447,10 @@
+                 const auto path = record.value("path").toString();
+                 // A plain EPUB that is still on the device. Protected books
+                 // open in Nickel's reader and are never preloaded.
++                if (!readerBookPreloadAllowed(path)) {
++                    diagnostic("book-preload-skipped", { { "format", "fb2" } });
++                    return true;
++                }
+                 if (identity.isEmpty() || !QFileInfo(path).isFile()
+                     || !native::openLocalPublication(path))
+                     return true;
+diff --git a/tests/model/nickel_book_menu.cpp b/tests/model/nickel_book_menu.cpp
+--- a/tests/model/nickel_book_menu.cpp
++++ b/tests/model/nickel_book_menu.cpp
+@@ -188,6 +188,13 @@
+ int main(int argc, char **argv)
+ {
+     QApplication app(argc, argv);
++    require(!kobalt::readerBookPreloadAllowed("/books/book.fb2")
++                    && !kobalt::readerBookPreloadAllowed("/books/BOOK.FB2"),
++            "Raw FB2 must not occupy the worker in a speculative Home preload");
++    require(kobalt::readerBookPreloadAllowed("/books/book.epub")
++                    && kobalt::readerBookPreloadAllowed("/books/book.kepub.epub")
++                    && kobalt::readerBookPreloadAllowed("/books/book.fb2.epub"),
++            "FB2 preload policy changed upstream EPUB eligibility");
+     require(argc == 2, "EPUB fixture argument");
+     QTemporaryDir directory;
+     require(directory.isValid(), "temporary directory");

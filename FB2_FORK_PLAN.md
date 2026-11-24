@@ -10,12 +10,13 @@ Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-План одобрен пользователем. Начат этап 1: B10-UI/B10-CACHE ожидают короткий
-[прогон eafb6161 на устройстве](doc/validation/beta10-device.md): screenshot строки
-закрытия, persistent OFF/ON логов, четыре disk-reopen цикла (две книги × два режима).
-Новый cold A/B, широкая stress-матрица и установка новой сборки не требуются.
-B10-CACHED-LAYOUT разбирается только по воспроизводимому медленному disk hit;
-при отсутствии достаточного выигрыша откладывается. Новая UI-функция ещё не в бинарнике.
+Разобран upload 46ecb8f: [отчёт](doc/reports/patch-series/035-eafb6161-device-review.md).
+Все измеренные открытия — ручные. Exit-wordmark принят пользователем. Сохранение и
+disk reuse обеих книг подтверждены; большие задержки A1 связаны с отменяемой фоновой
+Home preload, отдельно остаётся ~4.5 s repagination при parsed-cache hit.
+Подготовлен 035: не выполнять speculative Home preload raw FB2; EPUB и обычное
+ручное открытие не меняются. CI/device этой коррекции pending. Уточнение RU очистки
+кэша: закрывается Kobalt, не «книга». Нового готового пакета пока нет.
 
 ## Очередь — порядок закрытия
 
@@ -25,9 +26,9 @@ B10-CACHED-LAYOUT разбирается только по воспроизво�
 
 | Порядок / ID | Статус | Следующее действие / критерий закрытия |
 |---|---|---|
-| 1 / B10-UI | implemented / CI verified, device pending | Коротко принять eafb6161: Instrument Serif у Kobalt в строке закрытия и persistent переключатель подробных логов. OFF оставляет compact warning/error log. |
-| 2 / B10-CACHE | in progress: device validation | Завершить короткую проверку уже исправленного save/reboot/reuse обеих FB2. Без новой реализации и без смешивания retained/disk. Можно совместить с пунктом 1. |
-| 3 / B10-CACHED-LAYOUT | planned: bounded investigation | Только при воспроизводимом медленном disk hit оценить устранимую долю до текста. Один целевой этап: локальное исправление при заметном выигрыше и низком риске; иначе deferred. 6207 ms model_load без session reading не являются доказательством резерва. |
+| 1 / B10-UI | partial device accepted | Exit-wordmark принят на eafb6161. Подробные логи ON работают через reboot; явный результат OFF после reboot не сообщён. Уточнение RU cache-cleanup сообщений подготовлено, CI/device pending. |
+| 2 / B10-CACHE | done: observed save/read lifecycle | 46ecb8f: все 12 saves=true; измеренные H1/H2/A1/A2 имеют disk hits, retained отдельно. Низкая стабильная задержка A1 не заявлена: это B10-CACHED-LAYOUT. |
+| 3 / B10-CACHED-LAYOUT | in progress: local correction | Два A1: 7.4/13.2 s ожидания отменяемого FB2 preload, плюс ~4.5 s собственная пагинация. 035 исключает только speculative FB2 preload; затем короткая проверка. Причина различия layout reuse A1/H1 ещё не установлена, guards не ослаблять. |
 | 4 / B10-HYBRID-COVERAGE | planned: bounded validation | Сверить существующие тесты; закрыть конкретные пробелы prefix/full anchors/count, notes/images и close/cancel/lease revocation. Не строить большую новую матрицу ради незаявленного ускорения. Допустим безопасный full fallback. |
 | 5 / B10-FONTS | planned: integration | Подключить полное новое семейство monotype-corsiva.zip в RU-роли с проверкой внутренних имён/начертаний и regressions. Instrument Serif exit-wordmark не менять. |
 | 6 / B10-MENU-STATUS | planned: implementation | Общий для всех книг toggle существующей строки состояния: часы + батарея остаются, время текущего сеанса ↔ страница в книге по нажатию. Persistent global preference, формат/estimated/pending как у BookPage колонтитула. Подробный контракт ниже. |
