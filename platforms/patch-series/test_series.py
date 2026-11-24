@@ -76,8 +76,18 @@ class SeriesTests(unittest.TestCase):
             apply_to(ROOT, ROOT / 'platforms/patch-series/series.json', destination, ready_only=True)
             # Later ordered patches may append new translated UI strings; the reviewed
             # 010 overlay must remain intact, rather than suppressing those additions.
-            self.assertTrue((destination / 'assets/ru.strings').read_bytes().startswith(
-                            (ROOT / 'platforms/control-beta10/ru.strings').read_bytes()))
+            overlay = (ROOT / 'platforms/control-beta10/ru.strings').read_text()
+            actual = (destination / 'assets/ru.strings').read_text()
+            # 050 generalizes singular forms from literal 1 to the CLDR count
+            # slot (21, 101, ...). All other reviewed 010 entries stay intact.
+            plural_updates = {
+                'library.count_one': '"library.count_one" = "%1 книга";',
+                'annotations.summary_one': '"annotations.summary_one" = "%1 аннотация";',
+            }
+            for line in overlay.splitlines():
+                match = re.match(r'^"([^"\n]+)"\s*=', line)
+                if match:
+                    self.assertIn(plural_updates.get(match.group(1), line), actual)
             for language in ('en', 'ru'):
                 strings = (destination / f'assets/{language}.strings').read_text()
                 self.assertEqual(strings.count('"reader.comics_reading_mode" ='), 1)
