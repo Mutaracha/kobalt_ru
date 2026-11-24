@@ -84,6 +84,14 @@
       "validation": "Device experiment; CI pending. Warm cache and saved-position openings remain full-document. Follow-up: skip automatic Render swap while process cache is disabled; publish partial coordinates on every frame. Oversize close/reopen regression expanded above 1 MiB. Native CI/device validation pending."
     },
     {
+      "id": "036-fb2-cache-layout-observation",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/036-fb2-cache-layout-observation.patch",
+      "sha256": "d5ee2d3375d34683f4461c43fd412510fd52c7f3ce3eb1a35dfc0d4187ab8f86",
+      "scope": "Observe render-context rejection reasons and saved/current operands without changing compatibility decisions, cache format or preload policy",
+      "validation": "Full apply and native/Qt5 CI pending; FB2 resource-session regression checks observation consistency. No speed or device acceptance claim."
+    },
+    {
       "id": "040-reader-controls",
       "status": "ready",
       "scope": "Approved dark/comics toolbar and reader presentation; upstream reverse_page_swipes already provides independent swipe inversion, so omit fork invert_page_swipes and preserve upstream Activity feature",

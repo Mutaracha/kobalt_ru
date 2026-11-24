@@ -1,0 +1,98 @@
+diff --git a/src/engine/blaze/adapter/reader_source.cpp b/src/engine/blaze/adapter/reader_source.cpp
+--- a/src/engine/blaze/adapter/reader_source.cpp
++++ b/src/engine/blaze/adapter/reader_source.cpp
+@@ -944,7 +944,23 @@
+     }
+ #endif
+     applySlice();
++    document->koblazeResetRenderCheck();
+     engine_->Render();
++    const auto &renderCheck = document->koblazeRenderCheck();
++    const QJsonObject layoutCheck {
++        { "checks", renderCheck.checks }, { "rejected", renderCheck.rejected },
++        { "reasons", renderCheck.reasons }, { "policy_match", sameRenderingPolicy },
++        { "style", double(renderCheck.style) }, { "saved_style", double(renderCheck.savedStyle) },
++        { "stylesheet", double(renderCheck.sheet) }, { "saved_stylesheet", double(renderCheck.savedSheet) },
++        { "flags", double(renderCheck.flags) }, { "saved_flags", double(renderCheck.savedFlags) },
++        { "width", renderCheck.width }, { "saved_width", renderCheck.savedWidth },
++        { "height", renderCheck.height }, { "saved_height", renderCheck.savedHeight }
++    };
++    openingTimes_["model_layout_check"] = layoutCheck;
++    if (loadingFb2)
++        diagnostic("fb2-cache-layout-check", {
++            { "cache_hit", openedFromCache_ }, { "layout", layoutCheck }
++        }, false);
+     engine_->groupColumns(hideNonlinearFragments_, chapterStartsSpread_);
+     engine_->rebuildComicSpreads();
+     openingTimes_["model_paginate_ms"] = double(phase.restart());
+diff --git a/src/engine/blaze/crengine/include/lvtinydom.h b/src/engine/blaze/crengine/include/lvtinydom.h
+--- a/src/engine/blaze/crengine/include/lvtinydom.h
++++ b/src/engine/blaze/crengine/include/lvtinydom.h
+@@ -3060,6 +3060,17 @@
+     void updateRenderContext();
+     /// check document formatting parameters before render - whether we need to reformat; returns false if render is necessary
+     bool checkRenderContext();
++    // Per-document, non-serialized observation only. Never used to admit a cache.
++    struct KoblazeRenderCheck {
++        int checks = 0, rejected = 0, reasons = 0;
++        lUInt32 style = 0, savedStyle = 0, sheet = 0, savedSheet = 0;
++        lUInt32 flags = 0, savedFlags = 0;
++        int width = 0, savedWidth = 0, height = 0, savedHeight = 0;
++    };
++    KoblazeRenderCheck _koblazeRenderCheck;
++    void koblazeResetRenderCheck() { _koblazeRenderCheck = KoblazeRenderCheck(); }
++    const KoblazeRenderCheck & koblazeRenderCheck() const { return _koblazeRenderCheck; }
++
+ #endif
+ 
+ #if BUILD_LITE!=1
+diff --git a/src/engine/blaze/crengine/src/lvtinydom.cpp b/src/engine/blaze/crengine/src/lvtinydom.cpp
+--- a/src/engine/blaze/crengine/src/lvtinydom.cpp
++++ b/src/engine/blaze/crengine/src/lvtinydom.cpp
+@@ -20124,6 +20124,25 @@
+     stylesheetHash = stylesheetHash * 31 + getProps()->getIntDef("kobalt.bionic.mode", 0);
+     // Blaze: paragraphs keep the side allowances they were laid out with.
+     stylesheetHash = (stylesheetHash * 31 + _render_usable_left_overflow) * 31 + _render_usable_right_overflow;
++    // Record all differences (not just the first else-if). Keep the first
++    // rejection's operands even if a later render check succeeds.
++    const int reasons = ((!res) ? 1 : 0)
++            | (styleHash != _hdr.render_style_hash ? 2 : 0)
++            | (stylesheetHash != _hdr.stylesheet_hash ? 4 : 0)
++            | (_docFlags != _hdr.render_docflags ? 8 : 0)
++            | (dx != (int)_hdr.render_dx ? 16 : 0)
++            | (dy != (int)_hdr.render_dy ? 32 : 0);
++    auto &trace = _koblazeRenderCheck;
++    if (trace.checks == 0 || (reasons && trace.rejected == 0)) {
++        trace.style = styleHash; trace.savedStyle = _hdr.render_style_hash;
++        trace.sheet = stylesheetHash; trace.savedSheet = _hdr.stylesheet_hash;
++        trace.flags = _docFlags; trace.savedFlags = _hdr.render_docflags;
++        trace.width = dx; trace.savedWidth = _hdr.render_dx;
++        trace.height = dy; trace.savedHeight = _hdr.render_dy;
++    }
++    ++trace.checks;
++    if (reasons) ++trace.rejected;
++    trace.reasons |= reasons;
+     //calcStyleHash( getRootNode(), styleHash );
+     // printf("checkRenderContext: _nodeStyleHash after  %x\n", _nodeStyleHash);
+     // printf("checkRenderContext: Style hash %x!=%x\n", styleHash, _hdr.render_style_hash);
+diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.cpp
+--- a/tests/model/fb2_cache_session.cpp
++++ b/tests/model/fb2_cache_session.cpp
+@@ -58,6 +58,17 @@
+         require(reader.resourceStats().value("model_cache_hit").toBool() == expectHit,
+                 expectHit ? "resource-backed session did not reuse parsed FB2 cache"
+                           : "cold/changed FB2 unexpectedly reused parsed cache");
++        const auto stats = reader.resourceStats();
++        const auto check = stats.value("model_layout_check").toObject();
++        require(check.value("checks").toInt() > 0, "missing render-context observation");
++        require((check.value("reasons").toInt() == 0)
++                        == (check.value("rejected").toInt() == 0),
++                "render-context reason mask disagrees with rejection count");
++        std::printf("FB2 layout cache=%d reasons=%d rejected=%d width=%d/%d height=%d/%d policy=%d\n",
++                    int(expectHit), check.value("reasons").toInt(), check.value("rejected").toInt(),
++                    check.value("width").toInt(), check.value("saved_width").toInt(),
++                    check.value("height").toInt(), check.value("saved_height").toInt(),
++                    int(check.value("policy_match").toBool()));
+         state = reader.state();
+         // Exercise the real host close path. Discard the retained facade so the
+         // next cycle cannot pass through in-memory retained-book reuse.
