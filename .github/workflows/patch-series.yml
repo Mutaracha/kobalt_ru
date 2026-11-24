@@ -69,7 +69,7 @@ jobs:
                 for test in diagnostics local-resources zip-resource plain-archive fb2-engine; do
                   QT_QPA_PLATFORM=offscreen "/work/build/desktop-linux/kobalt-$test-tests"
                 done
-                QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^((model|platform)\.(nickel-book-menu|appearance-settings|resource-cache|fb2-cache-session|strings-locale|text-presets)|engine\.(comics-layout|comics|columns|chapter-parity)|component\.(comics-ui|reader-controls|debug-language-ui|fork-presentation|ru-control-ui))$"
+                KOBALT_CACHE_PROBE_OUTPUT=/work/build/cache-probe QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^((model|platform)\.(nickel-book-menu|appearance-settings|resource-cache|fb2-cache-session|strings-locale|text-presets)|engine\.(comics-layout|comics|columns|chapter-parity)|component\.(comics-ui|reader-controls|debug-language-ui|fork-presentation|ru-control-ui))$"
               else
                 cd platforms/kobo
                 cmake --preset qt5 -DKOBALT_FORK_NAME=kobalt_ru -DKOBALT_COMMIT="$SOURCE_COMMIT" -DKOBALT_COMMIT_MODIFIED=OFF -DKOBALT_VERBOSE_DIAGNOSTICS=OFF -DKOBALT_BUILD_TESTS=ON -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
@@ -87,6 +87,26 @@ jobs:
             echo "::error::$message"
           fi
           exit "$result"
+      - name: Report host cache probe evidence
+        if: always() && matrix.sdk == 'linux'
+        run: |
+          python3 - <<'PYCODE'
+          import json
+          from pathlib import Path
+          for path in sorted(Path('build/prepared-prefix/build/cache-probe').glob('*.json')):
+              result = json.loads(path.read_text())
+              summary = json.dumps({'label': result['label'], 'layout': result['stats'].get('model_layout_check'), 'trace': result['hash_trace']}, ensure_ascii=True)
+              summary = summary.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print('::notice title=FB2 process cache probe::' + summary)
+          PYCODE
+      - name: Upload host cache probe evidence
+        if: always() && matrix.sdk == 'linux'
+        uses: actions/upload-artifact@v7
+        with:
+          name: FB2-host-cache-probe
+          path: build/prepared-prefix/build/cache-probe/
+          if-no-files-found: warn
+          retention-days: 30
       - name: Collect verified complete-series hardware test package
         if: matrix.sdk == 'qt5'
         run: python3 platforms/patch-series/package.py collect build/prepared-prefix build/series-device-artifact
