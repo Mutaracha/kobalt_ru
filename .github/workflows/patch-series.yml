@@ -27,8 +27,8 @@ jobs:
           git fetch --no-tags origin ca50dd358386e9fccc5122b464f74003caa51e75
       - name: Series validation tests
         run: python3 -m unittest discover -s platforms/patch-series -p 'test_*.py' -v
-      - name: Verify ready prefix only (not full-stack acceptance)
-        run: python3 platforms/patch-series/apply.py --verify-ready
+      - name: Verify complete ready series
+        run: python3 platforms/patch-series/apply.py --output build/verified-full-series
       - name: Reproduce inventory
         run: |
           python3 platforms/patch-series/inventory.py --output build/patch-inventory
@@ -43,7 +43,7 @@ jobs:
         sdk: [linux, qt5]
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch upstream and prepare test-only prefix
+      - name: Fetch upstream and export complete ready series
         run: |
           git fetch --no-tags https://github.com/nicoverbruggen/kobalt.git 1796a32559dbb2912bd565990d1c7a0ca7ac4e52
           python3 platforms/patch-series/package.py prepare "$PWD" "$PWD/build/prepared-prefix"

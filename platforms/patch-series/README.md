@@ -165,3 +165,19 @@ artifact `14904792738`, содержит 010–040 с toolbar dark/comics.
 Qt5 build/check-package/qemu PASS. Артефакт **Beta10-series-prefix-qt5**,
 ID `14910054747`, содержит 010–050. Устройство ещё не проверено.
 Функциональная серия завершена; остаётся 060 packaging/provenance/full-stack CI.
+
+
+## Итог 060: вся ordered series
+
+010–060 ready. 060 добавляет установленный `.adds/kobalt/series-provenance.json`
+и build dependency для обновления metadata при повторной упаковке. Ни installer
+path, ни загрузчик Nickel не менялись. Внешний helper экспортирует только всю
+ready-серию, фиксирует source commit/version/upstream/patch SHA256, сверяет
+installer ELF32 ARM / tar path/owner/mode и пишет SHA256SUMS для всего artifact.
+Kobo About теперь показывает commit управляющей сборки, а не старый upstream pin.
+
+[CI45377119064](https://github.com/Mutaracha/kobalt_ru/actions/runs/45377119064)
+на `5b0f01b9`: native/Qt5/package/qemu и полный collector PASS.
+Итоговый artifact называется **Kobalt-ru-beta10-series-qt5**; старое имя
+Beta10-series-prefix-qt5 относится только к предыдущим префиксам.
+Аппаратная приёмка впереди; [установка и проверки](DEVICE-TEST.md).

@@ -20,10 +20,12 @@
   device-startup сбоя или однократного touch-зависания.
   [Реализация и доказательства 050](doc/reports/patch-series/presentation-preparation.md),
   [Hunk dispositions исходного остатка](doc/reports/patch-series/presentation-residual.tsv).
-- Следующее действие: 060 — финальная упаковка/provenance/CI всей серии;
-  затем отдельная аппаратная приёмка. Функции в 060 не отложены.
-- 060-build-integration: planned; итоговая упаковка/provenance/full-stack CI,
-  не место для отложенных функциональных sources/tests.
+- 060-build-integration: **done / ready по CI45377119064**, runtime `5b0f01b9`:
+  full series/native/Qt5/package/qemu PASS; installed provenance и ELF/tar
+  проверены. Вся 010–060 серия готова к аппаратной проверке, не принята на устройстве.
+- Следующее действие: установка **Kobalt-ru-beta10-series-qt5** из Ordered patch
+  series и аппаратная проверка по DEVICE-TEST. Прежние prefix/legacy artifacts
+  не использовать. Строгая итоговая сборка разрешена только для all-ready серии.
 
 Ниже — сохранённые записи прежних этапов retained fork; их pending-статусы
 не заменяют текущую очередь ordered series выше.

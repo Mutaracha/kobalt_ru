@@ -11,7 +11,8 @@ from package import collect, require_complete
 class PackageTests(unittest.TestCase):
     def test_incomplete_rejected(self):
         for patches in ([{'id': '050', 'status': 'ready'}],
-                        [{'id': '060-build-integration', 'status': 'planned'}]):
+                        [{'id': '060-build-integration', 'status': 'planned'}],
+                        [{'id': '060-build-integration', 'status': 'prepared'}]):
             with self.assertRaises(ValueError):
                 require_complete({'patches': patches})
 

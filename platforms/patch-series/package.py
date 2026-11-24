@@ -13,7 +13,7 @@ from apply import apply_to, load_series, ROOT
 
 
 def require_complete(data):
-    if any(p['status'] not in ('ready', 'prepared') for p in data['patches']):
+    if any(p['status'] != 'ready' for p in data['patches']):
         raise ValueError('Hardware package requires the entire series, not a prefix')
     if data['patches'][-1]['id'] != '060-build-integration':
         raise ValueError('Missing final integration patch')
