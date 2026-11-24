@@ -88,7 +88,7 @@
       "status": "prepared",
       "scope": "Remaining approved brand/About/annotation/UI/locale differences, excluding those already in 010-ru; exclude redundant Russian_EnUS.pattern and its fork-only manifest/notice/list entries, preserve Russian.pattern and translation dictionaries",
       "path": "platforms/patch-series/patches/050-fork-presentation.patch",
-      "sha256": "38fd640d1414235c8eb555c1619bd6418e587f3ede88aab459e1d427a093a46e",
+      "sha256": "e21316e61e49d3b944f5ff87800b83f971d6f47cfea019e6f9186ac93c3280c9",
       "validation": "Language infrastructure/Debug entry first slice prepared; native/Qt5 CI pending. Remaining About/annotation/sleep/preset/return-title work not yet included; not ready."
     },
     {

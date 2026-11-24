@@ -129,7 +129,7 @@ index cc88d2bf4e0790638088f9ac368dfcfe3637cd75..6b774699f4170b9b6f8f12bf41a79ff4
      app.setOrganizationName("Kobalt");
      app.setQuitOnLastWindowClosed(false);
 diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
-index 839f588fe2cbd11c32d545a5c1fd4dfb2e1bb680..c81e653b959409eb0714e3f4b4e26c11c3b12b98 100644
+index 839f588fe2cbd11c32d545a5c1fd4dfb2e1bb680..3af7dfb4ab89e629e138a1e271ef7406dec94b3c 100644
 --- a/platforms/desktop/CMakeLists.txt
 +++ b/platforms/desktop/CMakeLists.txt
 @@ -107,6 +107,7 @@ add_library(kobalt-core OBJECT ${shared} display.cpp ../standalone/native_image.
@@ -157,6 +157,16 @@ index 839f588fe2cbd11c32d545a5c1fd4dfb2e1bb680..c81e653b959409eb0714e3f4b4e26c11
      target_sources(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}/platforms/kobo/display/page_animation.cpp")
      target_include_directories(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}" "${source}")
      target_link_libraries(kobalt-ui-tests PRIVATE Qt6::GuiPrivate)
+@@ -845,7 +846,8 @@ if(BUILD_TESTING)
+     set(kobalt_test_areas
+         "reading:^model[.]fb2-cache-session$"
+         "reading:^engine[.](fb2-engine|comics-layout|comics)$"
+-        "settings:^component[.](ru-control-ui|comics-ui|reader-controls)$"
++        "settings:^component[.](ru-control-ui|comics-ui|reader-controls|debug-language-ui)$"
++        "settings:^model[.]strings-locale$"
+         "gallery:^(build\\.screenshotBooks|desktop\\.(gallery.*|phoneFrame|primaryViews))$"
+         "evaluation:^(build\\.(loadLock|eval-device-outcomes)|desktop\\.(scenarioCacheRemoval|scenarioResultFile|timingEvents|fastLocateText|deviceChecks)|platform\\.scenario-sleep|lifecycle\\.benchmarkNoticeAfterRun)$"
+         "kosync:^(lifecycle\\.(kosync.*|wifi.*)|desktop\\.(fastKosyncChoice|kosyncChoice|syncChoiceView)|model\\.(kosync|sync-coordinator)|component\\.kosync-ui|platform\\.native-sync-network)$"
 diff --git a/platforms/desktop/main.cpp b/platforms/desktop/main.cpp
 index 0d4674e6e358099104b435eee67e02e0fc667fa3..b97ce5289cb5860195418594f70116333cf5979b 100644
 --- a/platforms/desktop/main.cpp

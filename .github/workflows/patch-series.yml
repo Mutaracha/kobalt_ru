@@ -4,7 +4,6 @@ on:
     paths:
       - 'platforms/patch-series/**'
       - 'platforms/control-beta10/ru.patch'
-      - 'doc/reports/patch-series/**'
       - '.github/workflows/patch-series.yml'
   pull_request:
     paths:
@@ -12,6 +11,9 @@ on:
       - 'platforms/control-beta10/ru.patch'
       - '.github/workflows/patch-series.yml'
   workflow_dispatch:
+concurrency:
+  group: ordered-patch-series-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
