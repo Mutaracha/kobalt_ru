@@ -80,7 +80,7 @@
       "status": "prepared",
       "scope": "Approved dark/comics toolbar and reader presentation; upstream reverse_page_swipes already provides independent swipe inversion, so omit fork invert_page_swipes and preserve upstream Activity feature",
       "path": "platforms/patch-series/patches/040-reader-controls.patch",
-      "sha256": "13bcc048afa42110dfb8c04567541d37a7f3b280875c7c39327e26281bf96303",
+      "sha256": "44baebeef8e02bcf963d137a05c1412ce21b57e6c137cc186c88e113acc8eded",
       "validation": "Selective port; clean application and CI pending."
     },
     {

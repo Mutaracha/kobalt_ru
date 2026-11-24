@@ -690,7 +690,7 @@ index 40d3b1e8da45744c306367ff2442f0fb6f4bfee1..1e3dedaf23c24d1bc144871eb2ce5158
  
 diff --git a/tests/model/reader_controls.cpp b/tests/model/reader_controls.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..f19eb03c4b43b540ed5e11302d3425494fe687ec
+index 0000000000000000000000000000000000000000..9ebefe6f5e463cb1f563d71be1ce9c6afcd811d3
 --- /dev/null
 +++ b/tests/model/reader_controls.cpp
 @@ -0,0 +1,75 @@
@@ -728,7 +728,7 @@ index 0000000000000000000000000000000000000000..f19eb03c4b43b540ed5e11302d342549
 +    auto *rows = new QHBoxLayout(&toolbar);
 +    ui::Button settings(&toolbar), bookmarks(&toolbar), dark(&toolbar), comics(&toolbar);
 +    QLabel caption(&toolbar);
-+    reader::ToolbarComposition controls;
++    ToolbarComposition controls;
 +    controls.panel = &toolbar;
 +    controls.rows = rows;
 +    controls.settings = &settings;
