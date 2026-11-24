@@ -4,23 +4,17 @@
 Все jobs серии/native selected regressions/Qt5/package/qemu PASS, не all-variant/device PASS.
 Сохранить полный профиль при закрытом Kobalt; не очищать кэши/данные для обновления.
 
-## FB2: целевой диагностический шаг
+## FB2: целевой шаг выполнен
 
-Из прежнего архива нельзя установить точное условие отказа от вёрстки: parsed cache
-hit отмечается до Render, а CRLog не входит в ZIP. В новом пакете 036 записывает
-`model_layout_check` и `fb2-cache-layout-check`, без изменения cache guards или скорости.
-Описание полей: [отчёт037](../reports/patch-series/037-fb2-layout-observation.md).
+Пользователь прислал `test & diagnostic/1da4445c/diagnostics.zip` (74e25306).
+[Результаты038](../reports/patch-series/038-1da4445c-layout-evidence.md): первые manual
+A1/A2 reasons2 (style-hash), повтор A1 disk-hit reasons0 и paginate10ms; после нового
+startup preload A1 снова reasons2. Это подтверждает работу новой диагностики и
+возможность disk-layout reuse, но не закрывает причину межзапускного изменения hash.
 
-- Включить подробные логи. Не менять файлы/layout/Accurate, не очищать кэши.
-- Вручную открыть A1 → закрыть книгу в Home → A2 → закрыть → A1.
-- Каждый раз дождаться готовности чтения; reboot между открытиями не нужен.
-- Собрать diagnostics. Stopwatch необязателен: нужны операнды новой проверки,
-  а не повтор сравнения абсолютных времён. Чередование уменьшает риск подменить
-  disk-hit тест retained reopen; фактический путь определяется по логам.
-
-Обновлённая диагностика обосновывает этот узкий запуск; широкая cold/reboot-матрица
-по-прежнему не требуется. FB2 Home preload включён, как указал пользователь.
-Известные задержки отмены preload не объявлены исправленными.
+Повторять A1→A2→A1, cold A/B или reboot-матрицу сейчас не нужно. Следующая работа
+на host: hash constituents и separate-process reproduction. Новая runtime-правка
+по этому upload ещё не сделана, ускорение не обещано. FB2 Home preload остаётся включён.
 
 ## Визуальная проверка при случае
 

@@ -1,5 +1,5 @@
 {
-  "baseline": "7bbb6aef72a7c798668304a180d53936f352bed4",
+  "baseline": "74e25306",
   "note": "Versions from startup/context incl. rotated logs. Empty means no startup metadata; not proof of current runtime.",
   "files": [
     {
@@ -22,6 +22,18 @@
       "sha256": "9a3ea3f98a29523e96cf058b4ced846fb674cad0c18ccd56b2e2953d5031dea8",
       "versions": [],
       "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/1da4445c/diagnostics.zip",
+      "bytes": 89422,
+      "sha256": "e9a1d9a45608d5e26f7128c9c934677b4a5713500c7547534a47925c7696c803",
+      "versions": [
+        "v1.0-beta.10"
+      ],
+      "source_commits": [
+        "1da4445c4e8d92880b3f3b4a805df3984f0a7ec3"
+      ],
       "archived": false
     },
     {

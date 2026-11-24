@@ -59,3 +59,10 @@ skipped, но новые времена 11.20/22.32 s не закрывают ca
 [Отчёт037](037-fb2-layout-observation.md): 036 добавляет checkRenderContext operands/reasons,
 не ослабляет guards. CI45491097786 all jobs PASS. Узкая device-проверка A1→A2→A1
 с прежним cache/layout и логами ON; не очередная cold/reboot-матрица. Скорость ещё не исправлена.
+
+## 1da4445c: device style-hash evidence
+
+[Отчёт038](038-1da4445c-layout-evidence.md). Manual A1/A2: reasons2; повтор A1 disk-hit
+reasons0/paginate10ms; после startup preload A1 снова reasons2. Размеры/flags/stylesheet/
+policy совпадают на каждой проверке. Следующий шаг — host hash decomposition и
+cross-process воспроизведение, не новый широкий device-тест. Guard остаётся неизменным.
