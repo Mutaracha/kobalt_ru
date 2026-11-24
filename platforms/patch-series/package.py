@@ -45,7 +45,7 @@ def prepare(root, output):
 def collect(source, destination, instructions):
     provenance = (source / 'series-provenance.json').read_bytes()
     data = json.loads(provenance)
-    package = source / 'build/kobo-qt5/Kobalt-qt5-diagnostic.zip'
+    package = source / 'build/kobo-qt5/Kobalt-qt5.zip'
     with zipfile.ZipFile(package) as archive:
         if archive.read('.adds/kobalt/series-provenance.json') != provenance:
             raise ValueError('Installed package lost or changed series provenance')

@@ -30,7 +30,7 @@ class PackageTests(unittest.TestCase):
             member.mode = 0o644 if wrong_mode else 0o755
             member.size = len(elf)
             tar.addfile(member, io.BytesIO(elf))
-        with zipfile.ZipFile(target / 'Kobalt-qt5-diagnostic.zip', 'w') as z:
+        with zipfile.ZipFile(target / 'Kobalt-qt5.zip', 'w') as z:
             z.writestr('.kobo/KoboRoot.tgz', buf.getvalue())
             z.writestr('.adds/kobalt/series-provenance.json', b'{}' if wrong_provenance else provenance)
         instructions = root / 'instructions.md'
