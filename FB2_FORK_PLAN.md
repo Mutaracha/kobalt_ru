@@ -13,21 +13,18 @@
 
 - 010–040: done по CI; 040 проверен на `87530065`, CI45361473628.
   Аппаратная проверка toolbar отдельно pending.
-- 050-fork-presentation: **done / ready по CI**, весь функциональный объём
-  реализован в одном ordered patch. Runtime `489ee408`, CI45375027889:
-  native language/Debug/presentation/preset/RU checks и Qt5/package/qemu PASS.
-  Аппаратная проверка не выполнена; статус не означает устранение старого
-  device-startup сбоя или однократного touch-зависания.
-  [Реализация и доказательства 050](doc/reports/patch-series/presentation-preparation.md),
-  [Hunk dispositions исходного остатка](doc/reports/patch-series/presentation-residual.tsv).
-- 060-build-integration: **done / ready по итоговому CI45378133723**, runtime `df8e910a`:
-  full series/native/Qt5/package/qemu PASS; installed provenance и ELF/tar
-  проверены. Вся 010–060 серия готова к аппаратной проверке, не принята на устройстве.
-- Следующее действие: установка **Kobalt-ru-beta10-series-qt5** из Ordered patch
-  series и аппаратная проверка по DEVICE-TEST. Прежние prefix/legacy artifacts
-  не использовать. Строгая итоговая сборка разрешена только для all-ready серии.
-  Итоговый artifact `14911449860` (44,582,183 bytes).
-  [Сборка и handoff](doc/reports/patch-series/build-integration.md).
+- 050-fork-presentation: **done / ready**. После device review исправлено
+  разделение UI/wordmark fonts: прямые заголовки/exit prefix/opening copy,
+  Instrument Serif только для буквального Kobalt. Runtime `3e652fdc`,
+  CI45389989110 — native/Qt5/package/qemu/full-series PASS.
+- 060-build-integration: **done / ready**, installed provenance и проверки
+  ELF/tar/checksums сохранены, legacy workflow остаётся отключённым.
+- Device: пользователь подтвердил успешный запуск книг и открытие raw FB2
+  на `df8e910a`. Это приёмка этих сценариев, не всей функциональности.
+- Следующее действие: аппаратно проверить исправленные UI-шрифты в пакете
+  **Kobalt-ru-beta10-series-qt5**, artifact `14917769837`, runtime `3e652fdc`.
+  [Замечания, механизм и итоговый CI](doc/reports/patch-series/ui-font-device-review.md).
+  Остальные hardware-сценарии DEVICE-TEST остаются отдельными проверками.
 
 Ниже — сохранённые записи прежних этапов retained fork; их pending-статусы
 не заменяют текущую очередь ordered series выше.
