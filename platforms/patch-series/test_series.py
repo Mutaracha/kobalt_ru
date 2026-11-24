@@ -145,9 +145,10 @@ class SeriesTests(unittest.TestCase):
         result = subprocess.run(['bash', '-n'], input=script, text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('--no-tests=error', script)
-        self.assertIn('build/prepared-prefix/build/kobo-qt5/Kobalt-qt5-diagnostic.zip', workflow)
-        self.assertIn('name: Beta10-series-prefix-qt5', workflow)
-        self.assertIn('test-only-prefix-not-full-fork', workflow)
+        self.assertIn('package.py collect build/prepared-prefix', workflow)
+        self.assertIn('name: Kobalt-ru-beta10-series-qt5', workflow)
+        self.assertIn('package.py prepare', workflow)
+        self.assertNotIn('-DKOBALT_COMMIT=1796a32', workflow)
 
     def test_pin_required(self):
         self.data['upstream'] = 'main'

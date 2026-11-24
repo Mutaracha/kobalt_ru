@@ -46,27 +46,9 @@ jobs:
       - name: Fetch upstream and prepare test-only prefix
         run: |
           git fetch --no-tags https://github.com/nicoverbruggen/kobalt.git 1796a32559dbb2912bd565990d1c7a0ca7ac4e52
-          python3 - <<'PY'
-          import json, sys
-          from pathlib import Path
-          sys.path.insert(0, 'platforms/patch-series')
-          from apply import apply_to
-          out = Path('build/prepared-prefix').resolve()
-          out.mkdir(parents=True)
-          data = apply_to(Path.cwd(), Path('platforms/patch-series/series.json'), out, ready_only=True)
-          applied = []
-          for patch in data['patches']:
-              if patch['status'] not in ('ready', 'prepared'):
-                  break
-              applied.append(patch)
-          Path('build/applied-prefix.json').write_text(json.dumps({
-              'upstream': data['upstream'], 'policy': 'test-only-prefix-not-full-fork',
-              'applied': applied, 'remaining': data['patches'][len(applied):]
-          }, indent=2) + '\n')
-          assert (out / 'src/publication/fb2_resources.cpp').is_file()
-          PY
+          python3 platforms/patch-series/package.py prepare "$PWD" "$PWD/build/prepared-prefix"
           cmake -DROOT="$PWD/build/prepared-prefix" -P platforms/control-beta10/validate.cmake
-      - name: Compile prepared prefix (not full-stack acceptance)
+      - name: Compile complete ordered series (hardware unverified)
         env:
           SDK: ${{ matrix.sdk }}
         run: |
@@ -77,7 +59,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/prefix-dependencies"
           log="$RUNNER_TEMP/prefix-build.log"
           set +e
-          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -e SDK \
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -e SDK -e SOURCE_COMMIT="$GITHUB_SHA" \
             -v "$root:/work" -v "$RUNNER_TEMP/prefix-dependencies:/dependency-cache" \
             -w /work "$image" bash -euc '
               if [[ "$SDK" == linux ]]; then
@@ -90,7 +72,7 @@ jobs:
                 QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^((model|platform)\.(nickel-book-menu|appearance-settings|resource-cache|fb2-cache-session|strings-locale|text-presets)|engine\.(comics-layout|comics|columns|chapter-parity)|component\.(comics-ui|reader-controls|debug-language-ui|fork-presentation|ru-control-ui))$"
               else
                 cd platforms/kobo
-                cmake --preset qt5 -DKOBALT_FORK_NAME=kobalt_ru -DKOBALT_COMMIT=1796a32 -DKOBALT_COMMIT_MODIFIED=ON -DKOBALT_VERBOSE_DIAGNOSTICS=ON -DKOBALT_BUILD_TESTS=ON -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
+                cmake --preset qt5 -DKOBALT_FORK_NAME=kobalt_ru -DKOBALT_COMMIT="$SOURCE_COMMIT" -DKOBALT_COMMIT_MODIFIED=ON -DKOBALT_VERBOSE_DIAGNOSTICS=ON -DKOBALT_BUILD_TESTS=ON -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
                 cmake --build --preset qt5 --parallel 4
                 cmake --build --preset qt5 --target check-package kobalt-qt5-refresh-tests
                 ctest --test-dir /work/build/kobo-qt5 --output-on-failure --no-tests=error -R "^pewter[.]qt5-refresh$"
@@ -105,21 +87,14 @@ jobs:
             echo "::error::$message"
           fi
           exit "$result"
-      - name: Collect beta10 prefix device test package
+      - name: Collect verified complete-series hardware test package
         if: matrix.sdk == 'qt5'
-        run: |
-          mkdir -p build/prefix-device-artifact
-          cp build/prepared-prefix/build/kobo-qt5/Kobalt-qt5-diagnostic.zip build/prefix-device-artifact/Beta10-series-prefix-qt5.zip
-          cp build/applied-prefix.json build/prefix-device-artifact/applied-prefix.json
-          printf '%s\n' "$GITHUB_SHA" > build/prefix-device-artifact/source-commit.txt
-          cp platforms/patch-series/DEVICE-TEST.md build/prefix-device-artifact/README.md
-          cd build/prefix-device-artifact
-          sha256sum Beta10-series-prefix-qt5.zip > SHA256SUMS
-      - name: Upload beta10 prefix (not legacy device build or complete fork)
+        run: python3 platforms/patch-series/package.py collect build/prepared-prefix build/series-device-artifact
+      - name: Upload complete series (hardware unverified)
         if: matrix.sdk == 'qt5'
         uses: actions/upload-artifact@v7
         with:
-          name: Beta10-series-prefix-qt5
-          path: build/prefix-device-artifact/
+          name: Kobalt-ru-beta10-series-qt5
+          path: build/series-device-artifact/
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30

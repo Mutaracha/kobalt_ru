@@ -93,8 +93,11 @@
     },
     {
       "id": "060-build-integration",
-      "status": "planned",
-      "scope": "Final full-stack packaging, provenance and CI; source/test registration stays with the introducing patch"
+      "status": "prepared",
+      "scope": "Final full-stack packaging, provenance and CI; source/test registration stays with the introducing patch",
+      "path": "platforms/patch-series/patches/060-build-integration.patch",
+      "sha256": "1d2edc4b1ad3d8e7b8d19817e0ece4fbf1e3a7aaea4d5240b0300f1e9008d9e0",
+      "validation": "Full-series provenance packaging prepared; clean export/package tests and final native/Qt5 CI pending."
     }
   ]
 }

@@ -1,3 +1,37 @@
+# Полная ordered series 010–060 — Kobo Qt5 hardware test
+
+Использовать только **Kobalt-ru-beta10-series-qt5** из workflow **Ordered patch series**.
+В Actions artifact находится установочный `Kobalt-ru-beta10-series-qt5.zip`.
+Это вся согласованная серия поверх pristine beta10; аппаратная приёмка ещё
+не выполнена. Не использовать старый `Kobalt-qt5-device` или прежние prefix
+artifacts. Старый legacy workflow отключён.
+
+1. Сохранить backup `.adds/kobalt` и пакет для отката. Устройство: Kobo Qt5,
+   firmware 4.38+; не Qt6/Android. Не тестировать единственную копию аннотаций.
+2. Распаковать внешний Actions artifact на компьютере. Проверить SHA256SUMS
+   (`sha256sum -c SHA256SUMS`, либо совместимой утилитой). Сохранить source-commit.txt.
+3. Распаковать **внутренний установочный ZIP** в корень подключённого Kobo:
+   должны появиться `.kobo/KoboRoot.tgz`, `.adds/kobalt/assets/` и
+   `.adds/kobalt/series-provenance.json`. Не копировать внешний artifact целиком.
+4. Безопасно извлечь Kobo, дождаться установки и перезапуска. Открыть обычный
+   EPUB, затем raw FB2. Первый критерий: действительно открылся Kobalt, а не Nickel.
+5. Сверить About commit с первыми семью символами source-commit.txt. Затем
+   проверить comics, кеш повторного открытия, язык Debug и presentation по спискам ниже.
+
+`series-provenance.json` содержит исходный commit, upstream pin и порядок/SHA256
+всех патчей; его копия устанавливается на устройство. `installed-library.sha256`
+даёт SHA256 распакованной ARM library для диагностики установки. CI проверяет
+ELF32 ARM, единственный ожидаемый путь в KoboRoot.tgz, mode0755/owner0:0,
+совпадение установленного provenance и внешние checksums. Это проверки упаковки,
+не доказательство запуска на реальном Kobo.
+
+Если вместо Kobalt открылся Nickel: остановить дальнейшие функциональные
+проверки; прислать source-commit.txt, модель/firmware, установленный
+`.adds/kobalt/series-provenance.json` и доступные startup/crash diagnostics.
+Не сбрасывать профиль/markers и не удалять логи перед сбором информации.
+
+## Предыдущие prefix-пакеты и подробные сценарии (история)
+
 # Beta10 series prefix — тестовый пакет для устройства
 
 **Это не полный форк и не старый артефакт `Kobalt-qt5-device`.**

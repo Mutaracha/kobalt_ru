@@ -1,0 +1,39 @@
+diff --git a/platforms/kobo/CMakeLists.txt b/platforms/kobo/CMakeLists.txt
+index 02c6e12682683d768ed8155f6255b5ecc9ab6090..e1fed1cfe122cf819adf4fd823ad18acae04e36c 100644
+--- a/platforms/kobo/CMakeLists.txt
++++ b/platforms/kobo/CMakeLists.txt
+@@ -171,13 +171,17 @@ else()
+     qt6_add_resources(compiled_resources "${CMAKE_CURRENT_BINARY_DIR}/notices.qrc")
+ endif()
+ target_sources(kobalt PRIVATE ${compiled_resources})
++set(kobalt_series_provenance)
++if(EXISTS "${KOBALT_ROOT}/series-provenance.json")
++    set(kobalt_series_provenance "${KOBALT_ROOT}/series-provenance.json")
++endif()
+ set(package_file "${CMAKE_CURRENT_BINARY_DIR}/Kobalt-qt${KOBALT_QT_MAJOR}${package_suffix}.zip")
+ add_custom_command(OUTPUT "${package_file}"
+     COMMAND "${CMAKE_COMMAND}" "-DLIBRARY=$<TARGET_FILE:kobalt>" "-DSTRIP=${CMAKE_STRIP}"
+         "-DASSETS=${KOBALT_ASSETS}" "-DQT_MAJOR=${KOBALT_QT_MAJOR}" "-DOUTPUT=${package_file}"
+         "-DEVAL=${KOBALT_EVAL_PACKAGE}" "-DROOT=${KOBALT_ROOT}"
+         -P "${CMAKE_CURRENT_SOURCE_DIR}/package.cmake"
+-    DEPENDS kobalt ${asset_inputs} "${CMAKE_CURRENT_SOURCE_DIR}/package.cmake"
++    DEPENDS kobalt ${asset_inputs} ${kobalt_series_provenance} "${CMAKE_CURRENT_SOURCE_DIR}/package.cmake"
+         "${KOBALT_ROOT}/platforms/eval/scenarios.json" VERBATIM)
+ add_custom_target(package DEPENDS "${package_file}")
+ 
+diff --git a/platforms/kobo/package.cmake b/platforms/kobo/package.cmake
+index 14f72394d776c6a2e6a5b13c0331705af35c5782..bbeb3162b03171944ef44371d4934979875353ae 100644
+--- a/platforms/kobo/package.cmake
++++ b/platforms/kobo/package.cmake
+@@ -19,6 +19,11 @@ endif()
+ set(members .kobo .adds)
+ if(result EQUAL 0)
+     file(COPY "${ASSETS}/" DESTINATION "${stage}/zip/.adds/kobalt/assets")
++    # The ordered fork export supplies exact patch/source provenance. Keep the
++    # installer/loader untouched; install metadata next to the profile assets.
++    if(EXISTS "${ROOT}/series-provenance.json")
++        file(COPY "${ROOT}/series-provenance.json" DESTINATION "${stage}/zip/.adds/kobalt")
++    endif()
+     # Books marked for the package go to a library folder. The scenario file
+     # and the diagnostics switch go to Kobalt's profile, where the player and
+     # the diagnostics log look for them.
