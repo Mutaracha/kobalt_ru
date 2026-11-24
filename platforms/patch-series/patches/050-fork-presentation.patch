@@ -80,7 +80,7 @@ index 5dcfb599a4d854c3cd2f969928af99a41c210923..6b6209880eb7584dd5dc6e873883fb37
 +
 +"activity.hour_unit_one" = "hour";
 diff --git a/assets/ru.strings b/assets/ru.strings
-index 89b52de7d0a1a8e4dd2984e050ecc409443042c5..c64f790d50c9c3707f6ce26e33c29b39cb6c62b6 100644
+index 373be1f2b8138a5ac3bc6dc39511b777a6683e6c..4570441a2b6b488b28a3f2849cd83e203e2416a1 100644
 --- a/assets/ru.strings
 +++ b/assets/ru.strings
 @@ -213,7 +213,7 @@
@@ -393,7 +393,7 @@ index c816badcea7d8677f4b54ea92d6603a90999d389..f6cd6fcc3bb1e0c5b25191758ee883af
  
  QString statusText(const Book &book)
 diff --git a/src/app/reader/panels/activity_view.cpp b/src/app/reader/panels/activity_view.cpp
-index c7d3e79dd44dc7954d13138ce92219ee5078f5ac..1500a602f3b913441bf7b84abdcc555abb733225 100644
+index c7d3e79dd44dc7954d13138ce92219ee5078f5ac..5147ebcc4c1a5bcee3b984fadcab5105dd36e375 100644
 --- a/src/app/reader/panels/activity_view.cpp
 +++ b/src/app/reader/panels/activity_view.cpp
 @@ -108,6 +108,16 @@ QString plural(const char *one, const char *many, qint64 count)
@@ -494,25 +494,12 @@ index c7d3e79dd44dc7954d13138ce92219ee5078f5ac..1500a602f3b913441bf7b84abdcc555a
      // A book's page can hide the book from the lists or delete its activity.
      hideCell = new ui::CellButton(ui::ControlIcon::Hidden, header);
      hideCell->setObjectName("rrActivityHideBook");
-@@ -3073,7 +3082,7 @@ void ActivityView::arrange()
-                            : detail == Detail::Hidden ? strings::get("activity.hidden_title")
-                                                       : strings::get("activity.title"));
-     // The section cells give way to the title on a narrow screen.
--    const int titleWidth = ui::interfaceTextWidth(title->text(), ui::brandFont(chrome::titleText))
-+    const int titleWidth = ui::interfaceTextWidth(title->text(), ui::interfaceFont(chrome::titleText))
-             + 2 * chrome::inset;
-     const int cell = sub ? int(chrome::cellWidth)
-                          : qBound(int(chrome::compactCellWidth), (width() - titleWidth) / 5,
 diff --git a/src/app/reader/panels/bookmark_list.cpp b/src/app/reader/panels/bookmark_list.cpp
-index a1186de7b581fb67479c79cb4215e0741cb7b7fa..9d717f3748c320b0c202dad15f727235d07894d9 100644
+index a1186de7b581fb67479c79cb4215e0741cb7b7fa..c5da88306f4680181e073fd049bc3e6d186b1b2e 100644
 --- a/src/app/reader/panels/bookmark_list.cpp
 +++ b/src/app/reader/panels/bookmark_list.cpp
-@@ -91,10 +91,10 @@ BookmarkList::BookmarkList(QWidget *parent, KeyboardFactory factory)
-     for (auto *tab : { bookmarksTab, annotationsTab }) {
-         tab->setCheckable(true);
-         static_cast<ui::Button *>(tab)->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
--        tab->setFont(ui::brandFont(chrome::titleText));
-+        tab->setFont(ui::interfaceFont(chrome::titleText));
+@@ -94,7 +94,7 @@ BookmarkList::BookmarkList(QWidget *parent, KeyboardFactory factory)
+         tab->setFont(ui::brandFont(chrome::titleText));
          ui::readerStyle(tab,
                          "QPushButton{border:none;padding:0;min-height:0;"
 -                                + ui::styles::brand(chrome::titleText) + "}");
@@ -520,12 +507,8 @@ index a1186de7b581fb67479c79cb4215e0741cb7b7fa..9d717f3748c320b0c202dad15f727235
      }
      connect(bookmarksTab, &QPushButton::clicked, this, [this] {
          if (tabRequested)
-@@ -155,10 +155,10 @@ void BookmarkList::setWordsView(QWidget *view)
-     wordsTab->setObjectName("rrWordsTab");
-     wordsTab->setCheckable(true);
-     static_cast<ui::Button *>(wordsTab)->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
--    wordsTab->setFont(ui::brandFont(chrome::titleText));
-+    wordsTab->setFont(ui::interfaceFont(chrome::titleText));
+@@ -158,7 +158,7 @@ void BookmarkList::setWordsView(QWidget *view)
+     wordsTab->setFont(ui::brandFont(chrome::titleText));
      ui::readerStyle(wordsTab,
                      "QPushButton{border:none;padding:0;min-height:0;"
 -                            + ui::styles::brand(chrome::titleText) + "}");
@@ -822,22 +805,20 @@ index 8fd7926a26b6579d198c256830acd9f0ee842912..908c29c82acab46a0ea47b295c65b4e9
      auto *close = new ui::CellButton(ui::ControlIcon::Close, heading);
      close->setObjectName("rrTextPresetGalleryClose");
 diff --git a/src/app/reader/views/image_viewer.cpp b/src/app/reader/views/image_viewer.cpp
-index c4612bacc21a55a6b206f669d577c41c4855f147..d166fd8f98c252b2af106236754b76644a109ab7 100644
+index c4612bacc21a55a6b206f669d577c41c4855f147..cbebbaf0d69b2a0d425def2d116b825519910108 100644
 --- a/src/app/reader/views/image_viewer.cpp
 +++ b/src/app/reader/views/image_viewer.cpp
-@@ -324,8 +324,8 @@ ImageViewer::ImageViewer(QWidget *parent) : Panel(parent)
-     row->setSpacing(0);
+@@ -325,7 +325,7 @@ ImageViewer::ImageViewer(QWidget *parent) : Panel(parent)
      auto *title = new ui::InterfaceLabel(strings::get("image.title"), header);
      title->setObjectName("rrImageTitle");
--    title->setFont(ui::brandFont(chrome::titleText));
+     title->setFont(ui::brandFont(chrome::titleText));
 -    ui::readerStyle(title, ui::styles::brand(chrome::titleText) + "background:transparent;");
-+    title->setFont(ui::interfaceFont(chrome::titleText));
 +    ui::readerStyle(title, ui::styles::heading(chrome::titleText) + "background:transparent;");
      title->setAlignment(Qt::AlignCenter);
      row->addSpacing(chrome::cellWidth);
      row->addWidget(title, 1);
 diff --git a/src/app/reader/views/opening.cpp b/src/app/reader/views/opening.cpp
-index 0d881a292575fa320891fb1ad0e4fb7e4bfbfe67..276302006054477612fc0a99b20fe18f07186a43 100644
+index 0d881a292575fa320891fb1ad0e4fb7e4bfbfe67..fd060ea69665c1501d484a4bd538a23f4db42b08 100644
 --- a/src/app/reader/views/opening.cpp
 +++ b/src/app/reader/views/opening.cpp
 @@ -458,20 +458,22 @@ protected:
@@ -848,7 +829,7 @@ index 0d881a292575fa320891fb1ad0e4fb7e4bfbfe67..276302006054477612fc0a99b20fe18f
 -            const auto font = ui::brandFont(qMax(minimum, qRound(pixels * scale())), italic);
 +        const auto textStyle = [this](QLabel *widget, qreal pixels, bool wordmark, int minimum = 1) {
 +            auto font = wordmark ? ui::wordmarkFont(qMax(minimum, qRound(pixels * scale())))
-+                                 : ui::interfaceFont(qMax(minimum, qRound(pixels * scale())));
++                                 : ui::brandFont(qMax(minimum, qRound(pixels * scale())), false);
 +            font.setItalic(false);
              widget->setFont(font);
              ui::readerStyle(
@@ -1779,7 +1760,7 @@ index 6caa8147fcd67ef647d21455aafca4f4376fe46f..83e4238f6b95ca0598d6b932ce5ea51c
  
 diff --git a/src/ui/controls/return_title_text.h b/src/ui/controls/return_title_text.h
 new file mode 100644
-index 0000000000000000000000000000000000000000..e7a0b05e6d24667a93c2080f8474e163677ffb55
+index 0000000000000000000000000000000000000000..5c185c87c158beb545ffe89c90ac4da5b4a0e487
 --- /dev/null
 +++ b/src/ui/controls/return_title_text.h
 @@ -0,0 +1,70 @@
@@ -1796,7 +1777,7 @@ index 0000000000000000000000000000000000000000..e7a0b05e6d24667a93c2080f8474e163
 +// Shared measurement/painting of an interface caption with a serif brand run.
 +inline QVector<QPair<QString, QFont>> returnTitleRuns(const InterfaceLabel &label) {
 +    QVector<QPair<QString, QFont>> runs;
-+    auto face = interfaceFont(label.font().pixelSize());
++    auto face = brandFont(label.font().pixelSize(), false);
 +    face.setItalic(false);
 +    const int at = label.text().indexOf(QStringLiteral("Kobalt"), 0, Qt::CaseInsensitive);
 +    if (at < 0) {
@@ -1898,18 +1879,18 @@ index 3166cb8053b434deb4c9070a4bfa1d606cd40f12..ef6522c6ca46b585913bfe2d5495873d
  QFont captionFont(int pixels = metrics::chrome::captionText);
  
 diff --git a/src/ui/style/styles.h b/src/ui/style/styles.h
-index 7365af52d68944cbc72717fad81c52a606b5ec7f..2f089e007fab50f1f7d1695a5b4ba67038fe213c 100644
+index 7365af52d68944cbc72717fad81c52a606b5ec7f..84cfb5fafae5001ba35ffdde2d8d7a395dc24dd2 100644
 --- a/src/ui/style/styles.h
 +++ b/src/ui/style/styles.h
 @@ -10,6 +10,19 @@ inline QString font(int size, bool bold = false)
      return QString("font-size:%1px;").arg(size) + (bold ? "font-weight:bold;" : "");
  }
  
-+// Menu and loading captions are interface copy, not the application wordmark.
++// Headings use the locale serif role without requesting an italic face.
 +inline QString heading(int pixels)
 +{
 +    return QString("font-family:'%1';font-size:%2px;font-weight:400;font-style:normal;")
-+            .arg(interfaceFont(pixels).family()).arg(pixels);
++            .arg(brandFont(pixels, false).family()).arg(pixels);
 +}
 +
 +inline QString wordmark(int pixels)
@@ -1993,7 +1974,7 @@ index 0000000000000000000000000000000000000000..e17b951e8064417e7fad1ac0b5f8a810
 +}
 diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
 new file mode 100644
-index 0000000000000000000000000000000000000000..c8a469d34cd7d444565bebac3dc6ae8c235beb39
+index 0000000000000000000000000000000000000000..4307a0de5c815b25ecada56a70299193013ea70b
 --- /dev/null
 +++ b/tests/model/fork_presentation.cpp
 @@ -0,0 +1,88 @@
@@ -2041,7 +2022,7 @@ index 0000000000000000000000000000000000000000..c8a469d34cd7d444565bebac3dc6ae8c
 +        exitTitle.setFont(ui::interfaceFont(36));
 +        const auto runs = ui::returnTitleRuns(exitTitle);
 +        require(runs.size() == 2 && !runs[0].second.italic()
-+                        && runs[0].second.family() == ui::interfaceFont(36).family()
++                        && runs[0].second.family() == ui::brandFont(36, false).family()
 +                        && runs[1].second.family() == (locale == strings::Locale::Russian
 +                                ? "Monotype Corsiva" : "Instrument Serif")
 +                        && !runs[1].second.italic(), "return title mixed interface/wordmark roles");

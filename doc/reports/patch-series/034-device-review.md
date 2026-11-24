@@ -87,9 +87,10 @@ engine и не заявляет, что проблема уже исправле
 Предыдущее исправление ошибочно зафиксировало Instrument Serif в wordmarkFont,
 хотя требовалась RU-only замена. Исправлено в 050: буквальный Kobalt теперь
 использует locale Serif — Monotype Corsiva (MTCORSVA.TTF) для RU, Instrument Serif
-для EN. Изменение проверяется в обоих языках. Обычные заголовки/«Закрыть» и
-opening status сохраняют прямой интерфейсный шрифт; намеренный курсивный рисунок
-MTCORSVA относится к бренду, не навязывается всем подписям.
+для EN. Та же serif-роль возвращена заголовкам/«Закрыть» и opening status:
+ошибочная подмена этих ролей на Sans отменена. setItalic(false) и normal-style
+сохранены; MTCORSVA сама имеет каллиграфический наклон, и это не запрос Italic-face.
+Обычные строки/подписи настроек остаются Sans. Изменение проверяется в обоих языках.
 
 Caveat уже является RU default **в роли Kalam**, то есть у playful-пресета
 (`settings/interface_style.h::themePreset`), и его Regular/Bold входят в RU assets.
