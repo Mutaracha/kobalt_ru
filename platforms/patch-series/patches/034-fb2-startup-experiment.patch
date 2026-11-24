@@ -118,7 +118,7 @@ index 90c2847baa0b2485a0270e0657844f2e6d7a97a0..dba0ee94a91a932446591ce4b3f06220
 +}
 +} // namespace kobalt
 diff --git a/src/engine/blaze/adapter/reader_slices.cpp b/src/engine/blaze/adapter/reader_slices.cpp
-index 16e0bd8b2c78507c9743a30636a44869960e4c6e..568450011264e5703624baf4405a6d6123c360fd 100644
+index 16e0bd8b2c78507c9743a30636a44869960e4c6e..22b09fe97bf8383b2ee1623f674fab7197b82d91 100644
 --- a/src/engine/blaze/adapter/reader_slices.cpp
 +++ b/src/engine/blaze/adapter/reader_slices.cpp
 @@ -1,4 +1,5 @@
@@ -226,18 +226,24 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..568450011264e5703624baf4405a6d61
      enterNextSlice(current);
      if (!current || current()) {
          if (page() == 0 && windowFirst_ > 0 && (!slices() || sliceFirst_ == 0))
-@@ -1215,6 +1246,10 @@ bool EngineDocument::showSliceOf(const QString &position)
-     };
-     if (before >= sliceFirst_ && before < sliceEnd_ && laidOut())
+@@ -1199,6 +1230,16 @@ bool EngineDocument::showSliceOf(const QString &position)
+ {
+     if (!slices())
          return true;
 +    if (fb2StartupSlice_) {
++        const int before = textBefore(position);
++        const auto laidOut = pagesOf({ position });
++        const int page = laidOut.value(0, -1);
++        const int end = visiblePages_ > 0 ? visiblePages_ : pages();
++        if (before >= 0 && before < sliceEnd_ && page >= 0 && page < end)
++            return true;
 +        diagnostic("fb2-startup-promote", { { "reason", "position-outside-prefix" } }, false);
 +        return setChapterMode(false, appearance::Patch(), size_);
 +    }
-     if (!showSliceAt(before))
-         return false;
-     // A block belongs to the slice in which it starts. A position late in
-@@ -1316,6 +1351,9 @@ QVector<int> EngineDocument::bookPages(const QStringList &positions,
+     const int before = textBefore(position);
+     if (before < 0)
+         return true;
+@@ -1316,6 +1357,9 @@ QVector<int> EngineDocument::bookPages(const QStringList &positions,
  {
      if (!engine_)
          return QVector<int>(positions.size(), -1);
@@ -247,7 +253,7 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..568450011264e5703624baf4405a6d61
      if (windowFirst_ < 0) {
          auto pages = pagesOf(positions, rangeEndpoints, nullptr, current);
          for (int &page : pages)
-@@ -1346,6 +1384,7 @@ QVector<int> EngineDocument::wholeBookPages(const QStringList &positions,
+@@ -1346,6 +1390,7 @@ QVector<int> EngineDocument::wholeBookPages(const QStringList &positions,
  
  int EngineDocument::wholeBookPageCount() const
  {
@@ -255,7 +261,7 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..568450011264e5703624baf4405a6d61
      if (windowFirst_ < 0)
          return pages();
      return fullDocumentReady() ? full_->pages() : 0;
-@@ -1356,7 +1395,7 @@ void EngineDocument::prepareWholeBookText(const QString &first, const QString &a
+@@ -1356,7 +1401,7 @@ void EngineDocument::prepareWholeBookText(const QString &first, const QString &a
  {
      // The whole book finds its own main text and counts its own words: both
      // are kept with it, and the chapter document's figures can differ.
@@ -264,7 +270,7 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..568450011264e5703624baf4405a6d61
          return;
      full_->mainTextHints();
      full_->wordsInMainText(first, after, current);
-@@ -1364,6 +1403,7 @@ void EngineDocument::prepareWholeBookText(const QString &first, const QString &a
+@@ -1364,6 +1409,7 @@ void EngineDocument::prepareWholeBookText(const QString &first, const QString &a
  
  QVector<ChapterLink> EngineDocument::wholeBookChapters() const
  {
@@ -272,7 +278,7 @@ index 16e0bd8b2c78507c9743a30636a44869960e4c6e..568450011264e5703624baf4405a6d61
      if (windowFirst_ < 0)
          return chapters();
      return fullDocumentReady() ? full_->chapters() : QVector<ChapterLink>{};
-@@ -1499,6 +1539,10 @@ QVector<int> EngineDocument::chapterBookPages(const QStringList &positions,
+@@ -1499,6 +1545,10 @@ QVector<int> EngineDocument::chapterBookPages(const QStringList &positions,
  
  bool EngineDocument::goToFraction(double fraction)
  {
@@ -421,7 +427,7 @@ index 77689548fef1233e9eb81418863fd0747e52866d..a3621d22378025b27e3cd6b47fa905f0
      if ( node == body && length > _koblazeSpineItemChars )
          _koblazeSpineItemChars = length;
 diff --git a/tests/model/fb2_engine.cpp b/tests/model/fb2_engine.cpp
-index 496968440278edb0bd2fd5153206b201715d3c12..e4ebaaf165679666758bbe30e039935d2e017c6f 100644
+index 496968440278edb0bd2fd5153206b201715d3c12..f6688753e8da7db35e85866374e871e1ecc705ba 100644
 --- a/tests/model/fb2_engine.cpp
 +++ b/tests/model/fb2_engine.cpp
 @@ -10,6 +10,7 @@
@@ -432,7 +438,7 @@ index 496968440278edb0bd2fd5153206b201715d3c12..e4ebaaf165679666758bbe30e039935d
  
  using namespace kobalt;
  namespace {
-@@ -156,6 +157,43 @@ void cachedFictionBook()
+@@ -156,6 +157,49 @@ void cachedFictionBook()
          require(!document.openedFromCache(), "FB2 cache eviction left the mapped book available");
      }
  }
@@ -469,6 +475,12 @@ index 496968440278edb0bd2fd5153206b201715d3c12..e4ebaaf165679666758bbe30e039935d
 +    const auto distant = accurate.position();
 +    require(jump.goTo(distant) && !jump.partOfBook() && jump.position() == distant,
 +            "jump beyond prefix did not safely promote");
++    EngineDocument resumed(test::readerFonts());
++    require(resumed.open(bytes, {600, 800}, {{"position", distant}}, &error), qPrintable(error));
++    require(!resumed.partOfBook() && resumed.position() == distant, "saved FB2 position used prefix");
++    EngineDocument fraction(test::readerFonts());
++    require(fraction.open(bytes, {600, 800}, {}, &error), qPrintable(error));
++    require(fraction.goToFraction(0.9) && !fraction.partOfBook(), "fraction jump stayed in prefix");
 +    qunsetenv("KOBALT_CHAPTER_PAGES");
 +    qunsetenv("KOBALT_FB2_HYBRID");
 +}
@@ -476,7 +488,7 @@ index 496968440278edb0bd2fd5153206b201715d3c12..e4ebaaf165679666758bbe30e039935d
  }
  int main(int argc, char **argv)
  {
-@@ -163,6 +201,7 @@ int main(int argc, char **argv)
+@@ -163,6 +207,7 @@ int main(int argc, char **argv)
      setChapterModeOverride(1);
      engineAndResources();
      cachedFictionBook();
