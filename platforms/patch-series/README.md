@@ -148,3 +148,10 @@ Workflow `Ordered patch series` теперь сохраняет проверен
 Скорость повторного открытия на устройстве ещё требует проверки.
 
 [040 — границы переноса и аудит upstream controls](../../doc/reports/patch-series/reader-controls-audit.md).
+
+
+040 принят по [CI 45361473628](https://github.com/Mutaracha/kobalt_ru/actions/runs/45361473628)
+на `87530065`: native reader-controls regression и предыдущие suites PASS;
+Qt5 build/check-package и qemu refresh PASS. Пакет **Beta10-series-prefix-qt5**,
+artifact `14904792738`, содержит 010–040 с toolbar dark/comics.
+Аппаратная проверка toolbar ещё не выполнена. Следующий патч — 050 presentation.

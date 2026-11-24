@@ -77,11 +77,11 @@
     },
     {
       "id": "040-reader-controls",
-      "status": "prepared",
+      "status": "ready",
       "scope": "Approved dark/comics toolbar and reader presentation; upstream reverse_page_swipes already provides independent swipe inversion, so omit fork invert_page_swipes and preserve upstream Activity feature",
       "path": "platforms/patch-series/patches/040-reader-controls.patch",
       "sha256": "44baebeef8e02bcf963d137a05c1412ce21b57e6c137cc186c88e113acc8eded",
-      "validation": "Selective port; clean application and CI pending."
+      "validation": "CI 45361473628 on 87530065: clean prefix validation, native reader-controls/comics/cache/engine suites and Qt5 build/check-package/qemu refresh PASS. Beta10-series-prefix-qt5 artifact 14904792738. Physical toolbar acceptance pending."
     },
     {
       "id": "050-fork-presentation",
