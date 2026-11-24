@@ -2497,3 +2497,76 @@ diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.c
          const auto duration = QStringLiteral("123 h 45 min");
          const auto remaining = strings::get("sleep.time_left").arg(duration);
          const auto lines = reader::sleepRibbonRemainingLines(remaining);
+diff --git a/src/ui/style/fonts.cpp b/src/ui/style/fonts.cpp
+--- a/src/ui/style/fonts.cpp
++++ b/src/ui/style/fonts.cpp
+@@ -281,9 +281,7 @@
+     auto faces = readFaces(assets, false, current);
+     if (!faces || (current && !current()))
+         return {};
+-    warmTextShaping(faces->sources.value(strings::locale() == strings::Locale::Russian
+-                                                 ? "MTCORSVA.TTF"
+-                                                 : "InstrumentSerif-Regular.ttf"),
++    warmTextShaping(faces->sources.value("InstrumentSerif-Regular.ttf"),
+                     QStringLiteral("Kobalt"));
+     return current && !current() ? OpeningFonts() : faces;
+ }
+@@ -627,7 +625,8 @@
+ QFont wordmarkFont(int pixels)
+ {
+     registerFaces();
+-    QFont font(family(FamilyIndex::Serif, "serif"));
++    // The literal Latin name is the same brand in every UI language.
++    QFont font(QStringLiteral("Instrument Serif"));
+     font.setPixelSize(pixels);
+     font.setWeight(QFont::Normal);
+     font.setItalic(false);
+diff --git a/src/ui/controls/return_title_text.h b/src/ui/controls/return_title_text.h
+--- a/src/ui/controls/return_title_text.h
++++ b/src/ui/controls/return_title_text.h
+@@ -18,10 +18,7 @@
+         runs.append({label.text(), face});
+     } else {
+         if (at) runs.append({label.text().left(at), face});
+-        auto wordmark = wordmarkFont(label.font().pixelSize());
+-        // The Latin application name is not a localized serif caption.
+-        wordmark.setFamily(QStringLiteral("Instrument Serif"));
+-        runs.append({label.text().mid(at, 6), wordmark});
++        runs.append({label.text().mid(at, 6), wordmarkFont(label.font().pixelSize())});
+         if (at + 6 < label.text().size()) runs.append({label.text().mid(at + 6), face});
+     }
+     return runs;
+diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
+--- a/tests/model/fork_presentation.cpp
++++ b/tests/model/fork_presentation.cpp
+@@ -53,6 +53,15 @@
+                         && !runs[1].second.italic(), "return title mixed interface/wordmark roles");
+         require(ui::styles::heading(36).contains("font-style:normal"), "heading inherited italics");
+         AboutPage about;
++        auto *aboutWordmark = about.findChild<QLabel *>("rrAboutWordmark");
++        require(aboutWordmark
++                        && aboutWordmark->property("reader_style").toString().contains("Instrument Serif")
++                        && !aboutWordmark->property("reader_style").toString().contains("Monotype Corsiva"),
++                "About wordmark inherited the localized heading font");
++        aboutWordmark->ensurePolished();
++        require(aboutWordmark->font().family() == QStringLiteral("Instrument Serif")
++                        && !aboutWordmark->font().italic(),
++                "About did not resolve the regular Instrument Serif brand face");
+         require(bool(about.findChild<QLabel *>("rrAboutFork")) == (kobaltForkName[0] != '\0'),
+                 "About fork row ignored configured distribution");
+         require(!about.findChild<QPushButton *>("rrDebugLanguageButton"),
+diff --git a/tests/model/ru_control_ui.cpp b/tests/model/ru_control_ui.cpp
+--- a/tests/model/ru_control_ui.cpp
++++ b/tests/model/ru_control_ui.cpp
+@@ -35,8 +35,9 @@
+     require(ui::initializeInterfaceFonts(test::readerAssets()), "Control fonts unavailable");
+     require(ui::brandFont(40).family() == (language == strings::Locale::Russian
+                     ? "Monotype Corsiva" : "Instrument Serif"), "Wrong locale serif family");
+-    require(ui::wordmarkFont(40).family() == ui::brandFont(40).family(),
+-            "Wordmark bypassed the locale serif replacement");
++    require(ui::wordmarkFont(40).family() == QStringLiteral("Instrument Serif")
++                    && !ui::wordmarkFont(40).italic(),
++            "Latin wordmark must stay Instrument Serif in either locale");
+     require(reader::themePreset("classic").mainFace.isEmpty(),
+             "Handwriting replacement changed the ordinary UI default");
+     require(reader::themePreset("playful").mainFace == (language == strings::Locale::Russian
