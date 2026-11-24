@@ -75,7 +75,7 @@ diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.c
          state = reader.state();
          // Exercise the real host close path. Discard the retained facade so the
          // next cycle cannot pass through in-memory retained-book reuse.
-@@ -84,6 +123,27 @@
+@@ -84,13 +123,36 @@
  {
      QGuiApplication app(argc, argv);
      QTimer::singleShot(0, &app, [&] {
@@ -103,7 +103,17 @@ diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.c
          QTemporaryDir root;
          require(root.isValid(), "FB2 cache directory");
          const auto path = root.filePath("book.fb2"), cache = root.filePath("parsed");
-@@ -101,6 +161,33 @@
+         QByteArray book("<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
+                         "<description><title-info><book-title>Cache session</book-title>"
+                         "<lang>en</lang></title-info></description><body><section>");
+-        for (int i = 0; i < 60; ++i)
++        // Match the device path: real text, not just a large comment, must
++        // cross the 250000-character automatic fast-shaping threshold.
++        for (int i = 0; i < 6000; ++i)
+             book += "<p>Session cache paragraph " + QByteArray::number(i) + " with readable words.</p>";
+         // Exceed the 1 MiB automatic render-swap threshold, not merely the
+         // 64 KiB lookup threshold. A disabled cache during Render must not
+@@ -101,6 +163,33 @@
              require(file.open(QIODevice::WriteOnly) && file.write(book) == book.size(), "write session fixture");
          };
          write();

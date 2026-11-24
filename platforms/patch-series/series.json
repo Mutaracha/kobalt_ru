@@ -95,9 +95,9 @@
       "id": "037-fb2-cross-process-cache-probe",
       "status": "ready",
       "path": "platforms/patch-series/patches/037-fb2-cross-process-cache-probe.patch",
-      "sha256": "a6ef9431f96a317d38870d5b45e94b1565a56bf5127212a49139c76390f09fac",
+      "sha256": "1177ea8d7d22f05c224bc701578d07e2f97e446ff88ade47b6c6c4c9c5691b02",
       "scope": "Host-only separate-process FB2 cold/warm/width-isolation cache probe, capture existing CRLog global/node style hashes; no runtime behavior change",
-      "validation": "CI pending; observational warm-layout result, mandatory parsed cache and changed-width guards."
+      "validation": "CI45498201010 all jobs PASS: short-text warm1/warm2 reasons0, global/node hashes stable across processes, changed-width reasons16. Extended fixture beyond automatic fast-shaping threshold to match device; new CI pending."
     },
     {
       "id": "040-reader-controls",
