@@ -89,7 +89,7 @@
       "path": "platforms/patch-series/patches/035-fb2-preload-policy.patch",
       "sha256": "8df65d0acf5bfa72c8f33e228f66ec9ec638a9381c65928d428cebf7f836fcc4",
       "scope": "Skip speculative Home preload for raw FB2 only; preserve manual routing/cache and upstream EPUB preload",
-      "validation": "46ecb8f device evidence: cancelled preloads delay manual A1 by ~7.4/~13.2 s. Eligibility regression added; CI and device validation pending."
+      "validation": "46ecb8f device evidence: cancelled preloads delay manual A1 by ~7.4/~13.2 s. Eligibility regression added; CI and device validation pending. Standalone RU canonical/output hashes verified after prompt synchronization. Full ordered apply PASS; native/Qt5/package validation pending."
     },
     {
       "id": "040-reader-controls",
