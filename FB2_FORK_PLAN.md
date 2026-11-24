@@ -1,3 +1,21 @@
+## Последнее hardware evidence: 8e03668 / runtime 4f2cecd1
+
+- Пользователь уточнил: заголовки изменены до первой серии, входы идентичны;
+  сравнение предыдущей и новой диагностики допустимо.
+- Cache книги 1 не принят: 7 основных открытий без hit, соответствующие
+  cache saves false в обоих режимах. После reboot снова полный layout.
+- Книга 2: пять измеренных reboot повторов — настоящий disk hit, model load
+  989–1000 ms и paginate 27–32 ms; stopwatch около 5.2–5.5 s.
+- New-book Hybrid speedup подтверждён двумя сериями; это не закрывает cache
+  lifecycle первой книги и отдельные медленные cached-layout восстановления.
+- Главы/сноска/возврат на 034-2-HYBRID: номера совпадают. После полного count
+  и reopen счётчик правильный. До готовности первые две страницы ошибочно
+  показывают prefix total 46, остальные pending. Приоритет — page provenance
+  initial frames; не объявлять это подтверждённым вечным «Расчёт…».
+- [Подробный отчёт и все stopwatch числа](doc/reports/patch-series/034-reboot-cache-review.md).
+- Runtime не менялся. Следующий шаг: установить причину save=false книги 1,
+  не ослабляя fingerprint/name guards; затем исправить pending page fields.
+
 ## Device review 034 и исправление RU serif-ролей
 
 - Диагностика пользователя `cfa10b9` проанализирована: cold session totals

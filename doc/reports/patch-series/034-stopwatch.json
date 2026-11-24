@@ -1,0 +1,52 @@
+{
+  "source_commit": "8e03668fa1d372811ea01aa1f6ea61fd246b8056",
+  "runtime": "4f2cecd1",
+  "uncertainty_seconds": 0.5,
+  "files_identical_between_series_per_user": true,
+  "measurement": "user stopwatch to first readable page",
+  "restart_between_cycles": true,
+  "cycles": [
+    {
+      "cycle": "A0",
+      "mode": "accurate",
+      "book1_seconds": 10.36,
+      "book2_seconds": 27.37
+    },
+    {
+      "cycle": "A1",
+      "mode": "accurate",
+      "book1_seconds": 9.47,
+      "book2_seconds": 5.41
+    },
+    {
+      "cycle": "A2",
+      "mode": "accurate",
+      "book1_seconds": 16.45,
+      "book2_seconds": 5.31
+    },
+    {
+      "cycle": "A3",
+      "mode": "accurate",
+      "book1_seconds": 9.38,
+      "book2_seconds": 5.49
+    },
+    {
+      "cycle": "H0",
+      "mode": "hybrid",
+      "book1_seconds": 5.87,
+      "book2_seconds": 10.58
+    },
+    {
+      "cycle": "H1",
+      "mode": "hybrid",
+      "book1_seconds": 9.38,
+      "book2_seconds": 5.22
+    },
+    {
+      "cycle": "H2",
+      "mode": "hybrid",
+      "book1_seconds": 9.36,
+      "book2_seconds": 5.25
+    }
+  ]
+}
