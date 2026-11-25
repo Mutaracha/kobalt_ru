@@ -183,7 +183,7 @@
       "id": "058-ru-reading-font-roles",
       "status": "ready",
       "path": "platforms/patch-series/patches/058-ru-reading-font-roles.patch",
-      "sha256": "7c146a8deb4bab23fb7a9204dee3c0781d3cfd4876bd2646d9d160c03c39cd51",
+      "sha256": "197f0b35120ced9891efb77fee57aa47213312814597dd285c38ba9931cb162e",
       "scope": "RU reading roles Literata/Lora/Noto Serif, preserve EN and custom families; hide six families from RU pickers without removing engine files",
       "validation": "CI pending; old layout may legitimately repaginate after font changes"
     },
