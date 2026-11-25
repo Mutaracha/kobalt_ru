@@ -10,7 +10,7 @@
       "status": "ready",
       "sha256": "6babae772040832d1e941c524548fe4ebf2b7bf00a1d47a3ac6f02cc3335b5e0",
       "scope": "Final RU strings, Russian font roles/assets/licences and font UI; locale tests. Standalone historical control overlay remains separate.",
-      "validation": "Byte-and-mode-equivalent to 5b45f2c7 full-series export; CI pending"
+      "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
     },
     {
       "id": "020-publication-resources",
@@ -18,7 +18,7 @@
       "status": "ready",
       "sha256": "ebe7e5ffa07c43611b921c74400635198d3768358da4281f7539a9720d714e3d",
       "scope": "FB2 inspection/raw resource and Kobo routing integration, publication tests.",
-      "validation": "Byte-and-mode-equivalent to 5b45f2c7 full-series export; CI pending"
+      "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
     },
     {
       "id": "030-engine-integration",
@@ -26,7 +26,7 @@
       "status": "ready",
       "sha256": "6c79ee11595ef222b588d359c169eaee7b4aeb357d38bfeb0a9b6fe600eff64b",
       "scope": "Final FB2/comics engine and rendering/cache/font identity integration, engine tests; no runtime changes.",
-      "validation": "Byte-and-mode-equivalent to 5b45f2c7 full-series export; CI pending"
+      "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
     },
     {
       "id": "034-session-hybrid",
@@ -34,7 +34,7 @@
       "status": "ready",
       "sha256": "aaf2cd4574651bc548338e5f3b7a2c43cb1453aff2c7e9b672dae8d5438def49",
       "scope": "Session/resource cache lifecycle, initial FB2 Hybrid and observation/replay/cancellation/note/image tests.",
-      "validation": "Byte-and-mode-equivalent to 5b45f2c7 full-series export; CI pending"
+      "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
     },
     {
       "id": "040-reader-controls-settings",
@@ -42,7 +42,7 @@
       "status": "ready",
       "sha256": "66e2a67a1f8848bb657d553b32112308a809243732028d3c169fd047d7b2342e",
       "scope": "Final reader window/host wiring, swipe/toolbar/settings/menu-status integration and tests.",
-      "validation": "Byte-and-mode-equivalent to 5b45f2c7 full-series export; CI pending"
+      "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
     },
     {
       "id": "050-presentation",
@@ -50,7 +50,7 @@
       "status": "ready",
       "sha256": "b65343fdf61eb76768e5614c3077de53f5ea83199e70b8404cc4177c96b77d75",
       "scope": "Shared UI/brand/sleep/annotation presentation and tests; no superseded intermediate fonts.",
-      "validation": "Byte-and-mode-equivalent to 5b45f2c7 full-series export; CI pending"
+      "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
     },
     {
       "id": "060-build-integration",
@@ -58,7 +58,7 @@
       "status": "ready",
       "sha256": "29d3b1a68a0cd7920bd52afda56a2b7a5a77d0f8c3c5a30d3ec6f5a7054fbb1b",
       "scope": "Final CMake/packaging/CI source integration and validation support.",
-      "validation": "Byte-and-mode-equivalent to 5b45f2c7 full-series export; CI pending"
+      "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
     }
   ]
 }

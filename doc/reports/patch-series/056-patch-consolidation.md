@@ -56,3 +56,17 @@ ELF/ZIP будут иметь новый commit/provenance и не объявл�
 ## Приёмка и открытые наблюдения
 
 Пользователь принял последние UI-доработки5b45f2c7: вкладки, language popup и формулировку Letter. Menu-status ранее подтверждён с первой минуты. Кэш: несколько перезапусков, включая reboot/Accurate, без повторения задержки; длительное наблюдение остаётся открытым. Отложенные EPUB recheck/неподтверждённый freeze не превращены в выполненные задачи. Непроверенные экраны не принимаются автоматически.
+
+## CI и пакет
+
+Консолидированная серия **f0df8c4e1baf34b90d35268c3b9ba9407fbf503e**:
+[CI45692070662](https://github.com/Mutaracha/kobalt_ru/actions/runs/45692070662) все jobs PASS.
+CI применил7 патчей и подтвердил полное совпадение1551 файлов с эталоном; прошли
+15 series/package/equivalence tests, выбранные native regressions/lifecycle,
+archived FB2 replay и Qt5 compile/check-package/configured refresh-qemu/collection.
+Это не весь repository test matrix и не новая аппаратная приёмка.
+
+[Qt5 artifact15060000871](https://github.com/Mutaracha/kobalt_ru/actions/runs/45692070662/artifacts/15060000871),45427531bytes;
+host cache evidence15058409465,12317bytes. Повторять visual/timing-проверки только ради
+консолидации не требуется; текущий установленный5b45f2c7 имеет тот же runtime source.
+Последующее уточнение validation-полей series.json не меняет patch bytes/reference.
