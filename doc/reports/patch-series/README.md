@@ -15,7 +15,9 @@
 
 ## Последние пакеты
 
-- [055: settings polish](055-settings-polish.md):5b45f2c7, CI45686709893 PASS; новые подписи/размеры rail, ChoiceSheet языка и время Letter; device visual pending.
+- [056: консолидация](056-patch-consolidation.md):29→7, без runtime-изменений; byte/mode equivalence1551 файлов локально PASS, CI pending.
+
+- [055: settings polish](055-settings-polish.md):5b45f2c7, CI45686709893 PASS; новые подписи/размеры rail, ChoiceSheet языка и время Letter; пользователь принял UI.
 
 - [054: combined Letter/menu/cache](054-letter-signature-and-device-feedback.md):92a29364, CI45675458450 PASS; краткая cache-проверка пользователя положительная, длительная и новая UI-приёмка pending.
 

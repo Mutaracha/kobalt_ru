@@ -1,0 +1,239 @@
+{
+  "schema": 1,
+  "upstream": "1796a32559dbb2912bd565990d1c7a0ca7ac4e52",
+  "fork_source": "ca50dd358386e9fccc5122b464f74003caa51e75",
+  "policy": "ordered-full-stack",
+  "patches": [
+    {
+      "id": "010-ru",
+      "status": "ready",
+      "path": "platforms/control-beta10/ru.patch",
+      "sha256": "5b4d7a16354c6d23cc92d054fac4295689619cd36ac19dea88479d38d9cf07e3",
+      "scope": "Reviewed beta10 RU overlay, including its existing font/presentation fixes"
+    },
+    {
+      "id": "020-fb2-publication",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/020-fb2-publication.patch",
+      "sha256": "7b23b0686c30ae8350c5929aaf25f173e2c54eae2e47477d7a3ca27d28511ffb",
+      "scope": "FB2 recognition and inspection, preserving original beta10 ZIP64; first part of FB2, not complete reader support",
+      "validation": "CI 45259254139: native local-resources/zip-resource/plain-archive and Qt5 build/check-package PASS; full-format/device acceptance pending"
+    },
+    {
+      "id": "021-fb2-resources",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/021-fb2-resources.patch",
+      "sha256": "22326310d21cf60731f1aac14d96c4cf2a16014a8986c982616d84074cb4ecbb",
+      "scope": "Raw FB2 streaming through local resources, cancellation/revocation and ZIP name collision regression checks",
+      "validation": "CI 45259254139: native local-resources/zip-resource/plain-archive and Qt5 build/check-package PASS; full-format/device acceptance pending"
+    },
+    {
+      "id": "022-fb2-engine",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/022-fb2-engine.patch",
+      "sha256": "d1ff9c4bd3efb2073c1bde76e001deb4bfdabd732aa1085fe22427cef6d457ae",
+      "scope": "Raw FB2 engine/resource inputs, format stylesheet/semantics, preview and parsed-cache lifecycle; preserves beta10 ZIP64 and chapter-spread behavior",
+      "validation": "CI 45270389485: native publication/resource/FB2-engine/menu/appearance checks and Qt5 build/check-package PASS. Legacy workflow 45270389509 also PASS. Hardware and Qt6 firmware/Android acceptance pending."
+    },
+    {
+      "id": "023-fb2-platform-inputs",
+      "status": "ready",
+      "scope": "Kobo raw-FB2 eligibility and Qt5/Qt6 local opening; legacy note preference migration; preserves EPUB DRM guards",
+      "path": "platforms/patch-series/patches/023-fb2-platform-inputs.patch",
+      "sha256": "132a17e161e039cac77ed5d4d2e20563e8dae00ea278b1f7672c04690c7ae44a",
+      "validation": "CI 45270389485: native publication/resource/FB2-engine/menu/appearance checks and Qt5 build/check-package PASS. Legacy workflow 45270389509 also PASS. Hardware and Qt6 firmware/Android acceptance pending."
+    },
+    {
+      "id": "030-comics-layout",
+      "status": "ready",
+      "scope": "First comics layer: effective geometry, bounded OPF center-page metadata, bitmap classification and ColumnView spread geometry; preserves beta10 chapter-start grouping",
+      "path": "platforms/patch-series/patches/030-comics-layout.patch",
+      "sha256": "da80606259f94554c42c6806a37103e01e1fb4a9898ce0baa8a10c568cba0be1",
+      "validation": "CI 45278312375 on 08c66e4d: native FB2/comics/layout/UI/resources/appearance/columns/chapter-parity tests PASS; Qt5 build/check-package and qemu pewter.qt5-refresh PASS. Beta10-series-prefix-qt5 artifact published. Physical device and Qt6 firmware/Android acceptance pending."
+    },
+    {
+      "id": "031-comics-engine",
+      "status": "ready",
+      "scope": "Engine rendering, source markers, visible image requests, preview/cache lifecycle and full synthetic comic fixtures",
+      "path": "platforms/patch-series/patches/031-comics-engine.patch",
+      "sha256": "7e9d0f0c8e067b7fbd8b1e61b91cf9f4a3891fb840b2f63ffc4800fe0c110e14",
+      "validation": "CI 45278312375 on 08c66e4d: native FB2/comics/layout/UI/resources/appearance/columns/chapter-parity tests PASS; Qt5 build/check-package and qemu pewter.qt5-refresh PASS. Beta10-series-prefix-qt5 artifact published. Physical device and Qt6 firmware/Android acceptance pending."
+    },
+    {
+      "id": "032-comics-integration-refresh",
+      "status": "ready",
+      "scope": "Comics appearance/session/UI wiring and graphics refresh; toolbar composition remains in 040",
+      "path": "platforms/patch-series/patches/032-comics-integration-refresh.patch",
+      "sha256": "48d220afe45d76d52dc84d661a8babcefcfbf49b9189eb0d23144cce0f818836",
+      "validation": "CI 45278312375 on 08c66e4d: native FB2/comics/layout/UI/resources/appearance/columns/chapter-parity tests PASS; Qt5 build/check-package and qemu pewter.qt5-refresh PASS. Beta10-series-prefix-qt5 artifact published. Physical device and Qt6 firmware/Android acceptance pending."
+    },
+    {
+      "id": "033-fb2-session-cache",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/033-fb2-session-cache.patch",
+      "sha256": "0e4e42064e48e8731a8556d93dc5394e1bf536e151e9d9817d025135833f7567",
+      "scope": "Authorize the existing parsed-cache path for the single FB2 resource in OpeningJob; real resource-backed ReaderSession close/reopen regression; no Hybrid changes",
+      "validation": "CI 45356010249 on 1285624d: ready-prefix validation, native session/cache regression suite and Qt5 build/check-package PASS; Beta10-series-prefix-qt5 artifact 14903311145. Hardware repeat-open timings pending; no Hybrid changes."
+    },
+    {
+      "id": "034-fb2-startup-experiment",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/034-fb2-startup-experiment.patch",
+      "sha256": "0832019aa1394442d1b5186c70e50f089a68fe648c2bcf7bd6006018045336bd",
+      "scope": "Experimental native FB2 cold new-book prefix layout and background full build; no EPUB spine emulation",
+      "validation": "Device experiment; CI pending. Warm cache and saved-position openings remain full-document. Follow-up: skip automatic Render swap while process cache is disabled; publish partial coordinates on every frame. Oversize close/reopen regression expanded above 1 MiB. Native CI/device validation pending."
+    },
+    {
+      "id": "036-fb2-cache-layout-observation",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/036-fb2-cache-layout-observation.patch",
+      "sha256": "1090b6a8e0804f1b29085257f8d1fb290b44208cdf5e6a154e620bc2553d8413",
+      "scope": "Observe render-context rejection reasons and saved/current operands without changing compatibility decisions, cache format or preload policy",
+      "validation": "CI45489596816: series and native regressions PASS; Qt5 initializer-list incompatibility fixed using existing qt::object helper. Full CI rerun pending."
+    },
+    {
+      "id": "037-fb2-cross-process-cache-probe",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/037-fb2-cross-process-cache-probe.patch",
+      "sha256": "1177ea8d7d22f05c224bc701578d07e2f97e446ff88ade47b6c6c4c9c5691b02",
+      "scope": "Host-only separate-process FB2 cold/warm/width-isolation cache probe, capture existing CRLog global/node style hashes; no runtime behavior change",
+      "validation": "CI45498201010 all jobs PASS: short-text warm1/warm2 reasons0, global/node hashes stable across processes, changed-width reasons16. Extended fixture beyond automatic fast-shaping threshold to match device; new CI pending."
+    },
+    {
+      "id": "038-fb2-archived-source-replay",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/038-fb2-archived-source-replay.patch",
+      "sha256": "198b3660620783a4d90688db50a9b90eb12d536dc407958f42efed8914b98442",
+      "scope": "Host-only optional replay of archived A1/A2 with available Fira fixture and device typography; no production behavior change",
+      "validation": "First replay CI45503168248 PASS but first-open appearance from saved was dropped by source-fingerprint guard (default geometry observed); not accepted as device-typography reproduction. Use existing pinned appearance and assert actual font/pixels/margin. CI rerun pending."
+    },
+    {
+      "id": "039-fb2-layout-input-observation",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/039-fb2-layout-input-observation.patch",
+      "sha256": "1fdc623092440cfb72c9e674bfd43c986e13605d370837dcb1be3eb3b3e0958f",
+      "scope": "Observe exact node/global/style-hash operands and persist optional header-anchored telemetry in existing document properties; preserve hash decisions and preload",
+      "validation": "CI45599360375 all jobs PASS (full ordered apply/inventory, native hash reconstruction and cross-process saved operand persistence, real A1/A2+Kobo-font replay, Qt5 compile/check-package/qemu/package). Ten visible host observations match previous hashes/reasons exactly. Device input snapshots pending; not a speed fix. Old compatible caches may incur one metadata-only close save."
+    },
+    {
+      "id": "040-reader-controls",
+      "status": "ready",
+      "scope": "Approved dark/comics toolbar and reader presentation; upstream reverse_page_swipes already provides independent swipe inversion, so omit fork invert_page_swipes and preserve upstream Activity feature",
+      "path": "platforms/patch-series/patches/040-reader-controls.patch",
+      "sha256": "44baebeef8e02bcf963d137a05c1412ce21b57e6c137cc186c88e113acc8eded",
+      "validation": "CI 45361473628 on 87530065: clean prefix validation, native reader-controls/comics/cache/engine suites and Qt5 build/check-package/qemu refresh PASS. Beta10-series-prefix-qt5 artifact 14904792738. Physical toolbar acceptance pending."
+    },
+    {
+      "id": "044-fb2-hybrid-cancellation-tests",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/044-fb2-hybrid-cancellation-tests.patch",
+      "sha256": "159a8508c5b82f2a13f4046a139d173a36fdd3e747efd32180987e393edc6fe3",
+      "scope": "Tests only: FB2 prefix survives pre-start cancellation/park, incomplete full cache not saved, parked builder destruction and independent rebuild",
+      "validation": "CI pending; no reader/cache algorithm changes. Remaining notes/images/resource-lease gates tracked separately."
+    },
+    {
+      "id": "045-fb2-hybrid-note-image-tests",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/045-fb2-hybrid-note-image-tests.patch",
+      "sha256": "d7046b5f8c58cdaf20de61e4e7bc6ddd41016c991cb0dcc1079d56a1a02ee926",
+      "scope": "Tests only: FB2 prefix/full note and body-image rendered parity with inline footnotes on/off",
+      "validation": "CI pending; conservative full fallback allowed; no production change"
+    },
+    {
+      "id": "046-fb2-session-hybrid-gates",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/046-fb2-session-hybrid-gates.patch",
+      "sha256": "0d9f27f365f8358d32b2f35f018accd1f1c5591fe71da0864e286c191a6fab9a",
+      "scope": "Tests only: resource-backed FB2 pending/final count publication, cancellation/revocation stale-work refusal and close/drain release",
+      "validation": "CI45629224994 all jobs PASS: resource-backed FB2 session pending/final count publication, cancel/revoke stale-work refusal, close/drain; existing FB2 mid-transfer revoke tested in local-resources. See report046."
+    },
+    {
+      "id": "050-fork-presentation",
+      "status": "ready",
+      "scope": "Remaining approved brand/About/annotation/UI/locale differences, excluding those already in 010-ru; exclude redundant Russian_EnUS.pattern and its fork-only manifest/notice/list entries, preserve Russian.pattern and translation dictionaries",
+      "path": "platforms/patch-series/patches/050-fork-presentation.patch",
+      "sha256": "866a2216e4c5d3d5b13e626b3a148c51c7f55218bb07cf586704d6fe3355f58e",
+      "validation": "CI 45375027889 on 489ee408: full 010–050 apply/strings/assets/inventory checks, native locale/Debug UI/presentation/preset/RU controls and prior FB2/cache/comics suites PASS; Qt5 build/check-package/qemu refresh PASS. Beta10-series-prefix-qt5 artifact 14910054747. Physical-device and Qt6/Android validation pending. Hardware df8e910a: book startup/raw FB2 accepted by user. UI font-role correction awaiting CI and device review. Hardware df8e910a: book startup/raw FB2 accepted by user. UI font-role correction awaiting CI and device review. Follow-up: wordmark respects RU Monotype Corsiva; bilingual role regression added. Caveat remains the RU replacement for the playful/Kalam default, not for ordinary Sans UI. Restored serif heading/opening-caption roles (regular face), rather than replacing those roles with Sans. Follow-up: exit-title Latin Kobalt explicitly uses Instrument Serif in both locales; Russian prefix remains Monotype Corsiva. Shipping CI build uses switchable marker-based diagnostics (forced verbose OFF), with persistence regression. CI/device checks pending. Follow-up after 4d9985e2: literal wordmark uses Instrument Serif in About/opening/exit in both locales, heading role unchanged. 035 preload exclusion withdrawn by user; FB2 Home preload restored. CI/device pending."
+    },
+    {
+      "id": "055-ru-noto-display-subset",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/055-ru-noto-display-subset.patch",
+      "sha256": "c91aecdf917a46fd35782f06ecb59e6892fd797ef64ee75fdefe5c747e822296",
+      "scope": "Replace Russian Monotype Corsiva assets/role with Noto Serif Display Condensed Regular+Italic only; retain literal Instrument Serif wordmark and upstream italic semantics",
+      "validation": "CI and device pending; opening-label italics restored to beta10 conditional, existing italic brand requests retained. Removes Corsiva runtime asset/notice."
+    },
+    {
+      "id": "056-ru-serif-optical-scale",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/056-ru-serif-optical-scale.patch",
+      "sha256": "83be0c9f7affc3bb0406d8bb7a403e3bf3104e7cfd8cc48247223ca6bd464c29",
+      "scope": "Apply 85 percent optical size to RU decorative serif role in QFont/QSS, preserve nominal Instrument wordmark and avoid double scaling mixed exit text",
+      "validation": "CI/device pending; RU reopening hint changed to neutral preparation wording in canonical overlay."
+    },
+    {
+      "id": "057-ru-shantell-italic",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/057-ru-shantell-italic.patch",
+      "sha256": "da40a3ad8ba081501ecd31635202f792a26265ac9c6699d92e89743766df4981",
+      "scope": "RU handwriting preset uses real Shantell Sans Italic instead of Caveat; remove Caveat faces/notice, retain English Kalam and classic UI",
+      "validation": "CI45629224994 all jobs PASS including RU/EN QFont and polished child QLabel; actual Italic/Bold Italic uploaded faces bundled. Visual device fitting pending. See report047."
+    },
+    {
+      "id": "058-ru-reading-font-roles",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/058-ru-reading-font-roles.patch",
+      "sha256": "0e238b5c02f31598197c740ff019a0d009a4276fc16f220a7b76efe796a20758",
+      "scope": "RU reading roles Literata/Lora/Noto Serif, preserve EN and custom families; hide six families from RU pickers without removing engine files",
+      "validation": "CI45636420364 all jobs PASS: native actual RU/EN engine roles/presets/exclusions/Noto picker classification, annotation export and existing selected gates; actual-font replay; Qt5 package. Visual device acceptance pending. See report048."
+    },
+    {
+      "id": "059-ru-bundled-fonts-and-picker",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/059-ru-bundled-fonts-and-picker.patch",
+      "sha256": "19a9dde971ff8b2a16a227abb328cd6646b0ed650fdd001f9ab144a9c20b6c03",
+      "scope": "RU NV Literata/KF Sable/NV Publica roles; remove redundant Literata/Lora; Cyrillic cmap picker filter; slightly larger close caption, wordmark unchanged",
+      "validation": "CI pending"
+    },
+    {
+      "id": "059a-system-font-cache-identity",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/059a-system-font-cache-identity.patch",
+      "sha256": "7f5ae2a01509aee3e3042d4d315f1df32bc2ea5d21af3be35343e28b8a22ce6f",
+      "scope": "Content identity for registered system font copies; stable restart layout hashes without weakening guards",
+      "validation": "CI pending"
+    },
+    {
+      "id": "059b-reading-menu-status",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/059b-reading-menu-status.patch",
+      "sha256": "99055e8ff1cb4aa424bb347679744904456b20c2bb20827e0361e83d69a9d33e",
+      "scope": "Persistent global reading-menu session/page status toggle using shared BookPage formatter; unchanged clock and battery",
+      "validation": "CI pending"
+    },
+    {
+      "id": "059c-sleep-letter-wordmark",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/059c-sleep-letter-wordmark.patch",
+      "sha256": "943277d0b1cb129077bf9dd07261a6b04b9e30780c49703546839038cfdc8721",
+      "scope": "Instrument Serif wordmark for sleep/power-off Letter signature; aligned status repaint bounds and bilingual raster regression",
+      "validation": "CI pending"
+    },
+    {
+      "id": "059d-settings-and-letter-polish",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/059d-settings-and-letter-polish.patch",
+      "sha256": "d4c4b7ec41f841d9fa405591bf2ed63e42839ea3888b97540fb69bd0e45846f4",
+      "scope": "Approved compact RU settings tabs, reduced rail typography/insets, shared language ChoiceSheet and nonbreaking reading duration",
+      "validation": "CI pending"
+    },
+    {
+      "id": "060-build-integration",
+      "status": "ready",
+      "scope": "Final full-stack packaging, provenance and CI; source/test registration stays with the introducing patch",
+      "path": "platforms/patch-series/patches/060-build-integration.patch",
+      "sha256": "1d2edc4b1ad3d8e7b8d19817e0ece4fbf1e3a7aaea4d5240b0300f1e9008d9e0",
+      "validation": "CI 45377119064 on 5b0f01b9: all 010–060 applied, native regressions, Qt5 build/check-package/qemu PASS; collector verified installed provenance, ELF32 ARM and tar owner/mode/path. Full-series artifact 14911258476. Hardware acceptance pending."
+    }
+  ]
+}

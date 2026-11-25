@@ -1,0 +1,509 @@
+diff --git a/src/reading/opening_job.cpp b/src/reading/opening_job.cpp
+index b38a6b74..3a1fd824 100644
+--- a/src/reading/opening_job.cpp
++++ b/src/reading/opening_job.cpp
+@@ -116,7 +116,8 @@ void bindResources(OpeningJob &job, OpeningState &state)
+     if (!appearance::same(job.saved, job.retainedSettings))
+         state.retainedHit = false;
+     for (const auto &name : state.publication.names()) {
+-        if (name.endsWith(".xhtml", Qt::CaseInsensitive)
++        if (name == Publication::singleFb2ResourceName
++            || name.endsWith(".xhtml", Qt::CaseInsensitive)
+             || name.endsWith(".html", Qt::CaseInsensitive)) {
+             state.probe = name;
+             break;
+@@ -202,8 +203,10 @@ void inspectSource(OpeningJob &job, OpeningState &state)
+ void mergeSavedState(OpeningJob &job, OpeningState &state)
+ {
+     auto &saved = job.saved;
++    const bool comics = saved.value(appearance::comicsModeKey).toBool(false);
+     const auto bionic = saved.value("bold_reading");
+     const auto dark = saved.value("dark_mode");
++    appearance::migrateLegacyNotes(saved);
+     const auto inpageFootnotes = saved.value("inpage_footnotes");
+     const auto hideNonlinear = saved.value("hide_nonlinear_fragments");
+     const auto normalization = appearance::normalizationSettings(saved);
+@@ -218,6 +221,7 @@ void mergeSavedState(OpeningJob &job, OpeningState &state)
+     const auto widowsOrphans = saved.value("widows_orphans");
+     if (!state.savedMatches)
+         saved = {};
++    saved[appearance::comicsModeKey] = comics;
+     saved["bold_reading"] = bionic;
+     saved["dark_mode"] = dark;
+     saved["hide_nonlinear_fragments"] = hideNonlinear;
+diff --git a/src/reading/reader_session.cpp b/src/reading/reader_session.cpp
+index 782ea0bb..979a7e51 100644
+--- a/src/reading/reader_session.cpp
++++ b/src/reading/reader_session.cpp
+@@ -119,6 +119,24 @@ QVector<double> wholeBookTicks(Engine &engine, const QString &first, const QStri
+ }
+ } // namespace
+ 
++// Partial provenance must accompany every frame, including initial/neighbour frames.
++void captureBookCoordinates(QJsonObject &state, Engine &engine)
++{
++    if (const double fraction = engine.bookFraction(); fraction >= 0 || engine.partOfBook()) {
++        state["book_fraction"] = qMax(0.0, fraction);
++        state["whole_book_failed"] = engine.fullDocumentFailed();
++        state["whole_book_ready"] = engine.fullDocumentReady();
++        state["slice_start"] = engine.pageStart(0);
++        const auto rough = engine.roughPages();
++        state["rough_page"] = rough.page;
++        state["rough_pages"] = rough.pages;
++        state["rough_item_page"] = rough.itemPage;
++        state["rough_item_pages"] = rough.itemPages;
++        state["rough_pages_estimated"] = rough.pagesEstimated;
++        state["rough_item_pages_estimated"] = rough.itemPagesEstimated;
++    }
++}
++
+ void captureChapters(ReaderFrame &result, Engine &engine, const std::function<bool()> &current)
+ {
+     const auto chapter = engine.chapterProgress();
+@@ -217,19 +235,7 @@ void captureChapters(ReaderFrame &result, Engine &engine, const std::function<bo
+     result.state["main_text_first"] = firstPage;
+     result.state["main_text_last"] = lastPage;
+     result.chapterTicks = wholeBookTicks(engine, first, after, deferred, current);
+-    if (const double fraction = engine.bookFraction(); fraction >= 0) {
+-        result.state["book_fraction"] = fraction;
+-        result.state["whole_book_failed"] = engine.fullDocumentFailed();
+-        result.state["whole_book_ready"] = engine.fullDocumentReady();
+-        result.state["slice_start"] = engine.pageStart(0);
+-        const auto rough = engine.roughPages();
+-        result.state["rough_page"] = rough.page;
+-        result.state["rough_pages"] = rough.pages;
+-        result.state["rough_item_page"] = rough.itemPage;
+-        result.state["rough_item_pages"] = rough.itemPages;
+-        result.state["rough_pages_estimated"] = rough.pagesEstimated;
+-        result.state["rough_item_pages_estimated"] = rough.itemPagesEstimated;
+-    }
++    captureBookCoordinates(result.state, engine);
+ }
+ 
+ namespace {
+@@ -324,6 +330,7 @@ void prepareNeighbours(Engine &engine, int direction, const std::function<bool()
+ 
+ void capturePageCoordinates(QJsonObject &state, Engine &engine)
+ {
++    captureBookCoordinates(state, engine);
+     state["page"] = engine.page();
+     state["pages"] = engine.pages();
+     state["next_page"] = engine.turnTarget(engine.page(), 1);
+@@ -723,7 +730,7 @@ ReaderFrame capture(Engine &engine, const PositionCodec &positions, bool neighbo
+         step.start();
+     };
+     ReaderFrame result;
+-    result.image = engine.image(engine.page());
++    result.image = engine.frameImage();
+     result.formattingWarning = pageFormattingWarning(result.image);
+     took("image_ms");
+     result.markup = captureFrameMarkup(engine, markup, markupGeneration, result.image.cacheKey());
+diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.cpp
+new file mode 100644
+index 00000000..5e2632e9
+--- /dev/null
++++ b/tests/model/fb2_cache_session.cpp
+@@ -0,0 +1,363 @@
++#include "check.h"
++#include "reader_inputs.h"
++#include "reading/reader_session.h"
++#include "publication/local_resources.h"
++#include "app/messages/opening_message.h"
++#include <QGuiApplication>
++#include <QEventLoop>
++#include <QTimer>
++#include <QTemporaryDir>
++#include <QDir>
++#include <QFile>
++#include <cstdio>
++#include <QProcess>
++#include <QJsonDocument>
++#include <QJsonArray>
++#include <lvstring.h>
++#include <cstring>
++#include "reading/rendering_mode.h"
++#include "engine/blaze/adapter/engine_document.h"
++
++using namespace kobalt;
++namespace {
++// CRLOG is used only while the sequential engine worker runs this probe.
++// Retain existing hash diagnostics, without changing the engine or its hash.
++class HashTrace : public CRLog {
++public:
++    HashTrace() : previous_(CRLOG) { curr_level = LL_INFO; CRLOG = this; }
++    ~HashTrace() override { CRLOG = previous_; }
++    QStringList lines;
++private:
++    void log(const char *, const char *format, va_list args) override {
++        if (!std::strstr(format, "Calculating style hash")
++                && !std::strstr(format, "Updating render properties")
++                && !std::strstr(format, "checkRenderContext:")) return;
++        char buffer[2048];
++        std::vsnprintf(buffer, sizeof(buffer), format, args);
++        if (lines.size() < 80) lines.append(QString::fromUtf8(buffer));
++    }
++    CRLog *previous_;
++};
++void writeJson(const QString &path, const QJsonObject &value) {
++    QFile file(path);
++    const auto bytes = QJsonDocument(value).toJson();
++    require(file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size(),
++            "write cache process evidence");
++}
++QJsonObject readJson(const QString &path) {
++    QFile file(path);
++    require(file.open(QIODevice::ReadOnly), "read cache process evidence");
++    QJsonParseError error;
++    const auto doc = QJsonDocument::fromJson(file.readAll(), &error);
++    require(error.error == QJsonParseError::NoError && doc.isObject(), "invalid process evidence");
++    return doc.object();
++}
++void waitUntil(const std::function<bool()> &ready)
++{
++    if (ready()) return;
++    QEventLoop loop;
++    QTimer poll, deadline;
++    poll.setInterval(5);
++    QObject::connect(&poll, &QTimer::timeout, [&] { if (ready()) loop.quit(); });
++    deadline.setSingleShot(true);
++    QObject::connect(&deadline, &QTimer::timeout, [] { require(false, "FB2 cache session timeout"); });
++    poll.start(); deadline.start(30000); loop.exec();
++}
++void drain()
++{
++    bool done = false;
++    ReaderSession::drain([&] { done = true; });
++    waitUntil([&] { return done; });
++}
++QJsonObject cycle(const QString &path, const QString &cache, QJsonObject saved, bool expectHit,
++                  QJsonObject *observed = nullptr, QSize size = {600, 800})
++{
++    QJsonObject state;
++    {
++        auto fonts = test::readerFonts();
++        const auto replayFonts = QString::fromLocal8Bit(qgetenv("KOBALT_FB2_REPLAY_FONTS"));
++        if (!replayFonts.isEmpty())
++            fonts = engineFontInputs(test::readerAssets(), {}, replayFonts);
++        ReaderSession reader(fonts, test::readerPlaceholder());
++        auto lease = std::make_shared<SourceLease>();
++        OpenRequest request;
++        request.identity = request.path = path;
++        request.size = size;
++        request.saved = std::move(saved);
++        const auto settingsPath = QString::fromLocal8Bit(qgetenv("KOBALT_FB2_REPLAY_SETTINGS"));
++        if (!settingsPath.isEmpty())
++            request.temporaryAppearance = readJson(settingsPath);
++        request.lease = lease;
++        request.resources = localResourceFactory(path, lease);
++        request.documentCachePath = cache;
++        request.positions = {
++            [](const Engine &, const QString &anchor, QString *) { return anchor; },
++            [](const Engine &engine, QString *) { return engine.position(); },
++            [](const QString &anchor) { return anchor; }
++        };
++        bool opened = false;
++        reader.open(std::move(request), [&](OpeningResult result) {
++            require(result.ready(), qPrintable(openingMessage(result)));
++            opened = true;
++        });
++        waitUntil([&] { return opened && !reader.busy(); });
++        require(!reader.image().isNull() && reader.pages() > 0, "session produced no readable frame");
++        require(reader.resourceStats().value("model_cache_hit").toBool() == expectHit,
++                expectHit ? "resource-backed session did not reuse parsed FB2 cache"
++                          : "cold/changed FB2 unexpectedly reused parsed cache");
++        const auto stats = reader.resourceStats();
++        const auto check = stats.value("model_layout_check").toObject();
++        const auto inputs = check.value("inputs").toObject();
++        const auto operand = [&](const char *key) { return quint32(inputs.value(key).toDouble()); };
++        quint32 global = operand("format");
++        for (const auto *key : {"kerning", "fractional", "mono_scale", "fallback_adjusted", "font_list",
++                                "base_weight", "optical_fixed", "dpi"})
++            global = global * 31 + operand(key);
++        if (operand("rendered"))
++            for (const auto *key : {"language", "hyphen_left", "hyphen_right", "trust_soft_hyphens", "user_hyphenation"})
++                global = global * 31 + operand(key);
++        require(global == operand("global"), "observed global operands do not reproduce engine hash");
++        quint32 style = operand("node");
++        for (const auto *key : {"image_scale", "space_scale", "min_space", "unused_space", "cjk_scale", "render_flags", "interline"})
++            style = style * 31 + operand(key);
++        style = (style * 31 + global) * 31 + operand("doc_flags");
++        require(style == operand("style") && style == quint32(check.value("style").toDouble()),
++                "observed style operands do not reproduce compatibility check");
++        if (expectHit) {
++            require(check.value("saved_inputs_valid").toBool(),
++                    "saved render operands did not survive disk cache/process reload");
++            const auto previous = check.value("saved_inputs").toObject();
++            require(previous.value("style") == check.value("saved_style"),
++                    "saved operands not anchored to saved render header");
++        }
++
++        require(check.value("checks").toInt() > 0, "missing render-context observation");
++        require((check.value("reasons").toInt() == 0)
++                        == (check.value("rejected").toInt() == 0),
++                "render-context reason mask disagrees with rejection count");
++        std::printf("FB2 layout cache=%d reasons=%d rejected=%d width=%d/%d height=%d/%d policy=%d\n",
++                    int(expectHit), check.value("reasons").toInt(), check.value("rejected").toInt(),
++                    check.value("width").toInt(), check.value("saved_width").toInt(),
++                    check.value("height").toInt(), check.value("saved_height").toInt(),
++                    int(check.value("policy_match").toBool()));
++        if (!settingsPath.isEmpty()) {
++            const auto requested = readJson(settingsPath);
++            const auto actual = reader.state();
++            require(actual.value("font_face") == requested.value("font_face")
++                            && actual.value("font_pixels") == requested.value("font_pixels")
++                            && actual.value("margin_pixels") == requested.value("margin_pixels"),
++                    "replay typography was dropped instead of applied");
++        }
++        if (observed) *observed = stats;
++        state = reader.state();
++        // Exercise the real host close path. Discard the retained facade so the
++        // next cycle cannot pass through in-memory retained-book reuse.
++        auto retained = reader.retained();
++        drain(); // includes the queued cache write, while its engine is alive
++        retained.reset();
++    }
++    drain();
++    return state;
++}
++void hybridSessionGates()
++{
++    qputenv("KOBALT_FB2_HYBRID", "1");
++    qputenv("KOBALT_CHAPTER_PAGES", "2");
++    renderingMode::setOverride(2);
++    renderingMode::setBuildQuietMilliseconds(0);
++    QTemporaryDir root;
++    require(root.isValid(), "hybrid session directory");
++    QByteArray bytes("<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
++                     "<description><title-info><book-title>Hybrid gates</book-title>"
++                     "<lang>en</lang></title-info></description><body><section>");
++    for (int n = 0; n < 1500; ++n)
++        bytes += "<p>Hybrid gate paragraph " + QByteArray::number(n)
++                + " with sufficient text to exercise prefix count publication and access revocation.</p>";
++    bytes += "</section></body></FictionBook>";
++    const auto path = root.filePath("hybrid.fb2");
++    { QFile file(path); require(file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size(),
++                                "write hybrid session source"); }
++    int exactPages = 0;
++    {
++        EngineDocument full(test::readerFonts());
++        QString error;
++        require(full.open(bytes, {600, 800}, {{"koblaze_first_spine_item", -1}}, &error), qPrintable(error));
++        exactPages = full.pages();
++    }
++    // One real resource-backed session publishes a pending count, then the
++    // final count, without falsely declaring its short prefix the whole book.
++    {
++        ReaderSession reader(test::readerFonts(), test::readerPlaceholder());
++        auto lease = std::make_shared<SourceLease>();
++        bool opened = false;
++        reader.open({path, path, QSize(600, 800), {}, {}, lease, localResourceFactory(path, lease)},
++                    [&](OpeningResult result) {
++            require(result.ready(), qPrintable(openingMessage(result)));
++            require(reader.continuesAfter() && reader.paginationPending(),
++                    "cold FB2 prefix did not publish pending pagination");
++            require(reader.bookPages() == 0 || reader.bookPagesEstimated(),
++                    "cold FB2 prefix advertised a false exact whole-book count");
++            opened = true;
++        });
++        waitUntil([&] { return opened && !reader.busy(); });
++        const auto image = reader.image();
++        const auto anchor = reader.state().value("position");
++        reader.requestMenuPagination();
++        waitUntil([&] { return !reader.paginationPending(); });
++        require(reader.state().value("whole_book_ready").toBool()
++                        && !reader.bookPagesEstimated() && reader.bookPages() == exactPages,
++                "FB2 session did not publish final Accurate whole-book count");
++        require(reader.image() == image && reader.state().value("position") == anchor,
++                "count publication moved or repainted the reader passage");
++        require(reader.turn(1), "FB2 session cannot adopt full book on turn");
++        waitUntil([&] { return !reader.busy(); });
++        require(!reader.continuesAfter() && reader.bookPages() == exactPages
++                        && !reader.bookPagesEstimated(), "full adoption regressed final page count");
++    }
++    drain();
++    // Revoke while an opened resource-backed prefix still owns queued idle
++    // work. The drain barrier must not publish a final count or a stale frame.
++    for (bool cancel : {false, true}) {
++        auto reader = std::make_unique<ReaderSession>(test::readerFonts(), test::readerPlaceholder());
++        auto lease = std::make_shared<SourceLease>();
++        auto local = localResourceFactory(path, lease);
++        std::weak_ptr<ResourceCache> lifetime;
++        ResourceFactory tracked = [local, &lifetime](const QMap<QString, qint64> &sizes,
++                                                    const QString &version,
++                                                    std::shared_ptr<std::atomic_bool> stopped) {
++            auto cache = local(sizes, version, stopped);
++            lifetime = cache;
++            return cache;
++        };
++        bool opened = false;
++        QJsonObject before;
++        QImage beforeImage;
++        int updates = 0;
++        reader->open({path, path, QSize(600, 800), {}, {}, lease, tracked}, [&](OpeningResult result) {
++            require(result.ready() && reader->paginationPending(), "revoke test did not open a pending prefix");
++            reader->requestMenuPagination();
++            if (cancel) reader->cancelSource(); else reader->revokeSource();
++            before = reader->state();
++            beforeImage = reader->image();
++            reader->updated = [&] { ++updates; };
++            opened = true;
++        });
++        waitUntil([&] { return opened; });
++        drain();
++        require(lease->end() == (cancel ? SourceLease::End::Cancelled : SourceLease::End::Revoked),
++                "FB2 cleanup lost the source termination cause");
++        require(!reader->turn(1) && reader->state() == before && reader->image() == beforeImage
++                        && updates == 0, "revoked FB2 published stale work or accepted a turn");
++        reader.reset();
++        drain();
++        require(lifetime.expired(), "closed FB2 session retained resource cache after drain");
++    }
++    renderingMode::setOverride(-1);
++    renderingMode::setBuildQuietMilliseconds(-1);
++    qunsetenv("KOBALT_FB2_HYBRID");
++    qunsetenv("KOBALT_CHAPTER_PAGES");
++}
++
++}
++int main(int argc, char **argv)
++{
++    QGuiApplication app(argc, argv);
++    QTimer::singleShot(0, &app, [&] {
++        const auto arguments = app.arguments();
++        if (arguments.size() == 6 && arguments[1] == "--cache-probe") {
++            const auto root = arguments[2], label = arguments[3];
++            const bool cold = label == "cold";
++            const auto replaySettings = QString::fromLocal8Bit(qgetenv("KOBALT_FB2_REPLAY_SETTINGS"));
++            auto saved = cold ? (replaySettings.isEmpty() ? QJsonObject() : readJson(replaySettings))
++                              : readJson(root + "/state.json");
++            HashTrace trace;
++            QJsonObject stats;
++            const auto state = cycle(root + "/book.fb2", root + "/parsed", saved,
++                                     !cold, &stats, {arguments[4].toInt(),
++                                         replaySettings.isEmpty() ? 800 : 1613});
++            QJsonObject result;
++            result["label"] = label;
++            result["font_face"] = state.value("font_face");
++            result["font_pixels"] = state.value("font_pixels");
++            result["stats"] = stats;
++            QJsonArray lines;
++            for (const auto &line : trace.lines) lines.append(line);
++            result["hash_trace"] = lines;
++            writeJson(root + "/state.json", state);
++            writeJson(arguments[5], result);
++            app.quit();
++            return;
++        }
++
++        QTemporaryDir root;
++        require(root.isValid(), "FB2 cache directory");
++        const auto path = root.filePath("book.fb2"), cache = root.filePath("parsed");
++        QByteArray book("<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
++                        "<description><title-info><book-title>Cache session</book-title>"
++                        "<lang>en</lang></title-info></description><body><section>");
++        // Match the device path: real text, not just a large comment, must
++        // cross the 250000-character automatic fast-shaping threshold.
++        for (int i = 0; i < 6000; ++i)
++            book += "<p>Session cache paragraph " + QByteArray::number(i) + " with readable words.</p>";
++        // Exceed the 1 MiB automatic render-swap threshold, not merely the
++        // 64 KiB lookup threshold. A disabled cache during Render must not
++        // permanently poison the later close-time save.
++        book += "</section></body><!--" + QByteArray(2 * 1024 * 1024, 'x') + "--></FictionBook>";
++        const auto replaySource = QString::fromLocal8Bit(qgetenv("KOBALT_FB2_REPLAY_SOURCE"));
++        const bool replay = !replaySource.isEmpty();
++        if (replay) {
++            QFile source(replaySource);
++            require(source.open(QIODevice::ReadOnly), "open archived replay source");
++            book = source.readAll();
++            require(!book.isEmpty(), "empty replay source");
++        }
++        const auto write = [&] {
++            QFile file(path);
++            require(file.open(QIODevice::WriteOnly) && file.write(book) == book.size(), "write session fixture");
++        };
++        write();
++        // Separate executable invocations share immutable font/source paths and
++        // real on-disk cache, but cannot share globals or retained documents.
++        QString evidence = QString::fromLocal8Bit(qgetenv("KOBALT_CACHE_PROBE_OUTPUT"));
++        if (evidence.isEmpty()) evidence = root.filePath("evidence");
++        require(QDir().mkpath(evidence), "create process evidence directory");
++        for (const auto &label : {QString("cold"), QString("warm1"), QString("warm2"), QString("width")}) {
++            const auto output = evidence + '/' + label + ".json";
++            QProcess process;
++            process.start(app.applicationFilePath(), {"--cache-probe", root.path(), label,
++                                                       label == "width" ? (replay ? "1284" : "620") : (replay ? "1264" : "600"), output});
++            require(process.waitForStarted(10000) && process.waitForFinished(90000),
++                    "cache probe process timeout");
++            if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0)
++                std::fprintf(stderr, "%s\n%s\n", process.readAllStandardOutput().constData(),
++                             process.readAllStandardError().constData());
++            require(process.exitStatus() == QProcess::NormalExit && process.exitCode() == 0,
++                    "cache probe child failed");
++            const auto result = readJson(output);
++            const auto check = result.value("stats").toObject().value("model_layout_check").toObject();
++            std::printf("PROCESS %s: %s\n", qPrintable(label),
++                        QJsonDocument(result).toJson(QJsonDocument::Compact).constData());
++            if (label == "width")
++                require(check.value("reasons").toInt() & 16,
++                        "changed width must not reuse incompatible page geometry");
++        }
++        if (replay) {
++            std::puts("PASS: actual-source separate-process cache observation and width isolation");
++            app.quit();
++            return;
++        }
++        hybridSessionGates();
++        // Isolate the existing same-process cold/warm/source-mutation checks.
++        require(QDir(cache).removeRecursively(), "clear only the temporary test cache");
++        auto saved = cycle(path, cache, {}, false);
++        require(!QDir(cache).entryList({"*.cr3"}, QDir::Files).isEmpty(),
++                "host close did not save parsed FB2 cache");
++        saved = cycle(path, cache, saved, true);
++        book.replace("Cache session", "Changed cache session");
++        write();
++        cycle(path, cache, saved, false);
++        std::puts("PASS: resource-backed FB2 session close/save/reopen and changed-source cache isolation");
++        app.quit();
++    });
++    return app.exec();
++}
+diff --git a/tests/model/resource_cache.cpp b/tests/model/resource_cache.cpp
+index a3d320c1..ddf64294 100644
+--- a/tests/model/resource_cache.cpp
++++ b/tests/model/resource_cache.cpp
+@@ -176,6 +176,35 @@ int main(int argc, char **argv)
+                         && images.readBounded("bad", 2) == "ok",
+                 "Renewed source did not retry its failed image");
+     }
++    {
++        QStringList loaded;
++        ResourceCache images({ "neighbour", "left", "right" },
++            [&loaded](const QString &name, const ResourceCache::Sink &sink, QString *) {
++                loaded.append(name);
++                return sink("ok", 2);
++            }, cancelled);
++        images.imageReady("neighbour");
++        images.beginImageRequests();
++        images.imageReady("left");
++        images.imageReady("right");
++        images.imageReady("left");
++        require(images.endImageRequests() == QStringList({ "left", "right" }),
++                "Visible requests were duplicated or included previous neighbours");
++        images.imageReady("neighbour");
++        require(images.endImageRequests() == QStringList({ "left", "right" }),
++                "A completed image trace kept recording new requests");
++        require(images.prioritizePendingImage("right") && images.loadNextImage()
++                    && loaded == QStringList({ "right" }), "Visible image priority did not preserve queue identity");
++        require(!images.prioritizePendingImage("right") && !images.prioritizePendingImage("missing"),
++                "Priority requeued ready or unknown image");
++        require(images.loadNextImage() && loaded.last() == "neighbour",
++                "Visible priority discarded the neighbour queue");
++        images.releaseBytes();
++        images.imageReady("left");
++        require(images.endImageRequests().isEmpty(), "Release did not stop/clear image tracing");
++        images.beginImageRequests();
++        require(images.endImageRequests().isEmpty(), "Release kept image request tracing");
++    }
+     {
+         auto revoked = std::make_shared<kobalt::SourceLease>();
+         int goodLoads = 0;

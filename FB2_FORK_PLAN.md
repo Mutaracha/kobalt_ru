@@ -2,7 +2,7 @@
 
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
-010–060 (включая 033/034), все патчи применяются вместе.
+010/020/030/034/040/050/060 после консолидации; все патчи применяются вместе.
 Последний CI-проверенный бинарник: **5b45f2c7**, [CI45686709893](https://github.com/Mutaracha/kobalt_ru/actions/runs/45686709893),
 [пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45686709893/artifacts/15056267436).
 CI selected native/Qt5/package PASS; не полная аппаратная приёмка.
@@ -10,23 +10,18 @@ Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-- [049: актуальные RU fonts/pickers](doc/reports/patch-series/049-bundled-roles-and-cyrillic-pickers.md):
-  NV Literata/KF Sable/NV Publica вместо добавленных Literata/Lora и promoted Noto Serif.
-  Noto fallback сохранён; Noto Display/Shantell retained; close caption90%, baseline/wordmark unchanged.
-- [050: новые логи](doc/reports/patch-series/050-f4a708c-diagnostics.md) подтвердили повторные
-  font_list mismatches после рестартов. [051: проверка причины](doc/reports/patch-series/051-system-font-path-investigation.md),
-  [052: исправление идентичности](doc/reports/patch-series/052-system-font-identity-device-package.md).
-  Пользователь не воспроизвёл задержку в нескольких открытиях, включая после reboot.
-  Дополнительные Accurate restarts также без повторения перерасчёта по сообщению пользователя.
-  Длительную проверку продолжаем; не объявлять окончательное закрытие по отсутствию симптома.
-- [053: menu-status](doc/reports/patch-series/053-reading-menu-status.md):059b реализован,
-  native/lifecycle/Qt5 gates PASS. Физическая визуальная приёмка и live pending/turn check отдельно.
-  [054: feedback и Letter signature](doc/reports/patch-series/054-letter-signature-and-device-feedback.md):
-  Close caption визуально принят; подпись Letter Kobalt переведена на Instrument Serif.
-  059c CI PASS; пользователь подтвердил работу toggle с первой минуты.
-  [055: settings polish](doc/reports/patch-series/055-settings-polish.md):059d СТАНДАРТНЫЕ/О ПРОГРАММЕ,
-  rail94%/insets80%, shared language ChoiceSheet, новая формулировка времени Letter. CI PASS, visual pending.
-- Bounded Hybrid gates046 сохранены. Дополнительного acceleration/cache clearing нет.
+Пользователь принял последние интерфейсные доработки **5b45f2c7**: компактные вкладки,
+выбор языка и формулировку времени в Letter. Ранее приняты close caption/wordmark и
+работа menu-status с первой минуты. Непроверенные отдельно экраны не принимаются
+автоматически. Длительное наблюдение кэша продолжается; несколько Accurate рестартов
+и reboot пока без повторения задержки.
+
+Согласованный технический этап — **консолидация системы патчей без переработки кода**.
+[056: соответствие и доказательство](doc/reports/patch-series/056-patch-consolidation.md).
+29 исторических слоёв сведены к7 функциональным; локально1551 файлов runtime полностью
+совпадают с полной старой серией5b45f2c7. Проверка равенства включена в CI; итоговые
+native/Qt5/package gates новой серии pending. Последний проверенный бинарник выше
+остаётся эталоном до успешного нового CI.
 
 ## Очередь — порядок закрытия
 

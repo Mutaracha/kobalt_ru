@@ -1,0 +1,2247 @@
+diff --git a/assets/en.strings b/assets/en.strings
+index d63855ac..6b620988 100644
+--- a/assets/en.strings
++++ b/assets/en.strings
+@@ -190,7 +190,7 @@
+ "library.about" = "About Kobalt";
+ /* Arguments: %1 */
+ "library.count" = "%1 books";
+-"library.count_one" = "1 book";
++"library.count_one" = "%1 book";
+ "library.search" = "Search library";
+ "library.search_placeholder" = "Title, author or series";
+ "library.close_search" = "Close search";
+@@ -1186,7 +1186,7 @@
+ "acknowledgments.projects" = "%1 projects";
+ /* Arguments: %1 */
+ "chapter_contents.summary" = "Contents · %1 chapters";
+-"chapter_contents.summary_one" = "Contents · 1 chapter";
++"chapter_contents.summary_one" = "Contents · %1 chapter";
+ "chapter_contents.page" = "Page";
+ "chapter_contents.location" = "Location";
+ "chapter_contents.chapters" = "Chapters";
+@@ -1784,7 +1784,7 @@
+ "settings.chapter_spread_description" = "When a chapter starts on a new page, show it in the first column.";
+ 
+ "annotations.mode" = "Annotation mode";
+-"annotations.summary_one" = "1 annotation";
++"annotations.summary_one" = "%1 annotation";
+ "error.saved_data_unavailable" = "Saved data could not be loaded. The original files have been preserved.";
+ "marks.sort_button" = "Sort";
+ "marks.sort_newest" = "Newest first";
+@@ -2119,3 +2119,61 @@
+ "sleep.follow_orientation" = "Follow reading orientation";
+ "sleep.rotation_enabled" = "Your sleep screen will now also use landscape.";
+ "sleep.rotation_disabled" = "Your sleep screen will only use portrait.";
++
++"reader.comics_reading_mode" = "Comics reading mode";
++
++"reader.comics_reading_mode_description" = "Hides margins, headers and footers, ignoring the current layout settings.";
++
++"features.dark_mode" = "Dark theme toggle";
++
++"features.dark_mode_description" = "Hides the dark theme toggle in the reading menu. Your current theme is kept.";
++
++"features.comics" = "Comics mode toggle";
++
++"features.comics_description" = "Hides the comics mode toggle in the reading menu. The current reading mode is preserved.";
++
++"library.count_few" = "%1 books";
++
++"library.count_many" = "%1 books";
++
++"chapter_contents.summary_few" = "Contents · %1 chapters";
++
++"chapter_contents.summary_many" = "Contents · %1 chapters";
++
++"annotations.summary_few" = "%1 annotations";
++
++"annotations.summary_many" = "%1 annotations";
++
++"debug.language_title" = "Interface language";
++
++"debug.language_restart" = "Select a language for the next reader launch. The current interface will not change.";
++
++"debug.language_automatic" = "Automatic (device language)";
++
++"debug.language_saved" = "Saved. Exit Kobalt and open a book again to apply the language.";
++
++"debug.language_failed" = "Could not save the language. Check the diagnostics folder and try again.";
++
++"activity.book_unit_few" = "books";
++
++"activity.book_unit_many" = "books";
++
++"activity.hour_unit_few" = "hours";
++
++"activity.hour_unit_many" = "hours";
++
++"reader.link_dictionary" = "Dictionary";
++
++"about.fork" = "%1";
++
++"about.fork_build" = "%1 · %2";
++
++"annotations.color_section" = "Color";
++
++"annotations.style_section" = "Style";
++
++"annotations.actions_section" = "Actions";
++
++"activity.book_unit_one" = "book";
++
++"activity.hour_unit_one" = "hour";
+diff --git a/assets/export/annotations.css b/assets/export/annotations.css
+index a097f82a..7b4d7094 100644
+--- a/assets/export/annotations.css
++++ b/assets/export/annotations.css
+@@ -34,7 +34,7 @@ h2 { margin: 0; padding: 7px 10px; border-radius: 3px; background: #f1f4f8; font
+ article { display: grid; grid-template-columns: 60px minmax(0, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+ .number { display: inline-flex; align-self: start; width: fit-content; padding: 3px 8px; border: 1px solid #dce3ed; border-radius: 6px; background: #f0f3f8; color: #4f6178; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; text-decoration: none; white-space: nowrap; }
+ .number:hover { border-color: var(--accent); color: var(--accent); }
+-blockquote { margin: 0; font-family: "Kobalt Libron", Georgia, "Times New Roman", serif; font-size: 17px; line-height: 1.5; overflow-wrap: anywhere; }
++blockquote { margin: 0; font-family: "Kobalt Export Body", Georgia, "Times New Roman", serif; font-size: 17px; line-height: 1.5; overflow-wrap: anywhere; }
+ blockquote p { margin: 0; white-space: pre-line; }
+ blockquote p + p { margin-top: 10px; }
+ .passage-mark { -webkit-box-decoration-break: clone; box-decoration-break: clone; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+diff --git a/src/app/about/about_page.cpp b/src/app/about/about_page.cpp
+index 94a02c26..5da9fc7a 100644
+--- a/src/app/about/about_page.cpp
++++ b/src/app/about/about_page.cpp
+@@ -1,4 +1,5 @@
+ #include "about_page.h"
++#include "fork_about.h"
+ #include "ui/controls/buttons.h"
+ #include "ui/controls/panels.h"
+ #include "ui/controls/rows.h"
+@@ -42,7 +43,7 @@ AboutPage::AboutPage(QWidget *parent) : QWidget(parent)
+     auto *wordmark = new ui::InterfaceLabel(strings::get("app.wordmark"), this);
+     wordmark->setObjectName("rrAboutWordmark");
+     wordmark->setAlignment(Qt::AlignCenter);
+-    readerStyle(wordmark, styles::brand(metrics::about::wordmarkText));
++    readerStyle(wordmark, styles::wordmark(metrics::about::wordmarkText));
+     aboutRows->addWidget(wordmark);
+     // A short rule above and below sets the build apart from the name and the description.
+     const auto buildRule = [&](const char *name) {
+@@ -70,6 +71,7 @@ AboutPage::AboutPage(QWidget *parent) : QWidget(parent)
+     commit->setAlignment(Qt::AlignCenter);
+     build->addWidget(commit);
+     commit->setVisible(kobaltCommit[0] != '\0');
++    reader::appendForkBuildRow(this, build, window());
+     buildRule("rrAboutBuildBottom");
+     aboutRows->addSpacing(metrics::about::sectionGap);
+     description = new ui::InterfaceLabel(strings::get("about.description"), this);
+diff --git a/src/app/about/fork_about.cpp b/src/app/about/fork_about.cpp
+new file mode 100644
+index 00000000..31397e2f
+--- /dev/null
++++ b/src/app/about/fork_about.cpp
+@@ -0,0 +1,26 @@
++#include "fork_about.h"
++#include "build_info.h"
++#include "support/strings.h"
++#include "ui/controls/text.h"
++#include "ui/style/metrics.h"
++#include "ui/style/styles.h"
++#include "ui/style/theme.h"
++#include <QBoxLayout>
++
++namespace kobalt::reader {
++void appendForkBuildRow(QWidget *page, QBoxLayout *rows, QWidget *host)
++{
++    if (kobaltForkName[0] == '\0')
++        return;
++    const auto name = QString::fromLatin1(kobaltForkName);
++    const auto stamp = QString::fromLatin1(kobaltBuildTime);
++    const auto text = stamp.isEmpty() ? strings::get("about.fork").arg(name)
++                                      : strings::get("about.fork_build").arg(name, stamp);
++    auto *label = new ui::InterfaceLabel(text, page);
++    label->setObjectName("rrAboutFork");
++    label->setAlignment(Qt::AlignCenter);
++    ui::readerStyle(label, ui::styles::font(ui::metrics::about::commitText));
++    rows->addWidget(label);
++    Q_UNUSED(host);
++}
++} // namespace kobalt::reader
+diff --git a/src/app/about/fork_about.h b/src/app/about/fork_about.h
+new file mode 100644
+index 00000000..63950b93
+--- /dev/null
++++ b/src/app/about/fork_about.h
+@@ -0,0 +1,8 @@
++#pragma once
++class QWidget;
++class QBoxLayout;
++
++namespace kobalt::reader {
++// Append only the fork build line in the shared About page. Stock rendering stays upstream.
++void appendForkBuildRow(QWidget *page, QBoxLayout *rows, QWidget *host);
++} // namespace kobalt::reader
+diff --git a/src/app/library/library_view.cpp b/src/app/library/library_view.cpp
+index c816badc..71289085 100644
+--- a/src/app/library/library_view.cpp
++++ b/src/app/library/library_view.cpp
+@@ -1,3 +1,4 @@
++#include "reading/locale_font_roles.h"
+ #include "library_view.h"
+ #include "about_screen.h"
+ #include "ui/controls/buttons.h"
+@@ -92,8 +93,7 @@ QSize listCells(QSize screen, int availableHeight)
+ 
+ QString countText(int count)
+ {
+-    return count == 1 ? strings::get("library.count_one")
+-                      : strings::get("library.count").arg(count);
++    return strings::plural(count, "library.count");
+ }
+ 
+ QString statusText(const Book &book)
+@@ -1677,7 +1677,7 @@ void LibraryView::showWords()
+     // definitions the dictionary font when Settings chose one.
+     const auto &preferences = readerPreferences();
+     const auto bookFamily =
+-            preferences.value("default_font_face").toString(QStringLiteral("Libron"));
++            preferences.value("default_font_face").toString(QString::fromLatin1(kobalt::localeDefaultFontFace()));
+     const auto dictionaryFamily = preferences.value("dictionary_font_face").toString();
+     wordList->setExcerptFont(bookFamily);
+     wordList->setGlossFont(dictionaryFamily.isEmpty() ? bookFamily : dictionaryFamily);
+diff --git a/src/app/reader/panels/activity_view.cpp b/src/app/reader/panels/activity_view.cpp
+index e5c7f3c4..5147ebcc 100644
+--- a/src/app/reader/panels/activity_view.cpp
++++ b/src/app/reader/panels/activity_view.cpp
+@@ -1,3 +1,4 @@
++#include "ui/style/locale_text.h"
+ #include "activity_view.h"
+ #include "stats_cell.h"
+ #include "app/reader/settings/settings_panel.h"
+@@ -32,16 +33,9 @@ namespace sizes = ui::metrics::activity;
+ namespace {
+ constexpr qint64 minute = 60 * 1000, hour = 60 * minute;
+ 
+-// The catalog is English, so dates and day names are English on every device.
+-const QLocale &english()
+-{
+-    static const QLocale locale(QLocale::English, QLocale::UnitedStates);
+-    return locale;
+-}
+-
+ QString day(const QDate &date, bool year = false)
+ {
+-    return english().toString(date, year ? QStringLiteral("d MMM yyyy") : QStringLiteral("d MMM"));
++    return strings::formatLocale().toString(date, year ? QStringLiteral("d MMM yyyy") : QStringLiteral("d MMM"));
+ }
+ 
+ QString clock(qint64 utc)
+@@ -114,6 +108,16 @@ QString plural(const char *one, const char *many, qint64 count)
+     return strings::get(count == 1 ? one : many).arg(count);
+ }
+ 
++// Units carry no number slot; choose CLDR without QString::arg on a bare unit.
++QString countedUnit(const char *base, qint64 count)
++{
++    QByteArray key(base);
++    key += strings::locale() == strings::Locale::Russian
++            ? strings::pluralSuffix(int(count % 100))
++            : count == 1 ? QByteArray("_one") : QByteArray("_many");
++    return strings::get(key.constData());
++}
++
+ QString authorCaption(const QString &author)
+ {
+     static const QRegularExpression lineBreak(QStringLiteral("\\s*\\R\\s*"),
+@@ -196,7 +200,7 @@ int drawFigure(QPainter *painter, int right, int baseline, qint64 milliseconds,
+     }
+     if (minutes < 60 || minutes % 60)
+         parts.append({ strings::get("stats.minutes"), false });
+-    const QFont number(ui::brandFont(pixels)), unit(ui::interfaceFont(chapters::unitText));
++    const QFont number(ui::statisticFont(pixels)), unit(ui::interfaceFont(chapters::unitText));
+     const int gap = chapters::unitGap;
+     int width = 0;
+     for (const auto &part : parts)
+@@ -301,7 +305,7 @@ public:
+         QStringList entries;
+         for (int i = 0; i < week.size(); ++i)
+             if (week[i] >= 0)
+-                entries << chartValue(english().dayName(i + 1, QLocale::ShortFormat),
++                entries << chartValue(strings::formatLocale().dayName(i + 1, QLocale::ShortFormat),
+                                       chartDuration(week[i]));
+         setAccessibleDescription(entries.join(QStringLiteral(". ")));
+         update();
+@@ -333,7 +337,7 @@ protected:
+             const int left = center - barWidth / 2;
+             // Today keeps its day name in a narrow column; the underline
+             // still marks it.
+-            const auto dayName = english().dayName(index + 1, QLocale::ShortFormat);
++            const auto dayName = strings::formatLocale().dayName(index + 1, QLocale::ShortFormat);
+             const QString name = index == today
+                             && ui::interfaceTextWidth(strings::get("activity.today").toUpper(),
+                                                       label)
+@@ -458,7 +462,7 @@ public:
+                         : QString());
+         const qint64 hours = summary.totalMilliseconds / hour;
+         if (hours >= 10)
+-            totals[0]->set(QString::number(hours), strings::get("activity.hours"),
++            totals[0]->set(QString::number(hours), countedUnit("activity.hour_unit", hours),
+                            summary.daysSince ? strings::get("activity.per_day")
+                                                        .arg(duration(summary.totalMilliseconds
+                                                                      / summary.daysSince))
+@@ -470,8 +474,7 @@ public:
+                                                                   / summary.daysSince))
+                                           : QString());
+         totals[1]->set(QString::number(summary.finished),
+-                       summary.finished == 1 ? strings::get("activity.book")
+-                                             : strings::get("activity.books_unit"),
++                       countedUnit("activity.book_unit", summary.finished),
+                        strings::get("activity.in_progress").arg(summary.inProgress));
+         totals[2]->set(
+                 QString::number(summary.sessions), QString(),
+@@ -593,7 +596,7 @@ public:
+         month = first;
+         days = values;
+         today = now;
+-        setAccessibleName(english().toString(month, QStringLiteral("MMMM yyyy")));
++        setAccessibleName(strings::formatLocale().toString(month, QStringLiteral("MMMM yyyy")));
+         setAccessibleDescription(since.isValid()
+                                          ? dailyValues(days, qMax(month, since),
+                                                        qMin(now, month.addMonths(1).addDays(-1)))
+@@ -618,7 +621,7 @@ protected:
+         painter.fillRect(0, 0, width(), ui::metrics::control::border, ui::dividerColor(this));
+         for (int column = 0; column < 7; ++column)
+             drawCaption(painter, QRect(chrome::inset + inner * column / 7, 0, inner / 7, head),
+-                        english().dayName(column + 1, QLocale::ShortFormat), Qt::AlignCenter, ink);
++                        strings::formatLocale().dayName(column + 1, QLocale::ShortFormat), Qt::AlignCenter, ink);
+         const QDate first = activity::weekStart(month);
+         const int rowHeight = (height() - head) / 6;
+         const QFont value(ui::interfaceFont(chapters::unitText));
+@@ -727,7 +730,7 @@ public:
+             for (; it != values.cend() && it.key() <= last; ++it)
+                 read += level(it.value()) > 0;
+             readingDays += read;
+-            entries << chartValue(english().monthName(start.month()),
++            entries << chartValue(strings::formatLocale().standaloneMonthName(start.month()),
+                                   plural("activity.day_read", "activity.days_read_count", read));
+             start = last.addDays(1);
+         }
+@@ -776,7 +779,7 @@ protected:
+             const int week = int(start.daysTo(QDate(today.year(), month, 1))) / 7;
+             drawCaption(painter,
+                         QRect(left + week * step, top + 7 * step + ui::px(4), step * 4, labels),
+-                        english().monthName(month, QLocale::ShortFormat).left(1),
++                        strings::formatLocale().standaloneMonthName(month, QLocale::ShortFormat).left(1),
+                         Qt::AlignLeft | Qt::AlignTop, ui::noteColor(this),
+                         chrome::captionLabelText);
+         }
+@@ -893,14 +896,14 @@ private:
+         const bool thisMonth =
+                 shown.year() == summary.today.year() && shown.month() == summary.today.month();
+         month->caption->setText(thisMonth ? strings::get("activity.this_month")
+-                                          : english().monthName(shown.month()));
++                                          : strings::formatLocale().standaloneMonthName(shown.month()));
+         setDuration(month, total,
+                     strings::get(days == 1 ? "activity.days_of_one" : "activity.days_of")
+                             .arg(read)
+                             .arg(days));
+         grid->setMonth(shown, summary.days, summary.today, summary.since);
+         months->setPage(monthIndex(shown), monthIndex(summary.today) + 1,
+-                        english().toString(shown, QStringLiteral("MMMM yyyy")), false, {}, true);
++                        strings::formatLocale().standaloneMonthName(shown.month()) + QStringLiteral(" ") + QString::number(shown.year()), false, {}, true);
+     }
+ 
+     void arrange()
+@@ -1110,7 +1113,7 @@ protected:
+                                  width / 2, rule, lines);
+             } else {
+                 drawText(painter, coverArea, book.title.left(1).toUpper(), Qt::AlignCenter,
+-                         ui::brandFont(frame.width() * 3 / 5), note);
++                         ui::statisticFont(frame.width() * 3 / 5), note);
+             }
+         }
+         const int left = coverArea.right() + 1 + ui::px(24);
+@@ -1315,7 +1318,7 @@ private:
+                     auto *header = bands[bandsUsed++];
+                     setBand(header,
+                             month.month.isValid()
+-                                    ? english().toString(month.month, QStringLiteral("MMMM yyyy"))
++                                    ? strings::formatLocale().standaloneMonthName(month.month.month()) + QStringLiteral(" ") + QString::number(month.month.year())
+                                     : strings::get("activity.hidden"),
+                             (showCopySource
+                                      ? strings::get("activity.copies_count").arg(month.books.size())
+@@ -1521,7 +1524,7 @@ protected:
+         const int top = (height() - nameHeight - ui::px(4) - captionHeight) / 2;
+         const int right = width() - chrome::inset;
+         const int pixels = sizes::figureText * 7 / 10;
+-        const QFont figure(ui::brandFont(pixels)), unit(ui::interfaceFont(chapters::unitText));
++        const QFont figure(ui::statisticFont(pixels)), unit(ui::interfaceFont(chapters::unitText));
+         const int baseline = top + ui::interfaceLineAscent(name) + ui::px(10);
+         int figureWidth = 0;
+         if (!number.isEmpty()) {
+@@ -1711,7 +1714,7 @@ protected:
+             const auto number = QString::number(milestone.target);
+             // Longer numbers get smaller; a book is narrower than the others.
+             const bool book = milestone.kind == activity::Milestone::Kind::Books;
+-            painter.setFont(ui::brandFont(number.size() > 3                   ? shape * 2 / 5
++            painter.setFont(ui::statisticFont(number.size() > 3                   ? shape * 2 / 5
+                                                   : number.size() > 2 && book ? shape * 2 / 5
+                                                                               : shape / 2));
+             painter.setPen(reached ? paper : note);
+@@ -1816,7 +1819,7 @@ public:
+                                               + day(summary.longestSessionDate),
+                               summary.longestSession);
+         records[1]->setRecord(strings::get("activity.most_in_day"),
+-                              summary.bestDay ? english().toString(summary.bestDayDate,
++                              summary.bestDay ? strings::formatLocale().toString(summary.bestDayDate,
+                                                                    QStringLiteral("ddd d MMM"))
+                                               + QStringLiteral(" · ")
+                                               + plural("activity.book_count",
+@@ -2602,7 +2605,7 @@ public:
+             lastCell->caption->setText(strings::get("activity.last_read"));
+             const auto last = total.last ? activity::localDate(total.last) : QDate();
+             lastCell->set(last.isValid() ? QString::number(last.day()) : QString(),
+-                          last.isValid() ? english().monthName(last.month(), QLocale::ShortFormat)
++                          last.isValid() ? strings::formatLocale().standaloneMonthName(last.month(), QLocale::ShortFormat)
+                                          : QString(),
+                           last.isValid() && last.year() != today.year()
+                                   ? QString::number(last.year())
+@@ -2722,7 +2725,7 @@ private:
+                     ? strings::get("activity.today_at").arg(clock(session.started))
+                     : date == today.addDays(-1)
+                     ? strings::get("activity.yesterday_at").arg(clock(session.started))
+-                    : english().toString(date, QStringLiteral("ddd d MMM")) + QStringLiteral(", ")
++                    : strings::formatLocale().toString(date, QStringLiteral("ddd d MMM")) + QStringLiteral(", ")
+                             + clock(session.started);
+             QString range;
+             if (extras.ranges.contains(session.started)) {
+@@ -2769,7 +2772,7 @@ ActivityView::ActivityView(QWidget *parent) : ui::Panel(parent)
+     title = new reader::SettingsTitle(strings::get("activity.title"), header);
+     title->setObjectName("rrActivityTitle");
+     title->setContentsMargins(chrome::inset, 0, chrome::inset, 0);
+-    ui::readerStyle(title, ui::styles::brand(chrome::titleText) + "background:transparent;");
++    ui::readerStyle(title, ui::styles::heading(chrome::titleText) + "background:transparent;");
+     // A book's page can hide the book from the lists or delete its activity.
+     hideCell = new ui::CellButton(ui::ControlIcon::Hidden, header);
+     hideCell->setObjectName("rrActivityHideBook");
+@@ -2965,7 +2968,7 @@ void ActivityView::updateCopies(bool firstPage)
+     for (int i = 0; i < copies.books.size(); ++i) {
+         const auto &copy = copies.books[i];
+         const auto date =
+-                english().toString(activity::localDate(copy.last), QStringLiteral("d MMM yyyy"));
++                strings::formatLocale().toString(activity::localDate(copy.last), QStringLiteral("d MMM yyyy"));
+         const auto number = QString::number(i + 1) + QStringLiteral(" · ");
+         auto caption = labels.value(sources[i]);
+         if (!caption.isEmpty())
+diff --git a/src/app/reader/panels/bookmark_list.cpp b/src/app/reader/panels/bookmark_list.cpp
+index a1186de7..c5da8830 100644
+--- a/src/app/reader/panels/bookmark_list.cpp
++++ b/src/app/reader/panels/bookmark_list.cpp
+@@ -94,7 +94,7 @@ BookmarkList::BookmarkList(QWidget *parent, KeyboardFactory factory)
+         tab->setFont(ui::brandFont(chrome::titleText));
+         ui::readerStyle(tab,
+                         "QPushButton{border:none;padding:0;min-height:0;"
+-                                + ui::styles::brand(chrome::titleText) + "}");
++                                + ui::styles::heading(chrome::titleText) + "}");
+     }
+     connect(bookmarksTab, &QPushButton::clicked, this, [this] {
+         if (tabRequested)
+@@ -158,7 +158,7 @@ void BookmarkList::setWordsView(QWidget *view)
+     wordsTab->setFont(ui::brandFont(chrome::titleText));
+     ui::readerStyle(wordsTab,
+                     "QPushButton{border:none;padding:0;min-height:0;"
+-                            + ui::styles::brand(chrome::titleText) + "}");
++                            + ui::styles::heading(chrome::titleText) + "}");
+     connect(wordsTab, &QPushButton::clicked, this, [this] {
+         if (wordsRequested)
+             wordsRequested();
+diff --git a/src/app/reader/panels/chapter_contents.cpp b/src/app/reader/panels/chapter_contents.cpp
+index 0315df1e..4e82c9e5 100644
+--- a/src/app/reader/panels/chapter_contents.cpp
++++ b/src/app/reader/panels/chapter_contents.cpp
+@@ -228,7 +228,7 @@ ChapterContents::ChapterContents(QWidget *parent, QWidget *overlayHost)
+     title = new ContentsTitle(strings::get("chapter_contents.chapters"), this);
+     title->setObjectName("rrContentsTitle");
+     title->setTextFormat(Qt::PlainText);
+-    ui::readerStyle(title, ui::styles::brand(chrome::titleText) + "background:transparent;");
++    ui::readerStyle(title, ui::styles::heading(chrome::titleText) + "background:transparent;");
+     moreButton = new ui::CellButton(ui::ControlIcon::More, this);
+     moreButton->setObjectName("rrContentsMore");
+     moreButton->setRule(Qt::LeftEdge);
+@@ -529,9 +529,7 @@ void ChapterContents::redraw()
+ {
+     page = qBound(0, page, pageCount() - 1);
+     empty->setVisible(items.isEmpty());
+-    summary->setText(items.size() == 1
+-                             ? strings::get("chapter_contents.summary_one")
+-                             : strings::get("chapter_contents.summary").arg(items.size()));
++    summary->setText(strings::plural(items.size(), "chapter_contents.summary"));
+     if (listMode != ContentsList::Chapters)
+         summary->setText((listMode == ContentsList::Landmarks
+                                   ? strings::get("chapter_contents.landmark_count")
+diff --git a/src/app/reader/panels/chapter_graph.cpp b/src/app/reader/panels/chapter_graph.cpp
+index 4afabbdc..cf10eca2 100644
+--- a/src/app/reader/panels/chapter_graph.cpp
++++ b/src/app/reader/panels/chapter_graph.cpp
+@@ -1,3 +1,4 @@
++#include "ui/style/locale_text.h"
+ #include "reading/header_footer.h"
+ #include "ui/controls/icons.h"
+ #include "ui/controls/text.h"
+@@ -215,7 +216,9 @@ protected:
+         painter.setFont(label);
+         ui::drawOpticalText(
+                 painter,
+-                QRect(ui::px(2), top + icon + chrome::tabGap, width() - ui::px(4), capital),
++                ui::localeLabelInkRect(
++                        QRect(ui::px(2), top + icon + chrome::tabGap, width() - ui::px(4), capital),
++                        strings::get("activity.title").toUpper(), label),
+                 strings::get("activity.title").toUpper(), true);
+     }
+ };
+diff --git a/src/app/reader/panels/choice_screen.cpp b/src/app/reader/panels/choice_screen.cpp
+index 14a4b10c..a8cda74c 100644
+--- a/src/app/reader/panels/choice_screen.cpp
++++ b/src/app/reader/panels/choice_screen.cpp
+@@ -1,3 +1,4 @@
++#include "reading/locale_font_roles.h"
+ #include "ui/controls/buttons.h"
+ #include "ui/controls/icons.h"
+ #include "ui/controls/text.h"
+@@ -598,7 +599,7 @@ void ChoiceScreen::redrawFonts()
+                         .arg(selectedItem ? "palette(window-text)" : "palette(window)")
+                         .arg(int(metrics::control::border)));
+         const QFont labelFont = ui::chromeFont(metrics::text::body);
+-        const auto family = item.value.isEmpty() ? QStringLiteral("Libron") : item.value;
++        const auto family = item.value.isEmpty() ? QString::fromLatin1(kobalt::localeDefaultFontFace()) : item.value;
+         label->setFont(labelFont);
+         // The default slot draws its Aa with the private renderer.
+         fontCell->helpFont = QFont(family);
+diff --git a/src/app/reader/panels/search_panel.cpp b/src/app/reader/panels/search_panel.cpp
+index 15f04b5e..804cd846 100644
+--- a/src/app/reader/panels/search_panel.cpp
++++ b/src/app/reader/panels/search_panel.cpp
+@@ -705,7 +705,7 @@ void SearchPanel::redraw()
+                                                : "search_panel.page_detail")
+                                   .arg(locationPageLabel(hit.page, hit.printedPage))
+                                   .arg(hit.text)
+-                        : strings::get("search_panel.chapter_detail")
++                        : strings::get("header_footer.slot_value")
+                                   .arg(hit.chapter.simplified(), hit.text));
+     }
+ }
+diff --git a/src/app/reader/panels/stats_cell.h b/src/app/reader/panels/stats_cell.h
+index 9d9a32d6..070d354c 100644
+--- a/src/app/reader/panels/stats_cell.h
++++ b/src/app/reader/panels/stats_cell.h
+@@ -1,3 +1,4 @@
++#include "ui/style/locale_text.h"
+ #pragma once
+ #include "ui/controls/text.h"
+ #include "ui/style/fonts.h"
+@@ -28,7 +29,7 @@ public:
+         figure->setObjectName(prefix + "Figure");
+         figure->setTextFormat(Qt::PlainText);
+         ui::readerStyle(figure,
+-                        ui::styles::brand(ui::metrics::chapters::figureText)
++                        ui::styles::brand(ui::localeStatisticPixels(ui::metrics::chapters::figureText))
+                                 + "background:transparent;");
+         unit = new ui::InterfaceLabel(this);
+         unit->setObjectName(prefix + "Unit");
+@@ -74,7 +75,7 @@ private:
+     {
+         const int inner = qMax(1, width() - 2 * ui::metrics::chrome::inset);
+         const QFont captionMetrics(ui::captionFont()),
+-                figureMetrics(ui::brandFont(ui::metrics::chapters::figureText)),
++                figureMetrics(ui::statisticFont(ui::metrics::chapters::figureText)),
+                 unitMetrics(ui::interfaceFont(ui::metrics::chapters::unitText));
+         caption->setGeometry(ui::metrics::chrome::inset, ui::metrics::chapters::cellPadding, inner,
+                              ui::interfaceLineHeight(captionMetrics));
+diff --git a/src/app/reader/panels/word_list.cpp b/src/app/reader/panels/word_list.cpp
+index 08af4818..d89b55d3 100644
+--- a/src/app/reader/panels/word_list.cpp
++++ b/src/app/reader/panels/word_list.cpp
+@@ -64,7 +64,7 @@ WordList::WordList(QWidget *parent, Scope scope) : ui::Panel(parent), scope(scop
+         });
+         title = new ui::InterfaceLabel(strings::get("words.title"), this);
+         title->setTextFormat(Qt::PlainText);
+-        ui::readerStyle(title, ui::styles::brand(chrome::titleText) + "background:transparent;");
++        ui::readerStyle(title, ui::styles::heading(chrome::titleText) + "background:transparent;");
+         count = new ui::InterfaceLabel({}, this);
+         count->setObjectName("rrMyWordsCount");
+         count->setTextFormat(Qt::PlainText);
+diff --git a/src/app/reader/views/fork_navigation.cpp b/src/app/reader/views/fork_navigation.cpp
+new file mode 100644
+index 00000000..40dd3a68
+--- /dev/null
++++ b/src/app/reader/views/fork_navigation.cpp
+@@ -0,0 +1,67 @@
++#include "ui/controls/rows.h"
++#include <QEvent>
++#include "fork_navigation.h"
++#include "navigation.h"
++#include "support/strings.h"
++#include "ui/style/fonts.h"
++#include "ui/style/styles.h"
++#include "ui/controls/text.h"
++#include <QPushButton>
++
++namespace kobalt::reader {
++namespace chrome = ui::metrics::chrome;
++
++// Use one shared ink height for all translated labels. Latin H alone is
++// shorter than Cyrillic Д (in НАВИГАЦИЯ/РАСКЛАДКА); the private text painter
++// clips to this area after centering, otherwise cutting both edges of Д.
++QRect forkui::tabInkBounds(int pixels)
++{
++    QString sample = QStringLiteral("H");
++    for (const auto *key : { "navigation.chapters", "navigation.seek", "navigation.text",
++                             "navigation.layout", "navigation.light", "navigation.stats" })
++        sample += QLatin1Char(' ') + strings::get(key);
++    return ui::interfaceInkBounds(sample, ui::interfaceFont(pixels));
++}
++
++void Navigation::styleForkToolbarActions()
++{
++    if (darkTheme) {
++        darkThemeStyle = darkTheme->styleSheet();
++        ui::readerStyle(darkTheme, "QPushButton{border:none;padding:0;}");
++        darkTheme->setFixedSize(chrome::cellWidth, chrome::actionHeight);
++        if (auto *button = dynamic_cast<ui::Button *>(darkTheme)) {
++            darkThemePaint = button->paintMode();
++            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
++        }
++    }
++    if (comics) {
++        comicsStyle = comics->styleSheet();
++        ui::readerStyle(comics, "QPushButton{border:none;padding:0;}");
++        comics->setFixedSize(chrome::cellWidth, chrome::actionHeight);
++        if (auto *button = dynamic_cast<ui::Button *>(comics)) {
++            comicsPaint = button->paintMode();
++            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
++        }
++    }
++}
++
++void Navigation::restoreForkToolbarActions()
++{
++    if (darkTheme) {
++        darkTheme->setStyleSheet(darkThemeStyle);
++        darkTheme->setFixedSize(ui::metrics::control::toolbarButtonSize,
++                                ui::metrics::control::toolbarButtonSize);
++        if (auto *button = dynamic_cast<ui::Button *>(darkTheme)) {
++            button->setPaintMode(darkThemePaint);
++        }
++    }
++    if (comics) {
++        comics->setStyleSheet(comicsStyle);
++        comics->setFixedSize(ui::metrics::control::toolbarButtonSize,
++                             ui::metrics::control::toolbarButtonSize);
++        if (auto *button = dynamic_cast<ui::Button *>(comics)) {
++            button->setPaintMode(comicsPaint);
++        }
++    }
++}
++} // namespace kobalt::reader
+diff --git a/src/app/reader/views/fork_navigation.h b/src/app/reader/views/fork_navigation.h
+new file mode 100644
+index 00000000..4109ca84
+--- /dev/null
++++ b/src/app/reader/views/fork_navigation.h
+@@ -0,0 +1,5 @@
++#pragma once
++#include <QRect>
++namespace kobalt::reader::forkui {
++QRect tabInkBounds(int pixels);
++} // namespace kobalt::reader::forkui
+diff --git a/src/app/reader/views/image_viewer.cpp b/src/app/reader/views/image_viewer.cpp
+index c4612bac..cbebbaf0 100644
+--- a/src/app/reader/views/image_viewer.cpp
++++ b/src/app/reader/views/image_viewer.cpp
+@@ -325,7 +325,7 @@ ImageViewer::ImageViewer(QWidget *parent) : Panel(parent)
+     auto *title = new ui::InterfaceLabel(strings::get("image.title"), header);
+     title->setObjectName("rrImageTitle");
+     title->setFont(ui::brandFont(chrome::titleText));
+-    ui::readerStyle(title, ui::styles::brand(chrome::titleText) + "background:transparent;");
++    ui::readerStyle(title, ui::styles::heading(chrome::titleText) + "background:transparent;");
+     title->setAlignment(Qt::AlignCenter);
+     row->addSpacing(chrome::cellWidth);
+     row->addWidget(title, 1);
+diff --git a/src/app/reader/views/navigation.cpp b/src/app/reader/views/navigation.cpp
+index 0d53abd0..44016c51 100644
+--- a/src/app/reader/views/navigation.cpp
++++ b/src/app/reader/views/navigation.cpp
+@@ -1,3 +1,4 @@
++#include "ui/style/locale_text.h"
+ #include "support/percentage_text.h"
+ #include "ui/controls/buttons.h"
+ #include "ui/controls/icons.h"
+@@ -493,7 +494,9 @@ protected:
+         painter.setFont(label);
+         ui::drawOpticalText(
+                 painter,
+-                QRect(ui::px(2), icon.bottom() + 1 + chrome::tabGap, width() - ui::px(4), capital),
++                ui::localeLabelInkRect(
++                        QRect(ui::px(2), icon.bottom() + 1 + chrome::tabGap,
++                              width() - ui::px(4), capital), text(), label),
+                 text(), true);
+     }
+ 
+@@ -811,12 +814,13 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
+       annotate(controls.annotate),
+       clock(controls.clock),
+       session(controls.session),
++      statusToggle(controls.statusToggle),
+       battery(controls.battery),
+       bluetooth(controls.bluetooth),
+       wifi(controls.wifi),
+       formattingWarning(controls.formattingWarning),
+       search(controls.search),
+-      sync(controls.sync)
++      sync(controls.sync), darkTheme(controls.darkTheme), comics(controls.comics)
+ {
+     zenViewBase = new ZenViewBase(parent);
+     zenViewBase->setObjectName("rrZenViewBase");
+@@ -863,6 +867,7 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
+             button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
+         }
+     }
++    styleForkToolbarActions();
+     if (sync) {
+         syncStyle = sync->styleSheet();
+         ui::readerStyle(sync, "QPushButton{border:none;padding:0;}");
+@@ -942,6 +947,7 @@ Navigation::~Navigation()
+             button->setPaintMode(searchPaint);
+         }
+     }
++    restoreForkToolbarActions();
+     session->setStyleSheet(sessionStyle);
+     if (sync) {
+         sync->setStyleSheet(syncStyle);
+@@ -976,6 +982,8 @@ void Navigation::stackPanel(QWidget *panel) const
+ void Navigation::placeZenToolbar(QSize size, const QVector<QWidget *> &actions,
+                                  const NavigationState &state)
+ {
++    if (statusToggle)
++        statusToggle->hide();
+     // The back arrow, reading stats and Settings in a centered group, below a
+     // status line with the Zen mark, the clock and a low battery. The other
+     // actions are tabs in the bottom group, or hidden. Like the bottom group,
+@@ -1097,6 +1105,7 @@ void Navigation::placeToolbar(QSize size, const QVector<QWidget *> &actions)
+     }
+     clock->setVisible(statusVisible);
+     updateBatteryVisibility();
++    // Page count belongs to the separate reading-menu strip, not the status line.
+     settings->setFixedWidth(chrome::cellWidth);
+     int rightActions = 0;
+     for (auto *action : actions)
+@@ -1181,7 +1190,7 @@ void Navigation::update(QSize size, const NavigationState &state)
+     rules->show();
+     rules->raise();
+     const QVector<QWidget *> actions{
+-        settings, bookmarks, annotate, search, sync, formattingWarning
++        settings, bookmarks, annotate, darkTheme, comics, search, sync, formattingWarning
+     };
+     if (zenTop)
+         placeZenToolbar(size, actions, state);
+@@ -1321,10 +1330,19 @@ void Navigation::updateSessionGeometry()
+     if (wifi && wifi->active())
+         right = qMin(right, wifi->x());
+     right = qMax(0, right - int(chrome::inset));
+-    const int left = qMin(right, clock->geometry().right() + 1 + int(chrome::inset));
+-    // Center the session in the gap after the time text, without reserving
+-    // the clock's unused width or moving the status icons.
+-    session->setGeometry(left, clock->y(), right - left, ui::metrics::panel::statusHeight);
++    const int inset = qMax(clock->geometry().right() + 1 + int(chrome::inset),
++                           toolbar->width() - right);
++    // Symmetric bounds keep the session caption centered on the screen,
++    // independently of battery/connectivity widths.
++    session->setGeometry(inset, clock->y(), qMax(0, toolbar->width() - 2 * inset),
++                         ui::metrics::panel::statusHeight);
++    if (statusToggle) {
++        statusToggle->setGeometry(clock->x(), clock->y(),
++                                  qMax(0, battery->geometry().right() + 1 - clock->x()),
++                                  ui::metrics::panel::statusHeight);
++        statusToggle->setVisible(statusVisible && !zenTop);
++        statusToggle->raise();
++    }
+ }
+ 
+ bool Navigation::contains(QPoint global) const
+diff --git a/src/app/reader/views/navigation.h b/src/app/reader/views/navigation.h
+index eac1a57e..e1f734ff 100644
+--- a/src/app/reader/views/navigation.h
++++ b/src/app/reader/views/navigation.h
+@@ -31,11 +31,13 @@ struct ToolbarComposition
+     QWidget *exitAction = nullptr;
+     QPushButton *settings = nullptr, *bookmarks = nullptr, *annotate = nullptr;
+     QLabel *clock = nullptr, *session = nullptr;
++    QAbstractButton *statusToggle = nullptr;
+     ui::BatteryIndicator *battery = nullptr;
+     ui::BluetoothIndicator *bluetooth = nullptr;
+     ui::WifiIndicator *wifi = nullptr;
+     QPushButton *formattingWarning = nullptr;
+     QPushButton *search = nullptr, *sync = nullptr;
++    QPushButton *darkTheme = nullptr, *comics = nullptr;
+ };
+ // Search, Annotate and Bookmarks are tabs only in Zen mode.
+ enum class NavigationDestination {
+@@ -201,6 +203,8 @@ public:
+     bool contains(QPoint global) const;
+ 
+ private:
++    void styleForkToolbarActions();
++    void restoreForkToolbarActions();
+     void placeToolbar(QSize size, const QVector<QWidget *> &actions);
+     void placeZenToolbar(QSize size, const QVector<QWidget *> &actions,
+                          const NavigationState &state);
+@@ -220,12 +224,17 @@ private:
+     // the screen above it.
+     QWidget *zenViewBase;
+     QLabel *clock, *session;
++    QAbstractButton *statusToggle;
+     ui::BatteryIndicator *battery;
+     ui::BluetoothIndicator *bluetooth;
+     ui::WifiIndicator *wifi;
+     QPushButton *formattingWarning;
+     QPushButton *search, *sync;
+     QString searchStyle, syncStyle;
++    QPushButton *darkTheme = nullptr, *comics = nullptr;
++    QString darkThemeStyle, comicsStyle;
++    ui::ButtonPaintMode darkThemePaint = ui::ButtonPaintMode::Native;
++    ui::ButtonPaintMode comicsPaint = ui::ButtonPaintMode::Native;
+     ui::ButtonPaintMode syncPaint = ui::ButtonPaintMode::Native;
+     ui::ButtonPaintMode searchPaint = ui::ButtonPaintMode::Native;
+     QString sessionStyle, settingsStyle, bookmarksStyle, annotateStyle, formattingWarningStyle;
+diff --git a/src/app/reader/views/opening.cpp b/src/app/reader/views/opening.cpp
+index 0d881a29..a82c4ea8 100644
+--- a/src/app/reader/views/opening.cpp
++++ b/src/app/reader/views/opening.cpp
+@@ -458,20 +458,22 @@ protected:
+         const auto place = [this](QWidget *widget, const QRectF &rect) {
+             widget->setGeometry(placed(rect, lift));
+         };
+-        const auto textStyle = [this](QLabel *widget, qreal pixels, bool italic, int minimum = 1) {
+-            const auto font = ui::brandFont(qMax(minimum, qRound(pixels * scale())), italic);
++        const auto textStyle = [this](QLabel *widget, qreal pixels, bool wordmark, int minimum = 1, bool italic = false) {
++            auto font = wordmark ? ui::wordmarkFont(qMax(minimum, qRound(pixels * scale())))
++                                 : ui::brandFont(qMax(minimum, qRound(pixels * scale())), italic);
++            font.setItalic(!wordmark && italic);
+             widget->setFont(font);
+             ui::readerStyle(
+                     widget,
+                     QString("background:palette(window);color:palette(window-text);font-family:'%1';font-size:%2px;font-weight:400;font-style:%3;")
+                             .arg(font.family())
+                             .arg(font.pixelSize())
+-                            .arg(italic ? "italic" : "normal"));
++                            .arg(font.italic() ? "italic" : "normal"));
+         };
+-        textStyle(brand, opening::brandText, false);
++        textStyle(brand, opening::brandText, true);
+         const bool phone = isPhoneScreen(size(), ui::density());
+         textStyle(label, !fallback || automatic ? opening::labelText : opening::failureText,
+-                  !fallback || automatic, phone && (!fallback || automatic) ? int(ui::px(32)) : 1);
++                  false, phone && (!fallback || automatic) ? int(ui::px(32)) : 1, !fallback || automatic);
+         // A caption in capitals, like the reader's other captions.
+         ui::captionLabel(hint,
+                          qMax(phone ? int(ui::px(22)) : 1, qRound(opening::hintText * scale())));
+diff --git a/src/app/reader/views/reading_page.cpp b/src/app/reader/views/reading_page.cpp
+index 92c50e8f..e9cb6384 100644
+--- a/src/app/reader/views/reading_page.cpp
++++ b/src/app/reader/views/reading_page.cpp
+@@ -857,6 +857,7 @@ void ReadingPage::refreshStrips()
+ 
+ void ReadingPage::refreshContent(bool reading, bool now)
+ {
++    setProperty("kobalt_graphics_refresh", comicsMode);
+     const auto colors = palette();
+     const bool geometryChanged = renderedSize != size() || renderedTop != topHeight()
+             || renderedBottom != bottomHeight();
+@@ -1431,6 +1432,16 @@ QColor ReadingPage::pagePaper() const
+     return ui::themeColors(ui::darkTheme(this)).paper;
+ }
+ 
++QImage ReadingPage::headerImage()
++{
++    return renderStrip(topHeight(), [this](QPainter &p) { paintHeader(p); });
++}
++
++QImage ReadingPage::footerImage()
++{
++    return renderStrip(bottomHeight(), [this](QPainter &p) { paintFooter(p); });
++}
++
+ QImage ReadingPage::renderStrip(int height, const std::function<void(QPainter &)> &draw)
+ {
+     if (!height)
+diff --git a/src/app/reader/views/reading_page.h b/src/app/reader/views/reading_page.h
+index 8361348b..10371e91 100644
+--- a/src/app/reader/views/reading_page.h
++++ b/src/app/reader/views/reading_page.h
+@@ -65,7 +65,9 @@ public:
+ 
+     bool viewportTransition() const { return changingViewport; }
+ 
+-    const QImage &headerImage() const { return headerPixels; }
++    // Draft appearance can differ from the applied page and its paint caches.
++    // Render chrome from current fields without repainting the reading screen.
++    QImage headerImage();
+ 
+     // Leaves the header and footer bands blank without changing the page's
+     // layout. Zen mode's reading menu uses it while it is open.
+@@ -73,7 +75,7 @@ public:
+ 
+     bool stripsHidden() const { return stripsBlank; }
+ 
+-    const QImage &footerImage() const { return footerPixels; }
++    QImage footerImage();
+ 
+     // What the header and footer show. `notice`, such as an error, replaces
+     // the footer's slots while it is set. It never adds a footer, because
+@@ -84,14 +86,15 @@ public:
+     qreal progressFraction = 0;
+     // Chapter starts on the progress bar, from 0 to 1.
+     QVector<double> progressTicks;
++    bool comicsMode = false;
+ 
+-    bool showHeader() const { return chrome.header(); }
++    bool showHeader() const { return !comicsMode && chrome.header(); }
+ 
+-    bool showFooter() const { return chrome.footer(); }
++    bool showFooter() const { return !comicsMode && chrome.footer(); }
+ 
+     bool progressAtTop() const
+     {
+-        return headerfooter::progressEdge(chrome) == headerfooter::BarEdge::Top;
++        return !comicsMode && headerfooter::progressEdge(chrome) == headerfooter::BarEdge::Top;
+     }
+ 
+     // Chapter starts to draw, when the layout asks for ticks.
+@@ -99,7 +102,7 @@ public:
+ 
+     bool progressAtBottom() const
+     {
+-        return headerfooter::progressEdge(chrome) == headerfooter::BarEdge::Bottom;
++        return !comicsMode && headerfooter::progressEdge(chrome) == headerfooter::BarEdge::Bottom;
+     }
+ 
+     int headerTextPixels() const
+diff --git a/src/app/reader/views/sleep_designs.cpp b/src/app/reader/views/sleep_designs.cpp
+index dc97b650..3f8a8baa 100644
+--- a/src/app/reader/views/sleep_designs.cpp
++++ b/src/app/reader/views/sleep_designs.cpp
+@@ -1,3 +1,5 @@
++#include "reading/locale_font_roles.h"
++#include "ui/style/locale_text.h"
+ #include "sleep_screen.h"
+ 
+ #include "ui/controls/panels.h"
+@@ -124,9 +126,14 @@ QFont body(const QString &family, qreal pixels)
+ void text(QPainter &painter, const QFont &font, const QColor &color, const QRectF &area,
+           const QString &value, Qt::Alignment alignment = Qt::AlignLeft | Qt::AlignVCenter)
+ {
+-    painter.setFont(font);
++    auto fitted = ui::fittedLocaleFont(font, value, qFloor(area.width()), qFloor(area.height()));
++    const int minimum = qMax(1, font.pixelSize() / 2);
++    while (fitted.pixelSize() > minimum && ui::interfaceTextWidth(value, fitted) > area.width())
++        fitted.setPixelSize(fitted.pixelSize() - 1);
++    painter.setFont(fitted);
+     painter.setPen(color);
+-    ui::drawInterfaceText(painter, area.toAlignedRect(), value, alignment);
++    const auto shown = ui::elideInterfaceText(value, fitted, qMax(1, qFloor(area.width())));
++    ui::drawInterfaceText(painter, area.toAlignedRect(), shown, alignment);
+ }
+ 
+ // Draws one line so its baseline sits at `baseline`, like SVG text.
+@@ -284,7 +291,10 @@ void drawBlock(QPainter &painter, const Block &value, QPointF topLeft, const QCo
+ 
+ QString escaped(const QString &value)
+ {
+-    return value.toHtmlEscaped();
++    auto html = value.toHtmlEscaped();
++    if (strings::locale() == strings::Locale::Russian)
++        html.replace(QLatin1Char('\n'), QStringLiteral("<br>"));
++    return html;
+ }
+ 
+ std::unique_ptr<Block> titleBlock(const QString &value, const QFont &font, qreal width,
+@@ -772,8 +782,16 @@ void paintWidgets(QPainter &painter, const Frame &frame, const Content &content,
+               QPointF(layout.left.left() + pad, layout.left.center().y() - caption->height / 2.0),
+               colors.ink);
+     const auto &left = content.shot.details.left;
+-    baselineText(painter, remaining, colors.ink, QPointF(layout.left.right() - pad, baseline),
+-                 left.isEmpty() ? content.shot.remaining : left, Qt::AlignRight);
++    const auto remainingText = left.isEmpty() ? content.shot.remaining : left;
++    if (strings::locale() == strings::Locale::Russian) {
++        const qreal x = layout.left.left() + pad + 40 * u + 2 * u;
++        text(painter, remaining, colors.ink,
++             QRectF(x, layout.left.top() + pad, qMax<qreal>(1, layout.left.right() - pad - x),
++                    layout.left.height() - 2 * pad), remainingText, Qt::AlignRight | Qt::AlignVCenter);
++    } else {
++        baselineText(painter, remaining, colors.ink, QPointF(layout.left.right() - pad, baseline),
++                     remainingText, Qt::AlignRight);
++    }
+ }
+ 
+ // ---------------------------------------------------------------- C09
+@@ -1223,7 +1241,7 @@ QStringList letterParagraphs(const Content &content, const Palette &colors)
+     QStringList paragraphs{ escaped(strings::get("sleep.letter_greeting")), main };
+     if (content.shot.percent < 100 && !details.left.isEmpty())
+         paragraphs.append(
+-                fill(strings::get("sleep.letter_remaining"), { mark(details.left, colors) }));
++                fill(strings::get("sleep.letter_remaining"), { mark(QString(details.left).replace(QLatin1Char(' '), QChar(0x00a0)), colors) }));
+     if (content.charging()) {
+         // The battery level starts its own line.
+         const auto level = mark(strings::percentage(content.battery), colors);
+@@ -1252,8 +1270,9 @@ void paintLetter(QPainter &painter, const Frame &frame, const Content &content,
+     // The reader's chosen body face; Libron, the default, when none is known.
+     const auto &family = content.shot.details.font;
+     const QFont font =
+-            body(family.isEmpty() ? QStringLiteral("Libron") : family, letterSize * frame.u);
+-    const QFont signature = serif(11 * frame.u);
++            body(family.isEmpty() ? QString::fromLatin1(kobalt::localeDefaultFontFace()) : kobalt::localeReadingFamily(family), letterSize * frame.u);
++    // The literal signature is the Latin brand, not the localized decorative serif.
++    const QFont signature = ui::wordmarkFont(qMax(1, qRound(11 * frame.u)));
+     const qreal signatureTop = frame.bottom(12) - lineHeight(signature) * 1.1;
+     const qreal gap = 2.4 * frame.v;
+     const qreal available = signatureTop - lineHeight(font) - gap - frame.y(20);
+@@ -1319,7 +1338,8 @@ void paintLetter(QPainter &painter, const Frame &frame, const Content &content,
+ QVector<QRect> letterAreas(const Frame &frame, QSize size)
+ {
+     // The charging line moves the paragraph after it, so the whole body repaints.
+-    const QFont signature = serif(11 * frame.u);
++    // The literal signature is the Latin brand, not the localized decorative serif.
++    const QFont signature = ui::wordmarkFont(qMax(1, qRound(11 * frame.u)));
+     const qreal bottom = frame.bottom(12) - lineHeight(signature) * 1.1;
+     return {
+         QRectF(0, frame.y(20), size.width(), qMax<qreal>(0, bottom - frame.y(20))).toAlignedRect()
+diff --git a/src/app/reader/views/sleep_ribbon_text.cpp b/src/app/reader/views/sleep_ribbon_text.cpp
+new file mode 100644
+index 00000000..ac49d9ed
+--- /dev/null
++++ b/src/app/reader/views/sleep_ribbon_text.cpp
+@@ -0,0 +1,26 @@
++#include "sleep_screen.h"
++#include "support/strings.h"
++namespace kobalt::reader {
++QStringList sleepRibbonRemainingLines(const QString &remaining) {
++    if (remaining.isEmpty())
++        return {};
++    const auto pattern = strings::get("sleep.time_left");
++    const int slot = pattern.indexOf(QStringLiteral("%1"));
++    if (slot >= 0) {
++        const auto prefix = pattern.left(slot), suffix = pattern.mid(slot + 2);
++        if (remaining.startsWith(prefix) && remaining.endsWith(suffix) &&
++            remaining.size() >= prefix.size() + suffix.size()) {
++            const auto duration = remaining.mid(prefix.size(), remaining.size() - prefix.size() - suffix.size()).trimmed();
++            const auto caption = (prefix + suffix).trimmed();
++            if (!duration.isEmpty() && !caption.isEmpty()) {
++                // Keep the language's order (RU: caption first; EN: time first).
++                if (prefix.trimmed().isEmpty())
++                    return {duration, caption};
++                return {caption, duration};
++            }
++        }
++    }
++    // Older saved snapshots may have been produced in another language.
++    return {remaining};
++}
++}
+diff --git a/src/app/reader/views/sleep_screen.cpp b/src/app/reader/views/sleep_screen.cpp
+index 19119a32..f230c211 100644
+--- a/src/app/reader/views/sleep_screen.cpp
++++ b/src/app/reader/views/sleep_screen.cpp
+@@ -1,3 +1,4 @@
++#include "ui/style/locale_text.h"
+ #include "sleep_screen.h"
+ #include "reading/remaining_time.h"
+ 
+@@ -170,11 +171,13 @@ struct RibbonLines
+         detailHeight = ui::interfaceLineHeight(detail),
+         batteryHeight = ui::interfaceLineHeight(battery);
+ 
++    int detailRows() const { return 2; }
++
+     int height() const
+     {
+         return int(sleepMetrics::ribbonTop) + captionHeight + int(sleepMetrics::ribbonGap)
+                 + int(sleepMetrics::border) + int(sleepMetrics::ribbonGap) / 2 + figureHeight
+-                + int(sleepMetrics::ribbonGap) / 2 + detailHeight + int(sleepMetrics::ribbonGap)
++                + int(sleepMetrics::ribbonGap) / 2 + detailRows() * detailHeight + int(sleepMetrics::ribbonGap)
+                 + batteryHeight + int(sleepMetrics::ribbonGap) + int(sleepMetrics::ribbonNotch);
+     }
+ };
+@@ -213,9 +216,13 @@ void paintBookmark(QPainter &painter, const QRect &ribbon, const Content &conten
+     const int textLeft = ribbon.left() + padding;
+     const int width = ribbon.width() - 2 * padding;
+     const auto centered = [&](const QString &text, const QFont &font, int y, int height) {
+-        painter.setFont(font);
++        auto fitted = ui::fittedLocaleFont(font, text, width, height);
++        const int minimum = qMax(1, font.pixelSize() / 2);
++        while (fitted.pixelSize() > minimum && ui::interfaceTextWidth(text, fitted) > width)
++            fitted.setPixelSize(fitted.pixelSize() - 1);
++        painter.setFont(fitted);
+         ui::drawInterfaceText(painter, QRect(textLeft, y, width, height),
+-                              ui::elideInterfaceText(text, font, width),
++                              ui::elideInterfaceText(text, fitted, width),
+                               Qt::AlignHCenter | Qt::AlignVCenter);
+     };
+     painter.setPen(QPen(ink, int(sleepMetrics::border)));
+@@ -233,9 +240,14 @@ void paintBookmark(QPainter &painter, const QRect &ribbon, const Content &conten
+     else
+         centered(content.progress, lines.detail, y, lines.figureHeight);
+     y += lines.figureHeight + int(sleepMetrics::ribbonGap) / 2;
+-    if (!content.remaining.isEmpty())
+-        centered(content.remaining, lines.detail, y, lines.detailHeight);
+-    y += lines.detailHeight + int(sleepMetrics::ribbonGap);
++    const auto remainingLines = sleepRibbonRemainingLines(content.remaining);
++    for (const auto &line : remainingLines) {
++        centered(line, lines.detail, y, lines.detailHeight);
++        y += lines.detailHeight;
++    }
++    // A status/battery update must not change the ribbon's reserved geometry.
++    y = ribbon.top() + lines.height() - int(sleepMetrics::ribbonNotch)
++            - int(sleepMetrics::ribbonGap) - lines.batteryHeight;
+     if (content.showsBattery()) {
+         const auto battery = sleepBattery(content.batteryPercent);
+         paintSleepBattery(painter, battery, ribbon.left() + (ribbon.width() - battery.width()) / 2,
+diff --git a/src/app/reader/views/sleep_screen.h b/src/app/reader/views/sleep_screen.h
+index b9ef681b..b1e3131d 100644
+--- a/src/app/reader/views/sleep_screen.h
++++ b/src/app/reader/views/sleep_screen.h
+@@ -4,6 +4,7 @@
+ 
+ #include <QImage>
+ #include <QString>
++#include <QStringList>
+ #include <QRect>
+ #include <QVector>
+ 
+@@ -21,6 +22,7 @@ void portraitSleepSnapshot(sleep::Snapshot &snapshot);
+ // Approximate rounds up to quarter-hours below an hour, then whole hours.
+ // Negative estimates have no label; Approximate also omits zero.
+ QString sleepTimeLeft(qint64 milliseconds, bool approximate = false);
++QStringList sleepRibbonRemainingLines(const QString &remaining);
+ // The same duration without "to go", for sentences that phrase it themselves.
+ QString sleepDuration(qint64 milliseconds, bool approximate = false);
+ // Fits the cover without cropping. Unused space is always black.
+diff --git a/src/reading/fork_text_preset_names.h b/src/reading/fork_text_preset_names.h
+new file mode 100644
+index 00000000..a128d117
+--- /dev/null
++++ b/src/reading/fork_text_preset_names.h
+@@ -0,0 +1,26 @@
++#pragma once
++#include "text_presets.h"
++#include "support/strings.h"
++
++namespace kobalt::textpresets {
++// Example names were saved in the UI language that first created the list.
++// Localize only recognized shipped names at presentation time; never rename
++// user presets, rewrite saved data, or discard edited typography.
++inline QString displayName(const Preset &preset)
++{
++    if (!preset.example
++        || (preset.id != "kobalt" && preset.id != "bookish" && preset.id != "modern"
++            && preset.id != "classic"))
++        return preset.name;
++    const auto key = QByteArray("text_presets.example_") + preset.id.toUtf8();
++    int count = 0;
++    const auto *table = strings::entries(&count);
++    const auto *english = strings::detail::find(table, count, key.constData());
++    table = strings::detail::russianTable(&count);
++    const auto *russian = strings::detail::find(table, count, key.constData());
++    if ((english && preset.name == QString::fromUtf8(english->value))
++        || (russian && preset.name == QString::fromUtf8(russian->value)))
++        return strings::get(key.constData());
++    return preset.name;
++}
++} // namespace kobalt::textpresets
+diff --git a/src/reading/text_presets.cpp b/src/reading/text_presets.cpp
+index 2703295b..ec384c38 100644
+--- a/src/reading/text_presets.cpp
++++ b/src/reading/text_presets.cpp
+@@ -62,7 +62,7 @@ bool fromJson(const QJsonValue &value, Preset &preset)
+     preset = {};
+     preset.id = id;
+     preset.name = name;
+-    preset.fontFace = face;
++    preset.fontFace = localeReadingFamily(face);
+     preset.halfPoints = object.value("half_points").toInt();
+     const auto spacing = object.value("line_spacing");
+     preset.lineSpacing =
+@@ -113,9 +113,9 @@ QVector<Preset> examples()
+     return {
+         // Kobalt matches the book defaults. Modern uses the same text in Jost.
+         // Bookish and Classic use slightly larger, heavier text.
+-        example("kobalt", "text_presets.example_kobalt", defaultFontFace, 22, defaultLineSpacing,
++        example("kobalt", "text_presets.example_kobalt", localeDefaultFontFace(), 22, defaultLineSpacing,
+                 "left", "off"),
+-        example("bookish", "text_presets.example_bookish", "NV Ancizar Serif", 23, 140, "left",
++        example("bookish", "text_presets.example_bookish", localeBookishFontFace(), 23, 140, "left",
+                 "off", 2),
+         example("modern", "text_presets.example_modern", "NV Jost", 22, defaultLineSpacing, "left",
+                 "off"),
+@@ -188,7 +188,7 @@ void clean(QJsonObject &preferences)
+ Preset capture(const QJsonObject &state)
+ {
+     Preset preset;
+-    preset.fontFace = state.value("font_face").toString(QString::fromLatin1(defaultFontFace));
++    preset.fontFace = localeReadingFamily(state.value("font_face").toString(QString::fromLatin1(localeDefaultFontFace())));
+     preset.halfPoints =
+             qBound(minimumHalfPoints,
+                    pixelHalfPoints(state.value("font_pixels").toInt(defaultFontPixels())),
+diff --git a/src/storage/annotation_export.cpp b/src/storage/annotation_export.cpp
+index 6bca8afa..82fb742b 100644
+--- a/src/storage/annotation_export.cpp
++++ b/src/storage/annotation_export.cpp
+@@ -136,7 +136,7 @@ QByteArray document(const QString &title, const QString &author, const QVector<H
+     }
+     const bool embeddedFont = !font.isEmpty();
+     const auto fontStyle = embeddedFont
+-            ? QStringLiteral("@font-face{font-family:'Kobalt Libron';src:url(data:font/ttf;base64,")
++            ? QStringLiteral("@font-face{font-family:'Kobalt Export Body';src:url(data:font/ttf;base64,")
+                     + QString::fromLatin1(font.toBase64())
+                     + ") format('truetype');font-weight:400;font-style:normal;font-display:swap;}"
+             : QString();
+@@ -207,7 +207,7 @@ QByteArray document(const QString &title, const QString &author, const QVector<H
+     html += "</div><div id=\"chronological\" class=\"chronological\" hidden></div><footer><span>Exported from Kobalt. Print includes all "
+             + kind + " in the selected order.</span><a href=\"#top\">Back to top ↑</a></footer>";
+     if (embeddedFont)
+-        html += "<!-- Libron is licensed under the SIL Open Font License (OFL) 1.1. https://openfontlicense.org/ -->";
++        html += "<!-- Embedded body font is licensed under the SIL Open Font License (OFL) 1.1. https://openfontlicense.org/ -->";
+     html += "</main><script>" + QString::fromUtf8(annotation_export::search)
+             + "</script></body></html>";
+     return html.toUtf8();
+diff --git a/src/support/build_info.h.in b/src/support/build_info.h.in
+index e3d4f09f..f2ab9e0a 100644
+--- a/src/support/build_info.h.in
++++ b/src/support/build_info.h.in
+@@ -3,3 +3,8 @@
+ constexpr auto kobaltCommit = "@KOBALT_COMMIT@";
+ // Whether the sources had uncommitted changes.
+ #cmakedefine01 KOBALT_COMMIT_MODIFIED
++// Fork distribution identifier shown on the About page. Empty in generic
++// builds, which keeps the upstream About layout unchanged.
++constexpr auto kobaltForkName = "@KOBALT_FORK_NAME@";
++// Configure-time UTC timestamp, rendered on the fork's About row.
++constexpr auto kobaltBuildTime = "@KOBALT_BUILD_TIME@";
+diff --git a/src/support/locale.cpp b/src/support/locale.cpp
+new file mode 100644
+index 00000000..64f8e046
+--- /dev/null
++++ b/src/support/locale.cpp
+@@ -0,0 +1,58 @@
++#include "support/locale.h"
++
++#include "support/qt_compat.h"
++
++#include <QFileInfo>
++#include <QLocale>
++#include <QSettings>
++#include <QString>
++#include <QStringList>
++
++namespace kobalt {
++namespace {
++constexpr auto koboReaderConf = "/mnt/onboard/.kobo/Kobo/Kobo eReader.conf";
++} // namespace
++
++strings::Locale localeFromKoboConfig(const QString &confPath) {
++    const QFileInfo info(confPath);
++    if (!info.isFile() || !info.isReadable())
++        return strings::Locale::English;
++    const QSettings settings(confPath, QSettings::IniFormat);
++    // Localization patches always register their language in ExtraLocales,
++    // while older patches leave CurrentLocale at the placeholder "C". The
++    // value is a comma-separated list (e.g. "ru" or "en_GB, ru_RU"), so a
++    // Russian token there is the most reliable sign of a Russian device.
++    // QSettings parses unquoted comma-separated INI values as QStringList;
++    // a quoted list stays a single QString. Accept both representations.
++    const auto extraLocales = settings.value("ApplicationPreferences/ExtraLocales").toStringList();
++    for (const auto &locales : extraLocales) {
++        for (const auto &token : locales.split(QLatin1Char(','), kobalt::qt::skipEmptyParts)) {
++            if (strings::normalizeLocaleCode(token.trimmed()) == strings::Locale::Russian)
++                return strings::Locale::Russian;
++        }
++    }
++    const auto code = settings.value("ApplicationPreferences/CurrentLocale").toString();
++    // "C" and "POSIX" mean no real locale selection, as shipped by old patches.
++    if (code.isEmpty() || code == QLatin1String("C") || code == QLatin1String("POSIX"))
++        return strings::Locale::English;
++    return strings::normalizeLocaleCode(code);
++}
++
++strings::Locale resolveLocale(const QString &diagnosticsDirectory) {
++    // A persistent explicit debug choice wins even if Nickel's environment
++    // carries a locale override. Automatic retains the previous ENV/config chain.
++    switch (debugLanguage(diagnosticsDirectory)) {
++    case DebugLanguage::English: return strings::Locale::English;
++    case DebugLanguage::Russian: return strings::Locale::Russian;
++    case DebugLanguage::Automatic: break;
++    }
++    const auto forced = qgetenv("KOBALT_LANGUAGE");
++    if (!forced.isEmpty())
++        return strings::normalizeLocaleCode(QString::fromLatin1(forced));
++    // On a Kobo the firmware config is authoritative when it exists. Desktop
++    // and Android builds have no such file and follow the system locale.
++    if (QFileInfo::exists(QString::fromLatin1(koboReaderConf)))
++        return localeFromKoboConfig(QString::fromLatin1(koboReaderConf));
++    return strings::normalizeLocaleCode(QLocale::system().name());
++}
++} // namespace kobalt
+diff --git a/src/support/locale.h b/src/support/locale.h
+new file mode 100644
+index 00000000..4d759e6e
+--- /dev/null
++++ b/src/support/locale.h
+@@ -0,0 +1,16 @@
++#pragma once
++#include "support/strings.h"
++#include "support/debug_language.h"
++
++
++namespace kobalt {
++// Resolve the interface locale once at startup. The order is:
++// diagnostics .lang_en/.lang_ru markers, KOBALT_LANGUAGE, Kobo config,
++// then the operating-system locale. Every unknown value falls back to English.
++strings::Locale resolveLocale(const QString &diagnosticsDirectory = QString::fromLatin1(debugLanguageDirectory));
++// Read a Kobo-style INI file. A Russian entry in ApplicationPreferences/
++// ExtraLocales wins first (localization patches always set it, while old
++// patches leave CurrentLocale at "C"); CurrentLocale is consulted afterwards.
++// A missing file or key is an English fallback, never a startup failure.
++strings::Locale localeFromKoboConfig(const QString &confPath);
++} // namespace kobalt
+diff --git a/src/ui/controls/buttons.cpp b/src/ui/controls/buttons.cpp
+index 1a12337a..733b3afa 100644
+--- a/src/ui/controls/buttons.cpp
++++ b/src/ui/controls/buttons.cpp
+@@ -1,3 +1,4 @@
++#include "ui/style/locale_text.h"
+ #include "buttons.h"
+ #include "text.h"
+ #include "ui/style/private_text.h"
+@@ -21,6 +22,8 @@ namespace kobalt::ui {
+ void Button::initStyleOption(QStyleOptionButton *option) const
+ {
+     QPushButton::initStyleOption(option);
++    if (!highlightChecked)
++        option->state &= ~QStyle::State_On;
+     // Keep keyboard focus without drawing Nickel's focus frame on reader buttons.
+     option->state &= ~QStyle::State_HasFocus;
+ }
+@@ -79,7 +82,7 @@ void Button::paintEvent(QPaintEvent *)
+             // Checkable controls, keyboard keys and primary actions use inverted content.
+             const bool invertPressed = isCheckable() || property("reader_invert_pressed").toBool();
+             const bool active = isEnabled()
+-                    && (primary ? !isDown() : invertPressed && (isChecked() || isDown()));
++                    && (primary ? !isDown() : invertPressed && ((highlightChecked && isChecked()) || isDown()));
+             const auto colors = primary
+                     ? readerPalette(palette(), darkTheme(this), interfacePalette(this))
+                     : palette();
+@@ -102,7 +105,7 @@ void Button::paintEvent(QPaintEvent *)
+                 }
+                 icon().paint(&painter, area, Qt::AlignCenter,
+                              isEnabled() ? QIcon::Normal : QIcon::Disabled,
+-                             active ? QIcon::On : QIcon::Off);
++                             (iconShowsStateWithoutFill() ? isChecked() : active) ? QIcon::On : QIcon::Off);
+             };
+             if (iconAboveLabel) {
+                 // Capitals' height is the label's ink, so the icon and that
+@@ -112,7 +115,10 @@ void Button::paintEvent(QPaintEvent *)
+                 const QRect area((width() - iconSize().width()) / 2, top, iconSize().width(),
+                                  iconSize().height());
+                 paintIcon(area);
+-                drawOpticalText(painter, QRect(0, area.bottom() + 1 + gap, width(), capital),
++                // Preserve the common baseline while allowing the full Cyrillic ink box.
++                drawOpticalText(painter,
++                                localeLabelInkRect(QRect(0, area.bottom() + 1 + gap, width(), capital),
++                                                   text(), font()),
+                                 text(), true);
+                 return;
+             }
+@@ -158,7 +164,8 @@ void Button::paintEvent(QPaintEvent *)
+         return;
+     }
+     QPainter painter(this);
+-    const bool active = isEnabled() && (isChecked() || isDown());
++    const bool active = !iconShowsStateWithoutFill() && isEnabled()
++            && ((highlightChecked && isChecked()) || isDown());
+     const auto ink = palette().color(isEnabled() ? QPalette::WindowText : QPalette::Mid);
+     const auto paper = fill == QPalette::Midlight ? sectionColor(this) : palette().color(fill);
+     const bool toolbar =
+@@ -198,7 +205,7 @@ void Button::paintEvent(QPaintEvent *)
+             paintStyledIcon(painter, style, configuredIcon.glyph, bounds, active ? paper : ink);
+         } else {
+             icon().paint(&painter, bounds, Qt::AlignCenter, QIcon::Normal,
+-                         active ? QIcon::On : QIcon::Off);
++                         (iconShowsStateWithoutFill() ? isChecked() : active) ? QIcon::On : QIcon::Off);
+         }
+     }
+ }
+diff --git a/src/ui/controls/buttons.h b/src/ui/controls/buttons.h
+index 7c882024..afe35446 100644
+--- a/src/ui/controls/buttons.h
++++ b/src/ui/controls/buttons.h
+@@ -22,7 +22,11 @@ class Button : public QPushButton
+ public:
+     using QPushButton::QPushButton;
+     void setPaintMode(ButtonPaintMode mode);
+-
++    // Theme toggles already express their state through the global palette.
++    void setHighlightChecked(bool enabled) {
++        highlightChecked = enabled;
++        update();
++    }
+     // Content stays vertically centered in either horizontal alignment.
+     void setContentAlignment(Qt::Alignment alignment)
+     {
+@@ -53,6 +57,9 @@ public:
+     }
+ 
+     void refreshIcon();
++    bool iconShowsStateWithoutFill() const {
++        return hasConfiguredIcon && configuredIcon.stateInkOnly;
++    }
+ 
+     void setIconLabelGap(int pixels)
+     {
+@@ -93,6 +100,7 @@ private:
+     Qt::Alignment contentAlignment = Qt::AlignHCenter;
+     int iconLabelGap = 0;
+     bool iconAboveLabel = false;
++    bool highlightChecked = true;
+     bool hasConfiguredIcon = false, hasIconTheme = false;
+     QColor iconInk;
+ };
+diff --git a/src/ui/controls/fork_icon_geometry.cpp b/src/ui/controls/fork_icon_geometry.cpp
+new file mode 100644
+index 00000000..5924d595
+--- /dev/null
++++ b/src/ui/controls/fork_icon_geometry.cpp
+@@ -0,0 +1,36 @@
++#include "fork_icon_geometry.h"
++#include <QPainterPath>
++
++namespace kobalt::ui::forkicons {
++void comicsGeometry(QPainterPath &path)
++{
++    // A flattened oval and swept, curved tail follow the user's reference.
++    path.moveTo(112, 184);
++    path.cubicTo(61, 184, 24, 157, 24, 118);
++    path.cubicTo(24, 79, 70, 48, 128, 48);
++    path.cubicTo(186, 48, 232, 79, 232, 118);
++    path.cubicTo(232, 153, 201, 178, 158, 184);
++    path.cubicTo(142, 208, 108, 222, 70, 228);
++    path.cubicTo(96, 213, 112, 200, 112, 184);
++    path.closeSubpath();
++}
++
++// Microsoft Fluent UI "ic_fluent_dark_theme_24_regular" (MIT), re-scaled from
++// its 24 unit viewBox to the shared 256 unit toolbar canvas. The two subpaths
++// wind in opposite directions, so the overlapping right half stays hollow
++// under either fill rule and the glyph reads as a half-filled contrast circle.
++void darkThemeGeometry(QPainterPath &path)
++{
++    path.moveTo(128, 234.6667);
++    path.cubicTo(186.9104, 234.6667, 234.6667, 186.9104, 234.6667, 128);
++    path.cubicTo(234.6667, 69.0896, 186.9104, 21.3333, 128, 21.3333);
++    path.cubicTo(69.0896, 21.3333, 21.3333, 69.0896, 21.3333, 128);
++    path.cubicTo(21.3333, 186.9104, 69.0896, 234.6667, 128, 234.6667);
++    path.closeSubpath();
++    path.moveTo(128, 218.6667);
++    path.lineTo(128, 37.3333);
++    path.cubicTo(178.0738, 37.3333, 218.6667, 77.9262, 218.6667, 128);
++    path.cubicTo(218.6667, 178.0738, 178.0738, 218.6667, 128, 218.6667);
++    path.closeSubpath();
++}
++} // namespace kobalt::ui::forkicons
+diff --git a/src/ui/controls/fork_icon_geometry.h b/src/ui/controls/fork_icon_geometry.h
+new file mode 100644
+index 00000000..5fa2a879
+--- /dev/null
++++ b/src/ui/controls/fork_icon_geometry.h
+@@ -0,0 +1,8 @@
++#pragma once
++class QPainterPath;
++
++namespace kobalt::ui::forkicons {
++// Shared action canvas, colours and stroke remain owned by icons.cpp.
++void comicsGeometry(QPainterPath &path);
++void darkThemeGeometry(QPainterPath &path);
++} // namespace kobalt::ui::forkicons
+diff --git a/src/ui/controls/highlight_palette.h b/src/ui/controls/highlight_palette.h
+index 6caa8147..83e4238f 100644
+--- a/src/ui/controls/highlight_palette.h
++++ b/src/ui/controls/highlight_palette.h
+@@ -16,8 +16,6 @@
+ #include <functional>
+ 
+ namespace kobalt::ui {
+-// The swatch's name is its accessible name. The circles carry no labels, so
+-// that the popover stays small.
+ class HighlightSwatch : public QAbstractButton
+ {
+ public:
+@@ -28,9 +26,10 @@ public:
+         setText(label);
+         setAccessibleName(label);
+         setCheckable(true);
+-        setFixedHeight(px(76));
++        setFixedHeight(px(88));
+         setMinimumWidth(0);
+         setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
++        setFont(interfaceFont(px(23)));
+     }
+ 
+ protected:
+@@ -44,8 +43,16 @@ protected:
+         const auto ink = palette().color(QPalette::WindowText);
+         const int pen = px(2), ring = px(5);
+         const int inset = ring + (pen + 1) / 2 + px(2);
+-        const int diameter = qMax(px(24), qMin(px(48), qMin(width(), height()) - 2 * inset));
+-        const QRect chip((width() - diameter) / 2, (height() - diameter) / 2, diameter, diameter);
++        const int diameter = qMax(px(24), qMin(px(48), width() - 2 * inset));
++        auto labelFont = font();
++        labelFont.setPixelSize(qMin(px(23), qMax(px(16), width() / 3)));
++        const auto labelLine = interfaceInkBounds(QStringLiteral("Ag"), labelFont);
++        const int ringExtent = ring + (pen + 1) / 2;
++        const int gap = px(5);
++        // Center the visible circle, selection ring and label as one group.
++        const int contentHeight = 2 * ringExtent + diameter + gap + labelLine.height();
++        const int top = (height() - contentHeight) / 2;
++        const QRect chip((width() - diameter) / 2, top + ringExtent, diameter, diameter);
+         p.setPen(QPen(ink, pen));
+         p.setBrush(render::highlightTint(key));
+         p.drawEllipse(chip);
+@@ -57,6 +64,16 @@ protected:
+             p.drawLine(chip.center() + QPoint(-px(3), px(10)),
+                        chip.center() + QPoint(px(14), -px(13)));
+         }
++        p.setPen(ink);
++        p.setFont(labelFont);
++        // The layout above reserves the ink of "Ag" below the chip. The text is
++        // drawn from its line box, which starts above the ink, so raise the
++        // box by that distance. Otherwise the descenders of "Yellow" and
++        // "Gray" fall below the swatch and are cut off.
++        const int inkTop = chip.y() + diameter + ringExtent + gap;
++        const int lineTop = inkTop - (interfaceLineAscent(labelFont) + labelLine.top());
++        drawInterfaceText(p, QRect(0, lineTop, width(), interfaceLineHeight(labelFont)), text(),
++                          Qt::AlignHCenter | Qt::AlignTop);
+     }
+ 
+ private:
+@@ -74,7 +91,7 @@ public:
+         parent->installEventFilter(this);
+         setFixedHeight(compactHeight());
+         auto *layout = new QVBoxLayout(this);
+-        layout->setContentsMargins(px(28), px(4), px(28), px(4));
++        layout->setContentsMargins(px(28), px(12), px(28), px(12));
+         layout->setSpacing(px(4));
+         auto *row = new QHBoxLayout;
+         row->setSpacing(px(12));
+@@ -106,7 +123,7 @@ public:
+         error->hide();
+     }
+ 
+-    static int compactHeight() { return px(84); }
++    static int compactHeight() { return px(112); }
+ 
+     void setError(const QString &message)
+     {
+@@ -207,21 +224,19 @@ class HighlightStyleSample : public Button
+ {
+ public:
+     HighlightStyleSample(const QString &style, const QString &label, bool last, QWidget *parent)
+-        : Button(parent), style(style), last(last)
++        : Button(parent), style(style), label(label), last(last)
+     {
+         setObjectName("rrAnnotationStyle_" + style);
+         setAccessibleName(label);
+         setCheckable(true);
+         setPaintMode(ButtonPaintMode::ToolbarCell);
+-        setFixedHeight(height());
++        setFixedHeight(px(104));
+         setMinimumWidth(0);
+         setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+-        setFont(interfaceFont(px(21)));
+-        readerStyle(this, styles::font(px(21)));
++        setFont(interfaceFont(px(23)));
++        readerStyle(this, styles::font(px(23)));
+     }
+ 
+-    static int height() { return px(80); }
+-
+     void setColor(const QString &key)
+     {
+         color = render::highlightTint(key);
+@@ -234,17 +249,16 @@ protected:
+         QPainter p(this);
+         p.fillRect(rect(), isDown() ? sectionColor(this) : palette().color(QPalette::Window));
+         const auto ink = palette().color(QPalette::WindowText);
+-        // The sample is its own label; its name is the accessible name. The
+-        // check sits beside the sample, centered on it.
+-        const int sampleWidth = px(76), gap = px(10), side = px(20);
+-        const QRect sample((width() - sampleWidth) / 2, (QWidget::height() - px(44)) / 2,
+-                           sampleWidth, px(44));
+-        p.setFont(interfaceFont(px(30)));
++        const QRect sample((width() - px(90)) / 2, px(8), px(90), px(44));
++        p.setFont(interfaceFont(px(32)));
+         p.setPen(ink);
+         drawInterfaceText(p, sample, QStringLiteral("Abc"), Qt::AlignCenter);
+         render::paintHighlightMark(p, { sample }, QRegion(sample), color, style, darkTheme(this));
++        p.setFont(font());
++        drawInterfaceText(p, QRect(px(6), px(62), width() - px(12), px(30)), label,
++                          Qt::AlignCenter);
+         if (isChecked()) {
+-            const QRect check(sample.right() + 1 + gap, sample.center().y() - side / 2, side, side);
++            const QRect check(width() - px(40), px(10), px(24), px(24));
+             p.setRenderHint(QPainter::Antialiasing);
+             p.setPen(QPen(ink, px(3), Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+             QPolygonF mark;
+@@ -257,7 +271,7 @@ protected:
+     }
+ 
+ private:
+-    QString style;
++    QString style, label;
+     QColor color = render::highlightTint("gray");
+     bool last;
+ };
+@@ -296,7 +310,7 @@ public:
+         error->setContentsMargins(px(20), px(4), px(20), px(12));
+         layout->addWidget(error);
+         error->hide();
+-        setFixedHeight(HighlightStyleSample::height());
++        setFixedHeight(px(104));
+     }
+ 
+     void setSelectedStyle(const QString &selected)
+@@ -317,7 +331,7 @@ public:
+         setSelectedStyle(selected);
+         error->setText(message);
+         error->show();
+-        setFixedHeight(HighlightStyleSample::height()
++        setFixedHeight(px(104)
+                        + qMax(error->sizeHint().height(), error->heightForWidth(qMax(1, width()))));
+     }
+ 
+diff --git a/src/ui/controls/icons.cpp b/src/ui/controls/icons.cpp
+index c369dbc3..987fccd6 100644
+--- a/src/ui/controls/icons.cpp
++++ b/src/ui/controls/icons.cpp
+@@ -1,4 +1,5 @@
+ #include "icons.h"
++#include "fork_icon_geometry.h"
+ #include "buttons.h"
+ #include "ui/style/metrics.h"
+ #include "ui/style/theme.h"
+@@ -692,6 +693,17 @@ Geometry geometry(ControlIcon icon, bool sideButtons)
+         transform.rotate(-90 * (int(icon) - int(ControlIcon::Portrait)));
+         transform.translate(-12, -12);
+         path = transform.map(path);
++    } else if (icon == ControlIcon::Comics) {
++        // Speech bubble, using the same canvas and stroke as regular action icons.
++        result.canvas = 256;
++        result.stroke = 16;
++        forkicons::comicsGeometry(path);
++    } else if (icon == ControlIcon::DarkTheme) {
++        // The Fluent dark-theme asset ships beside the checked Phosphor set
++        // but uses its own snapshot instead of the Phosphor name table.
++        result.canvas = 256;
++        result.filled = true;
++        forkicons::darkThemeGeometry(path);
+     } else {
+         static const char *const names[] = { "magnifying-glass",
+                                              "sun",
+@@ -744,7 +756,7 @@ Geometry geometry(ControlIcon icon, bool sideButtons)
+ }
+ 
+ void paintGeometry(QPainter &painter, const Geometry &shape, ControlIcon glyph, const QRectF &rect,
+-                   QColor color, IconRendition rendition)
++                   QColor color, IconRendition rendition, bool fill = false)
+ {
+     if (rect.isEmpty() || shape.path.isEmpty())
+         return;
+@@ -782,7 +794,7 @@ void paintGeometry(QPainter &painter, const Geometry &shape, ControlIcon glyph,
+         painter.scale(side / shape.canvas, side / shape.canvas);
+     painter.setPen(shape.filled ? QPen(Qt::NoPen)
+                                 : QPen(color, shape.stroke, Qt::SolidLine, shape.cap, shape.join));
+-    painter.setBrush(shape.filled ? QBrush(color) : QBrush(Qt::NoBrush));
++    painter.setBrush(shape.filled || fill ? QBrush(color) : QBrush(Qt::NoBrush));
+     painter.drawPath(shape.path);
+     painter.restore();
+ }
+@@ -891,7 +903,8 @@ private:
+         painter->save();
+         if (mode == QIcon::Disabled)
+             painter->setOpacity(painter->opacity() * .4);
+-        paintGeometry(*painter, shape, glyph, rect, state == QIcon::On ? active : color, rendition);
++        paintGeometry(*painter, shape, glyph, rect, state == QIcon::On ? active : color, rendition,
++                      glyph == ControlIcon::Comics && state == QIcon::On);
+         painter->restore();
+     }
+ 
+@@ -977,9 +990,9 @@ void Button::refreshIcon()
+     if (hasIconTheme && iconInk == colors.ink)
+         return;
+     const auto &configuration = configuredIcon;
+-    setIcon(QIcon(new VectorIconEngine(configuration.glyph, colors.ink,
++    setIcon(QIcon(new VectorIconEngine(configuration.glyph, configuration.stateInkOnly ? colors.disabledInk : colors.ink,
+                                        configuration.rotationSideButtons, configuration.rendition,
+-                                       colors.paper)));
++                                       configuration.stateInkOnly ? colors.ink : colors.paper)));
+     iconInk = colors.ink;
+     hasIconTheme = true;
+ }
+diff --git a/src/ui/controls/icons.h b/src/ui/controls/icons.h
+index 40d3b1e8..1e3dedaf 100644
+--- a/src/ui/controls/icons.h
++++ b/src/ui/controls/icons.h
+@@ -91,6 +91,9 @@ enum class ControlIcon {
+     SpreadVertical,
+     MagicWand,
+     Hidden,
++    // Fork-only quick toggle for the display settings' dark mode.
++    DarkTheme,
++    Comics,
+     WidowsOrphans,
+     HangingPunctuation,
+     Star,
+@@ -206,11 +209,14 @@ struct ButtonIcon
+     ControlIcon glyph;
+     IconRendition rendition = IconRendition::OriginalAsset;
+     bool rotationSideButtons = false;
++    // State is shown by ink only, never an inverted checked/pressed background.
++    bool stateInkOnly = false;
+ 
+     bool operator==(const ButtonIcon &other) const
+     {
+         return glyph == other.glyph && rendition == other.rendition
+-                && rotationSideButtons == other.rotationSideButtons;
++                && rotationSideButtons == other.rotationSideButtons
++                && stateInkOnly == other.stateInkOnly;
+     }
+ };
+ 
+diff --git a/src/ui/controls/options.cpp b/src/ui/controls/options.cpp
+index 71c11694..4b45cfad 100644
+--- a/src/ui/controls/options.cpp
++++ b/src/ui/controls/options.cpp
+@@ -15,6 +15,19 @@
+ #include <QPointer>
+ 
+ namespace kobalt::ui {
++void stylePanelCheckbox(DescribedOption *option)
++{
++    DescribedOption::Presentation presentation;
++    presentation.indicator = DescribedOption::Indicator::Square;
++    presentation.labelPixels = metrics::chrome::labelText;
++    presentation.descriptionPixels = metrics::chrome::descriptionText;
++    presentation.indicatorSize = { metrics::chrome::checkSize, metrics::chrome::checkSize };
++    presentation.leadingIndicator = true;
++    presentation.minimumRowHeight = metrics::control::stepSize;
++    presentation.descriptionPadding = 0;
++    option->setPresentation(presentation);
++}
++
+ void DescribedOption::mouseReleaseEvent(QMouseEvent *event)
+ {
+     // Batch Qt's released-state paint with the changes made by clicked.
+@@ -353,12 +366,13 @@ void DescribedOption::paintEvent(QPaintEvent *)
+         painter.setBrush(isChecked() ? ink : paper);
+         painter.drawRect(track);
+         if (isChecked()) {
+-            painter.setPen(QPen(paper, px(4), Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
++            const qreal sx = box.width() / 48.0, sy = box.height() / 48.0;
++            painter.setPen(QPen(paper, 4 * qMin(sx, sy), Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+             QPolygonF check;
+-            // The tick is drawn for a 48 pixel box and scales with it.
+-            check << QPointF(box.left() + px(11), box.top() + px(24))
+-                  << QPointF(box.left() + px(21), box.top() + px(34))
+-                  << QPointF(box.left() + px(37), box.top() + px(14));
++            // Normalize to the actual indicator, not the old fixed 48px canvas.
++            check << QPointF(box.left() + 11 * sx, box.top() + 24 * sy)
++                  << QPointF(box.left() + 21 * sx, box.top() + 34 * sy)
++                  << QPointF(box.left() + 37 * sx, box.top() + 14 * sy);
+             painter.drawPolyline(check);
+         }
+     } else {
+diff --git a/src/ui/controls/options.h b/src/ui/controls/options.h
+index 3eb5bc3f..77eb42b3 100644
+--- a/src/ui/controls/options.h
++++ b/src/ui/controls/options.h
+@@ -162,4 +162,5 @@ private:
+     bool topDivider = false, uniformRows = true, twoColumns = false;
+     void arrange();
+ };
++void stylePanelCheckbox(DescribedOption *option);
+ } // namespace kobalt::ui
+diff --git a/src/ui/controls/return_title_text.h b/src/ui/controls/return_title_text.h
+new file mode 100644
+index 00000000..821fbf12
+--- /dev/null
++++ b/src/ui/controls/return_title_text.h
+@@ -0,0 +1,78 @@
++#pragma once
++#include "ui/controls/text.h"
++#include "ui/style/fonts.h"
++#include "ui/style/private_text.h"
++#include "ui/style/metrics.h"
++#include "support/strings.h"
++#include <QPainter>
++#include <QVector>
++#include <QPair>
++
++namespace kobalt::ui {
++// Shared measurement/painting of an interface caption with a serif brand run.
++inline QVector<QPair<QString, QFont>> returnTitleRuns(const InterfaceLabel &label) {
++    QVector<QPair<QString, QFont>> runs;
++    // The label's QSS already uses the scaled locale font. Keep its nominal
++    // design size separately so the brand is neither shrunk nor double-scaled.
++    const int pixels = label.property("wordmark_pixels").isValid()
++            ? label.property("wordmark_pixels").toInt() : label.font().pixelSize();
++    auto face = brandFont(pixels, false);
++    face.setItalic(false);
++    // Enlarge only the RU close caption, not Kobalt or the global serif role.
++    if (strings::locale() == strings::Locale::Russian)
++        face.setPixelSize(qMax(1, qRound(pixels * .90)));
++    const int at = label.text().indexOf(QStringLiteral("Kobalt"), 0, Qt::CaseInsensitive);
++    if (at < 0) {
++        runs.append({label.text(), face});
++    } else {
++        if (at) runs.append({label.text().left(at), face});
++        runs.append({label.text().mid(at, 6), wordmarkFont(pixels)});
++        if (at + 6 < label.text().size()) runs.append({label.text().mid(at + 6), face});
++    }
++    return runs;
++}
++
++inline QSize returnTitleSizeHint(const InterfaceLabel &label) {
++    label.ensurePolished();
++    int width = 0, height = 0;
++    for (const auto &run : returnTitleRuns(label)) {
++        width += interfaceTextWidth(run.first, run.second);
++        height = qMax(height, interfaceLineHeight(run.second));
++    }
++    const auto margins = label.contentsMargins();
++    return {width + margins.left() + margins.right() + 2 * label.margin(),
++            height + margins.top() + margins.bottom() + 2 * label.margin()};
++}
++
++inline void paintReturnTitle(QPainter &painter, const QRect &bounds, const InterfaceLabel &label) {
++    // Preserve the brand word, but draw the surrounding interface text
++    // in the locale UI face. Measure and paint the same runs on a common baseline.
++    const auto runs = returnTitleRuns(label);
++    QRect ink;
++    int advance = 0;
++    for (const auto &run : runs) {
++        ink |= interfaceInkBounds(run.first, run.second).translated(advance, 0);
++        advance += interfaceTextWidth(run.first, run.second);
++    }
++    const int x = bounds.center().x() - ink.center().x();
++    const int baseline = bounds.center().y() - ink.center().y() + int(metrics::chrome::returnTitleOffset);
++    painter.setClipRect(bounds);
++    advance = 0;
++    for (const auto &run : runs) {
++        painter.setFont(run.second);
++        if (needsPrivateText(run.first, run.second)) {
++            auto rendered = renderPrivateText(run.first, run.second);
++            if (!rendered.image.isNull()) {
++                QPainter tint(&rendered.image);
++                tint.setCompositionMode(QPainter::CompositionMode_SourceIn);
++                tint.fillRect(rendered.image.rect(), painter.pen().color());
++                tint.end();
++                painter.drawImage(QPoint(x + advance, baseline) + rendered.origin, rendered.image);
++            }
++        } else {
++            painter.drawText(QPoint(x + advance, baseline), run.first);
++        }
++        advance += interfaceTextWidth(run.first, run.second);
++    }
++}
++} // namespace kobalt::ui
+diff --git a/src/ui/controls/rows.cpp b/src/ui/controls/rows.cpp
+index 898ec912..de2b46b6 100644
+--- a/src/ui/controls/rows.cpp
++++ b/src/ui/controls/rows.cpp
+@@ -240,9 +240,9 @@ void ListRow::setLabelFont(PrivateTextLabel *label, int index, const QFont &font
+     family.replace('\\', "\\\\");
+     family.replace('"', "\\\"");
+     const auto style =
+-            QString("font-family:\"%1\";font-size:%2px;font-weight:400;font-style:normal;background:transparent;border:none;")
++            QString("font-family:\"%1\";font-size:%2px;font-weight:400;font-style:%3;background:transparent;border:none;")
+                     .arg(family)
+-                    .arg(font.pixelSize());
++                    .arg(font.pixelSize()).arg(font.italic() ? "italic" : "normal");
+     if (labelStyles[index] == style) {
+         return;
+     }
+diff --git a/src/ui/style/private_text.cpp b/src/ui/style/private_text.cpp
+index dca6151c..c7d45f74 100644
+--- a/src/ui/style/private_text.cpp
++++ b/src/ui/style/private_text.cpp
+@@ -1,4 +1,5 @@
+ #include "private_text.h"
++#include "support/strings.h"
+ #include "ui/controls/text.h"
+ 
+ #include "fonts.h"
+@@ -479,6 +480,9 @@ GlyphMask glyphMask(FT_Face face, uint glyph, FT_Pos strength, bool slant)
+ QString primaryFile(const QFont &font)
+ {
+     const bool bold = font.weight() >= QFont::Bold;
++    // Resolve the localized serif before the generic Instrument Serif role.
++    if (strings::locale() == strings::Locale::Russian && font.family() == "Noto Serif Display Condensed")
++        return font.italic() ? "NotoSerifDisplay_Condensed-Italic.ttf" : "NotoSerifDisplay_Condensed-Regular.ttf";
+     if (font.family().contains("Mono")) {
+         return bold ? "IBMPlexMono-Bold.ttf" : "IBMPlexMono-Regular.ttf";
+     }
+@@ -493,7 +497,9 @@ QString primaryFile(const QFont &font)
+ bool interfaceFamily(const QFont &font)
+ {
+     return font.family() == "IBM Plex Sans" || font.family() == "IBM Plex Mono"
+-            || font.family() == "Instrument Serif";
++            || font.family() == "Instrument Serif"
++            || (strings::locale() == strings::Locale::Russian
++                && font.family() == "Noto Serif Display Condensed");
+ }
+ 
+ const RegisteredFace *registeredFace(const QFont &font)
+@@ -669,19 +675,30 @@ struct Glyph
+ } // namespace
+ 
+ // The bundled faces of the interface families, 1.1 MB together.
+-constexpr const char *interfaceFontFiles[] = {
+-    "IBMPlexSans-Regular.ttf",    "IBMPlexSans-Bold.ttf", "IBMPlexSans-Italic.ttf",
+-    "IBMPlexMono-Regular.ttf",    "IBMPlexMono-Bold.ttf", "InstrumentSerif-Regular.ttf",
+-    "InstrumentSerif-Italic.ttf",
+-};
++const QStringList &interfaceFontFiles()
++{
++    static const QStringList english{
++        "IBMPlexSans-Regular.ttf",    "IBMPlexSans-Bold.ttf", "IBMPlexSans-Italic.ttf",
++        "IBMPlexMono-Regular.ttf",    "IBMPlexMono-Bold.ttf", "InstrumentSerif-Regular.ttf",
++        "InstrumentSerif-Italic.ttf",
++    };
++    static const QStringList russian = [] {
++        auto files = english;
++        // The exit-title Latin wordmark still uses Instrument Serif.
++        files.append("NotoSerifDisplay_Condensed-Regular.ttf");
++        files.append("NotoSerifDisplay_Condensed-Italic.ttf");
++        return files;
++    }();
++    return strings::locale() == strings::Locale::Russian ? russian : english;
++}
+ 
+ bool initializePrivateInterfaceText(const AssetBundle &assets, bool opening,
+                                     const QMap<QString, QByteArray> &checked)
+ {
+     QMap<QString, std::function<QByteArray()>> pending;
+     QStringList files;
+-    for (const auto *file : interfaceFontFiles)
+-        files.append(QLatin1String(file));
++    for (const auto &file : interfaceFontFiles())
++        files.append(file);
+     files << "NotoSansMath-Regular.ttf"
+           << "NotoSerifCJK-Regular.ttc";
+     for (const auto *file : serifFallbackFontFiles) {
+@@ -737,8 +754,7 @@ bool initializePrivateInterfaceText(const AssetBundle &assets, bool opening,
+     }
+     // The bundled interface faces draw every screen. Load them now, mostly
+     // from the bytes that Qt already checked, and keep them.
+-    for (const auto *file : interfaceFontFiles) {
+-        const QString name = QLatin1String(file);
++    for (const auto &name : interfaceFontFiles()) {
+         state.kept.insert(name);
+         state.face(name);
+     }
+@@ -750,8 +766,8 @@ bool keepPrivateInterfaceFamilies(const QStringList &families)
+ {
+     auto &state = fonts();
+     QSet<QString> files;
+-    for (const auto *file : interfaceFontFiles)
+-        files.insert(QLatin1String(file));
++    for (const auto &file : interfaceFontFiles())
++        files.insert(file);
+     bool loaded = true;
+     for (const auto &family : families) {
+         if (family.isEmpty())
+diff --git a/src/ui/style/styles.h b/src/ui/style/styles.h
+index 7365af52..e25196a4 100644
+--- a/src/ui/style/styles.h
++++ b/src/ui/style/styles.h
+@@ -10,12 +10,25 @@ inline QString font(int size, bool bold = false)
+     return QString("font-size:%1px;").arg(size) + (bold ? "font-weight:bold;" : "");
+ }
+ 
++// Headings use the locale serif role without requesting an italic face.
++inline QString heading(int pixels)
++{
++    return QString("font-family:'%1';font-size:%2px;font-weight:400;font-style:normal;")
++            .arg(brandFont(pixels, false).family()).arg(brandFont(pixels, false).pixelSize());
++}
++
++inline QString wordmark(int pixels)
++{
++    return QString("font-family:'%1';font-size:%2px;font-weight:400;font-style:normal;")
++            .arg(wordmarkFont(pixels).family()).arg(pixels);
++}
++
+ inline QString brand(int pixels, bool italic = false)
+ {
+     const auto face = brandFont(pixels, italic);
+     return QString("font-family:'%1';font-size:%2px;font-weight:400;font-style:%3;")
+             .arg(face.family())
+-            .arg(pixels)
++            .arg(face.pixelSize())
+             .arg(italic ? "italic" : "normal");
+ }
+ 
+@@ -29,7 +42,7 @@ inline QString caption(int pixels = metrics::chrome::captionText)
+ 
+ inline QString reader()
+ {
+-    return QString("QWidget{font-weight:400;font-family:\"%4\";background:palette(window);color:palette(window-text);} QPushButton{font-size:%1px;min-height:%2px;border:none;padding:%3px;} "
++    return QString("QWidget{font-weight:400;font-style:%5;font-family:\"%4\";background:palette(window);color:palette(window-text);} QPushButton{font-size:%1px;min-height:%2px;border:none;padding:%3px;} "
+                    "QPushButton:pressed{background:palette(midlight);} QPushButton:disabled{color:palette(mid);} QLabel{font-size:%1px;} "
+                    "QFrame#rrControlsTop,QFrame#rrControlsBottom,QFrame#rrMenu,QFrame#rrGeneralSettings{border:none;} "
+                    "QPushButton#rrReturn,QPushButton#rrChapters{font-weight:bold;} "
+@@ -37,7 +50,8 @@ inline QString reader()
+             .arg(int(metrics::text::body))
+             .arg(int(metrics::control::minimumHeight))
+             .arg(int(metrics::control::padding))
+-            .arg(QStringLiteral("@ui-font-family@"));
++            .arg(QStringLiteral("@ui-font-family@"))
++            .arg(interfaceFont().italic() ? "italic" : "normal");
+ }
+ 
+ inline QString segment()
+diff --git a/tests/model/diagnostics.cpp b/tests/model/diagnostics.cpp
+index c563ea02..4c1b15f5 100644
+--- a/tests/model/diagnostics.cpp
++++ b/tests/model/diagnostics.cpp
+@@ -69,6 +69,23 @@ int main(int argc, char **argv)
+     if (kobalt::diagnosticsActive())
+         qFatal("Diagnostics reported active before initialization");
+     kobalt::initializeDiagnostics(directory.path());
++#ifndef KOBALT_VERBOSE_DIAGNOSTICS
++    // Release/device builds must permit the Debug checkbox to persist both states.
++    qunsetenv("KOBALT_DIAGNOSTICS");
++    kobalt::setDiagnosticsMarker(directory.path());
++    if (kobalt::diagnosticsMarker().isEmpty() || kobalt::diagnosticsRequested(directory.path()))
++        qFatal("Fresh diagnostic profile is not switchable/off");
++    kobalt::setDetailedDiagnostics(true);
++    kobalt::flushDiagnostics();
++    if (!kobalt::detailedDiagnostics() || !kobalt::diagnosticsRequested(directory.path()))
++        qFatal("Enabling diagnostics was not persisted");
++    kobalt::setDetailedDiagnostics(false);
++    kobalt::flushDiagnostics();
++    if (kobalt::detailedDiagnostics() || kobalt::diagnosticsRequested(directory.path()))
++        qFatal("Disabling diagnostics was not persisted");
++    kobalt::setDiagnosticsMarker({});
++#endif
++    kobalt::initializeDiagnostics(directory.path());
+     if (!kobalt::diagnosticsActive())
+         qFatal("Initialized diagnostics reported inactive");
+     QJsonObject startedOperation, endedOperation;
+diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
+new file mode 100644
+index 00000000..985d2e48
+--- /dev/null
++++ b/tests/model/fork_presentation.cpp
+@@ -0,0 +1,157 @@
++#include "check.h"
++#include "reader_inputs.h"
++#include "app/about/about_page.h"
++#include "app/reader/views/sleep_screen.h"
++#include "reading/fork_text_preset_names.h"
++#include "ui/controls/highlight_palette.h"
++#include "ui/controls/return_title_text.h"
++#include "ui/style/scale.h"
++#include "ui/style/styles.h"
++#include "ui/style/private_text.h"
++#include "build_info.h"
++#include <QApplication>
++#include <cstdio>
++#include <QFileInfo>
++#include <QtMath>
++using namespace kobalt;
++// Checks retained presentation on both languages/densities without changing saved presets.
++int main(int argc, char **argv)
++{
++    QApplication app(argc, argv);
++    require(ui::initializeInterfaceFonts(test::readerAssets()), "presentation fonts unavailable");
++    QImage letterSignatures[2][2];
++    for (auto locale : {strings::Locale::English, strings::Locale::Russian}) {
++        strings::setLocale(locale);
++        if (locale == strings::Locale::Russian) {
++            for (auto key : {"debug.evict_cache_description", "debug.evict_cache_confirm_description",
++                             "debug.clear_caches_description", "debug.clear_caches_confirm_description"})
++                require(strings::get(key).contains(QStringLiteral("Kobalt")),
++                        "Cache eviction must identify Kobalt as the application being closed");
++        }
++        // Compare actual signature pixels across locales, not only QFont metadata.
++        // English is the original Instrument Serif reference; localized prose is
++        // clipped above this crop. Cover both sleep and power-off, day and night.
++        for (int dark = 0; dark < 2; ++dark) {
++            for (int off = 0; off < 2; ++off) {
++                sleep::Snapshot shot;
++                shot.design = sleep::Design::Letter;
++                shot.dark = dark;
++                shot.dimPage = false;
++                shot.percent = 42;
++                const QSize size(1072, 1448);
++                QImage backdrop(size, QImage::Format_RGB32);
++                backdrop.fill(dark ? Qt::black : Qt::white);
++                const auto image = reader::sleepDesignImage(backdrop, shot, 67,
++                        off ? reader::SleepStatus::PoweredOff : reader::SleepStatus::Sleeping);
++                const auto font = ui::wordmarkFont(qRound(11 * 10.72));
++                const int top = qCeil(1448 * .88 - ui::interfaceLineHeight(font) * 1.1) + 2;
++                const auto signature = image.copy(0, top, size.width(), size.height() - top);
++                require(!signature.isNull(), "Letter signature crop unavailable");
++                bool ink = false;
++                for (int y = 0; y < signature.height(); ++y)
++                    for (int x = 0; x < signature.width(); ++x)
++                        ink |= signature.pixel(x, y) != signature.pixel(signature.width()-1, y);
++                require(ink, "Letter signature is blank");
++                if (locale == strings::Locale::English)
++                    letterSignatures[dark][off] = signature;
++                else
++                    require(signature == letterSignatures[dark][off],
++                            "Russian sleep/power-off letter changed the Instrument Serif signature");
++            }
++        }
++        const auto duration = QStringLiteral("123 h 45 min");
++        const auto remaining = strings::get("sleep.time_left").arg(duration);
++        const auto lines = reader::sleepRibbonRemainingLines(remaining);
++        require(lines.size() == 2 && lines.join(' ').contains(duration),
++                "ribbon did not retain duration in two localized lines");
++        require(lines[locale == strings::Locale::English ? 0 : 1] == duration,
++                "ribbon reversed language order");
++        require(reader::sleepRibbonRemainingLines({}).isEmpty(), "empty remaining gained a caption");
++        require(reader::sleepRibbonRemainingLines("legacy unrelated status")
++                        == QStringList{"legacy unrelated status"}, "old snapshot status misparsed");
++        auto presets = textpresets::examples();
++        require(!presets.isEmpty(), "shipped presets unavailable");
++        auto preset = presets.first();
++        const auto saved = preset;
++        require(textpresets::displayName(preset) == strings::get("text_presets.example_kobalt")
++                        && preset == saved, "example localization changed saved values");
++        preset.name = QStringLiteral("My custom name");
++        require(textpresets::displayName(preset) == preset.name, "renamed preset translated");
++        preset.id = "user-defined";
++        require(textpresets::displayName(preset) == preset.name, "unknown preset translated");
++        ui::InterfaceLabel exitTitle(strings::get("reader.exit"));
++        exitTitle.setFont(ui::interfaceFont(36));
++        const auto runs = ui::returnTitleRuns(exitTitle);
++        require(runs.size() == 2 && !runs[0].second.italic()
++                        && runs[0].second.family() == ui::brandFont(36, false).family()
++                        && runs[1].second.family() == QStringLiteral("Instrument Serif")
++                        && !runs[1].second.italic(), "return title mixed interface/wordmark roles");
++        require(ui::styles::heading(36).contains("font-style:normal"), "heading inherited italics");
++        require(ui::brandFont(36, true).italic(), "original beta10 italic request lost");
++        if (locale == strings::Locale::Russian) {
++            require(ui::brandFont(36, true).family() == QStringLiteral("Noto Serif Display Condensed"),
++                    "wrong Russian italic family");
++            require(!test::readerAssets().manifestFontData("NotoSerifDisplay_Condensed-Regular.ttf").isEmpty()
++                            && !test::readerAssets().manifestFontData("NotoSerifDisplay_Condensed-Italic.ttf").isEmpty()
++                            && !QFileInfo::exists(test::readerAssets().file("fonts/MTCORSVA.TTF")),
++                    "Russian font subset did not replace Corsiva");
++        }
++        require(ui::brandFont(100).pixelSize() == (locale == strings::Locale::Russian ? 85 : 100)
++                        && ui::wordmarkFont(100).pixelSize() == 100,
++                "locale optical scale changed the wordmark or English serif");
++        require(ui::styles::heading(100).contains(locale == strings::Locale::Russian
++                        ? "font-size:85px" : "font-size:100px"), "QSS ignored optical scale");
++        exitTitle.setFont(ui::brandFont(100));
++        exitTitle.setProperty("wordmark_pixels", 100);
++        const auto scaledRuns = ui::returnTitleRuns(exitTitle);
++        require(scaledRuns[0].second.pixelSize() == (locale == strings::Locale::Russian ? 90 : 100)
++                        && scaledRuns[1].second.pixelSize() == 100,
++                "exit prefix double-scaled or Kobalt resized");
++        AboutPage about;
++        auto *aboutWordmark = about.findChild<QLabel *>("rrAboutWordmark");
++        require(aboutWordmark
++                        && aboutWordmark->property("reader_style").toString().contains("Instrument Serif")
++                        && !aboutWordmark->property("reader_style").toString().contains("Monotype Corsiva"),
++                "About wordmark inherited the localized heading font");
++        aboutWordmark->ensurePolished();
++        require(aboutWordmark->font().family() == QStringLiteral("Instrument Serif")
++                        && !aboutWordmark->font().italic(),
++                "About did not resolve the regular Instrument Serif brand face");
++        require(bool(about.findChild<QLabel *>("rrAboutFork")) == (kobaltForkName[0] != '\0'),
++                "About fork row ignored configured distribution");
++        require(!about.findChild<QPushButton *>("rrDebugLanguageButton"),
++                "language entry returned to About");
++        for (int ppi : {212, 300}) {
++            ui::setDensity(ppi);
++            ui::InterfaceLabel title(QString::fromUtf8("Вернуться в Kobalt"));
++            title.setFont(ui::interfaceFont(ui::px(36)));
++            require(ui::returnTitleSizeHint(title).width() > 0, "return title not measured");
++            for (bool dark : {false, true}) {
++                QWidget host;
++                host.setProperty("reader_dark", dark);
++                host.setPalette(ui::readerPalette(host.palette(), dark));
++                for (int width : {ui::px(110), ui::px(160)}) {
++                    ui::HighlightSwatch swatch("gray", strings::get("annotations.color_gray"), &host);
++                    swatch.resize(width, swatch.height());
++                    swatch.setChecked(dark);
++                    const auto image = swatch.grab().toImage();
++                    const auto paper = image.pixelColor(ui::px(4), ui::px(4));
++                    auto inked = [&](int y) {
++                        for (int x = 0; x < image.width(); ++x)
++                            if (qAbs(qGray(image.pixel(x,y)) - paper.lightness()) > 100) return true;
++                        return false;
++                    };
++                    bool label = false;
++                    for (int y = image.height()*2/3; y < image.height()-1; ++y) label |= inked(y);
++                    require(label && !inked(image.height()-1), "annotation label missing or clipped");
++                }
++                QImage page(800, 1200, QImage::Format_RGB32);
++                page.fill(Qt::white);
++                const auto frame = reader::sleepScreenImage(page, "99%", remaining, dark,
++                        99, reader::SleepStatus::Sleeping, true, sleep::Tile::Bookmark, 99);
++                require(!frame.isNull() && frame.size() == page.size(), "sleep ribbon render failed");
++            }
++        }
++    }
++    std::puts("PASS: bilingual sleep ribbon, annotation labels, About and preset presentation");
++}
+diff --git a/tests/model/text_presets.cpp b/tests/model/text_presets.cpp
+index 824e502c..d9273e4b 100644
+--- a/tests/model/text_presets.cpp
++++ b/tests/model/text_presets.cpp
+@@ -1,6 +1,7 @@
+ #include "reading/appearance_settings.h"
+ #include "reading/reading_density.h"
+ #include "reading/text_presets.h"
++#include "reading/fork_text_preset_names.h"
+ #include "storage/reader_storage.h"
+ #include "support/qt_compat.h"
+ #include "check.h"
+@@ -30,6 +31,28 @@ int main()
+     require(shipped[0].fontFace == defaultFontFace && shipped[0].halfPoints == 22
+                     && shipped[0].lineSpacing == defaultLineSpacing,
+             "Kobalt no longer matches the book defaults");
++    // A saved example follows EN/RU at display time, without rewriting its name or values.
++    auto localized = shipped[1];
++    strings::setLocale(strings::Locale::Russian);
++    const auto russianName = strings::get("text_presets.example_bookish");
++    require(displayName(localized) == russianName, "An English example did not display in Russian");
++    localized.name = russianName;
++    QJsonObject russianSaved;
++    store(russianSaved, { localized });
++    strings::setLocale(strings::Locale::English);
++    const auto localizedRestored = load(russianSaved);
++    require(localizedRestored.size() == 1 && displayName(localizedRestored[0]) == "Bookish"
++                    && localizedRestored[0] == localized && localizedRestored[0].name == russianName,
++            "A Russian saved example did not display in English without mutation");
++    localized.name = "My custom name";
++    require(displayName(localized) == localized.name, "A renamed example lost its custom name");
++    localized.name = russianName;
++    localized.example = false;
++    require(displayName(localized) == russianName, "A user preset was translated");
++    localized.example = true;
++    localized.id = "user-defined";
++    require(displayName(localized) == russianName, "An unknown example id was translated");
++
+     // An empty saved list stays empty: deleting every preset is respected.
+     QJsonObject empty;
+     store(empty, {});

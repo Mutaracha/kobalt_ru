@@ -74,6 +74,9 @@ class SeriesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='series-regression-', dir=build) as tmp:
             destination = Path(tmp)
             apply_to(ROOT, ROOT / 'platforms/patch-series/series.json', destination, ready_only=True)
+            # Consolidation must not change a single resulting runtime file.
+            from verify_equivalence import verify
+            verify(destination, ROOT / 'platforms/patch-series/equivalence/reference-tree.json')
             # Later ordered patches may append new translated UI strings; the reviewed
             # 010 overlay must remain intact, rather than suppressing those additions.
             overlay = (ROOT / 'platforms/control-beta10/ru.strings').read_text()

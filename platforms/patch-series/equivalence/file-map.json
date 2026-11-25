@@ -1,0 +1,1579 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "assets/CMakeLists.txt",
+      "patch": "060-build-integration",
+      "old_patches": [
+        "010-ru",
+        "060-build-integration"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "assets/acknowledgments.json",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru",
+        "040-reader-controls",
+        "055-ru-noto-display-subset",
+        "057-ru-shantell-italic",
+        "058-ru-reading-font-roles",
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "assets/en.strings",
+      "patch": "050-presentation",
+      "old_patches": [
+        "032-comics-integration-refresh",
+        "040-reader-controls",
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "assets/export/annotations.css",
+      "patch": "050-presentation",
+      "old_patches": [
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "assets/fonts/NotoSerifDisplay_Condensed-Italic.ttf",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "055-ru-noto-display-subset"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "assets/fonts/NotoSerifDisplay_Condensed-Regular.ttf",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "055-ru-noto-display-subset"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "assets/fonts/ShantellSans-BoldItalic.ttf",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "057-ru-shantell-italic"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "assets/fonts/ShantellSans-Italic.ttf",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "057-ru-shantell-italic"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental.json",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/KF_Sable-Bold.ttf",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/KF_Sable-BoldItalic.ttf",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/KF_Sable-Italic.ttf",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/KF_Sable-Regular.ttf",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "assets/manifest.json",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru",
+        "055-ru-noto-display-subset",
+        "057-ru-shantell-italic",
+        "058-ru-reading-font-roles",
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "assets/notices/Fluent-MIT",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "040-reader-controls"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "assets/notices/NotoSerifDisplay-OFL",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "055-ru-noto-display-subset"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "assets/notices/Sable-OFL",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "assets/notices/ShantellSans-OFL",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "057-ru-shantell-italic"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "assets/ru.strings",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru",
+        "032-comics-integration-refresh",
+        "040-reader-controls",
+        "050-fork-presentation",
+        "059d-settings-and-letter-polish"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "platforms/android/CMakeLists.txt",
+      "patch": "060-build-integration",
+      "old_patches": [
+        "050-fork-presentation",
+        "060-build-integration"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/android/main.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru",
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/desktop/CMakeLists.txt",
+      "patch": "060-build-integration",
+      "old_patches": [
+        "010-ru",
+        "020-fb2-publication",
+        "021-fb2-resources",
+        "022-fb2-engine",
+        "030-comics-layout",
+        "031-comics-engine",
+        "032-comics-integration-refresh",
+        "033-fb2-session-cache",
+        "040-reader-controls",
+        "050-fork-presentation",
+        "059b-reading-menu-status",
+        "060-build-integration"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/desktop/main.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru",
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/kobo/CMakeLists.txt",
+      "patch": "060-build-integration",
+      "old_patches": [
+        "050-fork-presentation",
+        "060-build-integration"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/kobo/common/book_menu.cpp",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "023-fb2-platform-inputs"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/kobo/common/reader_coordinator.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru",
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/kobo/nickel-qt5/native_publication.cpp",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "023-fb2-platform-inputs"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/kobo/nickel-qt5/reader_controller.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/kobo/nickel-qt5/refresh.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "032-comics-integration-refresh"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/kobo/nickel-qt6/native_publication.cpp",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "023-fb2-platform-inputs"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/kobo/nickel-qt6/reader_controller.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/kobo/package.cmake",
+      "patch": "060-build-integration",
+      "old_patches": [
+        "060-build-integration"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/shared-inputs.cmake",
+      "patch": "060-build-integration",
+      "old_patches": [
+        "022-fb2-engine",
+        "060-build-integration"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/source-info.cmake",
+      "patch": "060-build-integration",
+      "old_patches": [
+        "050-fork-presentation",
+        "060-build-integration"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/strings-test.cmake",
+      "patch": "060-build-integration",
+      "old_patches": [
+        "010-ru",
+        "060-build-integration"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "platforms/strings.cmake",
+      "patch": "060-build-integration",
+      "old_patches": [
+        "010-ru",
+        "060-build-integration"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/about/about_page.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/about/fork_about.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/app/about/fork_about.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/app/library/library_view.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation",
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/panels/activity_view.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "010-ru",
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/panels/bookmark_list.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/panels/chapter_contents.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/panels/chapter_graph.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "010-ru"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/panels/choice_screen.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/panels/search_panel.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/panels/stats_cell.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "010-ru"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/panels/word_list.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/settings/acknowledgments.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/settings/appearance_panel.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "032-comics-integration-refresh"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/settings/appearance_panel.h",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "032-comics-integration-refresh"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/settings/button_controls.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "010-ru"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/settings/debug_language_dialog.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "050-fork-presentation",
+        "059d-settings-and-letter-polish"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/app/reader/settings/debug_language_dialog.h",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/app/reader/settings/header_footer_panel.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/settings/interface_style.h",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "010-ru",
+        "057-ru-shantell-italic"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/settings/settings_panel.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "040-reader-controls",
+        "050-fork-presentation",
+        "059d-settings-and-letter-polish"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/settings/sleep_editor.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/settings/sleep_gallery.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/settings/style_illustrations.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/settings/text_presets_panel.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/views/fork_navigation.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "040-reader-controls"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/app/reader/views/fork_navigation.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "040-reader-controls"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/app/reader/views/image_viewer.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/views/navigation.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "010-ru",
+        "040-reader-controls",
+        "059b-reading-menu-status"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/views/navigation.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "040-reader-controls",
+        "059b-reading-menu-status"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/views/opening.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation",
+        "055-ru-noto-display-subset"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/views/reading_page.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "032-comics-integration-refresh"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/views/reading_page.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "032-comics-integration-refresh"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/views/sleep_designs.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "010-ru",
+        "050-fork-presentation",
+        "058-ru-reading-font-roles",
+        "059c-sleep-letter-wordmark",
+        "059d-settings-and-letter-polish"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/views/sleep_ribbon_text.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/app/reader/views/sleep_screen.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "010-ru",
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/views/sleep_screen.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/window/fork_reader_actions.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "040-reader-controls"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/app/reader/window/reader.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "058-ru-reading-font-roles",
+        "059b-reading-menu-status"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/window/reader_annotations.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "050-fork-presentation",
+        "058-ru-reading-font-roles",
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/window/reader_build.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "032-comics-integration-refresh",
+        "040-reader-controls",
+        "050-fork-presentation",
+        "056-ru-serif-optical-scale",
+        "058-ru-reading-font-roles",
+        "059b-reading-menu-status"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/window/reader_dialogs.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/window/reader_p.h",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "040-reader-controls",
+        "059b-reading-menu-status"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/window/reader_refresh.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "032-comics-integration-refresh",
+        "040-reader-controls",
+        "059b-reading-menu-status"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/window/reader_settings.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "032-comics-integration-refresh",
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/app/reader/window/reader_text_presets.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "050-fork-presentation",
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/assets/bundled_fonts.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru",
+        "057-ru-shantell-italic",
+        "058-ru-reading-font-roles",
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/assets/font_catalog.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru",
+        "057-ru-shantell-italic",
+        "058-ru-reading-font-roles",
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/adapter/column_view.h",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "030-comics-layout"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/adapter/column_view_comics.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "030-comics-layout"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/engine/blaze/adapter/engine_document.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine",
+        "031-comics-engine",
+        "034-fb2-startup-experiment",
+        "058-ru-reading-font-roles",
+        "059a-system-font-cache-identity"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/adapter/engine_document.h",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine",
+        "031-comics-engine",
+        "034-fb2-startup-experiment",
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/adapter/engine_document_comics.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "031-comics-engine"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/engine/blaze/adapter/page_draw_buffer.h",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "031-comics-engine"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_alignment.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_beautifier.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_comics.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "030-comics-layout"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_comics.h",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "030-comics-layout"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_fb2.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine",
+        "034-fb2-startup-experiment"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_fb2.h",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_fork_styles.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_fork_styles.h",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_links.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_page_layout.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_slices.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "034-fb2-startup-experiment"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_source.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine",
+        "031-comics-engine",
+        "034-fb2-startup-experiment",
+        "036-fb2-cache-layout-observation",
+        "039-fb2-layout-input-observation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_source.h",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/adapter/reader_styles.h.in",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/crengine/include/lvfntman.h",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "059a-system-font-cache-identity"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/crengine/include/lvtinydom.h",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "036-fb2-cache-layout-observation",
+        "039-fb2-layout-input-observation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/crengine/src/lvdocview.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "034-fb2-startup-experiment"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/crengine/src/lvfntman.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "059a-system-font-cache-identity"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/crengine/src/lvtinydom.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "036-fb2-cache-layout-observation",
+        "039-fb2-layout-input-observation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/blaze/extensions/chapter_layout.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "034-fb2-startup-experiment"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/engine.h",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "031-comics-engine"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/engine/font_defaults.h",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/publication/fb2.h",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "020-fb2-publication"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/publication/fb2_resources.cpp",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "021-fb2-resources"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/publication/fb2_resources.h",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "021-fb2-resources"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/publication/image_request_trace.h",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "031-comics-engine"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/publication/local_resources.cpp",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "021-fb2-resources"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/publication/publication.cpp",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "020-fb2-publication"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/publication/publication.h",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "020-fb2-publication"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/publication/publication_fb2.cpp",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "020-fb2-publication"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/publication/resource_cache.cpp",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "031-comics-engine"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/publication/resource_cache.h",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "031-comics-engine"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/reading/appearance_settings.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "023-fb2-platform-inputs",
+        "032-comics-integration-refresh",
+        "058-ru-reading-font-roles",
+        "059b-reading-menu-status"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/reading/appearance_settings.h",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "023-fb2-platform-inputs",
+        "031-comics-engine",
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/reading/features.h",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "040-reader-controls"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/reading/fork_text_preset_names.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/reading/locale_font_roles.h",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "058-ru-reading-font-roles",
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/reading/menu_status.h",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "059b-reading-menu-status"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/reading/opening_job.cpp",
+      "patch": "034-session-hybrid",
+      "old_patches": [
+        "023-fb2-platform-inputs",
+        "032-comics-integration-refresh",
+        "033-fb2-session-cache"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/reading/reader_session.cpp",
+      "patch": "034-session-hybrid",
+      "old_patches": [
+        "032-comics-integration-refresh",
+        "034-fb2-startup-experiment"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/reading/style_sample.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/reading/text_presets.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/storage/annotation_export.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/support/build_info.h.in",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/support/debug_language.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/support/debug_language.h",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/support/locale.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/support/locale.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/support/percentage_text.h",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/support/string_locale.h",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru",
+        "050-fork-presentation"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/support/string_table.h",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru",
+        "050-fork-presentation"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/support/strings.h",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru",
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/ui/controls/buttons.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "010-ru",
+        "040-reader-controls"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/ui/controls/buttons.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "040-reader-controls"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/ui/controls/fork_icon_geometry.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "040-reader-controls"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/ui/controls/fork_icon_geometry.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "040-reader-controls"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/ui/controls/highlight_palette.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/ui/controls/icons.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "040-reader-controls"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/ui/controls/icons.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "040-reader-controls"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/ui/controls/options.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "032-comics-integration-refresh"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/ui/controls/options.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "032-comics-integration-refresh"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/ui/controls/return_title_text.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation",
+        "050-fork-presentation",
+        "050-fork-presentation",
+        "056-ru-serif-optical-scale",
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/ui/controls/rows.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "057-ru-shantell-italic"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/ui/style/fonts.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru",
+        "050-fork-presentation",
+        "050-fork-presentation",
+        "055-ru-noto-display-subset",
+        "056-ru-serif-optical-scale",
+        "057-ru-shantell-italic",
+        "058-ru-reading-font-roles",
+        "059-ru-bundled-fonts-and-picker"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/ui/style/fonts.h",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/ui/style/locale_text.h",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "src/ui/style/private_text.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "010-ru",
+        "050-fork-presentation",
+        "055-ru-noto-display-subset"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "src/ui/style/styles.h",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation",
+        "056-ru-serif-optical-scale",
+        "057-ru-shantell-italic"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "tests/model/appearance_settings.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "023-fb2-platform-inputs",
+        "031-comics-engine",
+        "032-comics-integration-refresh",
+        "059b-reading-menu-status"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "tests/model/comics.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "031-comics-engine"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "tests/model/comics_layout.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "030-comics-layout"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "tests/model/comics_ui.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "032-comics-integration-refresh"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "tests/model/debug_language_ui.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "050-fork-presentation",
+        "059d-settings-and-letter-polish"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "tests/model/diagnostics.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "tests/model/fb2_cache_session.cpp",
+      "patch": "034-session-hybrid",
+      "old_patches": [
+        "033-fb2-session-cache",
+        "034-fb2-startup-experiment",
+        "036-fb2-cache-layout-observation",
+        "037-fb2-cross-process-cache-probe",
+        "038-fb2-archived-source-replay",
+        "039-fb2-layout-input-observation",
+        "046-fb2-session-hybrid-gates"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "tests/model/fb2_engine.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "022-fb2-engine",
+        "034-fb2-startup-experiment",
+        "044-fb2-hybrid-cancellation-tests",
+        "045-fb2-hybrid-note-image-tests"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "tests/model/font_sources.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "059a-system-font-cache-identity"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "tests/model/fork_presentation.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation",
+        "050-fork-presentation",
+        "050-fork-presentation",
+        "050-fork-presentation",
+        "055-ru-noto-display-subset",
+        "056-ru-serif-optical-scale",
+        "059-ru-bundled-fonts-and-picker",
+        "059c-sleep-letter-wordmark"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "tests/model/highlight_store.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "058-ru-reading-font-roles"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "tests/model/local_resources.cpp",
+      "patch": "020-publication-resources",
+      "old_patches": [
+        "020-fb2-publication",
+        "021-fb2-resources"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "tests/model/nickel_book_menu.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "023-fb2-platform-inputs"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "tests/model/reader_controls.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "040-reader-controls"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "tests/model/resource_cache.cpp",
+      "patch": "034-session-hybrid",
+      "old_patches": [
+        "031-comics-engine"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "tests/model/ru_control_ui.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "010-ru",
+        "050-fork-presentation",
+        "050-fork-presentation",
+        "055-ru-noto-display-subset",
+        "056-ru-serif-optical-scale",
+        "057-ru-shantell-italic",
+        "058-ru-reading-font-roles",
+        "059-ru-bundled-fonts-and-picker",
+        "059b-reading-menu-status",
+        "059d-settings-and-letter-polish"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "tests/model/strings_locale.cpp",
+      "patch": "010-ru-localization",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "add"
+    },
+    {
+      "path": "tests/model/text_presets.cpp",
+      "patch": "050-presentation",
+      "old_patches": [
+        "050-fork-presentation"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "tests/pewter/refresh_qt5.cpp",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "032-comics-integration-refresh"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "tests/reader_lifecycle.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [
+        "059b-reading-menu-status"
+      ],
+      "action": "modify"
+    },
+    {
+      "path": "tests/support/reader_source_index_probe.h",
+      "patch": "030-engine-integration",
+      "old_patches": [
+        "031-comics-engine"
+      ],
+      "action": "modify"
+    }
+  ]
+}

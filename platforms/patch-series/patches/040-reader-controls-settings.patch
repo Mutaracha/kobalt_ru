@@ -1,0 +1,1459 @@
+diff --git a/src/app/reader/settings/acknowledgments.cpp b/src/app/reader/settings/acknowledgments.cpp
+index 7312df08..15dd83c0 100644
+--- a/src/app/reader/settings/acknowledgments.cpp
++++ b/src/app/reader/settings/acknowledgments.cpp
+@@ -126,7 +126,7 @@ Acknowledgments::Acknowledgments(QWidget *parent) : QFrame(parent)
+     title = new ui::InterfaceLabel(this);
+     title->setObjectName("rrAcknowledgmentsTitle");
+     title->setTextFormat(Qt::PlainText);
+-    ui::readerStyle(title, styles::brand(chrome::titleText) + "background:transparent;");
++    ui::readerStyle(title, styles::heading(chrome::titleText) + "background:transparent;");
+     section = new ui::InterfaceLabel(this);
+     section->setObjectName("rrAcknowledgmentsSection");
+     ui::captionLabel(section);
+diff --git a/src/app/reader/settings/appearance_panel.cpp b/src/app/reader/settings/appearance_panel.cpp
+index 4cdf49b7..9de702b2 100644
+--- a/src/app/reader/settings/appearance_panel.cpp
++++ b/src/app/reader/settings/appearance_panel.cpp
+@@ -393,6 +393,11 @@ AppearancePanel::AppearancePanel(const AppearanceLayout &layout,
+                                   maximumLineSpacing, 1, {}, {}, "%");
+     spacingSlider->setMarkers({ 100, 110, 120, 130, 140, 150, 175, 200, 250, 300 },
+                               ui::SettingSlider::MarkerMode::Stops);
++    comicsOption = new ui::DescribedOption(strings::get("reader.comics_reading_mode"),
++            strings::get("reader.comics_reading_mode_description"), pageLayout);
++    comicsOption->setObjectName("rrComicsReadingMode");
++    ui::stylePanelCheckbox(comicsOption);
++    pageRows->addWidget(comicsOption);
+     marginSlider = kobalt::ui::sliderRow(pageLayout, pageRows, "rrMargins", "rrMarginsValue",
+                                          strings::get("reader.margins"), "rrNarrower", "rrWider", 0,
+                                          120, 3, {});
+diff --git a/src/app/reader/settings/appearance_panel.h b/src/app/reader/settings/appearance_panel.h
+index 6335239c..b166a034 100644
+--- a/src/app/reader/settings/appearance_panel.h
++++ b/src/app/reader/settings/appearance_panel.h
+@@ -80,6 +80,7 @@ public:
+                       *marginSlider = nullptr, *verticalMarginSlider = nullptr;
+     QVector<QPushButton *> alignmentButtons, hyphenButtons, rotationButtons;
+     QPushButton *autoRotateOption = nullptr, *lockRotationOption = nullptr;
++    ui::DescribedOption *comicsOption = nullptr;
+     // Header and footer: the Layout row that opens its view, and the view's
+     // presets and controls, built only when the layout has its rows.
+     ui::DropdownButton *headerFooterRow = nullptr;
+diff --git a/src/app/reader/settings/button_controls.cpp b/src/app/reader/settings/button_controls.cpp
+index 38dfddfa..4c4aacf2 100644
+--- a/src/app/reader/settings/button_controls.cpp
++++ b/src/app/reader/settings/button_controls.cpp
+@@ -336,6 +336,11 @@ void SettingsPanel::showButtonControls(const pageButtons::Buttons &buttons,
+         auto *invert = checklistOption(card, "rrInvertLandscapeButtons",
+                                        strings::get("buttons.invert_landscape"),
+                                        strings::get("buttons.invert_landscape_hint"), false);
++        if (strings::locale() == strings::Locale::Russian) {
++            auto look = invert->presentation();
++            look.wrapLabel = true;
++            invert->setPresentation(look);
++        }
+         invert->setChecked(draft->value(pageButtons::invertLandscapeKey).toBool());
+         if (landscape && buttons.size() == 2) {
+             if (invert->isChecked())
+diff --git a/src/app/reader/settings/header_footer_panel.cpp b/src/app/reader/settings/header_footer_panel.cpp
+index 864cf674..dca4f446 100644
+--- a/src/app/reader/settings/header_footer_panel.cpp
++++ b/src/app/reader/settings/header_footer_panel.cpp
+@@ -532,7 +532,7 @@ QLabel *barTitle(QWidget *parent, const char *name)
+     title->setObjectName(name);
+     title->setTextFormat(Qt::PlainText);
+     ui::readerStyle(title,
+-                    ui::styles::brand(metrics::chrome::titleText) + "background:transparent;");
++                    ui::styles::heading(metrics::chrome::titleText) + "background:transparent;");
+     return title;
+ }
+ 
+diff --git a/src/app/reader/settings/interface_style.h b/src/app/reader/settings/interface_style.h
+index 723c0fca..b44e6041 100644
+--- a/src/app/reader/settings/interface_style.h
++++ b/src/app/reader/settings/interface_style.h
+@@ -1,5 +1,6 @@
+ #pragma once
+ #include <QJsonObject>
++#include "support/strings.h"
+ #include "ui/controls/icons.h"
+ 
+ namespace kobalt::reader {
+@@ -14,7 +15,8 @@ inline InterfaceStyle themePreset(const QString &id)
+ {
+     InterfaceStyle style;
+     if (id == "playful") {
+-        style.mainFace = QStringLiteral("Kalam");
++        style.mainFace = strings::locale() == strings::Locale::Russian ? QStringLiteral("Shantell Sans")
++                                                                       : QStringLiteral("Kalam");
+         style.icons = ui::IconStyle::Pastel;
+         style.palette = QStringLiteral("blue");
+     } else if (id == "notebook") {
+@@ -43,6 +45,9 @@ inline InterfaceStyle customInterfaceStyle(const QJsonObject &preferences)
+ {
+     InterfaceStyle style;
+     style.mainFace = preferences.value("ui_font_face").toString();
++    // Preserve an explicitly saved old RU handwriting choice after replacement.
++    if (strings::locale() == strings::Locale::Russian && style.mainFace == "Caveat")
++        style.mainFace = QStringLiteral("Shantell Sans");
+     style.icons = ui::iconStyleFromId(
+             preferences.value("ui_icon_style")
+                     .toString(preferences.value("ui_colorful_icons").toBool() ? "pastel"
+diff --git a/src/app/reader/settings/settings_panel.cpp b/src/app/reader/settings/settings_panel.cpp
+index c11b5026..156346e5 100644
+--- a/src/app/reader/settings/settings_panel.cpp
++++ b/src/app/reader/settings/settings_panel.cpp
+@@ -10,6 +10,8 @@
+ #include "ui/style/theme.h"
+ #include "ui/panel_timing.h"
+ #include "settings_panel.h"
++#include "debug_language_dialog.h"
++#include "support/debug_language.h"
+ #include "ui/dialogs/choice_sheet.h"
+ #include "support/qt_compat.h"
+ #include "reading/text_presets.h"
+@@ -84,6 +86,8 @@ constexpr FeatureOption featureOptions[] = {
+     { features::Bookmarks, "features.bookmarks", ui::ControlIcon::Bookmark },
+     { features::HighlightLinks, "features.highlight_links", ui::ControlIcon::Link },
+     { features::Words, "features.words", ui::ControlIcon::Note },
++    { features::DarkMode, "features.dark_mode", ui::ControlIcon::DarkTheme },
++    { features::Comics, "features.comics", ui::ControlIcon::Comics },
+ };
+ static_assert(sizeof(featureOptions) / sizeof(*featureOptions)
+                       == sizeof(features::keys) / sizeof(*features::keys),
+@@ -603,7 +607,7 @@ SettingsPanel::SettingsPanel(QWidget *parent, const SettingsPanelInputs &inputs)
+     settingsTitle = new SettingsTitle(strings::get("settings.title"), heading);
+     settingsTitle->setObjectName("rrSettingsTitle");
+     settingsTitle->setContentsMargins(chrome::inset, 0, chrome::inset, 0);
+-    readerStyle(settingsTitle, styles::brand(chrome::titleText) + "background:transparent;");
++    readerStyle(settingsTitle, styles::heading(chrome::titleText) + "background:transparent;");
+     headingRows->addWidget(settingsTitle, 1);
+     // The close cell sits on the right, as in Text Presets. An open section
+     // replaces it with the back cell on the left.
+@@ -1313,6 +1317,10 @@ void SettingsPanel::buildDebug(QWidget *debugPage)
+     auto *debugRows = new QVBoxLayout(debugPage);
+     debugRows->setContentsMargins(0, 0, 0, 0);
+     debugRows->setSpacing(0);
++    auto *languageButton = listAction(debugPage, debugRows, "rrDebugLanguageButton",
++                                      strings::get("debug.language_title"), [] { });
++    installDebugLanguageChooser(languageButton, window(),
++                                QString::fromLatin1(debugLanguageDirectory));
+     section(debugPage, debugRows, "rrDebugCacheSection", strings::get("debug.section_caches"));
+     evictBookCacheButton = listAction(
+             debugPage, debugRows, "rrDebugEvictCache", strings::get("debug.evict_cache"), [] { },
+@@ -1619,10 +1627,10 @@ void SettingsPanel::styleTabs(bool list)
+         ui::readerStyle(
+                 button,
+                 QString("QPushButton{font-size:%1px;min-height:%2px;max-height:%2px;border:0;border-bottom:%5px solid %3;%6border-radius:0;text-align:left;padding:0 %4px;background:palette(window);color:palette(window-text);} %7")
+-                        .arg(list ? int(chrome::labelText) : int(chrome::tabText))
++                        .arg(list ? int(chrome::labelText) : qMax(1, qRound(int(chrome::tabText) * .94)))
+                         .arg(height)
+                         .arg("palette(light)")
+-                        .arg(list ? int(chrome::inset) : int(chrome::railInset))
++                        .arg(list ? int(chrome::inset) : qRound(int(chrome::railInset) * .8))
+                         .arg(int(metrics::control::border))
+                         .arg(list ? QString()
+                                   : QString("border-right:%1px solid palette(window-text);")
+@@ -3381,14 +3389,15 @@ void SettingsPanel::fitRail(int availableHeight)
+                         chrome::tabIcon,
+                         qMax(1,
+                              qMin<int>(chrome::tabIcon,
+-                                       rowHeight - chrome::tabText - chrome::tabGap - ui::px(8)))));
++                                       rowHeight - qMax(1, qRound(int(chrome::tabText) * .94))
++                                               - chrome::tabGap - ui::px(8)))));
+             }
+             button->ensurePolished();
+             widest = qMax(widest,
+                           ui::interfaceTextWidth(button->text(), button->font())
+                                   + (shortRail ? int(chrome::tabIcon) + int(chrome::inset) : 0));
+         }
+-    tabRail->setFixedWidth(widest + 2 * chrome::railInset);
++    tabRail->setFixedWidth(widest + 2 * qRound(int(chrome::railInset) * .8));
+ }
+ 
+ } // namespace kobalt::reader
+diff --git a/src/app/reader/settings/sleep_editor.cpp b/src/app/reader/settings/sleep_editor.cpp
+index 57251281..8e2b0bc6 100644
+--- a/src/app/reader/settings/sleep_editor.cpp
++++ b/src/app/reader/settings/sleep_editor.cpp
+@@ -239,7 +239,7 @@ SleepEditor::SleepEditor(QWidget *parent, Setup setup) : ui::Panel(parent), setu
+             heading);
+     title->setObjectName("rrSleepEditorTitle");
+     title->setContentsMargins(chrome::inset, 0, chrome::inset, 0);
+-    ui::readerStyle(title, ui::styles::brand(chrome::titleText) + "background:transparent;");
++    ui::readerStyle(title, ui::styles::heading(chrome::titleText) + "background:transparent;");
+     headingRows->addWidget(title, 1);
+     if (!setup_.arrange) {
+         // Where wallpapers come from, explained on request rather than in a
+diff --git a/src/app/reader/settings/sleep_gallery.cpp b/src/app/reader/settings/sleep_gallery.cpp
+index d0d976c0..3c46872e 100644
+--- a/src/app/reader/settings/sleep_gallery.cpp
++++ b/src/app/reader/settings/sleep_gallery.cpp
+@@ -258,7 +258,7 @@ SleepGallery::SleepGallery(QWidget *parent, QVector<Entry> entries, sleep::Desig
+     title_ = new SettingsTitle(strings::get("sleep.gallery_title"), heading);
+     title_->setObjectName("rrSleepGalleryTitle");
+     title_->setContentsMargins(chrome::inset, 0, chrome::inset, 0);
+-    ui::readerStyle(title_, ui::styles::brand(chrome::titleText) + "background:transparent;");
++    ui::readerStyle(title_, ui::styles::heading(chrome::titleText) + "background:transparent;");
+     headingRows->addWidget(title_, 1);
+     followOrientation_ = new ui::CheckCellButton(ui::ControlIcon::DeviceRotate, heading);
+     followOrientation_->setChecked(followReading);
+diff --git a/src/app/reader/settings/style_illustrations.cpp b/src/app/reader/settings/style_illustrations.cpp
+index 5dd855f6..8d183c95 100644
+--- a/src/app/reader/settings/style_illustrations.cpp
++++ b/src/app/reader/settings/style_illustrations.cpp
+@@ -25,7 +25,7 @@ QImage drawPage(const Page &page, const QRectF &view, const QSize &size, bool da
+             continue;
+         for (int wordIndex = 0; wordIndex < line.count; ++wordIndex) {
+             const auto &word = line.words[wordIndex];
+-            QFont font(QString::fromLatin1(defaultFontFace));
++            QFont font(QString::fromLatin1(localeDefaultFontFace()));
+             font.setPixelSize(qMax(1, qRound(pixels * scale)));
+             font.setItalic(word.italic);
+             auto text = ui::renderPrivateText(QString::fromUtf8(texts[word.text]), font, 0, {}, {},
+diff --git a/src/app/reader/settings/text_presets_panel.cpp b/src/app/reader/settings/text_presets_panel.cpp
+index 8fd7926a..908c29c8 100644
+--- a/src/app/reader/settings/text_presets_panel.cpp
++++ b/src/app/reader/settings/text_presets_panel.cpp
+@@ -728,7 +728,7 @@ TextPresetGallery::TextPresetGallery(QWidget *parent) : ui::Panel(parent)
+     title = new SettingsTitle(strings::get("text_presets.gallery_title"), heading);
+     title->setObjectName("rrTextPresetGalleryTitle");
+     title->setContentsMargins(chrome::inset, 0, chrome::inset, 0);
+-    ui::readerStyle(title, ui::styles::brand(chrome::titleText) + "background:transparent;");
++    ui::readerStyle(title, ui::styles::heading(chrome::titleText) + "background:transparent;");
+     headingRows->addWidget(title, 1);
+     auto *close = new ui::CellButton(ui::ControlIcon::Close, heading);
+     close->setObjectName("rrTextPresetGalleryClose");
+diff --git a/src/app/reader/window/fork_reader_actions.cpp b/src/app/reader/window/fork_reader_actions.cpp
+new file mode 100644
+index 00000000..a2b646e4
+--- /dev/null
++++ b/src/app/reader/window/fork_reader_actions.cpp
+@@ -0,0 +1,74 @@
++#include "app/reader/views/fork_navigation.h"
++#include "ui/controls/rows.h"
++#include "reader_p.h"
++#include "support/strings.h"
++#include "ui/controls/icons.h"
++#include "platform/api/kobo_refresh.h"
++#include "support/qt_compat.h"
++#include "support/diagnostics.h"
++#include <QScopedValueRollback>
++
++namespace kobalt::reader {
++void Reader::styleForkToolbarActions()
++{
++    toolbarComposition.darkTheme->setCheckable(true);
++    static_cast<kobalt::ui::Button *>(toolbarComposition.darkTheme)->setHighlightChecked(false);
++    toolbarComposition.comics->setCheckable(true);
++    auto *comicsButton = static_cast<ui::Button *>(toolbarComposition.comics);
++    comicsButton->setHighlightChecked(false);
++    ui::ButtonIcon comicsIcon{ ui::ControlIcon::Comics, ui::IconRendition::Action };
++    comicsIcon.stateInkOnly = true;
++    comicsButton->setIconConfiguration(comicsIcon);
++}
++
++void Reader::refreshForkToolbarActions(bool settingsOpen, bool zen)
++{
++    if (toolbarComposition.darkTheme) {
++        toolbarComposition.darkTheme->setChecked(session->state().value("dark_mode").toBool(false));
++        toolbarComposition.darkTheme->setVisible(
++                !settingsOpen && !zen && features::enabled(preferences, features::DarkMode));
++    }
++    if (toolbarComposition.comics) {
++        auto *source = appearanceEdit.edited() && appearanceEdit.ready() ? appearanceEdit.preview()
++                                                                         : session;
++        // Keep mode ink stable while a preview session is being prepared/reflowed.
++        if (!appearanceEdit.edited() || appearanceEdit.ready())
++            toolbarComposition.comics->setChecked(source->requestedAppearance()
++                                                          .fields()
++                                                          .value(appearance::comicsModeKey)
++                                                          .toBool(false));
++        toolbarComposition.comics->setVisible(!settingsOpen && !zen
++                                              && features::enabled(preferences, features::Comics));
++    }
++}
++
++void Reader::toggleComicsMode()
++{
++    auto *source = appearanceEdit.preview() ? appearanceEdit.preview() : session;
++    if (source->busy()) {
++        refresh();
++        return;
++    }
++    if (appearanceEdit.panelOpen()) {
++        if (auto *option = findChild<QCheckBox *>("rrComicsReadingMode"))
++            option->click();
++        return;
++    }
++    const bool enabled = !session->requestedAppearance()
++                                  .fields()
++                                  .value(kobalt::appearance::comicsModeKey)
++                                  .toBool(false);
++    QSize viewport;
++    {
++        QScopedValueRollback<bool> mode(page->comicsMode);
++        page->comicsMode = enabled;
++        viewport = bodySize();
++    }
++    session->editAppearance(kobalt::appearance::Patch(kobalt::qt::object(
++                                    { { kobalt::appearance::comicsModeKey, enabled } })),
++                            viewport);
++    refresh();
++}
++
++
++} // namespace kobalt::reader
+diff --git a/src/app/reader/window/reader.cpp b/src/app/reader/window/reader.cpp
+index c4c2f8a7..c592f938 100644
+--- a/src/app/reader/window/reader.cpp
++++ b/src/app/reader/window/reader.cpp
+@@ -681,7 +681,7 @@ sleep::Details Reader::sleepDetails()
+     details.chapter = session->chapterTitle();
+     details.clock = clockText();
+     // The letter uses the reader's chosen face; private text needs it registered.
+-    details.font = preferences.value("default_font_face").toString(kobalt::defaultFontFace);
++    details.font = kobalt::localeReadingFamily(preferences.value("default_font_face").toString(kobalt::localeDefaultFontFace()));
+     registerPickerFonts(details.font);
+     details.greeting = preferences.value(sleep::greetingKey).toString();
+     details.left = sleepDuration(book->estimates().bookMilliseconds,
+@@ -2608,14 +2608,14 @@ void Reader::syncNavigation()
+         if (face.isEmpty())
+             face = settings->state().value("text_font_face").toString();
+         if (face.isEmpty())
+-            face = QString::fromLatin1(kobalt::defaultFontFace);
++            face = QString::fromLatin1(kobalt::localeDefaultFontFace());
+         if (face != navigationFontFace) {
+             navigationFontFace = face;
+             bool loadable = false;
+             for (const auto &font : session->fontCatalog())
+                 loadable |= font.family == face;
+             if (!loadable)
+-                face = QString::fromLatin1(kobalt::defaultFontFace);
++                face = QString::fromLatin1(kobalt::localeDefaultFontFace());
+             registerPickerFonts(face);
+             navigation->setTextFace(face);
+         }
+@@ -4019,6 +4019,8 @@ void Reader::describe(QJsonObject &state)
+     state["reading_chrome_font"] = QFontInfo(page->font()).family();
+     state["session_reading_ms"] = double(book->sessionReadingMilliseconds());
+     state["menu_session_text"] = menuSession->text();
++    state[menustatus::preferenceKey] = menustatus::showsPage(preferences)
++            ? QStringLiteral("book_page") : QStringLiteral("session");
+     state["menu_clock_font"] = QFontInfo(menuClock->font()).family();
+     state["menu_battery_font"] = QFontInfo(menuBattery->font()).family();
+     state["ui_icon_set"] = QStringLiteral("Phosphor");
+diff --git a/src/app/reader/window/reader_annotations.cpp b/src/app/reader/window/reader_annotations.cpp
+index cd439b9b..8ca3151c 100644
+--- a/src/app/reader/window/reader_annotations.cpp
++++ b/src/app/reader/window/reader_annotations.cpp
+@@ -35,7 +35,8 @@ const char *exportFormatName(AnnotationExportFormat format)
+ QByteArray exportFont(const EngineFontInputs &fonts)
+ {
+     for (const auto &path : fonts.sources.bundled) {
+-        if (!path.endsWith("/Libron-Regular.ttf"))
++        if (!path.endsWith(strings::locale() == strings::Locale::Russian
++                                   ? "/NV_Literata-Regular.ttf" : "/Libron-Regular.ttf"))
+             continue;
+         QFile font(path);
+         if (!font.open(QIODevice::ReadOnly))
+@@ -360,13 +361,28 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
+         rows->addWidget(noteRow);
+         desiredWidth = qMax(desiredWidth, ui::px(700));
+     }
++    const auto section = [card, rows](const char *name, const char *key, bool divider = false) {
++        auto *header = new ui::Panel(card);
++        header->setDividers(ui::Edges(Qt::BottomEdge)
++                            | (divider ? ui::Edges(Qt::TopEdge) : ui::Edges{}));
++        header->setObjectName(name);
++        header->setFixedHeight(ui::px(40));
++        auto *layout = new QHBoxLayout(header);
++        layout->setContentsMargins(metrics::chrome::inset, 0, metrics::chrome::inset, 0);
++        auto *label = new ui::InterfaceLabel(strings::get(key), header);
++        ui::captionLabel(label);
++        layout->addWidget(label);
++        rows->addWidget(header);
++    };
+     if (colorAnnotations() && colorChanged) {
++        section("rrAnnotationColorSection", "annotations.color_section");
+         auto *palette = new ui::HighlightPalette(paletteColor, colorChanged, card);
+         rows->addWidget(palette);
+         palette->show();
+         desiredWidth = qMax(desiredWidth, ui::px(700));
+     }
+     if (styleChanged) {
++        section("rrAnnotationStyleSection", "annotations.style_section");
+         rows->addWidget(new ui::HighlightStylePicker(selectedStyle, styleChanged, card));
+         desiredWidth = qMax(desiredWidth, ui::px(700));
+     }
+@@ -378,7 +394,7 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
+         menuActions.append(
+                 { "rrAnnotationCancel",
+                   adjusting ? ui::ControlIcon::Undo : ui::ControlIcon::ClearSelection,
+-                  strings::get(adjusting ? "annotations.discard" : "annotations.cancel_selection"),
++                  strings::get(adjusting ? "common.cancel" : "annotations.cancel_selection"),
+                   [this] { clearAnnotationDraft(); } });
+     }
+     if (compactActions && annotationMode && minimalAnnotationMode() && !quickAnnotations()) {
+@@ -394,6 +410,8 @@ void Reader::annotationActionsFor(const QVector<AnnotationAction> &actions, QRec
+                    int(metrics::links::actionHeight));
+     // Load failures can open this menu with no actions: then there is no strip.
+     const bool compact = compactActions && !menuActions.isEmpty() && menuActions.size() <= 6;
++    if (styleChanged)
++        section("rrAnnotationActionsSection", "annotations.actions_section", true);
+     QGridLayout *buttons = nullptr;
+     int columns = menuActions.size();
+     if (compact) {
+@@ -929,7 +947,7 @@ void Reader::showAnnotationActions()
+         bounds = topControls->geometry();
+     if (!annotationMode) {
+         QVector<AnnotationAction> actions{ { "rrSelectionLookup", ui::ControlIcon::Dictionary,
+-                                             strings::get("annotations.look_up"), [this] {
++                                             strings::get("reader.link_dictionary"), [this] {
+                                                  annotationPopover->hide();
+                                                  lookupSelection();
+                                              } } };
+@@ -991,7 +1009,7 @@ void Reader::showAnnotationActions()
+         // selection. Both leave annotation mode first, as the hold had not
+         // entered it in toggleable mode.
+         actions.append({ "rrSelectionLookup", ui::ControlIcon::Dictionary,
+-                         strings::get("annotations.look_up"), [this] {
++                         strings::get("reader.link_dictionary"), [this] {
+                              annotationPopover->hide();
+                              annotationMode = false;
+                              annotationColor = annotationSelectedColor;
+@@ -1589,7 +1607,7 @@ void Reader::showSavedAppearance(const QString &id, QRect anchor, bool navigate,
+     if (colorStep) {
+         // Discard leaves the choices unsaved and returns to the note.
+         actions.append(
+-                { "rrAnnotationDiscard", ui::ControlIcon::Undo, strings::get("annotations.discard"),
++                { "rrAnnotationDiscard", ui::ControlIcon::Undo, strings::get("common.cancel"),
+                   [this, id, anchor, navigate] { showSavedAnnotationAt(id, anchor, navigate); } });
+     } else {
+         actions.append({ "rrAnnotationAddNote", ui::ControlIcon::Note,
+diff --git a/src/app/reader/window/reader_build.cpp b/src/app/reader/window/reader_build.cpp
+index 0e09f527..b0b87470 100644
+--- a/src/app/reader/window/reader_build.cpp
++++ b/src/app/reader/window/reader_build.cpp
+@@ -1,3 +1,4 @@
++#include <QScopedValueRollback>
+ #include <algorithm>
+ #include "render/page_content.h"
+ #include "ui/controls/text.h"
+@@ -22,6 +23,7 @@
+ #include "support/diagnostics.h"
+ #include "ui/style/metrics.h"
+ #include "ui/panel_timing.h"
++#include "ui/controls/return_title_text.h"
+ #include "storage/reader_storage.h"
+ #include "app/reader/settings/settings_panel.h"
+ #include "render/page_refresh_regions.h"
+@@ -101,6 +103,8 @@ class ReturnTitle final : public ui::InterfaceLabel
+ {
+ public:
+     using ui::InterfaceLabel::InterfaceLabel;
++    QSize sizeHint() const override { return ui::returnTitleSizeHint(*this); }
++    QSize minimumSizeHint() const override { return sizeHint(); }
+ 
+ protected:
+     void paintEvent(QPaintEvent *) override
+@@ -118,8 +122,7 @@ protected:
+                                                       : QPalette::WindowText));
+         const auto bounds = contentsRect().adjusted(margin(), margin(), -margin(), -margin());
+         // Font line boxes include padding above and below the visible letters.
+-        ui::drawOpticalText(painter, bounds.translated(0, metrics::chrome::returnTitleOffset),
+-                            text(), true);
++        ui::paintReturnTitle(painter, bounds, *this);
+     }
+ };
+ 
+@@ -821,6 +824,21 @@ void Reader::buildToolbar()
+     auto *top = new QHBoxLayout;
+     toolbar->addLayout(top);
+     top->setSpacing(metrics::panel::toolbarGap);
++    menuStatusButton = new MenuStatusButton(topControls);
++    menuStatusButton->setObjectName("rrMenuStatusToggle");
++    menuStatusButton->setFocusPolicy(Qt::StrongFocus);
++    menuStatusButton->setCheckable(true);
++    toolbarComposition.statusToggle = menuStatusButton;
++    connect(menuStatusButton, &QAbstractButton::clicked, this, [this] {
++        auto next = preferences;
++        next[menustatus::preferenceKey] = menustatus::showsPage(preferences)
++                ? QStringLiteral("session") : QStringLiteral("book_page");
++        savePreferences(next, [this](bool saved) {
++            updateMenuStatus();
++            if (saved)
++                navigation->updateSessionGeometry();
++        });
++    });
+     updateMenuStatus();
+     const auto returnLabel = services.backButtonLabel.isEmpty() ? strings::get("reader.exit")
+                                                                 : services.backButtonLabel;
+@@ -835,10 +853,11 @@ void Reader::buildToolbar()
+ 
+     auto *returnTitle = new ReturnTitle(returnLabel, back);
+     returnTitle->setObjectName("rrReturnTitle");
++    returnTitle->setProperty("wordmark_pixels", int(metrics::chrome::titleText));
+     returnTitle->setAttribute(Qt::WA_TransparentForMouseEvents);
+     returnTitle->setAlignment(Qt::AlignCenter);
+     returnTitle->setContentsMargins(0, 0, metrics::chrome::inset, 0);
+-    readerStyle(returnTitle, styles::brand(metrics::chrome::titleText) + "background:transparent;");
++    readerStyle(returnTitle, styles::heading(metrics::chrome::titleText) + "background:transparent;");
+     returnTitle->ensurePolished();
+     returnRow->addSpacing(back->labelStart(returnTitle->font()));
+     returnRow->addWidget(returnTitle, 1);
+@@ -891,6 +910,15 @@ void Reader::buildToolbar()
+             iconButton(topControls, top, "rrGraph", strings::get("reader.chapter_lengths"),
+                        ControlIcon::Graph, [this] { toggleGraph(); });
+     toolbarButtons.graph->setCheckable(true);
++    toolbarComposition.darkTheme = iconButton(topControls, top, "rrDarkTheme",
++            strings::get("reader.dark_mode"), ControlIcon::DarkTheme, [this] {
++                applyDarkMode(!preferences.value("dark_mode").toBool(false));
++            });
++    toolbarComposition.comics = iconButton(topControls, top, "rrComicsToggle",
++            strings::get("reader.comics_reading_mode"), ControlIcon::Comics, [this] {
++                toggleComicsMode();
++            });
++    styleForkToolbarActions();
+     toolbarComposition.search =
+             iconButton(topControls, top, "rrSearchOpen", strings::get("reader.search_book"),
+                        ControlIcon::Search,
+@@ -944,9 +972,9 @@ void Reader::buildToolbar()
+          topControls->findChildren<QPushButton *>(QString(), Qt::FindDirectChildrenOnly)) {
+         if (button == back)
+             continue;
+-        if (button->objectName() != "rrSettings" && button->objectName() != "rrBookmarks"
+-            && button->objectName() != "rrAnnotate" && button->objectName() != "rrFormattingWarning"
+-            && button->objectName() != "rrSearchOpen" && button->objectName() != "rrKosyncManual")
++        if (button->objectName() != "rrSettings" && button->objectName() != "rrBookmarks" &&
++            button->objectName() != "rrAnnotate" && button->objectName() != "rrFormattingWarning" &&
++            button->objectName() != "rrSearchOpen" && button->objectName() != "rrKosyncManual" && button->objectName() != "rrDarkTheme" && button->objectName() != "rrComicsToggle")
+             topActions.append(button);
+         if (auto *action = dynamic_cast<kobalt::ui::Button *>(button))
+             action->setPaintMode(kobalt::ui::ButtonPaintMode::ToolbarSquare);
+@@ -1240,6 +1268,19 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
+         weightControls += slider->stepButtons();
+     }
+     spacingSlider = appearance.spacingSlider;
++    auto *comicsOption = appearance.comicsOption;
++    connect(comicsOption, &QCheckBox::clicked, this, [this](bool enabled) {
++        QSize viewport;
++        {
++            QScopedValueRollback<bool> mode(page->comicsMode);
++            page->comicsMode = enabled;
++            viewport = bodySize();
++        }
++        mutateAppearance([enabled, viewport](ReaderSession &preview) {
++            preview.editAppearance(kobalt::appearance::Patch(
++                    kobalt::qt::object({ { kobalt::appearance::comicsModeKey, enabled } })), viewport);
++        });
++    });
+     marginSlider = appearance.marginSlider;
+     verticalMarginSlider = appearance.verticalMarginSlider;
+     buildTextPresets();
+@@ -2423,11 +2464,11 @@ void Reader::showFontPicker()
+                              strings::get("reader.recommended_fonts") } };
+     pickerNativeFamilies = services.fontFamilies();
+     const auto state = settings->state();
+-    auto defaultFace = preferences.value("default_font_face").toString(kobalt::defaultFontFace);
++    auto defaultFace = kobalt::localeReadingFamily(preferences.value("default_font_face").toString(kobalt::localeDefaultFontFace()));
+     auto fonts = settings->fontCatalog();
+     // The publisher row's sample uses Libron.
+     for (const auto &font : fonts)
+-        if (font.family == QLatin1String("Libron"))
++        if (font.family == QLatin1String(localeDefaultFontFace()))
+             items[0].fontFiles = font.files;
+     for (int row = fonts.size() - 1; row >= 0; --row) {
+         const auto &font = fonts[row];
+@@ -2457,13 +2498,13 @@ void Reader::showFontPicker()
+         if (items[i].value == defaultFace)
+             defaultIndex = i;
+     if (defaultIndex < 0 && !settings->fontFaces().contains(defaultFace)) {
+-        defaultFace = kobalt::defaultFontFace;
++        defaultFace = kobalt::localeDefaultFontFace();
+         defaultIndex = personalCount + 1;
+     }
+     const int embedded = state.value("embedded_font_count").toInt();
+     auto serifFallback = state.value("serif_font_face").toString();
+     if (serifFallback.isEmpty())
+-        serifFallback = kobalt::defaultFontFace;
++        serifFallback = kobalt::localeDefaultFontFace();
+     items[personalCount].detail = embedded > 0
+             ? (embedded == 1 ? strings::get("reader.one_embedded_font")
+                              : strings::get("reader.embedded_fonts").arg(embedded))
+@@ -2481,7 +2522,7 @@ void Reader::showFontPicker()
+     slot.placeholder = true;
+     // The Publisher fonts row samples Libron to fit its two-line caption.
+     // Without this registration the sample can measure a fallback face.
+-    registerPickerFonts(QString::fromLatin1(kobalt::defaultFontFace));
++    registerPickerFonts(QString::fromLatin1(kobalt::localeDefaultFontFace()));
+     if (!services.phoneLayout) {
+         // Registration reads only metadata. The slot's Aa loads its face when drawn.
+         registerPickerFonts(defaultFace);
+diff --git a/src/app/reader/window/reader_dialogs.cpp b/src/app/reader/window/reader_dialogs.cpp
+index d496dc73..65bd8bc9 100644
+--- a/src/app/reader/window/reader_dialogs.cpp
++++ b/src/app/reader/window/reader_dialogs.cpp
+@@ -92,7 +92,7 @@ void Reader::showFontDefaultDialog(const QString &face, bool instructions)
+         return;
+     if (fontDefaultDialog || !appearanceEdit.panelOpen())
+         return;
+-    const auto current = preferences.value("default_font_face").toString(defaultFontFace);
++    const auto current = kobalt::localeReadingFamily(preferences.value("default_font_face").toString(localeDefaultFontFace()));
+     const bool alreadyDefault = face == current;
+     const auto label =
+             face.isEmpty() ? strings::get("reader.publisher_fonts") : fontDisplayName(face);
+@@ -100,7 +100,7 @@ void Reader::showFontDefaultDialog(const QString &face, bool instructions)
+         instructions ? strings::get("reader.default_font_instructions")
+                 : alreadyDefault
+                 ? strings::get("reader.already_default_font").arg(label)
+-                : (face == defaultFontFace ? strings::get("reader.restore_default_font_description")
++                : (face == localeDefaultFontFace() ? strings::get("reader.restore_default_font_description")
+                                            : strings::get("reader.make_default_font_description")),
+         instructions || alreadyDefault ? strings::get("reader.your_default_font")
+                                        : strings::get("reader.make_default_font").arg(label),
+@@ -170,7 +170,7 @@ void Reader::showFontDefaultDialog(const QString &face, bool instructions)
+                     mutateAppearance([face](ReaderSession &preview) {
+                         const auto patch = appearance::Patch(
+                                 qt::object({ { "default_font_face",
+-                                               face.isEmpty() ? QString(defaultFontFace) : face } }));
++                                               face.isEmpty() ? QString(localeDefaultFontFace()) : face } }));
+                         preview.requestAppearance(preview.displayedAppearance().settings.edited(patch));
+                     });
+                     showFontPicker();
+diff --git a/src/app/reader/window/reader_p.h b/src/app/reader/window/reader_p.h
+index b5e457c2..8dc3f038 100644
+--- a/src/app/reader/window/reader_p.h
++++ b/src/app/reader/window/reader_p.h
+@@ -2,6 +2,7 @@
+ #include <future>
+ #include "app/reader/settings/interface_style.h"
+ #include "reading/features.h"
++#include "reading/menu_status.h"
+ #include "support/strings.h"
+ // Private to the reader window: its declaration and the widgets only it uses.
+ // Include it only from the reader's own translation units.
+@@ -98,6 +99,16 @@ public:
+     explicit ChapterHeader(QWidget *parent);
+ };
+ 
++// Transparent hit target over the existing status row: no new strip or layout.
++// QAbstractButton supplies normal release/cancellation and keyboard semantics.
++class MenuStatusButton final : public QAbstractButton
++{
++public:
++    using QAbstractButton::QAbstractButton;
++protected:
++    void paintEvent(QPaintEvent *) override { }
++};
++
+ class MenuSessionLabel final : public ui::InterfaceLabel
+ {
+ public:
+@@ -382,6 +393,9 @@ private:
+     void startDeviceObservers();
+     // The sleep cover, overlay and wallpapers, and today's reading for them.
+     void prepareSleepImages();
++    void toggleComicsMode();
++    void styleForkToolbarActions();
++    void refreshForkToolbarActions(bool settingsOpen, bool zen);
+     void buildToolbar();
+     void buildBottomControls();
+     kobalt::reader::AppearanceLayout buildMenu();
+@@ -582,6 +596,7 @@ private:
+     const bool liveState = QFile::exists(book->paths().directory + "/live-state");
+     QLabel *menuClock;
+     MenuSessionLabel *menuSession;
++    MenuStatusButton *menuStatusButton = nullptr;
+     kobalt::ui::BatteryIndicator *menuBattery;
+     kobalt::ui::BluetoothIndicator *menuBluetooth;
+     kobalt::ui::WifiIndicator *menuWifi;
+diff --git a/src/app/reader/window/reader_refresh.cpp b/src/app/reader/window/reader_refresh.cpp
+index 26988fea..78dc013c 100644
+--- a/src/app/reader/window/reader_refresh.cpp
++++ b/src/app/reader/window/reader_refresh.cpp
+@@ -1,5 +1,6 @@
+ #include "reading/header_footer.h"
+ #include "render/page_content.h"
++#include <QScopedValueRollback>
+ #include "ui/controls/rows.h"
+ #include "ui/controls/text.h"
+ #include "ui/panel_timing.h"
+@@ -332,6 +333,13 @@ bool Reader::syncFontPicker()
+ // footer's place until it clears.
+ void Reader::showChapterText()
+ {
++    const bool comics =
++            session->requestedAppearance().fields().value(appearance::comicsModeKey).toBool(false);
++    if (page->comicsMode != comics) {
++        page->comicsMode = comics;
++        header->setVisible(page->showHeader());
++        resizeText();
++    }
+     page->cleanRefresh(false);
+     page->notice = !session->error().isEmpty() ? session->error() : session->imageWarning();
+     const auto values = chromeValues(ChromeFields::Reading);
+@@ -398,8 +406,13 @@ void Reader::syncAppearancePreview()
+     if (previewPageKind != kind) {
+         previewPageKind = kind;
+         previewPageKey = previewPageRequested = 0;
+-        previewPage = {};
++        previewPage = { };
+     }
++    // Compose draft chrome using draft geometry, not the applied book mode.
++    const bool comics =
++            settings->requestedAppearance().fields().value(appearance::comicsModeKey).toBool(false);
++    QScopedValueRollback<bool> mode(page->comicsMode);
++    page->comicsMode = comics;
+     const int side = kobalt::readingPixels(marginSlider->value());
+     const int vertical = kobalt::readingPixels(verticalMarginSlider->value());
+     kobalt::reader::AppearancePreview::Content content;
+@@ -407,13 +420,11 @@ void Reader::syncAppearancePreview()
+     content.bodyTop = page->topHeight();
+     content.bodyHeight = bodySize().height();
+     if (!textOpen) {
+-        content.header =
+-                page->showHeader() || page->progressAtTop() ? page->headerImage() : QImage();
+-        content.footer =
+-                page->showFooter() || page->progressAtBottom() ? page->footerImage() : QImage();
++        content.header = page->headerImage();
++        content.footer = page->footerImage();
+     }
+-    content.horizontalMargin = side;
+-    content.verticalMargin = vertical;
++    content.horizontalMargin = comics ? 0 : side;
++    content.verticalMargin = comics ? 0 : vertical;
+     content.axis = appearancePreviewAxis;
+     content.text = textOpen;
+     content.sample = sample;
+@@ -591,6 +602,12 @@ void Reader::syncAppearanceControls(bool pickingFont)
+         syncTextPresets();
+         return;
+     }
++    if (auto *option = findChild<QCheckBox *>("rrComicsReadingMode")) {
++        option->setChecked(settings->requestedAppearance()
++                                   .fields()
++                                   .value(appearance::comicsModeKey)
++                                   .toBool(false));
++    }
+     if (!sizeSlider->interacting()) {
+         const int halfPoints = kobalt::pixelHalfPoints(settings->fontSize());
+         sizeSlider->setValue(halfPoints);
+@@ -779,6 +796,7 @@ void Reader::syncReadingControls()
+         if (action)
+             action->setVisible(!settingsOpen);
+     toolbarComposition.search->setVisible(!settingsOpen && !zen);
++    refreshForkToolbarActions(settingsOpen, zen);
+     const bool bookmarksShown = features::enabled(preferences, features::Bookmarks);
+     const bool annotationsShown = features::enabled(preferences, features::Annotations);
+     const bool wordsShown = savedWords && features::enabled(preferences, features::Words);
+@@ -989,13 +1007,22 @@ void Reader::updateMenuSession()
+ {
+     const auto reading = book->sessionReadingMilliseconds();
+     QString label;
+-    const bool counting = menuShowsPagination();
++    const bool pageMode = menustatus::showsPage(preferences);
++    const bool counting = !pageMode && menuShowsPagination();
+     menuSession->setCountingPages(counting, publisherPagesEnabled());
+-    if (!counting && features::enabled(preferences, features::Stats) && reading > 300000)
++    if (pageMode)
++        label = menustatus::text(preferences, chromeValues(ChromeFields::Reading));
++    else if (!counting && features::enabled(preferences, features::Stats) && reading > 300000)
+         label = strings::get("reader.session_minutes").arg(reading / 60000);
+     if (menuSession->text() != label)
+         menuSession->setText(label);
+     menuSession->setVisible(!hideNativeStatus() && !zenMode() && (counting || !label.isEmpty()));
++    if (menuStatusButton) {
++        menuStatusButton->setAccessibleName(strings::get("zen.this_session") + " / "
++                + headerfooter::fieldLabel(headerfooter::Field::BookPage));
++        menuStatusButton->setAccessibleDescription(label);
++        menuStatusButton->setChecked(pageMode);
++    }
+ }
+ 
+ // Stats and the reading strips use the same platform or session estimates.
+diff --git a/src/app/reader/window/reader_settings.cpp b/src/app/reader/window/reader_settings.cpp
+index 71349834..98b50441 100644
+--- a/src/app/reader/window/reader_settings.cpp
++++ b/src/app/reader/window/reader_settings.cpp
+@@ -1,3 +1,4 @@
++#include <QScopedValueRollback>
+ #include <QKeyEvent>
+ #include "reading/remaining_time.h"
+ #include "render/page_content.h"
+@@ -74,8 +75,8 @@ void logSettingChanges(const QJsonObject &previous, const QJsonObject &next, boo
+ 
+ QStringList fallbackFontDefaults(const QStringList &families)
+ {
+-    return { QString(defaultFontFace),
+-             families.contains(publisherSansFontFace) ? QString(publisherSansFontFace)
++    return { QString(localeDefaultFontFace()),
++             families.contains(localePublisherSansFontFace()) ? QString(localePublisherSansFontFace())
+                                                       : QString("IBM Plex Sans"),
+              QString(monospaceFontFace) };
+ }
+@@ -518,10 +519,10 @@ void Reader::openSettings()
+         const auto family = preferences.value(key).toString();
+         settingsFontFaces[key] = session->fontFaces().contains(family) ? family : QString();
+     }
+-    settingsDefaultFontFace = preferences.value("default_font_face").toString(defaultFontFace);
++    settingsDefaultFontFace = kobalt::localeReadingFamily(preferences.value("default_font_face").toString(localeDefaultFontFace()));
+     if (!settingsDefaultFontFace.isEmpty()
+         && !session->fontFaces().contains(settingsDefaultFontFace))
+-        settingsDefaultFontFace = defaultFontFace;
++        settingsDefaultFontFace = localeDefaultFontFace();
+     loadThemeSettings();
+     settingsDictionaryFontFace = preferences.value("dictionary_font_face").toString();
+     settingsDictionaryFontSize = preferences.value("dictionary_font_size").toInt(100);
+@@ -802,7 +803,7 @@ void Reader::renderStylingSamples(int requested)
+           { QStringLiteral("off"), QStringLiteral("center"), QStringLiteral("expand") } },
+     };
+ 
+-    registerPickerFonts(QString::fromLatin1(defaultFontFace));
++    registerPickerFonts(QString::fromLatin1(localeDefaultFontFace()));
+     for (const auto &entry : requests) {
+         const int feature = int(entry.feature);
+         if (feature != requested)
+@@ -844,7 +845,7 @@ void Reader::renderStylingSamples(int requested)
+             };
+             request.settings["text_alignment"] = QStringLiteral("justify");
+             request.settings["hyphenation"] = QStringLiteral("on");
+-            request.settings["font_face"] = QString(defaultFontFace);
++            request.settings["font_face"] = QString(localeDefaultFontFace());
+             request.settings["font_pixels"] = samplePixels(40);
+             request.settings["line_spacing"] = 130;
+             request.settings["line_spacing_version"] = 1;
+@@ -1227,7 +1228,7 @@ void Reader::finishSettingsWrite(const QJsonObject &next, bool saved)
+             : session->displayedAppearance().settings;
+     QJsonObject settings;
+     settings["default_font_face"] =
+-            settingsDefaultFontFace.isEmpty() ? QString(defaultFontFace) : settingsDefaultFontFace;
++            settingsDefaultFontFace.isEmpty() ? QString(localeDefaultFontFace()) : settingsDefaultFontFace;
+     for (const auto *key : appearance::fallbackFontKeys)
+         settings[key] = preferences.value(key).toString();
+     settings["dark_mode"] = darkOption.checked();
+@@ -1415,9 +1416,9 @@ QString Reader::bookFace()
+     for (const auto &font : session->fontCatalog())
+         loadable |= font.family == face;
+     if (!loadable) {
+-        face = session->state().value("default_font_face").toString(kobalt::defaultFontFace);
++        face = session->state().value("default_font_face").toString(kobalt::localeDefaultFontFace());
+         if (!session->fontFaces().contains(face))
+-            face = QString::fromLatin1(kobalt::defaultFontFace);
++            face = QString::fromLatin1(kobalt::localeDefaultFontFace());
+     }
+     registerPickerFonts(face);
+     return face;
+@@ -1446,7 +1447,7 @@ void Reader::registerPickerFonts(const QString &family)
+                     : session->displayedAppearance().settings;
+             if (font.family != supplementalFontFamily(session->state().value("language").toString())
+                 && font.family
+-                        != preferences.value("default_font_face").toString(kobalt::defaultFontFace)
++                        != kobalt::localeReadingFamily(preferences.value("default_font_face").toString(kobalt::localeDefaultFontFace()))
+                 && font.family != requested.fields().value("font_face").toString())
+                 continue;
+         }
+@@ -1463,6 +1464,12 @@ void Reader::resizeText()
+ {
+     if (!isVisible() || closing)
+         return;
++    const auto *draft =
++            appearanceEdit.edited() && appearanceEdit.ready() ? appearanceEdit.preview() : session;
++    const bool draftComics =
++            draft->requestedAppearance().fields().value(appearance::comicsModeKey).toBool(false);
++    QScopedValueRollback<bool> previewMode(page->comicsMode);
++    page->comicsMode = draftComics;
+     const QSize viewport = bodySize();
+     kobalt::diagnostic(
+             "reader-resize-text",
+@@ -1671,6 +1678,12 @@ void Reader::finishPreviewWrite(const QJsonObject &next, bool saved)
+     }
+     preferences = next;
+     appearanceEdit.clearError();
++    if (appearanceEdit.ready())
++        page->comicsMode = appearanceEdit.preview()
++                                   ->requestedAppearance()
++                                   .fields()
++                                   .value(appearance::comicsModeKey)
++                                   .toBool(false);
+     const QSize viewport = bodySize();
+     if (appearanceEdit.ready())
+         session->requestAppearance(appearanceEdit.preview()->requestedAppearance(), viewport);
+diff --git a/src/app/reader/window/reader_text_presets.cpp b/src/app/reader/window/reader_text_presets.cpp
+index 19d8d2d0..9a267712 100644
+--- a/src/app/reader/window/reader_text_presets.cpp
++++ b/src/app/reader/window/reader_text_presets.cpp
+@@ -1,4 +1,5 @@
+ #include "reader_p.h"
++#include "reading/fork_text_preset_names.h"
+ #include "platform/api/kobo_refresh.h"
+ #include "app/reader/settings/settings_panel.h"
+ #include "app/reader/settings/text_presets_panel.h"
+@@ -167,10 +168,10 @@ TextPresetView Reader::textPresetView(const Preset &preset)
+ {
+     TextPresetView view;
+     view.id = preset.id;
+-    view.name = preset.name;
++    view.name = textpresets::displayName(preset);
+     view.detail = presetDetail(preset);
+     const auto face =
+-            preset.fontFace.isEmpty() ? QString::fromLatin1(defaultFontFace) : preset.fontFace;
++            preset.fontFace.isEmpty() ? QString::fromLatin1(localeDefaultFontFace()) : preset.fontFace;
+     for (const auto &font : textPresetSettings()->fontCatalog())
+         if (font.family.compare(face, Qt::CaseInsensitive) == 0) {
+             view.font = ui::fontPreviewSource(font.family, font.files);
+@@ -263,7 +264,8 @@ void Reader::syncTextPresets()
+     if (selectedIndex >= TextPresetSection::cardCount && !cards.isEmpty())
+         cards.last() = textPresetView(presets[selectedIndex]);
+     const auto *chosen = textpresets::find(presets, selected);
+-    textPresetSection->setState(cards, selected, chosen ? chosen->name : QString(), modified,
++    textPresetSection->setState(cards, selected,
++                                chosen ? textpresets::displayName(*chosen) : QString(), modified,
+                                 preferences.value(textpresets::rowKey).toBool(false));
+     if (!textPresetChoosingNewBook)
+         textPresetGalleryEntries = presets;
+@@ -387,7 +389,8 @@ void Reader::editTextPresetName(const QString &id)
+     editor->setObjectName("rrTextPresetNameInput");
+     dialog->setFocusProxy(editor);
+     editor->setMaxLength(textpresets::maximumName);
+-    editor->setText(existing ? preset.name : textpresets::suggestedName(presets, preset));
++    editor->setText(existing ? textpresets::displayName(preset)
++                             : textpresets::suggestedName(presets, preset));
+     editor->selectAll();
+     editor->setAccessibleName(strings::get("text_presets.name"));
+     editor->setInputMethodHints(Qt::ImhNoPredictiveText);
+@@ -508,7 +511,7 @@ TextSampleRequest Reader::textPresetSample(const Preset &preset)
+     // tile is drawn once and kept.
+     TextSampleRequest request;
+     request.face =
+-            preset.fontFace.isEmpty() ? QString::fromLatin1(defaultFontFace) : preset.fontFace;
++            preset.fontFace.isEmpty() ? QString::fromLatin1(localeDefaultFontFace()) : preset.fontFace;
+     request.ppi = sampleCanvasPpi;
+     request.pixels = qRound(preset.halfPoints * sampleCanvasPpi / 144.0);
+     request.lineSpacing = preset.lineSpacing;
+@@ -542,7 +545,7 @@ void Reader::showTextPresetActions(const QString &id)
+                        ui::ControlIcon::Trash, [this, id] { confirmDeleteTextPreset(id); }),
+     };
+     ui::ActionMenuHeader header;
+-    header.title = preset->name;
++    header.title = textpresets::displayName(*preset);
+     header.caption = presetSummary(*preset);
+     if (textpresets::newBookChoice(preferences) == id)
+         header.detail = strings::get("text_presets.used_for_new_books");
+@@ -578,7 +581,7 @@ void Reader::confirmDeleteTextPreset(const QString &id)
+     auto *dialog = new ui::ChoiceModal(
+             this,
+             { strings::get("text_presets.delete_detail"),
+-              strings::get("text_presets.delete_prompt").arg(preset->name),
++              strings::get("text_presets.delete_prompt").arg(textpresets::displayName(*preset)),
+               {} },
+             { strings::get("common.cancel"), "rrTextPresetDeleteCancel" },
+             { strings::get("text_presets.delete"), "rrTextPresetDeleteConfirm" });
+@@ -814,7 +817,7 @@ void Reader::showTextPresetSettings()
+     const auto choice = textpresets::newBookChoice(preferences);
+     const auto *chosen = textpresets::find(presets, choice);
+     panel->textForNewBooksButton->setCaption(
+-            chosen ? chosen->name
++            chosen ? textpresets::displayName(*chosen)
+                    : strings::get(choice == "book" ? "settings.new_book_book_default"
+                                                    : "settings.new_book_last_used"));
+ }
+diff --git a/src/reading/appearance_settings.cpp b/src/reading/appearance_settings.cpp
+index 6597dc89..76521b5d 100644
+--- a/src/reading/appearance_settings.cpp
++++ b/src/reading/appearance_settings.cpp
+@@ -1,5 +1,7 @@
++#include "reading/locale_font_roles.h"
+ #include "reading/reading_progress.h"
+ #include "appearance_settings.h"
++#include "menu_status.h"
+ #include "features.h"
+ #include "support/qt_compat.h"
+ #include "page_navigation.h"
+@@ -72,6 +74,7 @@ QJsonObject globalPreferences(QJsonObject preferences)
+ {
+     if (preferences.contains("schema") && preferences.value("schema").toDouble(-1) != 1)
+         return preferences;
++    migrateLegacyNotes(preferences);
+     if (!preferences.contains("bold_reading") && preferences.contains("bionic_reading"))
+         preferences["bold_reading"] = preferences.value("bionic_reading");
+     preferences.remove("bionic_reading");
+@@ -99,6 +102,7 @@ QJsonObject globalPreferences(QJsonObject preferences)
+     preferences.remove("smooth_images");
+     preferences.remove("heavier_interface_text");
+     preferences.remove("native_hide_status_bar");
++    preferences.remove(comicsModeKey); // Per-book only.
+     preferences.remove("light_dark_mode_shortcut");
+     preferences.remove("columns");
+     preferences.remove("column_spacing");
+@@ -221,6 +225,7 @@ QJsonObject cleanPreferences(QJsonObject preferences)
+     choice("header_footer", { "default", "alternative_a", "alternative_b", "phone", "custom" });
+     choice("ui_palette", { "grayscale", "blue", "sage", "sepia" });
+     choice("default_menu_view", { "none", "seek", "stats" });
++    choice(menustatus::preferenceKey, { "session", "book_page" });
+     choice("navigation_bar_buttons", { "chapters", "pages" });
+     choice("chapter_groups", { "current", "all", "off" });
+     choice("page_navigation", { "taps_and_swipes", "taps_only", "swipes_only", "buttons_only" });
+@@ -425,9 +430,9 @@ void applyFontDefault(QJsonObject &saved, const QJsonObject &preferences)
+     // Global fallbacks also replace stale values in an existing book's state.
+     for (const auto *key : fallbackFontKeys)
+         saved[key] = preferences.value(key).toString();
+-    const auto face = preferences.value("default_font_face").toString(defaultFontFace);
++    const auto face = kobalt::localeReadingFamily(preferences.value("default_font_face").toString(localeDefaultFontFace()));
+     // Publisher is an empty override. The renderer still needs a concrete fallback.
+-    saved["default_font_face"] = face.isEmpty() ? QString(defaultFontFace) : face;
++    saved["default_font_face"] = face.isEmpty() ? QString(localeDefaultFontFace()) : face;
+     if (!saved.contains("font_face"))
+         saved["font_face"] = face;
+ }
+@@ -435,7 +440,7 @@ void applyFontDefault(QJsonObject &saved, const QJsonObject &preferences)
+ QJsonObject benchmarkTypography()
+ {
+     return qt::object({ { "font_face", QString() },
+-                        { "default_font_face", QStringLiteral("Libron") },
++                        { "default_font_face", QString::fromLatin1(kobalt::localeDefaultFontFace()) },
+                         { "font_pixels", defaultFontPixels() },
+                         { "line_spacing", 144 },
+                         { "line_spacing_version", 1 },
+@@ -454,7 +459,7 @@ QJsonObject benchmarkTypography()
+ QJsonObject typographyDefaults()
+ {
+     return qt::object(
+-            { { "font_face", QString::fromLatin1(defaultFontFace) },
++            { { "font_face", QString::fromLatin1(localeDefaultFontFace()) },
+               { "font_pixels", defaultFontPixels() },
+               { "line_spacing", defaultLineSpacing },
+               { "line_spacing_version", 1 },
+diff --git a/src/reading/appearance_settings.h b/src/reading/appearance_settings.h
+index 19f6ee66..7feea590 100644
+--- a/src/reading/appearance_settings.h
++++ b/src/reading/appearance_settings.h
+@@ -1,17 +1,30 @@
+ #pragma once
++#include "reading/locale_font_roles.h"
+ #include "reading/reading_density.h"
+ #include <QJsonObject>
+ #include <array>
+ #include <utility>
+ 
+ namespace kobalt {
+-inline constexpr auto defaultFontFace = "Libron";
++inline constexpr auto defaultFontFace = "Libron"; // Legacy English role; use localeDefaultFontFace().
++
+ inline constexpr int defaultLineSpacing = 150;
+ inline constexpr int maximumLineSpacing = 300;
+ inline constexpr int defaultVariableFontWeight = 450;
+ inline constexpr int defaultColumnSpacingPercent = 150;
+ 
+ namespace appearance {
++inline constexpr auto comicsModeKey = "comics_reading_mode";
++// Migrate the fork's old format-specific preference once. A valid canonical
++// value (including false) always wins; discard malformed legacy values.
++inline void migrateLegacyNotes(QJsonObject &settings)
++{
++    const auto legacy = settings.value("fb2_inpage_footnotes");
++    if (!settings.value("inpage_footnotes").isBool() && legacy.isBool())
++        settings["inpage_footnotes"] = legacy;
++    settings.remove("fb2_inpage_footnotes");
++}
++
+ inline constexpr std::array<int, 4> dictionaryFontSizes{ 80, 100, 120, 140 };
+ 
+ inline bool validDictionaryFontSize(int percent)
+@@ -79,7 +92,7 @@ inline constexpr std::array<const char *, 6> normalizationKeys{
+ QJsonObject normalizationSettings(const QJsonObject &settings);
+ QString normalizationPreset(const QJsonObject &settings);
+ QJsonObject normalizationPresetSettings(const QString &preset);
+-inline constexpr std::array<const char *, 39> keys{ "line_spacing_version",
++inline constexpr std::array<const char *, 40> keys{ comicsModeKey, "line_spacing_version",
+                                                     "font_pixels",
+                                                     "line_spacing",
+                                                     "paragraph_spacing",
+diff --git a/src/reading/features.h b/src/reading/features.h
+index f3778b67..69b29eb2 100644
+--- a/src/reading/features.h
++++ b/src/reading/features.h
+@@ -5,9 +5,10 @@ namespace kobalt::features {
+ inline constexpr const char *keys[] = { "disable_navigate",        "disable_stats",
+                                         "disable_annotations",     "disable_bookmarks",
+                                         "disable_kosync",          "disable_words",
+-                                        "disable_highlight_links", "disable_activity" };
++                                        "disable_highlight_links", "disable_activity",
++                                        "disable_dark_mode", "disable_comics" };
+ 
+-enum Feature { Navigate, Stats, Annotations, Bookmarks, Kosync, Words, HighlightLinks, Activity };
++enum Feature { Navigate, Stats, Annotations, Bookmarks, Kosync, Words, HighlightLinks, Activity, DarkMode, Comics };
+ 
+ // Settings > System > Developer. Debug mode shows the Debug tab, the debug
+ // fields of the header and footer picker and the Fast rendering engine.
+diff --git a/src/reading/menu_status.h b/src/reading/menu_status.h
+new file mode 100644
+index 00000000..eff1f413
+--- /dev/null
++++ b/src/reading/menu_status.h
+@@ -0,0 +1,17 @@
++#pragma once
++#include "header_footer.h"
++#include <QJsonObject>
++
++namespace kobalt::menustatus {
++inline constexpr auto preferenceKey = "reading_menu_status";
++inline bool showsPage(const QJsonObject &preferences)
++{
++    return preferences.value(preferenceKey).toString() == "book_page";
++}
++inline QString text(const QJsonObject &preferences, const headerfooter::Values &values)
++{
++    return showsPage(preferences)
++            ? headerfooter::content(headerfooter::Field::BookPage, values, false).text
++            : QString();
++}
++} // namespace kobalt::menustatus
+diff --git a/tests/model/appearance_settings.cpp b/tests/model/appearance_settings.cpp
+index 155708b4..18f35b77 100644
+--- a/tests/model/appearance_settings.cpp
++++ b/tests/model/appearance_settings.cpp
+@@ -7,6 +7,7 @@
+ #include "reading/session_timeout.h"
+ #include "reading/remaining_time.h"
+ #include "reading/header_footer.h"
++#include "reading/menu_status.h"
+ #include "reading/rendering_mode.h"
+ #include "support/qt_compat.h"
+ #include "check.h"
+@@ -19,6 +20,19 @@ using namespace kobalt;
+ // Checks appearance settings: defaults, invalid values, migrations, global and book precedence, new-book inheritance, which changes need a new layout and how an opening merges the saved book state.
+ int main()
+ {
++    {
++        const QJsonObject pageMode{ { menustatus::preferenceKey, "book_page" } };
++        require(!menustatus::showsPage({}), "Default menu status must remain session time");
++        require(menustatus::showsPage(appearance::cleanPreferences(pageMode)),
++                "Global menu status lost during cleaning");
++        require(menustatus::showsPage(appearance::readerPreferences(pageMode, {})),
++                "Menu status must persist across books");
++        require(!menustatus::showsPage(appearance::readerPreferences({}, pageMode)),
++                "Per-book state must not select a global menu status");
++        require(!appearance::cleanPreferences({ { menustatus::preferenceKey, "bad" } })
++                         .contains(menustatus::preferenceKey), "Invalid menu status not cleaned");
++    }
++
+     {
+         const auto original = qt::object({ { "font_pixels", 40 },
+                                            { "line_spacing", 150 },
+@@ -557,7 +571,7 @@ int main()
+             "Dictionary UI preferences invalidated the book layout");
+     // Appearance settings decide the layout. The list must stay complete, because a
+     // missing key would let a retained layout survive a changed setting.
+-    require(appearance::keys.size() == 39, "The appearance keys changed without this check");
++    require(appearance::keys.size() == 40, "The appearance keys changed without this check");
+     require(appearance::bookDefaults({}).value("paragraph_indent").toInt() == -1,
+             "Paragraph indentation no longer defaults to Publisher");
+     for (int percent : { -1, 0, 100, 300 }) {
+@@ -1258,6 +1272,46 @@ int main()
+                         && !job.saved.contains("imported_native_location"),
+                 "A host restart must ignore the host position");
+     }
++    {
++        QJsonObject legacy;
++        legacy["fb2_inpage_footnotes"] = true;
++        auto normalized = appearance::globalPreferences(legacy);
++        require(normalized.value("inpage_footnotes").toBool()
++                        && !normalized.contains("fb2_inpage_footnotes"), "legacy notes migrate");
++        legacy["inpage_footnotes"] = false;
++        normalized = appearance::cleanPreferences(legacy);
++        require(normalized.value("inpage_footnotes").isBool()
++                        && !normalized.value("inpage_footnotes").toBool()
++                        && !normalized.contains("fb2_inpage_footnotes"), "canonical false wins");
++        legacy["fb2_inpage_footnotes"] = "invalid";
++        legacy.remove("inpage_footnotes");
++        appearance::migrateLegacyNotes(legacy);
++        require(!legacy.contains("inpage_footnotes")
++                        && !legacy.contains("fb2_inpage_footnotes"), "malformed notes discarded");
++        QJsonObject twice = normalized;
++        appearance::migrateLegacyNotes(twice);
++        require(twice == normalized, "notes migration is idempotent");
++    }
++    {
++        const auto on = qt::object({ { appearance::comicsModeKey, true } });
++        const auto off = qt::object({ { appearance::comicsModeKey, false } });
++        require(!appearance::same(on, off), "comics mode must invalidate retained layout");
++        const auto requested = appearance::Requested::fromResolvedState(on);
++        require(requested.fields().value(appearance::comicsModeKey).toBool(), "requested mode lost");
++        require(!requested.edited(appearance::Patch(off)).fields()
++                         .value(appearance::comicsModeKey).toBool(true), "explicit false lost");
++        require(!appearance::globalPreferences(on).contains(appearance::comicsModeKey)
++                        && !appearance::bookDefaults(on).contains(appearance::comicsModeKey),
++                "per-book comics leaked to another book");
++        OpeningJob job;
++        job.saved = on;
++        job.saved["position"] = "old-source";
++        OpeningState state;
++        state.savedMatches = false;
++        mergeSavedState(job, state);
++        require(job.saved.value(appearance::comicsModeKey).toBool()
++                        && !job.saved.contains("position"), "content mismatch lost mode or kept old position");
++    }
+     std::puts("PASS: appearance keys, copy, comparison and typography defaults");
+     return 0;
+ }
+diff --git a/tests/model/nickel_book_menu.cpp b/tests/model/nickel_book_menu.cpp
+index 645240a7..32d796d5 100644
+--- a/tests/model/nickel_book_menu.cpp
++++ b/tests/model/nickel_book_menu.cpp
+@@ -355,4 +355,33 @@ int main(int argc, char **argv)
+         QMenu menu;
+         require(!alternative(menu), "disabled native Read now must not be bypassed");
+     }
++    const QString fb2Path = directory.path() + "/russian.FB2";
++    {
++        QFile fb2(fb2Path);
++        require(fb2.open(QIODevice::WriteOnly), "create FB2 routing fixture");
++        fb2.write("<FictionBook><body><section><p>Text</p></section></body></FictionBook>");
++    }
++    identity = "file://" + fb2Path;
++    for (const auto *mime : { "application/x-fictionbook+xml", "application/fb2",
++                              "application/x-fb2", "text/xml" }) {
++        fields["MimeType"] = QString::fromLatin1(mime);
++        QString routedIdentity, routedPath;
++        require(kobalt::readerBookFormatSupported(&fields), "FB2 format feedback");
++        require(kobalt::readerBookRoute(&fields, &routedIdentity, &routedPath)
++                        == kobalt::ReaderBookRoute::Direct, "FB2 routes by MIME or extension");
++        require(routedIdentity == identity && routedPath == fb2Path, "FB2 route path");
++        require(kobalt::readerBookCandidateRoute(&fields, nullptr, nullptr)
++                        == kobalt::ReaderBookRoute::Direct, "FB2 candidate route");
++    }
++    identity = "file://" + directory.path() + "/absent.fb2";
++    require(kobalt::readerBookRoute(&fields, nullptr, nullptr)
++                    == kobalt::ReaderBookRoute::Unsupported, "missing FB2 is not opened");
++    identity = "file://" + fb2Path;
++    preview = true;
++    require(!kobalt::readerBookFormatSupported(&fields), "FB2 preview stays native");
++    preview = false;
++    identity = "file://" + directory.path() + "/document.pdf";
++    fields["MimeType"] = "application/pdf";
++    require(!kobalt::readerBookFormatSupported(&fields), "PDF remains unsupported");
++
+ }
+diff --git a/tests/model/reader_controls.cpp b/tests/model/reader_controls.cpp
+new file mode 100644
+index 00000000..9ebefe6f
+--- /dev/null
++++ b/tests/model/reader_controls.cpp
+@@ -0,0 +1,75 @@
++#include "check.h"
++#include "app/reader/views/navigation.h"
++#include "reading/features.h"
++#include "reading/page_navigation.h"
++#include "ui/controls/buttons.h"
++#include "ui/controls/panels.h"
++#include "ui/style/metrics.h"
++#include <QApplication>
++#include <QHBoxLayout>
++#include <QLabel>
++#include <cstdio>
++
++using namespace kobalt;
++int main(int argc, char **argv)
++{
++    QApplication app(argc, argv);
++    QJsonObject preferences;
++    require(features::enabled(preferences, features::Activity)
++                    && features::enabled(preferences, features::DarkMode)
++                    && features::enabled(preferences, features::Comics),
++            "optional toolbar features changed upstream defaults");
++    preferences["disable_comics"] = true;
++    require(!features::enabled(preferences, features::Comics)
++                    && features::enabled(preferences, features::DarkMode)
++                    && features::enabled(preferences, features::Activity),
++            "comics feature is not independent");
++    require(QString::fromLatin1(pageNavigation::reverseSwipesKey) == "reverse_page_swipes",
++            "upstream independent swipe preference replaced");
++
++    QWidget parent;
++    ui::Panel toolbar(&parent, Qt::BottomEdge);
++    auto *rows = new QHBoxLayout(&toolbar);
++    ui::Button settings(&toolbar), bookmarks(&toolbar), dark(&toolbar), comics(&toolbar);
++    QLabel caption(&toolbar);
++    ToolbarComposition controls;
++    controls.panel = &toolbar;
++    controls.rows = rows;
++    controls.settings = &settings;
++    controls.bookmarks = &bookmarks;
++    controls.session = &caption;
++    controls.darkTheme = &dark;
++    controls.comics = &comics;
++    dark.setStyleSheet("QPushButton { padding: 1px; }");
++    comics.setStyleSheet("QPushButton { padding: 2px; }");
++    dark.setPaintMode(ui::ButtonPaintMode::ToolbarSquare);
++    comics.setPaintMode(ui::ButtonPaintMode::ToolbarSquare);
++    const auto darkStyle = dark.styleSheet(), comicsStyle = comics.styleSheet();
++    {
++        reader::Navigation navigation(&parent, controls);
++        require(dark.paintMode() == ui::ButtonPaintMode::ToolbarCell
++                        && comics.paintMode() == ui::ButtonPaintMode::ToolbarCell,
++                "quick actions not adapted to navigation cells");
++    }
++    require(dark.styleSheet() == darkStyle && comics.styleSheet() == comicsStyle
++                    && dark.paintMode() == ui::ButtonPaintMode::ToolbarSquare
++                    && comics.paintMode() == ui::ButtonPaintMode::ToolbarSquare,
++            "navigation did not restore borrowed quick actions");
++    const int size = ui::metrics::control::toolbarButtonSize;
++    require(dark.size() == QSize(size, size) && comics.size() == QSize(size, size),
++            "navigation left quick action cell dimensions behind");
++
++    comics.setCheckable(true);
++    comics.setHighlightChecked(false);
++    ui::ButtonIcon icon{ui::ControlIcon::Comics, ui::IconRendition::Action};
++    icon.stateInkOnly = true;
++    comics.setIconConfiguration(icon);
++    require(comics.iconShowsStateWithoutFill(), "comics icon lost ink-only state policy");
++    const auto before = comics.icon().pixmap(QSize(64, 64), QIcon::Normal, QIcon::Off).toImage();
++    const auto after = comics.icon().pixmap(QSize(64, 64), QIcon::Normal, QIcon::On).toImage();
++    require(!before.isNull() && !after.isNull() && before != after,
++            "comics icon does not distinguish on and off");
++    dark.setIconConfiguration({ui::ControlIcon::DarkTheme, ui::IconRendition::Action});
++    require(!dark.icon().pixmap(QSize(64, 64)).isNull(), "dark theme glyph missing");
++    std::puts("PASS: quick action ownership, feature independence and state glyphs");
++}
+diff --git a/tests/reader_lifecycle.cpp b/tests/reader_lifecycle.cpp
+index d49d638d..9b91166a 100644
+--- a/tests/reader_lifecycle.cpp
++++ b/tests/reader_lifecycle.cpp
+@@ -7572,6 +7572,78 @@ private slots:
+     }
+ 
+     // Uses the real reading clock and Settings checklist to hide session text without stopping time collection.
++    void readingMenuStatusToggle_data()
++    {
++        QTest::addColumn<bool>("dark");
++        for (bool dark : { false, true })
++            QTest::newRow(dark ? "night" : "day") << dark;
++    }
++
++    // Checks first-minute toggling, global persistence, unchanged layout/time and day/night hit targets.
++    void readingMenuStatusToggle()
++    {
++        QFETCH(bool, dark);
++        QTemporaryDir books;
++        QVERIFY(test::writeBook(books.path(), "menu-status-a.epub", test::engineBook(false, 2, 1)));
++        QVERIFY(test::writeBook(books.path(), "menu-status-b.epub", test::engineBook(false, 3, 1)));
++        const auto paths = testPaths();
++        QVERIFY(storage::writeJson(paths.preferences(), { { "dark_mode", dark } }));
++        qint64 now = 0;
++        // Independent reader hosts model closing/reopening, including a different book.
++        for (int opening = 0; opening < 2; ++opening) {
++            ReaderFixture host(paths, testFonts, testPlaceholder);
++            host.readingClock = [&] { return now; };
++            CloseHost cleanup{ host };
++            QSignalSpy opened(&host, &ReaderFixture::opened);
++            const QSize size(1072, 1448);
++            host.open(books.filePath(opening ? "menu-status-b.epub" : "menu-status-a.epub"), size);
++            QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
++            Canvas canvas(host.window(), size);
++            canvas.resize(900, 900);
++            canvas.show();
++            QVERIFY(QTest::qWaitForWindowExposed(&canvas));
++            QTRY_VERIFY(!host.session()->busy());
++            QVERIFY(clickAt(canvas, QPoint(size.width() / 2, size.height() / 2)));
++            QTRY_VERIFY_WITH_TIMEOUT(!host.session()->paginationPending(), 30000);
++            auto *hit = host.window()->findChild<QAbstractButton *>("rrMenuStatusToggle");
++            auto *label = host.window()->findChild<QLabel *>("rrMenuSession");
++            auto *clock = host.window()->findChild<QLabel *>("rrMenuClock");
++            auto *battery = host.window()->findChild<QWidget *>("rrMenuBattery");
++            QVERIFY(hit && label && clock && battery);
++            QVERIFY(hit->isVisible());
++            QCOMPARE(hit->isChecked(), bool(opening));
++            const auto layoutStarts = host.session()->layoutStarts();
++            const auto position = host.session()->state().value("position");
++            const auto reading = host.book()->sessionReadingMilliseconds();
++            const auto clockBounds = clock->geometry();
++            const auto batteryBounds = battery->geometry();
++            for (int tap = 0; tap < 2; ++tap) {
++                QVERIFY(click(canvas, hit));
++                const bool pageMode = opening ? tap == 1 : tap == 0;
++                QCOMPARE(hit->isChecked(), pageMode);
++                QCOMPARE(storage::readPreferences(paths.preferences()).object
++                                 .value("reading_menu_status").toString(),
++                         pageMode ? QStringLiteral("book_page") : QStringLiteral("session"));
++                if (pageMode) {
++                    QVERIFY(label->isVisible());
++                    QVERIFY(!label->text().isEmpty());
++                } else {
++                    QVERIFY(label->text().isEmpty()); // first minute: no session caption
++                }
++                QVERIFY(clock->isVisible() && battery->isVisible());
++                QCOMPARE(clock->geometry(), clockBounds);
++                QCOMPARE(battery->geometry(), batteryBounds);
++                QCOMPARE(host.session()->layoutStarts(), layoutStarts);
++                QCOMPARE(host.session()->state().value("position"), position);
++                QCOMPARE(host.book()->sessionReadingMilliseconds(), reading);
++            }
++            if (!opening) {
++                QVERIFY(click(canvas, hit)); // leave page mode saved for the next host/book
++                QVERIFY(hit->isChecked());
++            }
++        }
++    }
++
+     void readingTimeStatsVisibility_data()
+     {
+         QTest::addColumn<bool>("hidden");
+@@ -7710,7 +7782,7 @@ private slots:
+         QCOMPARE(host.book()->sessionReadingMilliseconds(), qint64(12 * 60000));
+     }
+ 
+-    // Checks that reading-time text fits and centers in the status strip for each minute width and radio icon combination.
++    // Checks symmetric screen-centered status bounds, icon separation and minute updates across scales/radio combinations.
+     void readingTimeStatus_data()
+     {
+         QTest::addColumn<bool>("dark");
+@@ -7804,15 +7876,18 @@ private slots:
+                     QVERIFY(session->x() >= clock->geometry().right() + 1);
+                     QVERIFY(session->geometry().right() < right->x());
+                 }
+-                const int available = right->x() - clock->geometry().right() - 1
+-                        - 2 * int(ui::metrics::chrome::inset);
+-                if (session->sizeHint().width() <= available)
+-                    QVERIFY2(session->width() >= session->sizeHint().width(),
+-                             qPrintable(session->text()));
+-                if (available >= 0) {
+-                    const qreal midpoint = (clock->geometry().right() + 1 + right->x()) / 2.;
+-                    QVERIFY(qAbs(QRectF(session->geometry()).center().x() - midpoint) <= .5);
+-                }
++                // Production centers on the screen, not the asymmetric free gap.
++                // Both sides reserve the larger clock/radio inset. Long text is
++                // clipped within these bounds rather than overlapping the icons.
++                const int inset = qMax(clock->geometry().right() + 1
++                                               + int(ui::metrics::chrome::inset),
++                                       session->parentWidget()->width() - right->x()
++                                               + int(ui::metrics::chrome::inset));
++                QCOMPARE(session->x(), inset);
++                QCOMPARE(session->width(), qMax(0, session->parentWidget()->width() - 2 * inset));
++                if (session->width() > 0)
++                    QVERIFY(qAbs(QRectF(session->geometry()).center().x()
++                                 - session->parentWidget()->width() / 2.) <= .5);
+                 if (radios == 3) {
+                     QCOMPARE(bluetooth->geometry(), bluetoothBounds);
+                     QCOMPARE(wifi->geometry(), wifiBounds);
+@@ -7848,12 +7923,14 @@ private slots:
+         QVERIFY(QMetaObject::invokeMethod(timer, "timeout", Qt::DirectConnection));
+         QCOMPARE(clock->text(), clockText);
+         QCOMPARE(clock->width(), clock->sizeHint().width());
+-        const int available =
+-                wifi->x() - clock->geometry().right() - 1 - 2 * int(ui::metrics::chrome::inset);
+-        if (available >= 0) {
+-            const qreal midpoint = (clock->geometry().right() + 1 + wifi->x()) / 2.;
+-            QVERIFY(qAbs(QRectF(session->geometry()).center().x() - midpoint) <= .5);
+-        }
++        const int inset = qMax(clock->geometry().right() + 1 + int(ui::metrics::chrome::inset),
++                               session->parentWidget()->width() - wifi->x()
++                                       + int(ui::metrics::chrome::inset));
++        QCOMPARE(session->x(), inset);
++        QCOMPARE(session->width(), qMax(0, session->parentWidget()->width() - 2 * inset));
++        if (session->width() > 0)
++            QVERIFY(qAbs(QRectF(session->geometry()).center().x()
++                         - session->parentWidget()->width() / 2.) <= .5);
+     }
+ 
+     void remoteKeyActivityRequiresActiveReading()

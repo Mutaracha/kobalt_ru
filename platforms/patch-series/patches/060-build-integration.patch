@@ -1,8 +1,121 @@
+diff --git a/assets/CMakeLists.txt b/assets/CMakeLists.txt
+index 1559c598..d759e430 100644
+--- a/assets/CMakeLists.txt
++++ b/assets/CMakeLists.txt
+@@ -43,9 +43,12 @@ set(KOBALT_ASSET_INPUTS "${managed}" PARENT_SCOPE)
+ 
+ include("${CMAKE_CURRENT_SOURCE_DIR}/../platforms/strings.cmake")
+ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/en.strings")
++set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/ru.strings")
+ file(GLOB_RECURSE string_sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/../src/*.h")
+ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${string_sources})
+ kobalt_generate_strings("${CMAKE_CURRENT_SOURCE_DIR}/en.strings" "${CMAKE_CURRENT_BINARY_DIR}/../kobalt_strings.inc" ${string_sources})
++kobalt_generate_strings("${CMAKE_CURRENT_SOURCE_DIR}/ru.strings" "${CMAKE_CURRENT_BINARY_DIR}/../kobalt_strings_ru.inc")
++kobalt_check_string_parity("${CMAKE_CURRENT_SOURCE_DIR}/en.strings" "${CMAKE_CURRENT_SOURCE_DIR}/ru.strings")
+ 
+ # Data that C++ code embeds goes next to the generated strings, in the
+ # platform's binary folder, which every platform adds to its include path.
+diff --git a/platforms/android/CMakeLists.txt b/platforms/android/CMakeLists.txt
+index 69a70d14..9fda861d 100644
+--- a/platforms/android/CMakeLists.txt
++++ b/platforms/android/CMakeLists.txt
+@@ -51,6 +51,8 @@ endforeach()
+ include("${KOBALT_ROOT}/platforms/shared-inputs.cmake")
+ set(KOBALT_COMMIT "" CACHE STRING "Source commit, passed by the container launcher")
+ option(KOBALT_COMMIT_MODIFIED "Source has uncommitted changes" OFF)
++set(KOBALT_FORK_NAME "" CACHE STRING "Fork identifier; empty hides About fork row")
++string(TIMESTAMP KOBALT_BUILD_TIME "%Y-%m-%d %H:%M UTC" UTC)
+ configure_file("${source}/support/build_info.h.in" build_info.h @ONLY)
+ 
+ file(GLOB_RECURSE shared CONFIGURE_DEPENDS "${source}/*.cpp" "${source}/*.h")
+diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
+index 08d4f7ee..4c525898 100644
+--- a/platforms/desktop/CMakeLists.txt
++++ b/platforms/desktop/CMakeLists.txt
+@@ -107,7 +107,10 @@ add_library(kobalt-core OBJECT ${shared} display.cpp ../standalone/native_image.
+     "${source}/assets/assets.cpp" "${source}/assets/bundled_fonts.cpp" "${source}/assets/font_catalog.cpp"
+     "${source}/assets/system_fonts.cpp"
+     "${source}/support/diagnostics.cpp" "${source}/support/main_thread.cpp"
++    "${source}/support/locale.cpp" "${source}/support/debug_language.cpp"
+     "${source}/publication/publication.cpp" "${source}/publication/zip_resource.cpp"
++    "${source}/publication/publication_fb2.cpp"
++    "${source}/publication/fb2_resources.cpp"
+     "${source}/publication/resource_cache.cpp" "${source}/publication/local_resources.cpp"
+     "${source}/publication/image_policy.cpp"
+     "${source}/publication/native_resources.cpp" "${source}/publication/resource_server.cpp"
+@@ -492,7 +495,7 @@ if(BUILD_TESTING)
+             sleepSnapshotMatchesTheDisplayedPage
+             sleepSnapshotReplacesEachClockWithoutChangingTheReadingPage sleepTimeLeftUsesHoursAboveTwoHours sleepTimeLeftApproximate timeRemainingFormatShared
+             sleepScreenDefaultsMigrateOnce sleepPngOverlaysUseEitherFolder sleepNativePreviewFollowsSettings sleepSettingsShowWhereToAddPngs sleepGalleryCancelsInterruptedPresses sleepGreetingEditor sleepOverlayUsesTheDimmedPage sleepCoverFitsWithoutCroppingOrDimming
+-            sleepCoverDecodingIsBoundedAndHonorsSourceCancellation wifiStatus readingTimeStatsVisibility readingTimeStatus remoteKeyActivityRequiresActiveReading
++            sleepCoverDecodingIsBoundedAndHonorsSourceCancellation wifiStatus readingMenuStatusToggle readingTimeStatsVisibility readingTimeStatus remoteKeyActivityRequiresActiveReading
+             textPresetsWithoutOpeningWait panelsAfterBackgroundWork closeWithoutWaitingForHost finishChoiceSurvivesSleepAndRequiresActiveReader finishPromptPersistence progressPercentagesAgree kosyncAccountGating kosyncSignInValidation kosyncOpening kosyncNetwork kosyncBackgroundWifi kosyncWifiRelease kosyncMoments minuteClock clockRestsWithoutConsumers clockAsksPaceForTimeLeft liveBatteryIndicators turnSkipsHiddenControls idleTimers readerStandbySetting wifiPowerSaver wifiPowerSaverAtSleep kosyncManualToolbar kosyncManualConnection kosyncDialogResume kosyncInvalidPosition kosyncFailure kosyncMissingProgress kosyncMetadata kosyncPasswordSleep kosyncSleepSavesSyncTime kosyncPause kosyncFinal nativeProgressWaitsForSleep appearanceRetryCooldown closeWithUnusableSettings recoveryNoticeAfterFirstPage benchmarkNoticeAfterRun activityBatchesAndLowBattery shutdownFinalSave developmentOptions developmentStateReports annotationExportHandoff annotationExportOwnerDestruction
+             progressChoiceKeepAndGo progressChoiceWaitsForSettings progressChoiceWaitsForBookmarks
+             finishedSyncWithoutPositionKeepsLocalReading
+@@ -745,7 +748,7 @@ if(BUILD_TESTING)
+             target_compile_definitions(kobalt-${name}-tests PRIVATE
+                 KOBALT_TEST_ASSET_ROOT="${KOBALT_ASSETS}" KOBALT_FONT_DIRECTORY="${KOBALT_ASSETS}/fonts"
+                 KOBALT_INSTALLED_FONTS)
+-            if(check MATCHES "^(vertical_spacing|large_toc|links|chapter_parity|page_estimate|bookmark_session|document_cache)$")
++            if(check MATCHES "^(comics|comics_layout|fb2_engine|vertical_spacing|large_toc|links|chapter_parity|page_estimate|bookmark_session|document_cache)$")
+                 target_compile_definitions(kobalt-${name}-tests PRIVATE KOBALT_TEST_ZIP="${KOBALT_TEST_ZIP}")
+             endif()
+             if(check MATCHES "^(search|reading_book)$")
+@@ -805,15 +808,17 @@ if(BUILD_TESTING)
+     endfunction()
+     kobalt_regressions(model storage_assets android_assets android_light profile_storage record_writer main_thread reading_history bookmark_store custom_pins highlight_store annotation_database appearance_settings text_presets header_footer
+         resource_cache reading_pace reading_speed engine_activity
+-        local_resources zip_resource diagnostics crash_reports dictionary_store image_damage page_pixels
++        local_resources fb2_cache_session zip_resource diagnostics crash_reports dictionary_store image_damage page_pixels
+         logical_word_counter brightness_gesture qt_compat page_refresh_regions screen_refresh plain_archive reading_progress
+         library kosync sync_coordinator annotation_draft chapter_progress style_sample_cache preview_store save_wait saved_words reading_activity)
+-    kobalt_regressions(model font_axes touch_rotation)
++    kobalt_regressions(model font_axes touch_rotation strings_locale)
+     kobalt_regressions(platform reader_orientation font_sources system_fonts nickel_dictionary_selection
+         nickel_reading_pace_cache nickel_save_trace nickel_account nickel_session_calls nickel_session_volume nickel_book_menu nickel_font_scale native_progress native_sync_network native_dialog_overlay native_lifecycle standby_input standby_diagnostics usb_removal page_transition_native page_animation)
++    kobalt_regressions(engine fb2_engine comics_layout comics)
+     kobalt_regressions(engine epub_compatibility large_toc vertical_spacing source_index location_round_trip engine_contract text_sample page_estimate layout_interrupt spine_window chapter_slices chapter_parity fast_surfaces fast_shaping columns advanced_text paragraph_spacing beautifier alignment indentation page_layout vertical_writing mathml line_breaking
+         css_class_index compiled_hyphenation fallback_styles svg_limits image_proportions figure_layout whitespace links search word_selection reader publisher_markup local_reader document_word_count document_cache alternate_layout)
+-    kobalt_regressions(component ui acknowledgments kosync_ui)
++    kobalt_regressions(component ui acknowledgments kosync_ui comics_ui reader_controls)
++    kobalt_regressions(component ru_control_ui debug_language_ui fork_presentation)
+     target_sources(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}/platforms/kobo/display/page_animation.cpp")
+     target_include_directories(kobalt-page-animation-tests PRIVATE "${KOBALT_ROOT}" "${source}")
+     target_link_libraries(kobalt-ui-tests PRIVATE Qt6::GuiPrivate)
+@@ -839,6 +844,10 @@ if(BUILD_TESTING)
+     # `light`, `fast` and `integration` must not appear in one because the lane
+     # presets filter on them.
+     set(kobalt_test_areas
++        "reading:^model[.]fb2-cache-session$"
++        "reading:^engine[.](fb2-engine|comics-layout|comics)$"
++        "settings:^component[.](ru-control-ui|comics-ui|reader-controls|debug-language-ui|fork-presentation)$"
++        "settings:^model[.]strings-locale$"
+         "gallery:^(build\\.screenshotBooks|desktop\\.(gallery.*|phoneFrame|primaryViews))$"
+         "evaluation:^(build\\.(loadLock|eval-device-outcomes)|desktop\\.(scenarioCacheRemoval|scenarioResultFile|timingEvents|fastLocateText|deviceChecks)|platform\\.scenario-sleep|lifecycle\\.benchmarkNoticeAfterRun)$"
+         "kosync:^(lifecycle\\.(kosync.*|wifi.*)|desktop\\.(fastKosyncChoice|kosyncChoice|syncChoiceView)|model\\.(kosync|sync-coordinator)|component\\.kosync-ui|platform\\.native-sync-network)$"
+@@ -848,7 +857,7 @@ if(BUILD_TESTING)
+         "images:^(desktop\\.imageViewer|engine\\.(image-proportions|svg-limits)|resource\\.image-policy)$"
+         "viewport:^(platform\\.reader-orientation|desktop\\.(viewport.*|bookmarkRibbonSafeArea|fullWidthPanels)|engine\\.alternate-layout|lifecycle\\.(rotationOwnership|settingsOrientationHandoff|exactRotationLock|rotationRoundTripKeepsReadingResponsive|sleepRequestFreezesOrientationBeforeHandoff|close.*Orientation.*)|ui\\.libraryCanvasFollowsViewport|model\\.touch-rotation)$"
+         "display:^(platform\\.page-(animation|transition-native)|desktop\\.(pageAnimationCompatibility|pageAnimationDarkMode|androidPageAnimations|boox.*)|ui\\.(pageTurnFrames|boox.*|libraryThemeSurface|.*Paints.*|openingFirstPaintCallback|openingLogoSplash|openingCoverDamage|openingCoverDisabled|openingMessages|openingHandoffLayout|continuationHintClears|hidingSelectionMenuKeepsDamageCompact|keyboardDamageStaysApartFromEditor|navigationPressKeepsDamageInItsTab|navigationRefreshKeepsOverlayAndPanelPolicies)|model\\.(screen-refresh|page-refresh-regions|image-damage|page-pixels)|lifecycle\\.(appearanceOpeningDoesNotRepaintToolbar|navigationDismissalWaitsForPanel))$"
+-        "chrome:^(lifecycle\\.(readingTimeStatsVisibility|layoutTimeEndsWhenWholeBookIsReady|readingTimeStatus|liveBatteryIndicators|clock.*|minuteClock|idleTimers|timeRemainingFormatShared|exit.*|closeGuard.*)|model\\.header-footer|desktop\\.(headerFooter.*|menuCountsPagesWithoutTurn|percentageFormat|batteryPercentageOnly|largeInterfaceScale.*|desktopControls)|ui\\.(chapterPageSurvivesLongTitles|batteryTextAlignment|readingStripChangesLeaveBodyUnpainted))$"
++        "chrome:^(lifecycle\\.(readingMenuStatusToggle|readingTimeStatsVisibility|layoutTimeEndsWhenWholeBookIsReady|readingTimeStatus|liveBatteryIndicators|clock.*|minuteClock|idleTimers|timeRemainingFormatShared|exit.*|closeGuard.*)|model\\.header-footer|desktop\\.(headerFooter.*|menuCountsPagesWithoutTurn|percentageFormat|batteryPercentageOnly|largeInterfaceScale.*|desktopControls)|ui\\.(chapterPageSurvivesLongTitles|batteryTextAlignment|readingStripChangesLeaveBodyUnpainted))$"
+         "library:^(desktop\\.(library.*|resourceFolders|restartFinishedBooks)|ui\\.library.*|model\\.library)$"
+         "input:^(ui\\.(paged.*|pageTurnTapFilter|pageTurnFilterSeparatesInputClocks|hold.*|fontHoldCancellation|canvas.*|cancelledCanvasTouchRestoresSlider|listPressFeedback|optionAndSwatchPressFeedback)|desktop\\.(navigation|swipeChoices|pageSwipes|buttonMapping|buttonMappingActions|buttonMappingFollowsRotation|buttonMappingUnavailable|largeToc|chapterGroups|contentsReturn|mainTextBoundaries|mainTextChapterAnchors|mainTextSplitChapterEnd|illustratedNavigation|printedPageNavigation|hardwarePageButtons\\..*|wordSelection\\..*|touchCursor.*|annotationTwoFingerTapConsumesWholeSequence|annotationRightClickRejectsChords)|lifecycle\\.(pageTurnTimingIgnoresNoopNavigation|pageButtonsAfterTouchUseDeliveryTime|pageFrameDuringHold|pageImageDuringHold|pageGestureBurstIgnoresRapidTurns|remoteKeyActivityRequiresActiveReading))$"
+         "links:^(desktop\\.(links|inpageFootnotes|footnote.*|revealedLinkPress|linkDiscoveryStrip|tappableLinks|bookmarkCornerLinks)|engine\\.(links|search|word-selection)|lifecycle\\.(staleSearchReplyIgnored|searchScopesAndPagination|searchSurvivesReflow|searchHighlightClearsOnReflow))$"
 diff --git a/platforms/kobo/CMakeLists.txt b/platforms/kobo/CMakeLists.txt
-index 02c6e12682683d768ed8155f6255b5ecc9ab6090..e1fed1cfe122cf819adf4fd823ad18acae04e36c 100644
+index 79b65064..e1fed1cf 100644
 --- a/platforms/kobo/CMakeLists.txt
 +++ b/platforms/kobo/CMakeLists.txt
-@@ -171,13 +171,17 @@ else()
+@@ -55,6 +55,8 @@ endforeach()
+ include("${KOBALT_ROOT}/platforms/shared-inputs.cmake")
+ set(KOBALT_COMMIT "" CACHE STRING "Source commit, passed by the container launcher")
+ option(KOBALT_COMMIT_MODIFIED "Source has uncommitted changes" OFF)
++set(KOBALT_FORK_NAME "" CACHE STRING "Fork identifier; empty hides About fork row")
++string(TIMESTAMP KOBALT_BUILD_TIME "%Y-%m-%d %H:%M UTC" UTC)
+ configure_file("${source}/support/build_info.h.in" build_info.h @ONLY)
+ 
+ # The source lists, compile options and definitions, which the syntax check
+@@ -169,13 +171,17 @@ else()
      qt6_add_resources(compiled_resources "${CMAKE_CURRENT_BINARY_DIR}/notices.qrc")
  endif()
  target_sources(kobalt PRIVATE ${compiled_resources})
@@ -22,7 +135,7 @@ index 02c6e12682683d768ed8155f6255b5ecc9ab6090..e1fed1cfe122cf819adf4fd823ad18ac
  add_custom_target(package DEPENDS "${package_file}")
  
 diff --git a/platforms/kobo/package.cmake b/platforms/kobo/package.cmake
-index 14f72394d776c6a2e6a5b13c0331705af35c5782..bbeb3162b03171944ef44371d4934979875353ae 100644
+index 14f72394..bbeb3162 100644
 --- a/platforms/kobo/package.cmake
 +++ b/platforms/kobo/package.cmake
 @@ -19,6 +19,11 @@ endif()
@@ -37,3 +150,132 @@ index 14f72394d776c6a2e6a5b13c0331705af35c5782..bbeb3162b03171944ef44371d4934979
      # Books marked for the package go to a library folder. The scenario file
      # and the diagnostics switch go to Kobalt's profile, where the player and
      # the diagnostics log look for them.
+diff --git a/platforms/shared-inputs.cmake b/platforms/shared-inputs.cmake
+index 95a795e2..08044522 100644
+--- a/platforms/shared-inputs.cmake
++++ b/platforms/shared-inputs.cmake
+@@ -57,6 +57,7 @@ set_source_files_properties("${kobalt_custom_pins_source}" PROPERTIES
+ 
+ # reader_styles.h holds the engine's default style sheet.
+ file(READ "${CRENGINE_SOURCE}/data/html5.css" READER_HTML_CSS)
++file(READ "${CRENGINE_SOURCE}/data/fb2.css" READER_FB2_CSS)
+ configure_file("${KOBALT_ROOT}/src/engine/blaze/adapter/reader_styles.h.in" reader_styles.h @ONLY)
+ # reader_hyphenation.h lists the names of the hyphenation patterns that the
+ # engine knows. Kobalt ships its own pattern files from assets/hyph.
+diff --git a/platforms/source-info.cmake b/platforms/source-info.cmake
+index b92eb7fa..1ccda2d6 100644
+--- a/platforms/source-info.cmake
++++ b/platforms/source-info.cmake
+@@ -25,15 +25,18 @@ endfunction()
+ 
+ function(kobalt_build_info_header root header)
+     kobalt_source_info("${root}")
++    set(KOBALT_FORK_NAME "" CACHE STRING "Fork identifier; empty hides About fork row")
++    string(TIMESTAMP KOBALT_BUILD_TIME "%Y-%m-%d %H:%M UTC" UTC)
+     configure_file("${root}/src/support/build_info.h.in" "${header}" @ONLY)
+ endfunction()
+ 
+ function(kobalt_desktop_build_info root)
++    set(KOBALT_FORK_NAME "" CACHE STRING "Fork identifier; empty hides About fork row")
+     set(header "${CMAKE_CURRENT_BINARY_DIR}/build_info.h")
+     # The Kobo syntax check can use the header immediately after configuration.
+     kobalt_build_info_header("${root}" "${header}")
+     add_custom_target(kobalt-build-info
+-        COMMAND "${CMAKE_COMMAND}" "-DKOBALT_BUILD_INFO_HEADER=${header}"
++        COMMAND "${CMAKE_COMMAND}" "-DKOBALT_BUILD_INFO_HEADER=${header}" "-DKOBALT_FORK_NAME=${KOBALT_FORK_NAME}"
+             -P "${root}/platforms/source-info.cmake"
+         BYPRODUCTS "${header}"
+         VERBATIM)
+diff --git a/platforms/strings-test.cmake b/platforms/strings-test.cmake
+index 5b7ea155..26b96c4b 100644
+--- a/platforms/strings-test.cmake
++++ b/platforms/strings-test.cmake
+@@ -21,7 +21,7 @@ file(WRITE "${scratch}/used.cpp" [=[strings::get(
+     "a.key"); strings::key("z.key");]=])
+ kobalt_generate_strings("${scratch}/valid.strings" "${scratch}/generated.inc" "${scratch}/used.cpp")
+ file(READ "${scratch}/generated.inc" actual)
+-set(expected [=[// Generated from assets/en.strings. Do not edit.
++set(expected [=[// Generated from assets/valid.strings. Do not edit.
+     {"a.key", "Élan; 1.5× @key@ ${key}"},
+     {"z.key", "Quotes: \"yes\"; path: C:\\books\nnext\tcolumn\rreturn"},
+ ]=])
+diff --git a/platforms/strings.cmake b/platforms/strings.cmake
+index 2306be0e..2e1c0333 100644
+--- a/platforms/strings.cmake
++++ b/platforms/strings.cmake
+@@ -1,5 +1,8 @@
+ # Keep the source literals intact so C++ decodes escapes exactly once.
+-function(kobalt_generate_strings input output)
++
++# Parse one Apple-style .strings file. Exposes ${prefix}_keys and
++# ${prefix}_value_<key> in the caller's scope.
++function(kobalt_parse_strings input prefix)
+     file(STRINGS "${input}" lines ENCODING UTF-8)
+     set(keys)
+     set(line_number 0)
+@@ -18,11 +21,52 @@ function(kobalt_generate_strings input output)
+             message(FATAL_ERROR "Duplicate UI string key at ${input}:${line_number}: ${key}")
+         endif()
+         list(APPEND keys "${key}")
+-        set("value_${key}" "${value}")
++        set("${prefix}_value_${key}" "${value}" PARENT_SCOPE)
+     endforeach()
+     if(NOT keys)
+         message(FATAL_ERROR "UI strings are empty: ${input}")
+     endif()
++    set("${prefix}_keys" "${keys}" PARENT_SCOPE)
++endfunction()
++
++# Every locale must expose the same keys with the same ordered %n slots, so a
++# missing translation degrades to the build instead of an English leak.
++function(kobalt_check_string_parity primary secondary)
++    kobalt_parse_strings("${primary}" primary)
++    kobalt_parse_strings("${secondary}" secondary)
++    set(primary_keys "${primary_keys}")
++    set(secondary_keys "${secondary_keys}")
++    list(SORT primary_keys)
++    list(SORT secondary_keys)
++    if(NOT primary_keys STREQUAL secondary_keys)
++        set(missing "${primary_keys}")
++        list(REMOVE_ITEM missing ${secondary_keys})
++        set(extra "${secondary_keys}")
++        list(REMOVE_ITEM extra ${primary_keys})
++        message(FATAL_ERROR
++            "UI string key mismatch between ${primary} and ${secondary}. "
++            "Missing in secondary: ${missing}; extra in secondary: ${extra}")
++    endif()
++    foreach(key IN LISTS primary_keys)
++        set(primary_value "${primary_value_${key}}")
++        set(secondary_value "${secondary_value_${key}}")
++        string(REGEX MATCHALL "%[1-9][0-9]?" primary_slots "${primary_value}")
++        string(REGEX MATCHALL "%[1-9][0-9]?" secondary_slots "${secondary_value}")
++        list(SORT primary_slots)
++        list(SORT secondary_slots)
++        if(NOT primary_slots STREQUAL secondary_slots)
++            message(FATAL_ERROR
++                "UI string argument mismatch for ${key}: ${primary} has [${primary_slots}], "
++                "${secondary} has [${secondary_slots}]")
++        endif()
++    endforeach()
++endfunction()
++
++function(kobalt_generate_strings input output)
++    get_filename_component(input_name "${input}" NAME)
++    kobalt_parse_strings("${input}" parsed)
++    set(keys "${parsed_keys}")
++    # Code references are validated against the English reference file only.
+     foreach(source IN LISTS ARGN)
+         file(READ "${source}" code)
+         string(REGEX MATCHALL [=[strings::(get|key)[ \t\r\n]*\([ \t\r\n]*"[a-z0-9_.]+"]=] references "${code}")
+@@ -34,9 +78,9 @@ function(kobalt_generate_strings input output)
+         endforeach()
+     endforeach()
+     list(SORT keys)
+-    set(content "// Generated from assets/en.strings. Do not edit.\n")
++    set(content "// Generated from assets/${input_name}. Do not edit.\n")
+     foreach(key IN LISTS keys)
+-        string(APPEND content "    {\"${key}\", ${value_${key}}},\n")
++        string(APPEND content "    {\"${key}\", ${parsed_value_${key}}},\n")
+     endforeach()
+     if(EXISTS "${output}")
+         file(READ "${output}" previous)

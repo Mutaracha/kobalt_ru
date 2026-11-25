@@ -1,0 +1,617 @@
+diff --git a/platforms/kobo/common/book_menu.cpp b/platforms/kobo/common/book_menu.cpp
+index 92ed41e2..e42d5dae 100644
+--- a/platforms/kobo/common/book_menu.cpp
++++ b/platforms/kobo/common/book_menu.cpp
+@@ -128,6 +128,14 @@ void rememberNativeBook(const QString &identity, const QString &path, bool prote
+               protectedBook ? ReaderBookRoute::Protected : ReaderBookRoute::Remembered });
+ }
+ 
++static bool fb2Book(const QString &identity, const QString &mime)
++{
++    return identity.endsWith(QLatin1String(".fb2"), Qt::CaseInsensitive)
++            || mime == QLatin1String("application/x-fictionbook+xml")
++            || mime == QLatin1String("application/fb2")
++            || mime == QLatin1String("application/x-fb2");
++}
++
+ bool readerBookFormatSupported(const void *volume)
+ {
+     if (!volume || previewBook(volume))
+@@ -136,7 +144,8 @@ bool readerBookFormatSupported(const void *volume)
+     if (!values)
+         return false;
+     const auto mime = values(volume).value("MimeType").toString();
+-    return (mime == "application/epub+zip" || mime == "application/x-kobo-epub+zip")
++    return (fb2Book(bookIdentity(volume), mime)
++            || mime == "application/epub+zip" || mime == "application/x-kobo-epub+zip")
+             && !bookIdentity(volume).endsWith(QLatin1String(".txt.epub"), Qt::CaseInsensitive);
+ }
+ 
+@@ -151,14 +160,15 @@ static ReaderBookRoute bookRoute(const void *volume, QString *identity, QString
+     const auto id = bookIdentity(volume);
+     if (identity)
+         *identity = id;
+-    if (!fields.value("AdobeLocation").toString().isEmpty())
++    const bool fb2 = fb2Book(id, fields.value("MimeType").toString());
++    if (!fb2 && !fields.value("AdobeLocation").toString().isEmpty())
+         return Route::Protected;
+ #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+     static const auto adobe = symbol<bool (*)(const void *)>("_ZNK7Content10isAdobeDrmEv");
+     static const auto lcp = symbol<bool (*)(const void *)>("_ZNK7Content9isLcpEpubEv");
+-    if (!adobe || !lcp)
++    if (!fb2 && (!adobe || !lcp))
+         return Route::Unsupported;
+-    if (adobe(volume) || lcp(volume))
++    if (!fb2 && (adobe(volume) || lcp(volume)))
+         return Route::Protected;
+ #endif
+     auto filename = localReaderBookPath(id);
+@@ -177,6 +187,8 @@ static ReaderBookRoute bookRoute(const void *volume, QString *identity, QString
+     }
+     if (path)
+         *path = filename;
++    if (fb2)
++        return Route::Direct;
+     static const auto device = symbol<void *(*)()>("_ZN6Device16getCurrentDeviceEv");
+     static const auto dbName = symbol<const QString &(*)(const void *)>("_ZNK6Device9getDbNameEv");
+ #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+diff --git a/platforms/kobo/nickel-qt5/native_publication.cpp b/platforms/kobo/nickel-qt5/native_publication.cpp
+index f7e5d13e..1892ece7 100644
+--- a/platforms/kobo/nickel-qt5/native_publication.cpp
++++ b/platforms/kobo/nickel-qt5/native_publication.cpp
+@@ -101,6 +101,24 @@ bool NativePublication::open(const void *volume, const void *bookmark, QString *
+     if (identity_.isEmpty() || path_.isEmpty())
+         return fail("native_publication_identity_is_unavailable",
+                     strings::get("error.native_publication_identity_is_unavailable"));
++    const auto mime = native.values(volume).value("MimeType").toString();
++    const bool fb2 = path_.endsWith(QLatin1String(".fb2"), Qt::CaseInsensitive)
++            || mime == QLatin1String("application/x-fictionbook+xml")
++            || mime == QLatin1String("application/fb2") || mime == QLatin1String("application/x-fb2");
++    if (fb2) {
++        // FB2 uses Kobalt's own saved DOM positions, never EPUB container locations.
++        // Do not silently reinterpret an explicit Nickel annotation bookmark.
++        if (bookmark && !native.bookmarkPath(bookmark).isEmpty())
++            return fail("explicit_native_bookmark_is_unsupported",
++                        strings::get("error.explicit_native_bookmark_is_unsupported"));
++        source_ = native::publicationSource().open(volume, keys, path_, identity_, error);
++        if (!source_)
++            return fail("cannot_start_the_native_publication_service",
++                        strings::get("error.cannot_start_the_native_publication_service"));
++        port_ = source_->port();
++        coverPath_ = nativeReaderCoverPath(volume);
++        return true;
++    }
+     // Library openings carry an empty bookmark. Explicit annotation locations
+     // need a separate conversion from QtWebKit's container paths; keep those
+     // requests in stock reading until that conversion is validated.
+diff --git a/platforms/kobo/nickel-qt6/native_publication.cpp b/platforms/kobo/nickel-qt6/native_publication.cpp
+index 29d8a464..8a9eb69f 100644
+--- a/platforms/kobo/nickel-qt6/native_publication.cpp
++++ b/platforms/kobo/nickel-qt6/native_publication.cpp
+@@ -108,6 +108,25 @@ bool NativePublication::open(const void *volume, const void *bookmark, QString *
+     path_ = native.path(volume);
+     if (identity_.isEmpty() || path_.isEmpty())
+         return fail(strings::get("error.native_publication_identity_is_unavailable"));
++    const auto mime = native.values(volume).value("MimeType").toString();
++    const bool fb2 = path_.endsWith(QLatin1String(".fb2"), Qt::CaseInsensitive)
++            || mime == QLatin1String("application/x-fictionbook+xml")
++            || mime == QLatin1String("application/fb2") || mime == QLatin1String("application/x-fb2");
++    if (fb2) {
++        // FB2 uses Kobalt's own saved DOM positions, never EPUB container locations.
++        // Do not silently reinterpret an explicit Nickel annotation bookmark.
++        if (bookmark) {
++            const auto *location = native.bookmark(bookmark);
++            if (location && native.locationValid(location))
++                return fail(strings::get("error.native_opening_position_cannot_be_converted"));
++        }
++        source_ = native::publicationSource().open(volume, openingKeys, path_, identity_, error);
++        if (!source_)
++            return false;
++        port_ = source_->port();
++        coverPath_ = nativeReaderCoverPath(volume);
++        return true;
++    }
+     if (bookmark) {
+         const auto *location = native.bookmark(bookmark);
+         if (location && native.locationValid(location)) {
+diff --git a/src/publication/fb2.h b/src/publication/fb2.h
+new file mode 100644
+index 00000000..0971642a
+--- /dev/null
++++ b/src/publication/fb2.h
+@@ -0,0 +1,60 @@
++#pragma once
++#include <QByteArray>
++#include <cstring>
++
++namespace kobalt::fb2 {
++// Raw-byte FictionBook recognition. The payload is never decoded here: a
++// windows-1251 book keeps its encoding declaration and CREngine decodes it.
++// Callers pass at most the first 64 KiB. The root must fall within this
++// supported probe window; this is recognition, not full XML validation.
++inline bool matchesHead(const QByteArray &head) {
++    int at = 0;
++    if (head.startsWith("\xEF\xBB\xBF"))
++        at = 3;
++    // Do not mistake a tag mentioned in a comment, PI or another XML root
++    // for the document element. Keep this byte-based for legacy encodings.
++    if (head.contains("<!ENTITY"))
++        return false;
++    for (;;) {
++        while (at < head.size() &&
++               (head[at] == '\t' || head[at] == '\r' || head[at] == '\n' || head[at] == ' '))
++            ++at;
++        if (head.mid(at, 4) == "<!--") {
++            const int end = head.indexOf("-->", at + 4);
++            if (end < 0) return false;
++            at = end + 3;
++        } else if (head.mid(at, 2) == "<?") {
++            const int end = head.indexOf("?>", at + 2);
++            if (end < 0) return false;
++            at = end + 2;
++        } else if (head.mid(at, 9) == "<!DOCTYPE") {
++            // A declaration may contain quoted '>' or an internal subset.
++            // Entity declarations remain disallowed by the guard above.
++            int depth = 0;
++            char quote = 0;
++            int end = at + 9;
++            for (; end < head.size(); ++end) {
++                const char ch = head[end];
++                if (quote) {
++                    if (ch == quote) quote = 0;
++                } else if (ch == '\'' || ch == '"') quote = ch;
++                else if (ch == '[') ++depth;
++                else if (ch == ']') --depth;
++                else if (ch == '>' && !depth) break;
++                if (depth < 0) return false;
++            }
++            if (end == head.size()) return false;
++            at = end + 1;
++        } else break;
++    }
++    if (head.mid(at, 12) != "<FictionBook")
++        return false;
++    const int tag = at;
++    const int after = tag + int(std::strlen("<FictionBook"));
++    if (after >= head.size())
++        return false;
++    const char delimiter = head[after];
++    return delimiter == ' ' || delimiter == '\t' || delimiter == '\r' || delimiter == '\n' ||
++           delimiter == '>';
++}
++} // namespace kobalt::fb2
+diff --git a/src/publication/fb2_resources.cpp b/src/publication/fb2_resources.cpp
+new file mode 100644
+index 00000000..f0db54a1
+--- /dev/null
++++ b/src/publication/fb2_resources.cpp
+@@ -0,0 +1,55 @@
++#include "fb2_resources.h"
++#include "support/strings.h"
++#include <QElapsedTimer>
++#include <QFile>
++
++namespace kobalt::fb2 {
++bool transferFile(const QString &path, qint64 expectedSize,
++                  const std::shared_ptr<SourceLease> &lease, const ResourceCache::Sink &sink,
++                  QString *error, qint64 &sinkNs)
++{
++    const auto cancelled = [&lease] { return !lease || lease->revoked(); };
++    auto fail = [&](const char *reason) {
++        if (error && error->isEmpty()) {
++            *error = strings::get(reason);
++        }
++        return false;
++    };
++    if (cancelled()) {
++        return fail("error.reading_session_closed");
++    }
++    QFile file(path);
++    if (!file.open(QIODevice::ReadOnly) || file.size() != expectedSize) {
++        return fail("error.a_book_resource_changed_during_reading");
++    }
++    QElapsedTimer deadline;
++    deadline.start();
++    qint64 transferred = 0;
++    while (transferred < expectedSize) {
++        if (cancelled()) {
++            return fail("error.reading_session_closed");
++        }
++        if (deadline.elapsed() >= 5000) {
++            return fail("error.native_publication_transfer_timed_out");
++        }
++        const auto bytes = file.read(qMin(qint64(ResourceCache::blockBytes), expectedSize - transferred));
++        if (bytes.isEmpty()) {
++            return fail("error.could_not_load_a_book_resource");
++        }
++        QElapsedTimer work;
++        work.start();
++        if (!sink(bytes.constData(), bytes.size())) {
++            return false;
++        }
++        sinkNs += work.nsecsElapsed();
++        transferred += bytes.size();
++        if (file.size() != expectedSize)
++            return fail("error.a_book_resource_changed_during_reading");
++    }
++    if (cancelled())
++        return fail("error.reading_session_closed");
++    if (file.error() != QFile::NoError || file.size() != expectedSize || !file.atEnd())
++        return fail("error.a_book_resource_changed_during_reading");
++    return true;
++}
++} // namespace kobalt::fb2
+diff --git a/src/publication/fb2_resources.h b/src/publication/fb2_resources.h
+new file mode 100644
+index 00000000..e55e245f
+--- /dev/null
++++ b/src/publication/fb2_resources.h
+@@ -0,0 +1,13 @@
++#pragma once
++#include "resource_cache.h"
++#include "source_lease.h"
++#include <memory>
++
++namespace kobalt::fb2 {
++// Synchronous worker-only transfer of the single virtual FB2 resource.
++// Keep the lease, bounded chunks, timeout, error precedence and sink accounting
++// identical to the local ZIP path. Does not own or extend the opening lifetime.
++bool transferFile(const QString &path, qint64 expectedSize,
++                  const std::shared_ptr<SourceLease> &lease, const ResourceCache::Sink &sink,
++                  QString *error, qint64 &sinkNs);
++} // namespace kobalt::fb2
+diff --git a/src/publication/image_request_trace.h b/src/publication/image_request_trace.h
+new file mode 100644
+index 00000000..0796b917
+--- /dev/null
++++ b/src/publication/image_request_trace.h
+@@ -0,0 +1,37 @@
++#pragma once
++#include <QStringList>
++
++namespace kobalt {
++// Worker-only requests for one rendered screen, in first-request order.
++class ImageRequestTrace
++{
++public:
++    void begin()
++    {
++        names_.clear();
++        active_ = true;
++    }
++
++    QStringList end()
++    {
++        active_ = false;
++        return names_;
++    }
++
++    void record(const QString &name)
++    {
++        if (active_ && !names_.contains(name))
++            names_.append(name);
++    }
++
++    void clear()
++    {
++        names_.clear();
++        active_ = false;
++    }
++
++private:
++    bool active_ = false;
++    QStringList names_;
++};
++} // namespace kobalt
+diff --git a/src/publication/local_resources.cpp b/src/publication/local_resources.cpp
+index df5744d5..c77e3575 100644
+--- a/src/publication/local_resources.cpp
++++ b/src/publication/local_resources.cpp
+@@ -1,4 +1,5 @@
+ #include "support/diagnostics.h"
++#include "fb2_resources.h"
+ #include "local_resources.h"
+ 
+ #include "image_policy.h"
+@@ -69,6 +70,10 @@ private:
+             const auto placeholder = imagePlaceholder({}, systemFont);
+             return !cancelled() && sink(placeholder.constData(), placeholder.size());
+         }
++        // A real EPUB may contain a member with this spelling. Only a raw
++        // FB2 inspection produces a one-member virtual resource map.
++        if (sizes.size() == 1 && name == QLatin1String(Publication::singleFb2ResourceName))
++            return fb2::transferFile(path, sizes.value(name), lease, sink, error, sinkNs);
+         ZipResource stream;
+         if (!stream.open(path, name, index, ResourceCache::budgetBytes)) {
+             return fail("error.could_not_load_a_book_resource");
+diff --git a/src/publication/publication.cpp b/src/publication/publication.cpp
+index fe900103..ebda3daa 100644
+--- a/src/publication/publication.cpp
++++ b/src/publication/publication.cpp
+@@ -356,10 +356,14 @@ bool Publication::inspect(QIODevice &source, QString *error, OpeningResult *resu
+     received_ = 0;
+     protected_ = false;
+     zip64_ = false;
++    format_ = PublicationFormat::Epub;
+     const qint64 length = source.size();
+     if (source.isSequential() || length < 22)
+         return inspectionFailure(error, result, OpeningFailureKind::Unsupported,
+                                  strings::key("error.unsupported_publication_size"));
++    const auto singleFile = inspectFb2(source, length, error, result);
++    if (singleFile != Fb2Inspection::NotMatched)
++        return singleFile == Fb2Inspection::Accepted;
+     zip::Directory contents;
+     if (!zip::readDirectory(source, contents))
+         return inspectionFailure(error, result, OpeningFailureKind::Unsupported,
+diff --git a/src/publication/publication.h b/src/publication/publication.h
+index e61744b3..b773fc96 100644
+--- a/src/publication/publication.h
++++ b/src/publication/publication.h
+@@ -13,6 +13,8 @@ namespace kobalt {
+ class Publication
+ {
+ public:
++    enum class PublicationFormat { Epub, Fb2 };
++    PublicationFormat format() const { return format_; }
+     bool zip64() const { return zip64_; }
+     bool protectedBook() const { return protected_; }
+ 
+@@ -35,7 +37,13 @@ public:
+     static constexpr int maxBytes = 64 * 1024 * 1024;
+     static constexpr int maxResource = 16 * 1024 * 1024;
+ 
++    // A raw FB2 uses one virtual member in the existing resource pipeline.
++    static constexpr auto singleFb2ResourceName = "__kobalt_document__.fb2";
++
+ private:
++    enum class Fb2Inspection { NotMatched, Accepted, Failed };
++    Fb2Inspection inspectFb2(QIODevice &source, qint64 length, QString *error, OpeningResult *result);
++    PublicationFormat format_ = PublicationFormat::Epub;
+     bool protected_ = false, zip64_ = false;
+     QStringList names_;
+     QMap<QString, qint64> sizes_;
+diff --git a/src/publication/publication_fb2.cpp b/src/publication/publication_fb2.cpp
+new file mode 100644
+index 00000000..32b6b319
+--- /dev/null
++++ b/src/publication/publication_fb2.cpp
+@@ -0,0 +1,58 @@
++#include "publication.h"
++#include "fb2.h"
++#include "support/strings.h"
++#include <QCryptographicHash>
++#include <QtEndian>
++
++namespace kobalt {
++Publication::Fb2Inspection Publication::inspectFb2(QIODevice &source, qint64 length, QString *error,
++                                                   OpeningResult *result)
++{
++    const auto fail = [error, result](const char *reason) {
++        if (result)
++            *result = OpeningResult::failed(OpeningFailureKind::Io, reason);
++        if (error)
++            *error = strings::get(reason);
++        return Fb2Inspection::Failed;
++    };
++    const auto append32 = [](QByteArray &out, quint32 n) {
++        const auto value = qToLittleEndian(n);
++        out.append(reinterpret_cast<const char *>(&value), 4);
++    };
++    // Recognize single-file FB2 before the ZIP end-of-directory scan. A raw
++    // XML stream has no ZIP record, so the EPUB checks below must not run first.
++    if (length >= 32 && length <= qint64(maxBytes)) {
++        if (!source.seek(0))
++            return fail(strings::key("error.cannot_read_publication_directory"));
++        const auto head = source.read(qMin(length, qint64(65536)));
++        if (head.size() != qMin(length, qint64(65536)))
++            return fail(strings::key("error.incomplete_publication_directory"));
++        if (fb2::matchesHead(head)) {
++            format_ = PublicationFormat::Fb2;
++            protected_ = false;
++            if (!source.seek(0))
++                return fail(strings::key("error.cannot_read_publication_directory"));
++            // A single file has no central directory to fingerprint. Hash the
++            // length plus the complete contents so any edit invalidates caches.
++            QCryptographicHash hash(QCryptographicHash::Sha256);
++            QByteArray sizePrefix;
++            append32(sizePrefix, quint32(length));
++            append32(sizePrefix, quint32(quint64(length) >> 32));
++            hash.addData(sizePrefix);
++            while (!source.atEnd()) {
++                const auto chunk = source.read(64 * 1024);
++                if (chunk.isEmpty())
++                    return fail(strings::key("error.incomplete_publication_directory"));
++                hash.addData(chunk);
++            }
++            fingerprint_ = hash.result().toHex();
++            const auto resourceName = QString::fromLatin1(singleFb2ResourceName);
++            names_ = QStringList{ resourceName };
++            sizes_.clear();
++            sizes_[resourceName] = length;
++            return Fb2Inspection::Accepted;
++        }
++    }
++    return Fb2Inspection::NotMatched;
++}
++} // namespace kobalt
+diff --git a/src/publication/resource_cache.cpp b/src/publication/resource_cache.cpp
+index 32504a62..70536d79 100644
+--- a/src/publication/resource_cache.cpp
++++ b/src/publication/resource_cache.cpp
+@@ -74,6 +74,7 @@ QSize ResourceCache::deferredImageSize(const QString &name)
+ 
+ bool ResourceCache::imageReady(const QString &name)
+ {
++    imageRequests_.record(name);
+     if (cancelled_ && cancelled_())
+         return false;
+     if (readyImages_.contains(name) || failedImages_.contains(name)
+@@ -84,6 +85,13 @@ bool ResourceCache::imageReady(const QString &name)
+     return false;
+ }
+ 
++bool ResourceCache::prioritizePendingImage(const QString &name)
++{
++    if (!pendingImages_.removeOne(name)) return false;
++    pendingImages_.prepend(name);
++    return true;
++}
++
+ bool ResourceCache::loadNextImage()
+ {
+     if (pendingImages_.isEmpty() || !error_.isEmpty() || (cancelled_ && cancelled_()))
+@@ -122,6 +130,7 @@ void ResourceCache::releaseBytes()
+ {
+     entries_.clear();
+     recent_.clear();
++    imageRequests_.clear();
+     allocated_ = 0;
+     readyImages_.clear();
+     pendingImages_.clear();
+diff --git a/src/publication/resource_cache.h b/src/publication/resource_cache.h
+index c399a969..5c72745d 100644
+--- a/src/publication/resource_cache.h
++++ b/src/publication/resource_cache.h
+@@ -1,4 +1,5 @@
+ #pragma once
++#include "image_request_trace.h"
+ #include <QJsonObject>
+ #include <QMap>
+ #include <QStringList>
+@@ -46,6 +47,11 @@ public:
+     bool imageReady(const QString &name);
+     bool loadNextImage();
+     bool loadImage(const QString &name);
++    // Worker-only: collect resources actually requested by one rendered screen.
++    void beginImageRequests() { imageRequests_.begin(); }
++    QStringList endImageRequests() { return imageRequests_.end(); }
++    bool prioritizePendingImage(const QString &name);
++    bool pendingImage(const QString &name) const { return pendingImages_.contains(name); }
+     // Keep dimensions and integrity checks, but no encoded resource bytes.
+     void releaseBytes();
+ 
+@@ -86,6 +92,7 @@ private:
+     QSet<QString> readyImages_;
+     QStringList pendingImages_;
+     quint64 imageRevision_ = 0;
++    ImageRequestTrace imageRequests_;
+     std::function<bool()> cancelled_;
+     std::map<QString, Entry> entries_;
+     std::map<QString, QByteArray> fingerprints_;
+diff --git a/tests/model/local_resources.cpp b/tests/model/local_resources.cpp
+index a28b7fa4..3b86685c 100644
+--- a/tests/model/local_resources.cpp
++++ b/tests/model/local_resources.cpp
+@@ -1,4 +1,6 @@
+ #include "check.h"
++#include "publication/fb2.h"
++#include "publication/fb2_resources.h"
+ #include "publication/local_resources.h"
+ #include "publication/publication.h"
+ #include "support/strings.h"
+@@ -96,6 +98,33 @@ QByteArray zip(const QMap<QString, QByteArray> &files, bool deflated = false, bo
+ int main(int argc, char **argv)
+ {
+     QCoreApplication app(argc, argv);
++    // FB2 recognition must not replace beta10's ZIP64/EPUB directory reader.
++    {
++        require(fb2::matchesHead("<!-- root --><?book test?><FictionBook >"), "FB2 root probe");
++        require(!fb2::matchesHead("<FictionBookish>"), "FB2 root delimiter");
++        require(!fb2::matchesHead("<rss><!-- <FictionBook> --></rss>"), "FB2 decoy root");
++        require(!fb2::matchesHead("<!DOCTYPE FictionBook [<!ENTITY x 'a'>]><FictionBook>"),
++                "FB2 entity declarations must not pass the probe");
++        QByteArray xml("<?xml version='1.0' encoding='windows-1251'?><FictionBook><body><p>");
++        xml += char(0xdf);
++        xml += "</p></body></FictionBook>";
++        Publication book;
++        QString error;
++        require(book.inspect(xml, &error), qPrintable(error));
++        require(book.format() == Publication::PublicationFormat::Fb2 && !book.zip64()
++                        && !book.protectedBook(), "Raw FB2 format state");
++        const auto member = QString::fromLatin1(Publication::singleFb2ResourceName);
++        require(book.names() == QStringList{member} && book.sizes().value(member) == xml.size(),
++                "FB2 virtual resource size/name");
++        const auto fingerprint = book.fingerprint();
++        xml.replace(xml.indexOf(char(0xdf)), 1, QByteArray(1, char(0xde)));
++        require(book.inspect(xml, &error) && book.fingerprint() != fingerprint,
++                "Same-length FB2 edits must invalidate the fingerprint");
++        require(!book.inspect(QByteArray("<rss>not a FictionBook document</rss>"), &error)
++                        && book.format() == Publication::PublicationFormat::Epub
++                        && book.names().isEmpty() && book.fingerprint().isEmpty(),
++                "Failed reinspection retained previous FB2 state");
++    }
+     QTemporaryDir directory;
+     require(directory.isValid(), "temporary directory");
+     const auto path = directory.path() + "/book#part?name%20.kepub.epub";
+@@ -120,6 +149,7 @@ int main(int argc, char **argv)
+         }
+         return result;
+     };
++    files[QString::fromLatin1(Publication::singleFb2ResourceName)] = "ordinary ZIP member";
+     auto rejected = std::make_shared<std::atomic_bool>(false);
+     for (bool compressed : { false, true }) {
+         write(compressed);
+@@ -132,6 +162,9 @@ int main(int argc, char **argv)
+             auto cache = factory(sizes(), "sans-serif", rejected);
+             require(cache->readBounded("data.bin", ResourceCache::budgetBytes) == files["data.bin"],
+                     "Block read differs");
++            require(cache->readBounded(QString::fromLatin1(Publication::singleFb2ResourceName),
++                                      ResourceCache::budgetBytes) == "ordinary ZIP member",
++                    "FB2 virtual name hijacked an ordinary ZIP member");
+             const auto requests = cache->statistics()["requests"].toInt();
+             require(cache->readBounded("data.bin", ResourceCache::budgetBytes) == files["data.bin"]
+                             && cache->statistics()["requests"].toInt() == requests,
+@@ -231,6 +264,53 @@ int main(int argc, char **argv)
+         require(cache->readBounded("image.png", ResourceCache::budgetBytes).startsWith("<svg"),
+                 "Oversized image source was read instead of replaced");
+     }
++    // Raw-file transfers keep the existing worker lease and bounded-block contract.
++    {
++        const auto rawPath = directory.path() + "/raw.fb2";
++        const auto data = QByteArray("<FictionBook><body><p>")
++                + QByteArray(3 * ResourceCache::blockBytes + 17, 'x')
++                + "</p></body></FictionBook>";
++        QFile file(rawPath);
++        require(file.open(QIODevice::WriteOnly) && file.write(data) == data.size(), "write raw FB2");
++        file.close();
++        Publication publication;
++        QString error;
++        require(publication.inspect(data, &error), qPrintable(error));
++        auto lease = std::make_shared<SourceLease>();
++        qint64 sinkNs = 0;
++        QByteArray received;
++        int calls = 0;
++        const auto sink = [&](const char *bytes, qint64 size) {
++            require(size <= ResourceCache::blockBytes, "FB2 transfer exceeded block bound");
++            ++calls;
++            received.append(bytes, int(size));
++            return true;
++        };
++        require(fb2::transferFile(rawPath, data.size(), lease, sink, &error, sinkNs)
++                        && received == data && calls >= 4, "FB2 bounded transfer");
++        require(!fb2::transferFile(rawPath, data.size() + 1, lease, sink, &error, sinkNs),
++                "FB2 resource size change was accepted");
++        error.clear();
++        calls = 0;
++        require(!fb2::transferFile(rawPath, data.size(), lease,
++                    [&](const char *, qint64) { ++calls; return false; }, &error, sinkNs)
++                        && calls == 1, "FB2 sink cancellation did not stop transfer");
++        auto revoked = std::make_shared<SourceLease>();
++        calls = 0;
++        require(!fb2::transferFile(rawPath, data.size(), revoked,
++                    [&](const char *, qint64) { ++calls; revoked->revoke(); return true; },
++                    &error, sinkNs) && calls == 1, "FB2 mid-transfer revocation ignored");
++        calls = 0;
++        require(!fb2::transferFile(rawPath, data.size(), revoked, sink, &error, sinkNs)
++                        && calls == 0, "FB2 revoked lease reached sink");
++        auto source = native::openLocalPublication(rawPath, &error);
++        require(source && source->active(), "Local publication rejected inspected FB2");
++        auto cache = source->resources(std::make_shared<SourceLease>())(
++                publication.sizes(), {}, std::make_shared<std::atomic_bool>(false));
++        require(cache->readBounded(QString::fromLatin1(Publication::singleFb2ResourceName),
++                                  ResourceCache::budgetBytes) == data,
++                "Local FB2 resource adapter altered raw bytes");
++    }
+     files["META-INF/license.lcpl"] = "{}";
+     write();
+     require(!native::openLocalPublication(path), "Local backend accepted a protected publication");
