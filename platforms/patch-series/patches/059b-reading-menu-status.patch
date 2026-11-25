@@ -1,0 +1,365 @@
+diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
+index d50a0297..6fee498f 100644
+--- a/platforms/desktop/CMakeLists.txt
++++ b/platforms/desktop/CMakeLists.txt
+@@ -495,7 +495,7 @@ if(BUILD_TESTING)
+             sleepSnapshotMatchesTheDisplayedPage
+             sleepSnapshotReplacesEachClockWithoutChangingTheReadingPage sleepTimeLeftUsesHoursAboveTwoHours sleepTimeLeftApproximate timeRemainingFormatShared
+             sleepScreenDefaultsMigrateOnce sleepPngOverlaysUseEitherFolder sleepNativePreviewFollowsSettings sleepSettingsShowWhereToAddPngs sleepGalleryCancelsInterruptedPresses sleepGreetingEditor sleepOverlayUsesTheDimmedPage sleepCoverFitsWithoutCroppingOrDimming
+-            sleepCoverDecodingIsBoundedAndHonorsSourceCancellation wifiStatus readingTimeStatsVisibility readingTimeStatus remoteKeyActivityRequiresActiveReading
++            sleepCoverDecodingIsBoundedAndHonorsSourceCancellation wifiStatus readingMenuStatusToggle readingTimeStatsVisibility readingTimeStatus remoteKeyActivityRequiresActiveReading
+             textPresetsWithoutOpeningWait panelsAfterBackgroundWork closeWithoutWaitingForHost finishChoiceSurvivesSleepAndRequiresActiveReader finishPromptPersistence progressPercentagesAgree kosyncAccountGating kosyncSignInValidation kosyncOpening kosyncNetwork kosyncBackgroundWifi kosyncWifiRelease kosyncMoments minuteClock clockRestsWithoutConsumers clockAsksPaceForTimeLeft liveBatteryIndicators turnSkipsHiddenControls idleTimers readerStandbySetting wifiPowerSaver wifiPowerSaverAtSleep kosyncManualToolbar kosyncManualConnection kosyncDialogResume kosyncInvalidPosition kosyncFailure kosyncMissingProgress kosyncMetadata kosyncPasswordSleep kosyncSleepSavesSyncTime kosyncPause kosyncFinal nativeProgressWaitsForSleep appearanceRetryCooldown closeWithUnusableSettings recoveryNoticeAfterFirstPage benchmarkNoticeAfterRun activityBatchesAndLowBattery shutdownFinalSave developmentOptions developmentStateReports annotationExportHandoff annotationExportOwnerDestruction
+             progressChoiceKeepAndGo progressChoiceWaitsForSettings progressChoiceWaitsForBookmarks
+             finishedSyncWithoutPositionKeepsLocalReading
+diff --git a/src/app/reader/views/navigation.cpp b/src/app/reader/views/navigation.cpp
+index d270982e..44016c51 100644
+--- a/src/app/reader/views/navigation.cpp
++++ b/src/app/reader/views/navigation.cpp
+@@ -814,6 +814,7 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
+       annotate(controls.annotate),
+       clock(controls.clock),
+       session(controls.session),
++      statusToggle(controls.statusToggle),
+       battery(controls.battery),
+       bluetooth(controls.bluetooth),
+       wifi(controls.wifi),
+@@ -981,6 +982,8 @@ void Navigation::stackPanel(QWidget *panel) const
+ void Navigation::placeZenToolbar(QSize size, const QVector<QWidget *> &actions,
+                                  const NavigationState &state)
+ {
++    if (statusToggle)
++        statusToggle->hide();
+     // The back arrow, reading stats and Settings in a centered group, below a
+     // status line with the Zen mark, the clock and a low battery. The other
+     // actions are tabs in the bottom group, or hidden. Like the bottom group,
+@@ -1333,6 +1336,13 @@ void Navigation::updateSessionGeometry()
+     // independently of battery/connectivity widths.
+     session->setGeometry(inset, clock->y(), qMax(0, toolbar->width() - 2 * inset),
+                          ui::metrics::panel::statusHeight);
++    if (statusToggle) {
++        statusToggle->setGeometry(clock->x(), clock->y(),
++                                  qMax(0, battery->geometry().right() + 1 - clock->x()),
++                                  ui::metrics::panel::statusHeight);
++        statusToggle->setVisible(statusVisible && !zenTop);
++        statusToggle->raise();
++    }
+ }
+ 
+ bool Navigation::contains(QPoint global) const
+diff --git a/src/app/reader/views/navigation.h b/src/app/reader/views/navigation.h
+index 91cfaae3..e1f734ff 100644
+--- a/src/app/reader/views/navigation.h
++++ b/src/app/reader/views/navigation.h
+@@ -31,6 +31,7 @@ struct ToolbarComposition
+     QWidget *exitAction = nullptr;
+     QPushButton *settings = nullptr, *bookmarks = nullptr, *annotate = nullptr;
+     QLabel *clock = nullptr, *session = nullptr;
++    QAbstractButton *statusToggle = nullptr;
+     ui::BatteryIndicator *battery = nullptr;
+     ui::BluetoothIndicator *bluetooth = nullptr;
+     ui::WifiIndicator *wifi = nullptr;
+@@ -223,6 +224,7 @@ private:
+     // the screen above it.
+     QWidget *zenViewBase;
+     QLabel *clock, *session;
++    QAbstractButton *statusToggle;
+     ui::BatteryIndicator *battery;
+     ui::BluetoothIndicator *bluetooth;
+     ui::WifiIndicator *wifi;
+diff --git a/src/app/reader/window/reader.cpp b/src/app/reader/window/reader.cpp
+index f28bf662..c592f938 100644
+--- a/src/app/reader/window/reader.cpp
++++ b/src/app/reader/window/reader.cpp
+@@ -4019,6 +4019,8 @@ void Reader::describe(QJsonObject &state)
+     state["reading_chrome_font"] = QFontInfo(page->font()).family();
+     state["session_reading_ms"] = double(book->sessionReadingMilliseconds());
+     state["menu_session_text"] = menuSession->text();
++    state[menustatus::preferenceKey] = menustatus::showsPage(preferences)
++            ? QStringLiteral("book_page") : QStringLiteral("session");
+     state["menu_clock_font"] = QFontInfo(menuClock->font()).family();
+     state["menu_battery_font"] = QFontInfo(menuBattery->font()).family();
+     state["ui_icon_set"] = QStringLiteral("Phosphor");
+diff --git a/src/app/reader/window/reader_build.cpp b/src/app/reader/window/reader_build.cpp
+index 0d543c6c..b0b87470 100644
+--- a/src/app/reader/window/reader_build.cpp
++++ b/src/app/reader/window/reader_build.cpp
+@@ -824,6 +824,21 @@ void Reader::buildToolbar()
+     auto *top = new QHBoxLayout;
+     toolbar->addLayout(top);
+     top->setSpacing(metrics::panel::toolbarGap);
++    menuStatusButton = new MenuStatusButton(topControls);
++    menuStatusButton->setObjectName("rrMenuStatusToggle");
++    menuStatusButton->setFocusPolicy(Qt::StrongFocus);
++    menuStatusButton->setCheckable(true);
++    toolbarComposition.statusToggle = menuStatusButton;
++    connect(menuStatusButton, &QAbstractButton::clicked, this, [this] {
++        auto next = preferences;
++        next[menustatus::preferenceKey] = menustatus::showsPage(preferences)
++                ? QStringLiteral("session") : QStringLiteral("book_page");
++        savePreferences(next, [this](bool saved) {
++            updateMenuStatus();
++            if (saved)
++                navigation->updateSessionGeometry();
++        });
++    });
+     updateMenuStatus();
+     const auto returnLabel = services.backButtonLabel.isEmpty() ? strings::get("reader.exit")
+                                                                 : services.backButtonLabel;
+diff --git a/src/app/reader/window/reader_p.h b/src/app/reader/window/reader_p.h
+index 9d32ffea..8dc3f038 100644
+--- a/src/app/reader/window/reader_p.h
++++ b/src/app/reader/window/reader_p.h
+@@ -2,6 +2,7 @@
+ #include <future>
+ #include "app/reader/settings/interface_style.h"
+ #include "reading/features.h"
++#include "reading/menu_status.h"
+ #include "support/strings.h"
+ // Private to the reader window: its declaration and the widgets only it uses.
+ // Include it only from the reader's own translation units.
+@@ -98,6 +99,16 @@ public:
+     explicit ChapterHeader(QWidget *parent);
+ };
+ 
++// Transparent hit target over the existing status row: no new strip or layout.
++// QAbstractButton supplies normal release/cancellation and keyboard semantics.
++class MenuStatusButton final : public QAbstractButton
++{
++public:
++    using QAbstractButton::QAbstractButton;
++protected:
++    void paintEvent(QPaintEvent *) override { }
++};
++
+ class MenuSessionLabel final : public ui::InterfaceLabel
+ {
+ public:
+@@ -585,6 +596,7 @@ private:
+     const bool liveState = QFile::exists(book->paths().directory + "/live-state");
+     QLabel *menuClock;
+     MenuSessionLabel *menuSession;
++    MenuStatusButton *menuStatusButton = nullptr;
+     kobalt::ui::BatteryIndicator *menuBattery;
+     kobalt::ui::BluetoothIndicator *menuBluetooth;
+     kobalt::ui::WifiIndicator *menuWifi;
+diff --git a/src/app/reader/window/reader_refresh.cpp b/src/app/reader/window/reader_refresh.cpp
+index 21acfb65..78dc013c 100644
+--- a/src/app/reader/window/reader_refresh.cpp
++++ b/src/app/reader/window/reader_refresh.cpp
+@@ -1007,13 +1007,22 @@ void Reader::updateMenuSession()
+ {
+     const auto reading = book->sessionReadingMilliseconds();
+     QString label;
+-    const bool counting = menuShowsPagination();
++    const bool pageMode = menustatus::showsPage(preferences);
++    const bool counting = !pageMode && menuShowsPagination();
+     menuSession->setCountingPages(counting, publisherPagesEnabled());
+-    if (!counting && features::enabled(preferences, features::Stats) && reading > 300000)
++    if (pageMode)
++        label = menustatus::text(preferences, chromeValues(ChromeFields::Reading));
++    else if (!counting && features::enabled(preferences, features::Stats) && reading > 300000)
+         label = strings::get("reader.session_minutes").arg(reading / 60000);
+     if (menuSession->text() != label)
+         menuSession->setText(label);
+     menuSession->setVisible(!hideNativeStatus() && !zenMode() && (counting || !label.isEmpty()));
++    if (menuStatusButton) {
++        menuStatusButton->setAccessibleName(strings::get("zen.this_session") + " / "
++                + headerfooter::fieldLabel(headerfooter::Field::BookPage));
++        menuStatusButton->setAccessibleDescription(label);
++        menuStatusButton->setChecked(pageMode);
++    }
+ }
+ 
+ // Stats and the reading strips use the same platform or session estimates.
+diff --git a/src/reading/appearance_settings.cpp b/src/reading/appearance_settings.cpp
+index 5723b5d9..76521b5d 100644
+--- a/src/reading/appearance_settings.cpp
++++ b/src/reading/appearance_settings.cpp
+@@ -1,6 +1,7 @@
+ #include "reading/locale_font_roles.h"
+ #include "reading/reading_progress.h"
+ #include "appearance_settings.h"
++#include "menu_status.h"
+ #include "features.h"
+ #include "support/qt_compat.h"
+ #include "page_navigation.h"
+@@ -224,6 +225,7 @@ QJsonObject cleanPreferences(QJsonObject preferences)
+     choice("header_footer", { "default", "alternative_a", "alternative_b", "phone", "custom" });
+     choice("ui_palette", { "grayscale", "blue", "sage", "sepia" });
+     choice("default_menu_view", { "none", "seek", "stats" });
++    choice(menustatus::preferenceKey, { "session", "book_page" });
+     choice("navigation_bar_buttons", { "chapters", "pages" });
+     choice("chapter_groups", { "current", "all", "off" });
+     choice("page_navigation", { "taps_and_swipes", "taps_only", "swipes_only", "buttons_only" });
+diff --git a/src/reading/menu_status.h b/src/reading/menu_status.h
+new file mode 100644
+index 00000000..eff1f413
+--- /dev/null
++++ b/src/reading/menu_status.h
+@@ -0,0 +1,17 @@
++#pragma once
++#include "header_footer.h"
++#include <QJsonObject>
++
++namespace kobalt::menustatus {
++inline constexpr auto preferenceKey = "reading_menu_status";
++inline bool showsPage(const QJsonObject &preferences)
++{
++    return preferences.value(preferenceKey).toString() == "book_page";
++}
++inline QString text(const QJsonObject &preferences, const headerfooter::Values &values)
++{
++    return showsPage(preferences)
++            ? headerfooter::content(headerfooter::Field::BookPage, values, false).text
++            : QString();
++}
++} // namespace kobalt::menustatus
+diff --git a/tests/model/appearance_settings.cpp b/tests/model/appearance_settings.cpp
+index 7bfa6dad..18f35b77 100644
+--- a/tests/model/appearance_settings.cpp
++++ b/tests/model/appearance_settings.cpp
+@@ -7,6 +7,7 @@
+ #include "reading/session_timeout.h"
+ #include "reading/remaining_time.h"
+ #include "reading/header_footer.h"
++#include "reading/menu_status.h"
+ #include "reading/rendering_mode.h"
+ #include "support/qt_compat.h"
+ #include "check.h"
+@@ -19,6 +20,19 @@ using namespace kobalt;
+ // Checks appearance settings: defaults, invalid values, migrations, global and book precedence, new-book inheritance, which changes need a new layout and how an opening merges the saved book state.
+ int main()
+ {
++    {
++        const QJsonObject pageMode{ { menustatus::preferenceKey, "book_page" } };
++        require(!menustatus::showsPage({}), "Default menu status must remain session time");
++        require(menustatus::showsPage(appearance::cleanPreferences(pageMode)),
++                "Global menu status lost during cleaning");
++        require(menustatus::showsPage(appearance::readerPreferences(pageMode, {})),
++                "Menu status must persist across books");
++        require(!menustatus::showsPage(appearance::readerPreferences({}, pageMode)),
++                "Per-book state must not select a global menu status");
++        require(!appearance::cleanPreferences({ { menustatus::preferenceKey, "bad" } })
++                         .contains(menustatus::preferenceKey), "Invalid menu status not cleaned");
++    }
++
+     {
+         const auto original = qt::object({ { "font_pixels", 40 },
+                                            { "line_spacing", 150 },
+diff --git a/tests/model/ru_control_ui.cpp b/tests/model/ru_control_ui.cpp
+index 3be77ccd..16c06db1 100644
+--- a/tests/model/ru_control_ui.cpp
++++ b/tests/model/ru_control_ui.cpp
+@@ -13,6 +13,7 @@
+ #include "reading/locale_font_roles.h"
+ #include "engine/blaze/adapter/engine_document.h"
+ #include "reading/text_presets.h"
++#include "reading/menu_status.h"
+ #include <QFileInfo>
+ #include <QLabel>
+ #include <QApplication>
+@@ -38,6 +39,22 @@ int main(int argc, char **argv)
+     const auto language = argc > 1 && QByteArray(argv[1]) == "en"
+             ? strings::Locale::English : strings::Locale::Russian;
+     strings::setLocale(language);
++    {
++        const QJsonObject mode{ { menustatus::preferenceKey, "book_page" } };
++        headerfooter::Values values;
++        values.page = 123456;
++        values.pages = 987654;
++        for (int scenario = 0; scenario < 5; ++scenario) {
++            values.pagesEstimated = scenario == 1;
++            values.percentTenths = scenario == 2 ? 120 : -1;
++            values.useScreens = scenario == 3;
++            values.printedPage = scenario == 4 ? QStringLiteral("xviii") : QString();
++            require(menustatus::text(mode, values)
++                            == headerfooter::content(headerfooter::Field::BookPage, values, false).text,
++                    "Menu must use BookPage formatting, including pending/estimated/publisher labels");
++            require(menustatus::text({}, values).isEmpty(), "Page formatter leaked into session mode");
++        }
++    }
+     require(test::readerAssets().available(), "Control assets unavailable");
+     require(ui::initializeInterfaceFonts(test::readerAssets()), "Control fonts unavailable");
+     require(ui::brandFont(40).family() == (language == strings::Locale::Russian
+diff --git a/tests/reader_lifecycle.cpp b/tests/reader_lifecycle.cpp
+index d49d638d..ebfd71e5 100644
+--- a/tests/reader_lifecycle.cpp
++++ b/tests/reader_lifecycle.cpp
+@@ -7572,6 +7572,77 @@ private slots:
+     }
+ 
+     // Uses the real reading clock and Settings checklist to hide session text without stopping time collection.
++    void readingMenuStatusToggle_data()
++    {
++        QTest::addColumn<bool>("dark");
++        for (bool dark : { false, true })
++            QTest::newRow(dark ? "night" : "day") << dark;
++    }
++
++    void readingMenuStatusToggle()
++    {
++        QFETCH(bool, dark);
++        QTemporaryDir books;
++        QVERIFY(test::writeBook(books.path(), "menu-status-a.epub", test::engineBook(false, 2, 1)));
++        QVERIFY(test::writeBook(books.path(), "menu-status-b.epub", test::engineBook(false, 3, 1)));
++        const auto paths = testPaths();
++        QVERIFY(storage::writeJson(paths.preferences(), { { "dark_mode", dark } }));
++        qint64 now = 0;
++        // Independent reader hosts model closing/reopening, including a different book.
++        for (int opening = 0; opening < 2; ++opening) {
++            ReaderFixture host(paths, testFonts, testPlaceholder);
++            host.readingClock = [&] { return now; };
++            CloseHost cleanup{ host };
++            QSignalSpy opened(&host, &ReaderFixture::opened);
++            const QSize size(1072, 1448);
++            host.open(books.filePath(opening ? "menu-status-b.epub" : "menu-status-a.epub"), size);
++            QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
++            Canvas canvas(host.window(), size);
++            canvas.resize(900, 900);
++            canvas.show();
++            QVERIFY(QTest::qWaitForWindowExposed(&canvas));
++            QTRY_VERIFY(!host.session()->busy());
++            QVERIFY(clickAt(canvas, QPoint(size.width() / 2, size.height() / 2)));
++            QTRY_VERIFY_WITH_TIMEOUT(!host.session()->paginationPending(), 30000);
++            auto *hit = host.window()->findChild<QAbstractButton *>("rrMenuStatusToggle");
++            auto *label = host.window()->findChild<QLabel *>("rrMenuSession");
++            auto *clock = host.window()->findChild<QLabel *>("rrMenuClock");
++            auto *battery = host.window()->findChild<QWidget *>("rrMenuBattery");
++            QVERIFY(hit && label && clock && battery);
++            QVERIFY(hit->isVisible());
++            QCOMPARE(hit->isChecked(), bool(opening));
++            const auto layoutStarts = host.session()->layoutStarts();
++            const auto position = host.session()->state().value("position");
++            const auto reading = host.book()->sessionReadingMilliseconds();
++            const auto clockBounds = clock->geometry();
++            const auto batteryBounds = battery->geometry();
++            for (int tap = 0; tap < 2; ++tap) {
++                QVERIFY(click(canvas, hit));
++                const bool pageMode = opening ? tap == 1 : tap == 0;
++                QCOMPARE(hit->isChecked(), pageMode);
++                QCOMPARE(storage::readPreferences(paths.preferences()).object
++                                 .value("reading_menu_status").toString(),
++                         pageMode ? QStringLiteral("book_page") : QStringLiteral("session"));
++                if (pageMode) {
++                    QVERIFY(label->isVisible());
++                    QVERIFY(!label->text().isEmpty());
++                } else {
++                    QVERIFY(label->text().isEmpty()); // first minute: no session caption
++                }
++                QVERIFY(clock->isVisible() && battery->isVisible());
++                QCOMPARE(clock->geometry(), clockBounds);
++                QCOMPARE(battery->geometry(), batteryBounds);
++                QCOMPARE(host.session()->layoutStarts(), layoutStarts);
++                QCOMPARE(host.session()->state().value("position"), position);
++                QCOMPARE(host.book()->sessionReadingMilliseconds(), reading);
++            }
++            if (!opening) {
++                QVERIFY(click(canvas, hit)); // leave page mode saved for the next host/book
++                QVERIFY(hit->isChecked());
++            }
++        }
++    }
++
+     void readingTimeStatsVisibility_data()
+     {
+         QTest::addColumn<bool>("hidden");
