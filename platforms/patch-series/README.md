@@ -215,3 +215,7 @@ CI45599360375 PASS/device snapshots pending. Do not bypass style-hash guard.
 retained and mixed exit prefix scaled only once. Neutral RU reopening hint in010.
 [043](../../doc/reports/patch-series/043-214bf213-font-inventory-and-optical-scale.md):
 CI45607993683 PASS, visual device pending. No cache/admission change.
+
+044 — FB2 Hybrid cancellation/park/close correctness **tests only**, no runtime change.
+CI45613247416 PASS; [coverage/remaining gates](../../doc/reports/patch-series/044-hybrid-correctness-gates.md).
+No device update required for this test patch, no speed claim.

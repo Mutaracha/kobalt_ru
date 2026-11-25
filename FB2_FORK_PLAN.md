@@ -10,15 +10,17 @@ Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-[043: input inventory + optical scale](doc/reports/patch-series/043-214bf213-font-inventory-and-optical-scale.md).
-Upload214bf213 (folder2c1914e3, actual runtime833c8e28): initial rejected A1 preload/A2
-меняют только primitive font_list (и derived global/style), прочие inputs совпадают.
-Late disk A1/A2 all inputs match, paginate9/34ms; user reports fast after reboot.
-В архиве один explicit startup, timing перезагрузки уточнить без нового timing run.
-056 уменьшает RU декоративный serif на15% через QFont/QSS, сохраняет номинальный
-Instrument wordmark и избегает double-scale prefix. Нейтральный hint «Подготовка к чтению».
-Runtime7566324a/CI45607993683 all jobs PASS, standalone RU45609563281 PASS.
-Visual balance/other Noto widgets pending. Cache/preload guard не менялся, speed fix не заявлен.
+[044: Hybrid correctness](doc/reports/patch-series/044-hybrid-correctness-gates.md).
+Пользователь подтвердил reboot перед поздней быстрой A1/A2 парой upload214bf213.
+Cache investigation paused/observed lifecycle accepted: disk reuse after reboot работает,
+initial font_list difference остаётся residual observation, не исправленным read bug.
+Никакого cache-read algorithm fix между mismatch diagnostics и успешным run не было;
+039 добавлял optional metadata snapshots, не новый admission path.
+Перешли к Hybrid correctness.044 test-only: stop-before-start/park preserves prefix
+frame+anchor, no partial cache, resume/full-count, parked-close+independent rebuild.
+Revisiona3e1c24d/CI45613247416 все jobs PASS. На устройство новый test-only package не нужен.
+Остаются focused notes/body-images, resource-backed lease revoke, session/UI page-count gates.
+7566324a остаётся visual package, Noto balance/neutral hint acceptance pending.
 
 ## Очередь — порядок закрытия
 
@@ -30,8 +32,8 @@ Visual balance/other Noto widgets pending. Cache/preload guard не менялс
 |---|---|---|
 | 1 / B10-UI | partial device accepted | Exit-wordmark, OFF persistence и cleanup wording приняты. About wordmark исправлен через shared Instrument Serif role; CI PASS/device visual pending. |
 | 2 / B10-CACHE | done: observed save/read lifecycle | 46ecb8f: все 12 saves=true; измеренные H1/H2/A1/A2 имеют disk hits, retained отдельно. Низкая стабильная задержка A1 не заявлена: это B10-CACHED-LAYOUT. |
-| 3 / B10-CACHED-LAYOUT | in progress: bounded investigation | 035 — завершённый эксперимент, отозван по указанию пользователя; FB2 preload возвращён. Без него disk-hit repagination остаётся (~3.7/16.5 s). 036 device: style-hash mismatch подтверждён; repeat A1 disk reuse работает, после startup mismatch возвращается. Host separate-process short/long fixtures stable (037/CI PASS), device mismatch не воспроизведён. Причина внутри hash пока не установлена; не ослаблять guards, не обещать ускорение. |
-| 4 / B10-HYBRID-COVERAGE | planned: bounded validation | Сверить существующие тесты; закрыть конкретные пробелы prefix/full anchors/count, notes/images и close/cancel/lease revocation. Не строить большую новую матрицу ради незаявленного ускорения. Допустим безопасный full fallback. |
+| 3 / B10-CACHED-LAYOUT | paused: observed lifecycle accepted | User confirms late fast A1/A2 after reboot, disk hits all inputs match9/34ms. Earlier font_list primitive differs, exact inventory cause unknown. No read-path fix claimed; return only on reproducible recurrence. |
+| 4 / B10-HYBRID-COVERAGE | in progress: first CI batch PASS | 044 test-only cancellation/park/close/rebuild PASS in CI45613247416. Remaining targeted notes/body-images, resource-backed lease revocation and session/UI count semantics; no acceleration work. |
 | 5 / B10-FONTS | CI PASS, device visual pending | Full-Monotype task superseded. 055: Noto Serif Display Condensed Regular+Italic only, original beta10 italic semantics, Instrument Serif Kobalt unchanged; Corsiva removed from final package. |
 | 6 / B10-MENU-STATUS | planned: implementation | Общий для всех книг toggle существующей строки состояния: часы + батарея остаются, время текущего сеанса ↔ страница в книге по нажатию. Persistent global preference, формат/estimated/pending как у BookPage колонтитула. Подробный контракт ниже. |
 

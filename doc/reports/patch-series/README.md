@@ -93,3 +93,11 @@ Noto subset and enabled preload retained, no cache clear. This is not a speed fi
 initial reflow to font_list primitive; late disk hits all match9/34ms paginate. User reboot
 chronology recorded separately from one explicit startup.056 scales RU Noto role85%,
 wordmark untouched, hint «Подготовка к чтению». CI45607993683 PASS, RU45609563281 PASS.
+
+## Hybrid correctness first test batch044
+
+[044 report](044-hybrid-correctness-gates.md): user confirms late fast A1/A2 after reboot;
+cache read path was not fixed during diagnostics. Transition to correctness-only Hybrid
+gate. Added pre-start stop, park/preserve prefix, resume, parked-close/independent rebuild.
+CI45613247416 all jobs PASS; tests only, device-update not requested. Remaining notes/
+body-image/resource-lease/session-count checks are not declared complete.

@@ -50,3 +50,9 @@ Runtime **7566324aa6672d8e8960b93152da25941549ecbd**, **CI45607993683 all jobs P
 Host evidence artifact15018442882,12318bytes. Font files/subset unchanged from055; only role sizing and wording change. No cache-speed-fix claim.
 
 Next device action is visual-only: close-title balance, other Noto widgets/tab clipping, neutral opening hint; preserve files/fonts/layout/cache. If the user can clarify which pair followed their reboot, record it; do not demand another run just to fill this chronology gap. Cached-layout lifecycle has positive device evidence, with the remaining unexplained inventory-change question bounded separately. Hybrid correctness gate and menu-status toggle remain pending; full Monotype-family task remains superseded.
+
+## Subsequent user clarification
+
+User explicitly confirmed reboot was before the late fast pair. Accept this chronology
+as device feedback; the single available startup is a log limitation, not an unresolved
+question to ask again. No new run required. Follow-up audit/test handoff:044-hybrid-correctness-gates.md.

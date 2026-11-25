@@ -74,3 +74,12 @@ PASS, device acceptance pending. Noto Regular+Italic/Instrument brand unchanged 
 сохранены, classic Sans/book typography не менялись. Кэш не очищать; новый timing run
 не нужен. Late disk hits из upload all inputs match; initial font_list mismatch не
 объяснён конкретной face/path. Уточнить timing reboot устно, без требования повтора.
+
+## Reboot clarification and transition to Hybrid correctness
+
+User confirms the late fast A1/A2 pair followed reboot. Do not ask that chronology
+question again or repeat the cache timing matrix. Save/read/disk-layout reuse after
+reboot accepted as observed; earlier font_list difference is residual, not a fixed bug.
+Hybrid044 tests pass (CI45613247416), host-only test additions; no device update needed.
+Remaining targeted notes/images/resource-backed revoke/session-count gates in
+[044](../reports/patch-series/044-hybrid-correctness-gates.md). Keep7566324a for visual gate.
