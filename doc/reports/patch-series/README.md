@@ -86,3 +86,10 @@ opening italic semantics restored. Actual Kobo font replay warm stable, device F
 existing doc props, unchanged compatibility formula. CI45599360375 all jobs PASS;
 833c8e28 device run pending. Prime A1/A2, normal exit+reboot, A1/A2 and diagnostics.
 Noto subset and enabled preload retained, no cache clear. This is not a speed fix.
+
+## Upload214bf213; optical scale056
+
+[043](043-214bf213-font-inventory-and-optical-scale.md): valid device snapshots narrow
+initial reflow to font_list primitive; late disk hits all match9/34ms paginate. User reboot
+chronology recorded separately from one explicit startup.056 scales RU Noto role85%,
+wordmark untouched, hint «Подготовка к чтению». CI45607993683 PASS, RU45609563281 PASS.

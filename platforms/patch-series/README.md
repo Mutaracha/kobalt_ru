@@ -210,3 +210,8 @@ CI45596424824 PASS/device visual pending. Do not resume superseded full-Monotype
 Header-anchored optional document properties, no new cache format/admission key.
 Old compatible cache may need one metadata-only close save. [042](../../doc/reports/patch-series/042-layout-input-observation.md),
 CI45599360375 PASS/device snapshots pending. Do not bypass style-hash guard.
+
+056 — optical85% RU decorative serif in QFont/QSS, Instrument wordmark nominal size
+retained and mixed exit prefix scaled only once. Neutral RU reopening hint in010.
+[043](../../doc/reports/patch-series/043-214bf213-font-inventory-and-optical-scale.md):
+CI45607993683 PASS, visual device pending. No cache/admission change.

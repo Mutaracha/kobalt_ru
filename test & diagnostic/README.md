@@ -35,3 +35,10 @@ startup/About, а не из имени upload commit. Последний diagnos
 - `font Kobo/fonts/`: seven original device font files, host-only replay; /mnt/onboard/fonts.
 - `Noto Serif Display Condensed/`: original eight faces/OFL, only Regular+Italic selected
   for final055 runtime. See report041. /mnt/onboard/.adds/kobalt is installation path.
+
+## Upload214bf213
+
+`2c1914e3/diagnostics.zip` reports actual833c8e28; folder label is not runtime.
+Original screenshot retained alongside ZIP. Report043: font_list-only primitive mismatch
+initially, late A1/A2 disk-layout reuse9/34ms; user reports fast after reboot, explicit
+startup chronology incomplete. No cache clear or new timing matrix requested.

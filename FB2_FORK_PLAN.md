@@ -3,22 +3,22 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010–060 (включая 033/034), все патчи применяются вместе.
-Последний проверенный бинарник: **833c8e28**, [CI45599360375](https://github.com/Mutaracha/kobalt_ru/actions/runs/45599360375),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45599360375/artifacts/15014992792).
+Последний проверенный бинарник: **7566324a**, [CI45607993683](https://github.com/Mutaracha/kobalt_ru/actions/runs/45607993683),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45607993683/artifacts/15018104913).
 CI: series/native/Qt5/package/qemu PASS; не полная аппаратная приёмка.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-[042: hash input snapshots](doc/reports/patch-series/042-layout-input-observation.md).
-039 сохраняет optional header-anchored node/global/style operands в existing doc props,
-показывает current/saved inputs. Формула и compatibility решения не меняются; старые
-кэши принимаются, при compatible old cache возможен один metadata-only close save.
-Native tests реконструируют hash и проверяют сохранение snapshot между процессами;
-CI45599360375 все jobs PASS. Runtime833c8e28 сохраняет Noto subset и FB2 preload.
-Теперь обоснован узкий device шаг: logs ON, A1/A2 close (prime snapshots), normal exit,
-reboot, manual A1/A2 close, diagnostics. Без очистки cache/layout changes/stopwatch matrix.
-Причина device mismatch остаётся открытой до сравнения inputs; speed fix не заявлен.
+[043: input inventory + optical scale](doc/reports/patch-series/043-214bf213-font-inventory-and-optical-scale.md).
+Upload214bf213 (folder2c1914e3, actual runtime833c8e28): initial rejected A1 preload/A2
+меняют только primitive font_list (и derived global/style), прочие inputs совпадают.
+Late disk A1/A2 all inputs match, paginate9/34ms; user reports fast after reboot.
+В архиве один explicit startup, timing перезагрузки уточнить без нового timing run.
+056 уменьшает RU декоративный serif на15% через QFont/QSS, сохраняет номинальный
+Instrument wordmark и избегает double-scale prefix. Нейтральный hint «Подготовка к чтению».
+Runtime7566324a/CI45607993683 all jobs PASS, standalone RU45609563281 PASS.
+Visual balance/other Noto widgets pending. Cache/preload guard не менялся, speed fix не заявлен.
 
 ## Очередь — порядок закрытия
 

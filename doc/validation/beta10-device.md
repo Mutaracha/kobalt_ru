@@ -64,3 +64,13 @@ About и closing wordmark. Кэш не очищать; timing matrix сейча�
 нужен actual saved snapshot. Metadata не используется для принятия layout. Old compatible
 cache может один раз дополнительно записаться при закрытии, без repagination. Все CI jobs
 PASS, device acceptance pending. Noto Regular+Italic/Instrument brand unchanged от2c1914e3.
+
+## Последний gate после upload214bf213: visual-only7566324a
+
+[Пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45607993683/artifacts/15018104913),
+[043](../reports/patch-series/043-214bf213-font-inventory-and-optical-scale.md).
+Проверить balance «Закрыть Kobalt»: RU Noto85%, Instrument wordmark unchanged.
+Проверить другие Noto widgets/tabs и hint «Подготовка к чтению». Italic semantics
+сохранены, classic Sans/book typography не менялись. Кэш не очищать; новый timing run
+не нужен. Late disk hits из upload all inputs match; initial font_list mismatch не
+объяснён конкретной face/path. Уточнить timing reboot устно, без требования повтора.
