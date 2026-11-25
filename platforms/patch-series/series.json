@@ -191,7 +191,7 @@
       "id": "059-ru-bundled-fonts-and-picker",
       "status": "ready",
       "path": "platforms/patch-series/patches/059-ru-bundled-fonts-and-picker.patch",
-      "sha256": "143fc802e777b0d1b9789325549db2fbf8a6209fad52d841c788a821e8f43de3",
+      "sha256": "e4fa3f2bf1f967e65ed872109c6c8e123fd3963a688a29083a10f63a7f0839ed",
       "scope": "RU NV Literata/KF Sable/NV Publica roles; remove redundant Literata/Lora; Cyrillic cmap picker filter; slightly larger close caption, wordmark unchanged",
       "validation": "CI pending"
     },

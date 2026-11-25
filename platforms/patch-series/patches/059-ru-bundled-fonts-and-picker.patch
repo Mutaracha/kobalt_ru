@@ -24595,7 +24595,7 @@ index 99ab6686..2432ba7f 100644
    ]
  }
 diff --git a/assets/manifest.json b/assets/manifest.json
-index ca9ef9ca..c4b95cfd 100644
+index ca9ef9ca..7cfc3a71 100644
 --- a/assets/manifest.json
 +++ b/assets/manifest.json
 @@ -45,46 +45,6 @@
@@ -24645,6 +24645,17 @@ index ca9ef9ca..c4b95cfd 100644
      {
        "path": "fonts/NotoNaskhArabic-Bold.ttf",
        "sha256": "04017b0ccdd1156dcde3bc386734c1b03165261762f16a025c8afc9088ae76e9",
+@@ -437,8 +397,8 @@
+     },
+     {
+       "path": "fonts/ebook-supplemental.json",
+-      "sha256": "1dd0904c424fc305914a470426ef19a4408dfb2946d1678975700adfa3177f71",
+-      "size": 8015
++      "sha256": "649000043c64cabe651324e2740a9b0efe4418464e57081ffdd32253b4f7d98f",
++      "size": 8746
+     },
+     {
+       "path": "fonts/ebook-supplemental/Cartisse-Bold.ttf",
 @@ -460,6 +420,26 @@
        "sha256": "8eac77e6acca81acea6d7d40ca09994984ac69ee0a06141917a9fd3ed9b99282",
        "size": 199520
@@ -25145,7 +25156,7 @@ index 129489f7..55e665cf 100644
                  "exit prefix double-scaled or Kobalt resized");
          AboutPage about;
 diff --git a/tests/model/ru_control_ui.cpp b/tests/model/ru_control_ui.cpp
-index 601707f4..ec6decc2 100644
+index 601707f4..bde98c07 100644
 --- a/tests/model/ru_control_ui.cpp
 +++ b/tests/model/ru_control_ui.cpp
 @@ -13,6 +13,7 @@
@@ -25188,7 +25199,7 @@ index 601707f4..ec6decc2 100644
 -    require(bundledFontFiles(test::readerAssets()).contains(test::readerAssets().file("fonts/Literata-Regular.ttf")) == ru
 -                    && bundledFontFiles(test::readerAssets()).contains(test::readerAssets().file("fonts/Lora-Italic.ttf")) == ru,
 -            "localized reading faces not available or leaked into EN inventory");
-+    require(visible.size() == (ru ? 4 : 19), "RU font exclusions or EN list isolation failed");
++    require(visible.size() == (ru ? 4 : 18), "RU font exclusions or EN list isolation failed");
 +    require(!QFileInfo::exists(test::readerAssets().file("fonts/Literata-Regular.ttf"))
 +                    && !QFileInfo::exists(test::readerAssets().file("fonts/Lora-Italic.ttf"))
 +                    && bundledFontFiles(test::readerAssets()).contains(test::readerAssets().file("fonts/ebook-supplemental/KF_Sable-Regular.ttf")),
