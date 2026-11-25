@@ -109,7 +109,7 @@ jobs:
           settings = {k: state.get(k, state.get('display_settings', {}).get(k)) for k in keys}
           settings = {k: v for k, v in settings.items() if v is not None}
           (root / 'settings.json').write_text(json.dumps(settings))
-          shutil.copytree('test & diagnostic/font Kobo/fonts', root / 'fonts', dirs_exist_ok=True)
+          shutil.copytree('test & diagnostic/fonts/Kobo/fonts', root / 'fonts', dirs_exist_ok=True)
           PYCODE
           root="$PWD/build/prepared-prefix"
           image=$(sh "$root/platforms/sdk-image.sh" linux)

@@ -62,11 +62,60 @@ index 0404ad70..678bbfd6 100644
      font.setUnderline(false);
      font.setOverline(false);
      font.setStrikeOut(false);
+diff --git a/src/ui/style/styles.h b/src/ui/style/styles.h
+index 84ac1985..e25196a4 100644
+--- a/src/ui/style/styles.h
++++ b/src/ui/style/styles.h
+@@ -42,7 +42,7 @@ inline QString caption(int pixels = metrics::chrome::captionText)
+ 
+ inline QString reader()
+ {
+-    return QString("QWidget{font-weight:400;font-family:\"%4\";background:palette(window);color:palette(window-text);} QPushButton{font-size:%1px;min-height:%2px;border:none;padding:%3px;} "
++    return QString("QWidget{font-weight:400;font-style:%5;font-family:\"%4\";background:palette(window);color:palette(window-text);} QPushButton{font-size:%1px;min-height:%2px;border:none;padding:%3px;} "
+                    "QPushButton:pressed{background:palette(midlight);} QPushButton:disabled{color:palette(mid);} QLabel{font-size:%1px;} "
+                    "QFrame#rrControlsTop,QFrame#rrControlsBottom,QFrame#rrMenu,QFrame#rrGeneralSettings{border:none;} "
+                    "QPushButton#rrReturn,QPushButton#rrChapters{font-weight:bold;} "
+@@ -50,7 +50,8 @@ inline QString reader()
+             .arg(int(metrics::text::body))
+             .arg(int(metrics::control::minimumHeight))
+             .arg(int(metrics::control::padding))
+-            .arg(QStringLiteral("@ui-font-family@"));
++            .arg(QStringLiteral("@ui-font-family@"))
++            .arg(interfaceFont().italic() ? "italic" : "normal");
+ }
+ 
+ inline QString segment()
+diff --git a/src/ui/controls/rows.cpp b/src/ui/controls/rows.cpp
+index 898ec912..de2b46b6 100644
+--- a/src/ui/controls/rows.cpp
++++ b/src/ui/controls/rows.cpp
+@@ -240,9 +240,9 @@ void ListRow::setLabelFont(PrivateTextLabel *label, int index, const QFont &font
+     family.replace('\\', "\\\\");
+     family.replace('"', "\\\"");
+     const auto style =
+-            QString("font-family:\"%1\";font-size:%2px;font-weight:400;font-style:normal;background:transparent;border:none;")
++            QString("font-family:\"%1\";font-size:%2px;font-weight:400;font-style:%3;background:transparent;border:none;")
+                     .arg(family)
+-                    .arg(font.pixelSize());
++                    .arg(font.pixelSize()).arg(font.italic() ? "italic" : "normal");
+     if (labelStyles[index] == style) {
+         return;
+     }
 diff --git a/tests/model/ru_control_ui.cpp b/tests/model/ru_control_ui.cpp
-index 3bb8bc17..a2b01b50 100644
+index 3bb8bc17..049297dd 100644
 --- a/tests/model/ru_control_ui.cpp
 +++ b/tests/model/ru_control_ui.cpp
-@@ -41,7 +41,17 @@ int main(int argc, char **argv)
+@@ -8,6 +8,9 @@
+ #include "app/reader/settings/settings_panel.h"
+ #include "ui/controls/options.h"
+ #include "app/reader/views/sleep_screen.h"
++#include "ui/style/styles.h"
++#include "ui/style/theme.h"
++#include <QLabel>
+ #include <QApplication>
+ #include <QDir>
+ #include <QPainter>
+@@ -41,7 +44,24 @@ int main(int argc, char **argv)
      require(reader::themePreset("classic").mainFace.isEmpty(),
              "Handwriting replacement changed the ordinary UI default");
      require(reader::themePreset("playful").mainFace == (language == strings::Locale::Russian
@@ -77,6 +126,13 @@ index 3bb8bc17..a2b01b50 100644
 +            "RU Shantell must be italic, English Kalam remains upright");
 +    require(!ui::interfaceInkBounds(QString::fromUtf8("Русский текст Ёж"), ui::interfaceFont(32)).isEmpty(),
 +            "RU handwriting failed to measure Cyrillic");
++    QWidget handwritingRoot;
++    QLabel handwritingLabel(QString::fromUtf8("Пример"), &handwritingRoot);
++    ui::readerStyle(&handwritingRoot, ui::styles::reader());
++    handwritingRoot.ensurePolished();
++    handwritingLabel.ensurePolished();
++    require(handwritingLabel.font().italic() == (language == strings::Locale::Russian),
++            "polished handwriting QLabel lost the locale italic style");
 +    ui::setInterfaceFontFamily({});
 +    require(!ui::interfaceFont(32).italic(), "handwriting italic leaked into classic UI");
 +    require(reader::customInterfaceStyle({{"ui_font_face", "Caveat"}}).mainFace

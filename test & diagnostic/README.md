@@ -42,3 +42,9 @@ startup/About, а не из имени upload commit. Последний diagnos
 Original screenshot retained alongside ZIP. Report043: font_list-only primitive mismatch
 initially, late A1/A2 disk-layout reuse9/34ms; user reports fast after reboot, explicit
 startup chronology incomplete. No cache clear or new timing matrix requested.
+
+## Font samples consolidated
+
+Current uploads now live in [fonts/](fonts/README.md): Shantell Sans, Noto Display,
+Kobo replay inventory and legacy Corsiva archive. Original bytes unchanged. Historical
+archive attachments remain in their provenance folders.

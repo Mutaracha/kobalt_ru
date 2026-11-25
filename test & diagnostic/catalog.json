@@ -110,78 +110,6 @@
       "archived": false
     },
     {
-      "path": "test & diagnostic/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Bold.ttf",
-      "bytes": 430864,
-      "sha256": "7fefed405cfe66604181661ef754b81886ce6d4f83f7f92d94231dc23cfb665e",
-      "versions": [],
-      "source_commits": [],
-      "archived": false
-    },
-    {
-      "path": "test & diagnostic/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-BoldItalic.ttf",
-      "bytes": 447292,
-      "sha256": "8a900ceaa0bdc87d6e9d0a95d0a5ea3023fdf65170242d588ade030bea5949b8",
-      "versions": [],
-      "source_commits": [],
-      "archived": false
-    },
-    {
-      "path": "test & diagnostic/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Italic.ttf",
-      "bytes": 447160,
-      "sha256": "6ba708fbcf00c8f4cca6be85662b0258df05596a58e684f59d3497f26e945cef",
-      "versions": [],
-      "source_commits": [],
-      "archived": false
-    },
-    {
-      "path": "test & diagnostic/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Light.ttf",
-      "bytes": 430616,
-      "sha256": "8babdbd09ce0ad8d68cf791a3d9a7fe3d8206a16525db59185316fdc3b765373",
-      "versions": [],
-      "source_commits": [],
-      "archived": false
-    },
-    {
-      "path": "test & diagnostic/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-LightItalic.ttf",
-      "bytes": 447540,
-      "sha256": "90d295b1175f29a42f931d957406a1cf4ae03aa8ecce04bd14fc3642c7969ef9",
-      "versions": [],
-      "source_commits": [],
-      "archived": false
-    },
-    {
-      "path": "test & diagnostic/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Medium.ttf",
-      "bytes": 430904,
-      "sha256": "25f3e9693619ee72f98cd2890d2d388d9dda09dd5c2c0c3eec0f7a52f3ea136c",
-      "versions": [],
-      "source_commits": [],
-      "archived": false
-    },
-    {
-      "path": "test & diagnostic/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-MediumItalic.ttf",
-      "bytes": 447592,
-      "sha256": "3871f202f4868fc5c1e95eb11227190b9cc7d1a1b762213e20042c7bab525b13",
-      "versions": [],
-      "source_commits": [],
-      "archived": false
-    },
-    {
-      "path": "test & diagnostic/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Regular.ttf",
-      "bytes": 430852,
-      "sha256": "f72663e6fc3ee44b7dc1503e49fcec79200a6d9b4277ced3acf12518da67b490",
-      "versions": [],
-      "source_commits": [],
-      "archived": false
-    },
-    {
-      "path": "test & diagnostic/Noto Serif Display Condensed/OFL.txt",
-      "bytes": 4445,
-      "sha256": "f7933a8d153874eb029b1b74eb9baa002543cabfd4e3388be5f9158055468d71",
-      "versions": [],
-      "source_commits": [],
-      "archived": false
-    },
-    {
       "path": "test & diagnostic/Sorokin_Norma-Tridcataya-lyubov-Mariny-Goluboe-salo-Den-oprichnika-Saharnyy-Kreml.3nbKGQ.593957.fb2",
       "bytes": 4097199,
       "sha256": "b9742fa797a1736b9a4adb4132f137e06445a8f1fc000c41dc46ca3d21a22c90",
@@ -837,7 +765,15 @@
       "archived": false
     },
     {
-      "path": "test & diagnostic/font Kobo/fonts/FiraCode-Bold.ttf",
+      "path": "test & diagnostic/fonts/Kobo/README.md",
+      "bytes": 474,
+      "sha256": "750604b415ffcb1e091f55fc0114a0782b35cded748da7c0aaae48ce57d1a8f0",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraCode-Bold.ttf",
       "bytes": 319368,
       "sha256": "41f6554e845e2f5b70adad3950122334b866aac436793b7742ade600067701be",
       "versions": [],
@@ -845,7 +781,7 @@
       "archived": false
     },
     {
-      "path": "test & diagnostic/font Kobo/fonts/FiraCode-Medium.ttf",
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraCode-Medium.ttf",
       "bytes": 283684,
       "sha256": "97091f90623661fb4f7979c10d188f30f4806d8ce326b0bc8d1acc79dcc20d8f",
       "versions": [],
@@ -853,7 +789,7 @@
       "archived": false
     },
     {
-      "path": "test & diagnostic/font Kobo/fonts/FiraCode-Regular.ttf",
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraCode-Regular.ttf",
       "bytes": 289624,
       "sha256": "5992ab9640e2df491b2f609467b1de60e8bc39b2c28db184342a0592d98f6117",
       "versions": [],
@@ -861,7 +797,7 @@
       "archived": false
     },
     {
-      "path": "test & diagnostic/font Kobo/fonts/FiraSans-Bold.ttf",
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraSans-Bold.ttf",
       "bytes": 473876,
       "sha256": "74b477a3e2b7c745e6dac8c01764c8fd82e53763b47ef1eccd24dce36d2ff71f",
       "versions": [],
@@ -869,7 +805,7 @@
       "archived": false
     },
     {
-      "path": "test & diagnostic/font Kobo/fonts/FiraSans-BoldItalic.ttf",
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraSans-BoldItalic.ttf",
       "bytes": 491048,
       "sha256": "8049b15ea03da7982db1152a9927911c47e0a92dc5ed434fa329b143a99b6adb",
       "versions": [],
@@ -877,7 +813,7 @@
       "archived": false
     },
     {
-      "path": "test & diagnostic/font Kobo/fonts/FiraSans-Italic.ttf",
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraSans-Italic.ttf",
       "bytes": 456436,
       "sha256": "e48b22ba7f2eab682501ba01b3ddfdbf65dadfafa74d9b2efe1879eb949b5c69",
       "versions": [],
@@ -885,7 +821,7 @@
       "archived": false
     },
     {
-      "path": "test & diagnostic/font Kobo/fonts/FiraSans-Regular.ttf",
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraSans-Regular.ttf",
       "bytes": 440984,
       "sha256": "3dabf3d48bf4599f95cffd92f99ea426a014d5311f52a5eb5ec3af265e97cd97",
       "versions": [],
@@ -893,7 +829,127 @@
       "archived": false
     },
     {
-      "path": "test & diagnostic/monotype-corsiva.zip",
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Bold.ttf",
+      "bytes": 430864,
+      "sha256": "7fefed405cfe66604181661ef754b81886ce6d4f83f7f92d94231dc23cfb665e",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-BoldItalic.ttf",
+      "bytes": 447292,
+      "sha256": "8a900ceaa0bdc87d6e9d0a95d0a5ea3023fdf65170242d588ade030bea5949b8",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Italic.ttf",
+      "bytes": 447160,
+      "sha256": "6ba708fbcf00c8f4cca6be85662b0258df05596a58e684f59d3497f26e945cef",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Light.ttf",
+      "bytes": 430616,
+      "sha256": "8babdbd09ce0ad8d68cf791a3d9a7fe3d8206a16525db59185316fdc3b765373",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-LightItalic.ttf",
+      "bytes": 447540,
+      "sha256": "90d295b1175f29a42f931d957406a1cf4ae03aa8ecce04bd14fc3642c7969ef9",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Medium.ttf",
+      "bytes": 430904,
+      "sha256": "25f3e9693619ee72f98cd2890d2d388d9dda09dd5c2c0c3eec0f7a52f3ea136c",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-MediumItalic.ttf",
+      "bytes": 447592,
+      "sha256": "3871f202f4868fc5c1e95eb11227190b9cc7d1a1b762213e20042c7bab525b13",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Regular.ttf",
+      "bytes": 430852,
+      "sha256": "f72663e6fc3ee44b7dc1503e49fcec79200a6d9b4277ced3acf12518da67b490",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/OFL.txt",
+      "bytes": 4445,
+      "sha256": "f7933a8d153874eb029b1b74eb9baa002543cabfd4e3388be5f9158055468d71",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/README.md",
+      "bytes": 368,
+      "sha256": "b751e59aa8c2cdf0fb3786c282254dddac0fae3c0b805980458366780c86d64c",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Shantell Sans/ShantellSans-Bold.ttf",
+      "bytes": 397764,
+      "sha256": "2c2607a8b400f573ffd43bfebc44fad7621945b95cd9e1ceadc430699a001280",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Shantell Sans/ShantellSans-Italic.ttf",
+      "bytes": 408028,
+      "sha256": "ae42adb94b1f8eb0385fd1bacbfe8c2c9d686aaa4495388537e7863fc76f537a",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Shantell Sans/ShantellSans-Medium.ttf",
+      "bytes": 397816,
+      "sha256": "7ebc788f9f5e20a214646c5ffab6a3c98cbbd958ed7c7d2c4b2531de34d888ce",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Shantell Sans/ShantellSans-MediumItalic.ttf",
+      "bytes": 408248,
+      "sha256": "6ab27a5ea7a26ea1f988e2eaa394c614521f1ec9339ba976e3203d8df2463fdf",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Shantell Sans/ShantellSans-Regular.ttf",
+      "bytes": 397656,
+      "sha256": "84c3c95a452fbeb3819ed0bb3cd1190adec43595601d13b4b7c9f603731685ed",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/legacy/monotype-corsiva.zip",
       "bytes": 297620,
       "sha256": "c410f0fb20fb7191da95e67c9df20667d16baebbb42a84168315d93f4dc9f5d4",
       "versions": [],

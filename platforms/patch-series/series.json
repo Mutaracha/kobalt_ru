@@ -175,7 +175,7 @@
       "id": "057-ru-shantell-italic",
       "status": "ready",
       "path": "platforms/patch-series/patches/057-ru-shantell-italic.patch",
-      "sha256": "bea7c9df829e81920b3c0bc839e5af125bf1f13c7afd47cd7736ff04ec6caa76",
+      "sha256": "6a2a68ca792795fba9aa7a95642baa9b78d15ee7186352902af31e1c75588d91",
       "scope": "RU handwriting preset uses real Shantell Sans Italic instead of Caveat; remove Caveat faces/notice, retain English Kalam and classic UI",
       "validation": "CI pending"
     },
