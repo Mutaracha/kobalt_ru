@@ -24994,10 +24994,26 @@ index aff4720a..8ca3151c 100644
          QFile font(path);
          if (!font.open(QIODevice::ReadOnly))
 diff --git a/src/assets/bundled_fonts.cpp b/src/assets/bundled_fonts.cpp
-index d3e0b8ec..dcd0d720 100644
+index d3e0b8ec..6d83052d 100644
 --- a/src/assets/bundled_fonts.cpp
 +++ b/src/assets/bundled_fonts.cpp
-@@ -38,9 +38,7 @@ QStringList fontFiles(File file)
+@@ -28,8 +28,13 @@ QStringList fontFiles(File file)
+             continue;
+         const auto entries =
+                 QJsonDocument::fromJson(manifest.readAll()).object().value("files").toArray();
+-        for (const auto &entry : entries)
+-            add(file(base + "/" + entry.toObject().value("file").toString()));
++        for (const auto &entry : entries) {
++            const auto name = entry.toObject().value("file").toString();
++            if (name.startsWith("KF_Sable-")
++                    && kobalt::strings::locale() != kobalt::strings::Locale::Russian)
++                continue;
++            add(file(base + "/" + name));
++        }
+     }
+     for (const auto *face : { "Regular", "Italic", "Bold" })
+         add(file(QString("fonts/IBMPlexSans-%1.ttf").arg(face)));
+@@ -38,9 +43,7 @@ QStringList fontFiles(File file)
      if (kobalt::strings::locale() == kobalt::strings::Locale::Russian) {
          add(file(QStringLiteral("fonts/ShantellSans-Italic.ttf")));
          add(file(QStringLiteral("fonts/ShantellSans-BoldItalic.ttf")));
@@ -25156,7 +25172,7 @@ index 129489f7..55e665cf 100644
                  "exit prefix double-scaled or Kobalt resized");
          AboutPage about;
 diff --git a/tests/model/ru_control_ui.cpp b/tests/model/ru_control_ui.cpp
-index 601707f4..bde98c07 100644
+index 601707f4..3be77ccd 100644
 --- a/tests/model/ru_control_ui.cpp
 +++ b/tests/model/ru_control_ui.cpp
 @@ -13,6 +13,7 @@
@@ -25202,7 +25218,7 @@ index 601707f4..bde98c07 100644
 +    require(visible.size() == (ru ? 4 : 18), "RU font exclusions or EN list isolation failed");
 +    require(!QFileInfo::exists(test::readerAssets().file("fonts/Literata-Regular.ttf"))
 +                    && !QFileInfo::exists(test::readerAssets().file("fonts/Lora-Italic.ttf"))
-+                    && bundledFontFiles(test::readerAssets()).contains(test::readerAssets().file("fonts/ebook-supplemental/KF_Sable-Regular.ttf")),
++                    && (bundledFontFiles(test::readerAssets()).contains(test::readerAssets().file("fonts/ebook-supplemental/KF_Sable-Regular.ttf")) == ru),
 +            "redundant faces remain or uploaded KF Sable unavailable");
 +    const ReadingFont latin{"Latin sample", {test::readerAssets().file("fonts/Kalam-Regular.ttf")}, FontOrigin::Interface, {}, {}};
 +    const ReadingFont cyrillic{"Cyrillic sample", {test::readerAssets().file("fonts/ebook-core/NV_Literata-Regular.ttf")}, FontOrigin::Interface, {}, {}};
