@@ -1,0 +1,127 @@
+diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.cpp
+index fa0d5ad4..5e2632e9 100644
+--- a/tests/model/fb2_cache_session.cpp
++++ b/tests/model/fb2_cache_session.cpp
+@@ -15,6 +15,8 @@
+ #include <QJsonArray>
+ #include <lvstring.h>
+ #include <cstring>
++#include "reading/rendering_mode.h"
++#include "engine/blaze/adapter/engine_document.h"
+ 
+ using namespace kobalt;
+ namespace {
+@@ -157,6 +159,105 @@ QJsonObject cycle(const QString &path, const QString &cache, QJsonObject saved,
+     drain();
+     return state;
+ }
++void hybridSessionGates()
++{
++    qputenv("KOBALT_FB2_HYBRID", "1");
++    qputenv("KOBALT_CHAPTER_PAGES", "2");
++    renderingMode::setOverride(2);
++    renderingMode::setBuildQuietMilliseconds(0);
++    QTemporaryDir root;
++    require(root.isValid(), "hybrid session directory");
++    QByteArray bytes("<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
++                     "<description><title-info><book-title>Hybrid gates</book-title>"
++                     "<lang>en</lang></title-info></description><body><section>");
++    for (int n = 0; n < 1500; ++n)
++        bytes += "<p>Hybrid gate paragraph " + QByteArray::number(n)
++                + " with sufficient text to exercise prefix count publication and access revocation.</p>";
++    bytes += "</section></body></FictionBook>";
++    const auto path = root.filePath("hybrid.fb2");
++    { QFile file(path); require(file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size(),
++                                "write hybrid session source"); }
++    int exactPages = 0;
++    {
++        EngineDocument full(test::readerFonts());
++        QString error;
++        require(full.open(bytes, {600, 800}, {{"koblaze_first_spine_item", -1}}, &error), qPrintable(error));
++        exactPages = full.pages();
++    }
++    // One real resource-backed session publishes a pending count, then the
++    // final count, without falsely declaring its short prefix the whole book.
++    {
++        ReaderSession reader(test::readerFonts(), test::readerPlaceholder());
++        auto lease = std::make_shared<SourceLease>();
++        bool opened = false;
++        reader.open({path, path, QSize(600, 800), {}, {}, lease, localResourceFactory(path, lease)},
++                    [&](OpeningResult result) {
++            require(result.ready(), qPrintable(openingMessage(result)));
++            require(reader.continuesAfter() && reader.paginationPending(),
++                    "cold FB2 prefix did not publish pending pagination");
++            require(reader.bookPages() == 0 || reader.bookPagesEstimated(),
++                    "cold FB2 prefix advertised a false exact whole-book count");
++            opened = true;
++        });
++        waitUntil([&] { return opened && !reader.busy(); });
++        const auto image = reader.image();
++        const auto anchor = reader.state().value("position");
++        reader.requestMenuPagination();
++        waitUntil([&] { return !reader.paginationPending(); });
++        require(reader.state().value("whole_book_ready").toBool()
++                        && !reader.bookPagesEstimated() && reader.bookPages() == exactPages,
++                "FB2 session did not publish final Accurate whole-book count");
++        require(reader.image() == image && reader.state().value("position") == anchor,
++                "count publication moved or repainted the reader passage");
++        require(reader.turn(1), "FB2 session cannot adopt full book on turn");
++        waitUntil([&] { return !reader.busy(); });
++        require(!reader.continuesAfter() && reader.bookPages() == exactPages
++                        && !reader.bookPagesEstimated(), "full adoption regressed final page count");
++    }
++    drain();
++    // Revoke while an opened resource-backed prefix still owns queued idle
++    // work. The drain barrier must not publish a final count or a stale frame.
++    for (bool cancel : {false, true}) {
++        auto reader = std::make_unique<ReaderSession>(test::readerFonts(), test::readerPlaceholder());
++        auto lease = std::make_shared<SourceLease>();
++        auto local = localResourceFactory(path, lease);
++        std::weak_ptr<ResourceCache> lifetime;
++        ResourceFactory tracked = [local, &lifetime](const QMap<QString, qint64> &sizes,
++                                                    const QString &version,
++                                                    std::shared_ptr<std::atomic_bool> stopped) {
++            auto cache = local(sizes, version, stopped);
++            lifetime = cache;
++            return cache;
++        };
++        bool opened = false;
++        QJsonObject before;
++        QImage beforeImage;
++        int updates = 0;
++        reader->open({path, path, QSize(600, 800), {}, {}, lease, tracked}, [&](OpeningResult result) {
++            require(result.ready() && reader->paginationPending(), "revoke test did not open a pending prefix");
++            reader->requestMenuPagination();
++            if (cancel) reader->cancelSource(); else reader->revokeSource();
++            before = reader->state();
++            beforeImage = reader->image();
++            reader->updated = [&] { ++updates; };
++            opened = true;
++        });
++        waitUntil([&] { return opened; });
++        drain();
++        require(lease->end() == (cancel ? SourceLease::End::Cancelled : SourceLease::End::Revoked),
++                "FB2 cleanup lost the source termination cause");
++        require(!reader->turn(1) && reader->state() == before && reader->image() == beforeImage
++                        && updates == 0, "revoked FB2 published stale work or accepted a turn");
++        reader.reset();
++        drain();
++        require(lifetime.expired(), "closed FB2 session retained resource cache after drain");
++    }
++    renderingMode::setOverride(-1);
++    renderingMode::setBuildQuietMilliseconds(-1);
++    qunsetenv("KOBALT_FB2_HYBRID");
++    qunsetenv("KOBALT_CHAPTER_PAGES");
++}
++
+ }
+ int main(int argc, char **argv)
+ {
+@@ -245,6 +346,7 @@ int main(int argc, char **argv)
+             app.quit();
+             return;
+         }
++        hybridSessionGates();
+         // Isolate the existing same-process cold/warm/source-mutation checks.
+         require(QDir(cache).removeRecursively(), "clear only the temporary test cache");
+         auto saved = cycle(path, cache, {}, false);

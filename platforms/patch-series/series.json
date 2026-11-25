@@ -140,6 +140,14 @@
       "validation": "CI pending; conservative full fallback allowed; no production change"
     },
     {
+      "id": "046-fb2-session-hybrid-gates",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/046-fb2-session-hybrid-gates.patch",
+      "sha256": "0d9f27f365f8358d32b2f35f018accd1f1c5591fe71da0864e286c191a6fab9a",
+      "scope": "Tests only: resource-backed FB2 pending/final count publication, cancellation/revocation stale-work refusal and close/drain release",
+      "validation": "CI pending"
+    },
+    {
       "id": "050-fork-presentation",
       "status": "ready",
       "scope": "Remaining approved brand/About/annotation/UI/locale differences, excluding those already in 010-ru; exclude redundant Russian_EnUS.pattern and its fork-only manifest/notice/list entries, preserve Russian.pattern and translation dictionaries",
@@ -162,6 +170,14 @@
       "sha256": "83be0c9f7affc3bb0406d8bb7a403e3bf3104e7cfd8cc48247223ca6bd464c29",
       "scope": "Apply 85 percent optical size to RU decorative serif role in QFont/QSS, preserve nominal Instrument wordmark and avoid double scaling mixed exit text",
       "validation": "CI/device pending; RU reopening hint changed to neutral preparation wording in canonical overlay."
+    },
+    {
+      "id": "057-ru-shantell-italic",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/057-ru-shantell-italic.patch",
+      "sha256": "bea7c9df829e81920b3c0bc839e5af125bf1f13c7afd47cd7736ff04ec6caa76",
+      "scope": "RU handwriting preset uses real Shantell Sans Italic instead of Caveat; remove Caveat faces/notice, retain English Kalam and classic UI",
+      "validation": "CI pending"
     },
     {
       "id": "060-build-integration",
