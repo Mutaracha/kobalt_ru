@@ -99,8 +99,9 @@ compile/check-package/configured refresh-qemu/package collection.
 [Qt5 package15029143933](https://github.com/Mutaracha/kobalt_ru/actions/runs/45629224994/artifacts/15029143933),45030076bytes.
 Host evidence15028919763,12313bytes. Earlier45627279171 also passed before Bold Italic.
 New Literata samples and Shantell OFL uploaded during the final run are preserved and
-audited/catalogued only; they do not change this runtime. Supplied Shantell OFL matches
-the packaged notice after CRLF/LF normalization (original upload preserved).
+audited/catalogued only; they do not change this runtime. Supplied Shantell OFL has the same copyright/license terms; aside from line endings,
+its FAQ URL is https://openfontlicense.org instead of the older scripts.sil.org/OFL
+in the Google-fonts notice. Both originals are preserved.
 Manifest hashes and absence of Caveat final font assets checked locally. Full-series
 runtime package, not the standalone historical RU control overlay, is the deliverable.
 On device: select RU Playful, verify Shantell italic in ordinary controls/settings and
