@@ -8,7 +8,7 @@
       "id": "010-ru",
       "status": "ready",
       "path": "platforms/control-beta10/ru.patch",
-      "sha256": "570f89db2713fa6687a56a43a615252bfae97571b1f0e3fb8caf858f51254b75",
+      "sha256": "5b4d7a16354c6d23cc92d054fac4295689619cd36ac19dea88479d38d9cf07e3",
       "scope": "Reviewed beta10 RU overlay, including its existing font/presentation fixes"
     },
     {
@@ -138,6 +138,14 @@
       "sha256": "c91aecdf917a46fd35782f06ecb59e6892fd797ef64ee75fdefe5c747e822296",
       "scope": "Replace Russian Monotype Corsiva assets/role with Noto Serif Display Condensed Regular+Italic only; retain literal Instrument Serif wordmark and upstream italic semantics",
       "validation": "CI and device pending; opening-label italics restored to beta10 conditional, existing italic brand requests retained. Removes Corsiva runtime asset/notice."
+    },
+    {
+      "id": "056-ru-serif-optical-scale",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/056-ru-serif-optical-scale.patch",
+      "sha256": "83be0c9f7affc3bb0406d8bb7a403e3bf3104e7cfd8cc48247223ca6bd464c29",
+      "scope": "Apply 85 percent optical size to RU decorative serif role in QFont/QSS, preserve nominal Instrument wordmark and avoid double scaling mixed exit text",
+      "validation": "CI/device pending; RU reopening hint changed to neutral preparation wording in canonical overlay."
     },
     {
       "id": "060-build-integration",

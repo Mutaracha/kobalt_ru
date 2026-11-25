@@ -1453,7 +1453,7 @@
 "chapter_graph.show_more_chapters" = "Больше глав";
 "chapter_graph.show_wider_bars" = "Более широкие столбцы глав";
 "opening.preparing" = "Подготовка книги";
-"opening.reopening" = "Повторное открытие книги";
+"opening.reopening" = "Подготовка к чтению";
 "reader.choose_typeface" = "Выберите шрифт";
 "settings.section_opening" = "Открытие книг";
 "settings.opening_cover" = "Не показывать обложку при открытии";
