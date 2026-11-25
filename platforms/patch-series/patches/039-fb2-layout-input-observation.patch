@@ -1,0 +1,271 @@
+diff --git a/src/engine/blaze/adapter/reader_source.cpp b/src/engine/blaze/adapter/reader_source.cpp
+index d075ef70..4271624d 100644
+--- a/src/engine/blaze/adapter/reader_source.cpp
++++ b/src/engine/blaze/adapter/reader_source.cpp
+@@ -947,8 +947,17 @@ bool EngineDocument::openSource(std::shared_ptr<ReaderSource> source, QSize size
+     document->koblazeResetRenderCheck();
+     engine_->Render();
+     const auto &renderCheck = document->koblazeRenderCheck();
++    QJsonObject currentInputs, savedInputs;
++    for (int i = 0; i < KoblazeStyleInputs::count; ++i) {
++        const auto key = QString::fromLatin1(KoblazeStyleInputs::name(i));
++        currentInputs[key] = double(renderCheck.inputs.values[i]);
++        if (renderCheck.savedInputsValid)
++            savedInputs[key] = double(renderCheck.savedInputs.values[i]);
++    }
+     const auto layoutCheck = qt::object({
+         { "checks", renderCheck.checks }, { "rejected", renderCheck.rejected },
++        { "inputs", currentInputs }, { "saved_inputs", savedInputs },
++        { "saved_inputs_valid", renderCheck.savedInputsValid },
+         { "reasons", renderCheck.reasons }, { "policy_match", sameRenderingPolicy },
+         { "style", double(renderCheck.style) }, { "saved_style", double(renderCheck.savedStyle) },
+         { "stylesheet", double(renderCheck.sheet) }, { "saved_stylesheet", double(renderCheck.savedSheet) },
+diff --git a/src/engine/blaze/crengine/include/lvtinydom.h b/src/engine/blaze/crengine/include/lvtinydom.h
+index 3f1fac20..0bc4e77f 100644
+--- a/src/engine/blaze/crengine/include/lvtinydom.h
++++ b/src/engine/blaze/crengine/include/lvtinydom.h
+@@ -543,6 +543,22 @@ struct ldomNode;
+ #define TNC_PART_LEN (1<<TNC_PART_SHIFT)
+ #define TNC_PART_MASK (TNC_PART_LEN-1)
+ /// storage of ldomNode
++// Observation-only operands of the existing style hash. Not a cache-admission key.
++struct KoblazeStyleInputs {
++    static constexpr int count = 26;
++    lUInt32 values[count] = {};
++    static const char *name(int i) {
++        static const char *const names[count] = {
++            "format", "kerning", "fractional", "mono_scale", "fallback_adjusted", "font_list",
++            "base_weight", "optical_fixed", "dpi", "language", "hyphen_left", "hyphen_right",
++            "trust_soft_hyphens", "user_hyphenation", "rendered", "node", "global", "image_scale",
++            "space_scale", "min_space", "unused_space", "cjk_scale", "render_flags", "interline",
++            "style", "doc_flags"
++        };
++        return names[i];
++    }
++};
++
+ class tinyNodeCollection
+ {
+     friend struct ldomNode;
+@@ -621,6 +637,7 @@ protected:
+     bool saveStylesData();
+     bool loadStylesData();
+     bool updateLoadedStyles( bool enabled );
++    KoblazeStyleInputs _koblazeStyleInputs;
+     lUInt32 calcStyleHash(bool already_rendered, lUInt32 force_node_style_hash=0);
+     // Blaze: saves the node data in steps, so a time limit can stop it and a later
+     // call goes on at _nextNodeDataBlock. Upstream has one call that saves everything.
+@@ -3057,12 +3074,15 @@ public:
+     void setTocFromCacheValid() { _toc_from_cache_valid = true; }
+ 
+     /// save document formatting parameters after render
++    void koblazeRememberStyleInputs();
+     void updateRenderContext();
+     /// check document formatting parameters before render - whether we need to reformat; returns false if render is necessary
+     bool checkRenderContext();
+     // Per-document, non-serialized observation only. Never used to admit a cache.
+     struct KoblazeRenderCheck {
+         int checks = 0, rejected = 0, reasons = 0;
++        KoblazeStyleInputs inputs, savedInputs;
++        bool savedInputsValid = false;
+         lUInt32 style = 0, savedStyle = 0, sheet = 0, savedSheet = 0;
+         lUInt32 flags = 0, savedFlags = 0;
+         int width = 0, savedWidth = 0, height = 0, savedHeight = 0;
+diff --git a/src/engine/blaze/crengine/src/lvtinydom.cpp b/src/engine/blaze/crengine/src/lvtinydom.cpp
+index d89d418e..f1eb6f1d 100644
+--- a/src/engine/blaze/crengine/src/lvtinydom.cpp
++++ b/src/engine/blaze/crengine/src/lvtinydom.cpp
+@@ -460,28 +460,33 @@ static lUInt32 calcHash(const lUInt8 * s, int len)
+ {
+     return XXH32(s, len, 0);
+ }
+-lUInt32 calcGlobalSettingsHash(int documentId, bool already_rendered)
++lUInt32 calcGlobalSettingsHash(int documentId, bool already_rendered, KoblazeStyleInputs &inputs)
+ {
+-    lUInt32 hash = FORMATTING_VERSION_ID;
++    const auto observe = [&inputs](int i, lUInt32 value) {
++        inputs.values[i] = value;
++        return value;
++    };
++    inputs.values[14] = already_rendered;
++    lUInt32 hash = observe(0, FORMATTING_VERSION_ID);
+     // if ( fontMan->getKerning() )
+     //     hash += 127365;
+-    hash = hash * 31 + (int)fontMan->GetKerningMode();
++    hash = hash * 31 + observe(1, (int)fontMan->GetKerningMode());
+     // All enabled strengths preserve fractional layout; only enabling or
+     // disabling it changes measurements.
+-    hash = hash * 31 + (fontMan->GetFractionalGlyphPositioning() != 0);
+-    hash = hash * 31 + fontMan->GetMonospaceSizeScale();
+-    hash = hash * 31 + (int)fontMan->GetFallbackFontSizesAdjusted();
+-    hash = hash * 31 + fontMan->GetFontListHash(documentId);
++    hash = hash * 31 + observe(2, (fontMan->GetFractionalGlyphPositioning() != 0));
++    hash = hash * 31 + observe(3, fontMan->GetMonospaceSizeScale());
++    hash = hash * 31 + observe(4, (int)fontMan->GetFallbackFontSizesAdjusted());
++    hash = hash * 31 + observe(5, fontMan->GetFontListHash(documentId));
+     // Hinting mode change does not need to trigger a re-render, as since
+     // we use FT_LOAD_TARGET_LIGHT, hinting has no effect on the x-axis
+     // and should not change glyph advances, so it should not change line
+     // layout and paragraphs' heights. We just need to _renderedBlockCache.clear()
+     // when hinting mode is changed to reformat paragraphs.
+     // hash = hash * 31 + (int)fontMan->GetHintingMode();
+-    hash = hash * 31 + LVRendGetBaseFontWeight();
++    hash = hash * 31 + observe(6, LVRendGetBaseFontWeight());
+     // Blaze: the optical size setting changes glyphs and layout.
+-    hash = hash * 31 + (lUInt32)(LVRendGetFontOpticalSize() * 65536);
+-    hash = hash * 31 + gRenderDPI;
++    hash = hash * 31 + observe(7, (lUInt32)(LVRendGetFontOpticalSize() * 65536));
++    hash = hash * 31 + observe(8, gRenderDPI);
+     // If not yet rendered (initial loading with XML parsing), we can
+     // ignore some global flags that have not yet produced any effect,
+     // so they can possibly be updated between loading and rendering
+@@ -494,11 +499,11 @@ lUInt32 calcGlobalSettingsHash(int documentId, bool already_rendered)
+     // above if we ever need to reset them in between these phases;
+     // just be certain they are really not used in the first phase.)
+     if ( already_rendered ) {
+-        hash = hash * 31 + TextLangMan::getHash();
+-        hash = hash * 31 + HyphMan::getLeftHyphenMin();
+-        hash = hash * 31 + HyphMan::getRightHyphenMin();
+-        hash = hash * 31 + HyphMan::getTrustSoftHyphens();
+-        hash = hash * 31 + UserHyphDict::getHash();
++        hash = hash * 31 + observe(9, TextLangMan::getHash());
++        hash = hash * 31 + observe(10, HyphMan::getLeftHyphenMin());
++        hash = hash * 31 + observe(11, HyphMan::getRightHyphenMin());
++        hash = hash * 31 + observe(12, HyphMan::getTrustSoftHyphens());
++        hash = hash * 31 + observe(13, UserHyphDict::getHash());
+     }
+     /*
+     printf("  %d %d %d %d %d %d %d %d %d %d %d %d\n",
+@@ -19230,7 +19235,8 @@ lUInt32 tinyNodeCollection::calcStyleHash(bool already_rendered, lUInt32 force_n
+     CRLog::debug("calcStyleHash start");
+ //    int maxlog = 20;
+     lUInt32 res = 0; //_elemCount;
+-    lUInt32 globalHash = calcGlobalSettingsHash(getFontContextDocIndex(), already_rendered);
++    _koblazeStyleInputs = KoblazeStyleInputs();
++    lUInt32 globalHash = calcGlobalSettingsHash(getFontContextDocIndex(), already_rendered, _koblazeStyleInputs);
+     lUInt32 docFlags = getDocFlags();
+     //CRLog::info("Calculating style hash...  elemCount=%d, globalHash=%08x, docFlags=%08x", _elemCount, globalHash, docFlags);
+     if (_nodeStyleHash) {
+@@ -19305,7 +19311,19 @@ lUInt32 tinyNodeCollection::calcStyleHash(bool already_rendered, lUInt32 force_n
+         CRLog::debug("  COMPUTED _nodeDisplayStyleHash %x (initial: %x)", _nodeDisplayStyleHash, _nodeDisplayStyleHashInitial);
+     }
+     CRLog::info("Calculating style hash...  elemCount=%d, globalHash=%08x, docFlags=%08x, nodeStyleHash=%08x", _elemCount, globalHash, docFlags, res);
+-    res = res * 31 + _imgScalingOptions.getHash();
++    auto &parts = _koblazeStyleInputs.values;
++    parts[15] = res;
++    parts[16] = globalHash;
++    const auto imageHash = _imgScalingOptions.getHash();
++    parts[17] = imageHash;
++    parts[18] = _spaceWidthScalePercent;
++    parts[19] = _minSpaceCondensingPercent;
++    parts[20] = _unusedSpaceThresholdPercent;
++    parts[21] = _cjkWidthScalePercent;
++    parts[22] = _renderBlockRenderingFlags;
++    parts[23] = _interlineScaleFactor;
++    parts[25] = docFlags;
++    res = res * 31 + imageHash;
+     res = res * 31 + _spaceWidthScalePercent;
+     res = res * 31 + _minSpaceCondensingPercent;
+     res = res * 31 + _unusedSpaceThresholdPercent;
+@@ -19326,6 +19344,7 @@ lUInt32 tinyNodeCollection::calcStyleHash(bool already_rendered, lUInt32 force_n
+     res = res * 31 + _interlineScaleFactor;
+ 
+     res = (res * 31 + globalHash) * 31 + docFlags;
++    parts[24] = res;
+ //    CRLog::info("Calculated style hash = %08x", res);
+     CRLog::debug("calcStyleHash done");
+     // printf("end %x %x\n", res, _nodeDisplayStyleHash);
+@@ -20078,6 +20097,17 @@ bool ldomDocCache::enabled()
+ 
+ #if BUILD_LITE!=1
+ 
++// Optional document properties: old caches remain readable. Never consult these
++// values to accept layout; anchor them to the actual header hash before reporting.
++void ldomDocument::koblazeRememberStyleInputs()
++{
++    for (int i = 0; i < KoblazeStyleInputs::count; ++i) {
++        lString8 key("kobalt.layout-observation.v1.");
++        key += KoblazeStyleInputs::name(i);
++        getProps()->setInt64(key.c_str(), _koblazeStyleInputs.values[i]);
++    }
++}
++
+ /// save document formatting parameters after render
+ void ldomDocument::updateRenderContext()
+ {
+@@ -20100,6 +20130,7 @@ void ldomDocument::updateRenderContext()
+     CRLog::info("Updating render properties: styleHash=%x, stylesheetHash=%x, docflags=%x, width=%x, height=%x, nodeDisplayStyleHash=%x",
+                 _hdr.render_style_hash, _hdr.stylesheet_hash, _hdr.render_docflags, _hdr.render_dx, _hdr.render_dy, _hdr.node_displaystyle_hash);
+     _doc_rendering_hash = _hdr.getRenderingHash();
++    koblazeRememberStyleInputs();
+ }
+ 
+ /// check document formatting parameters before render - whether we need to reformat; returns false if render is necessary
+@@ -20134,6 +20165,19 @@ bool ldomDocument::checkRenderContext()
+             | (dy != (int)_hdr.render_dy ? 32 : 0);
+     auto &trace = _koblazeRenderCheck;
+     if (trace.checks == 0 || (reasons && trace.rejected == 0)) {
++        trace.inputs = _koblazeStyleInputs;
++        trace.savedInputsValid = true;
++        for (int i = 0; i < KoblazeStyleInputs::count; ++i) {
++            lString8 key("kobalt.layout-observation.v1.");
++            key += KoblazeStyleInputs::name(i);
++            lInt64 value = 0;
++            if (!getProps()->getInt64(key.c_str(), value) || value < 0 || value > 0xffffffffLL)
++                trace.savedInputsValid = false;
++            trace.savedInputs.values[i] = (lUInt32)value;
++        }
++        trace.savedInputsValid = trace.savedInputsValid
++                && trace.savedInputs.values[24] == _hdr.render_style_hash
++                && trace.savedInputs.values[14] == 1;
+         trace.style = styleHash; trace.savedStyle = _hdr.render_style_hash;
+         trace.sheet = stylesheetHash; trace.savedSheet = _hdr.stylesheet_hash;
+         trace.flags = _docFlags; trace.savedFlags = _hdr.render_docflags;
+@@ -20176,6 +20220,12 @@ bool ldomDocument::checkRenderContext()
+     }
+     // no need to check for _nodeDisplayStyleHash != _hdr.node_displaystyle_hash:
+     // this is implicitely done by styleHash != _hdr.render_style_hash (whose _nodeDisplayStyleHash is a subset)
++    // Prime optional telemetry on an old but compatible cache once. This only
++    // requests a close-time metadata save, not a reflow or a new compatibility key.
++    if (res && !trace.savedInputsValid) {
++        koblazeRememberStyleInputs();
++        setCacheFileStale(true);
++    }
+     _just_rendered_from_cache = false;
+     if ( res ) {
+ 
+diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.cpp
+index a0834124..fa0d5ad4 100644
+--- a/tests/model/fb2_cache_session.cpp
++++ b/tests/model/fb2_cache_session.cpp
+@@ -105,6 +105,30 @@ QJsonObject cycle(const QString &path, const QString &cache, QJsonObject saved,
+                           : "cold/changed FB2 unexpectedly reused parsed cache");
+         const auto stats = reader.resourceStats();
+         const auto check = stats.value("model_layout_check").toObject();
++        const auto inputs = check.value("inputs").toObject();
++        const auto operand = [&](const char *key) { return quint32(inputs.value(key).toDouble()); };
++        quint32 global = operand("format");
++        for (const auto *key : {"kerning", "fractional", "mono_scale", "fallback_adjusted", "font_list",
++                                "base_weight", "optical_fixed", "dpi"})
++            global = global * 31 + operand(key);
++        if (operand("rendered"))
++            for (const auto *key : {"language", "hyphen_left", "hyphen_right", "trust_soft_hyphens", "user_hyphenation"})
++                global = global * 31 + operand(key);
++        require(global == operand("global"), "observed global operands do not reproduce engine hash");
++        quint32 style = operand("node");
++        for (const auto *key : {"image_scale", "space_scale", "min_space", "unused_space", "cjk_scale", "render_flags", "interline"})
++            style = style * 31 + operand(key);
++        style = (style * 31 + global) * 31 + operand("doc_flags");
++        require(style == operand("style") && style == quint32(check.value("style").toDouble()),
++                "observed style operands do not reproduce compatibility check");
++        if (expectHit) {
++            require(check.value("saved_inputs_valid").toBool(),
++                    "saved render operands did not survive disk cache/process reload");
++            const auto previous = check.value("saved_inputs").toObject();
++            require(previous.value("style") == check.value("saved_style"),
++                    "saved operands not anchored to saved render header");
++        }
++
+         require(check.value("checks").toInt() > 0, "missing render-context observation");
+         require((check.value("reasons").toInt() == 0)
+                         == (check.value("rejected").toInt() == 0),
