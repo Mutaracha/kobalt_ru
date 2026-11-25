@@ -212,6 +212,14 @@
       "validation": "CI pending"
     },
     {
+      "id": "059c-sleep-letter-wordmark",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/059c-sleep-letter-wordmark.patch",
+      "sha256": "943277d0b1cb129077bf9dd07261a6b04b9e30780c49703546839038cfdc8721",
+      "scope": "Instrument Serif wordmark for sleep/power-off Letter signature; aligned status repaint bounds and bilingual raster regression",
+      "validation": "CI pending"
+    },
+    {
       "id": "060-build-integration",
       "status": "ready",
       "scope": "Final full-stack packaging, provenance and CI; source/test registration stays with the introducing patch",

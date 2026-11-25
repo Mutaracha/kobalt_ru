@@ -70,13 +70,14 @@ jobs:
                   QT_QPA_PLATFORM=offscreen "/work/build/desktop-linux/kobalt-$test-tests"
                 done
                 QT_QPA_PLATFORM=offscreen /work/build/desktop-linux/kobalt-ru-control-ui-tests en
-                if QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^lifecycle\.(readingMenuStatusToggle|readingTimeStatsVisibility|readingTimeStatus)$" > /tmp/menu-tests.log 2>&1; then
+                if QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^lifecycle\.(readingMenuStatusToggle|readingTimeStatsVisibility|readingTimeStatus|sleepLetterPreservesLiteralPlaceholders)$" > /tmp/menu-tests.log 2>&1; then
                   cat /tmp/menu-tests.log
                 else
                   cat /tmp/menu-tests.log
                   grep -A 2 "FAIL!" /tmp/menu-tests.log | sed "s/^/::error::/" || true
                   exit 1
                 fi
+                QT_QPA_PLATFORM=offscreen /work/build/desktop-linux/kobalt-reader-lifecycle-tests sleepDesignsRepaintOnlyTheirStatus:letter-light sleepDesignsRepaintOnlyTheirStatus:letter-dark
                 KOBALT_CACHE_PROBE_OUTPUT=/work/build/cache-probe QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^((model|platform)\.(font-sources|system-fonts|nickel-book-menu|appearance-settings|resource-cache|fb2-cache-session|strings-locale|text-presets)|engine\.(comics-layout|comics|columns|chapter-parity)|component\.(comics-ui|reader-controls|debug-language-ui|fork-presentation|ru-control-ui))$"
               else
                 cd platforms/kobo
