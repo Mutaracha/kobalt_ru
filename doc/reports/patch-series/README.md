@@ -79,3 +79,10 @@ width isolation reasons16. Device mismatch не воспроизведён; prod
 [041](041-noto-subset-and-kobo-fonts.md): runtime2c1914e3/CI45596424824 all jobs PASS.
 Only Noto Regular+Italic; Corsiva removed from final package, Instrument wordmark unchanged,
 opening italic semantics restored. Actual Kobo font replay warm stable, device FB2 issue open.
+
+## Header-anchored layout input snapshots039
+
+[042](042-layout-input-observation.md): current/saved node/global/style inputs, optional
+existing doc props, unchanged compatibility formula. CI45599360375 all jobs PASS;
+833c8e28 device run pending. Prime A1/A2, normal exit+reboot, A1/A2 and diagnostics.
+Noto subset and enabled preload retained, no cache clear. This is not a speed fix.

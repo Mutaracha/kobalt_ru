@@ -113,7 +113,7 @@
       "path": "platforms/patch-series/patches/039-fb2-layout-input-observation.patch",
       "sha256": "1fdc623092440cfb72c9e674bfd43c986e13605d370837dcb1be3eb3b3e0958f",
       "scope": "Observe exact node/global/style-hash operands and persist optional header-anchored telemetry in existing document properties; preserve hash decisions and preload",
-      "validation": "CI pending: independent hash reconstruction and cross-process saved operand persistence checks; old caches may incur one metadata-only close save without reflow."
+      "validation": "CI45599360375 all jobs PASS (full ordered apply/inventory, native hash reconstruction and cross-process saved operand persistence, real A1/A2+Kobo-font replay, Qt5 compile/check-package/qemu/package). Ten visible host observations match previous hashes/reasons exactly. Device input snapshots pending; not a speed fix. Old compatible caches may incur one metadata-only close save."
     },
     {
       "id": "040-reader-controls",

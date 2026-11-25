@@ -47,3 +47,20 @@ RU Noto Serif Display Condensed Regular+Italic вместо Corsiva; Kobalt Inst
 не меняется. Проверить settings tabs на clipping, обычную italic подпись opening,
 About и closing wordmark. Кэш не очищать; timing matrix сейчас не требуется.
 Это font presentation update, не FB2 cache-speed fix. Новый полный Monotype task отозван.
+
+## Актуальный FB2 diagnostic gate:833c8e28
+
+[Пакет CI45599360375](https://github.com/Mutaracha/kobalt_ru/actions/runs/45599360375/artifacts/15014992792),
+[новые поля/границы042](../reports/patch-series/042-layout-input-observation.md).
+
+- Logs ON, Accurate, прежние файлы/fonts/layout/cache. Ничего не очищать.
+- Вручную A1 → дождаться чтения → закрыть книгу в Home; затем так же A2.
+- Дождаться завершения закрытия, закрыть Kobalt штатно, перезагрузить устройство.
+- Вручную A1 и A2 тем же порядком с закрытием, затем export diagnostics.
+- Stopwatch необязателен. Эти opens нужны для snapshot before/after process restart,
+  не новой cold/reboot timing-матрицы. Листать страницы/менять layout не требуется.
+
+Первые старые cache checks могут иметь saved_inputs_valid=false; после priming/save
+нужен actual saved snapshot. Metadata не используется для принятия layout. Old compatible
+cache может один раз дополнительно записаться при закрытии, без repagination. Все CI jobs
+PASS, device acceptance pending. Noto Regular+Italic/Instrument brand unchanged от2c1914e3.

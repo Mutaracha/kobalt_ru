@@ -3,21 +3,22 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010–060 (включая 033/034), все патчи применяются вместе.
-Последний проверенный бинарник: **2c1914e3**, [CI45596424824](https://github.com/Mutaracha/kobalt_ru/actions/runs/45596424824),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45596424824/artifacts/15012959489).
+Последний проверенный бинарник: **833c8e28**, [CI45599360375](https://github.com/Mutaracha/kobalt_ru/actions/runs/45599360375),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45599360375/artifacts/15014992792).
 CI: series/native/Qt5/package/qemu PASS; не полная аппаратная приёмка.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-[041: Noto subset + Kobo fonts](doc/reports/patch-series/041-noto-subset-and-kobo-fonts.md).
-Пользователь заменил задачу полной Monotype family на Noto Serif Display Condensed:
-055 включает только Regular+Italic, удаляет Corsiva из final full-series package,
-сохраняет Instrument Serif wordmark и возвращает opening-label italic condition beta10.
-Runtime2c1914e3, CI45596424824 все jobs PASS; visual device acceptance pending.
-Host replay использует все семь uploaded Kobo fonts; A1/A2 warm reasons0, width16,
-style hashes stable. Device mismatch пока не воспроизведён, FB2 speed fix не заявлен.
-Новый timing run не нужен; visual font gate отдельно. Native paths записаны.
+[042: hash input snapshots](doc/reports/patch-series/042-layout-input-observation.md).
+039 сохраняет optional header-anchored node/global/style operands в existing doc props,
+показывает current/saved inputs. Формула и compatibility решения не меняются; старые
+кэши принимаются, при compatible old cache возможен один metadata-only close save.
+Native tests реконструируют hash и проверяют сохранение snapshot между процессами;
+CI45599360375 все jobs PASS. Runtime833c8e28 сохраняет Noto subset и FB2 preload.
+Теперь обоснован узкий device шаг: logs ON, A1/A2 close (prime snapshots), normal exit,
+reboot, manual A1/A2 close, diagnostics. Без очистки cache/layout changes/stopwatch matrix.
+Причина device mismatch остаётся открытой до сравнения inputs; speed fix не заявлен.
 
 ## Очередь — порядок закрытия
 

@@ -205,3 +205,8 @@ CI45499862360 PASS; production поведение не меняется, device-
 Regular+Italic only; removes Corsiva runtime file/notice. Standalone RU-only baseline
 is not this updated package. Wordmark unchanged. [041](../../doc/reports/patch-series/041-noto-subset-and-kobo-fonts.md),
 CI45596424824 PASS/device visual pending. Do not resume superseded full-Monotype-family task.
+
+039 — current/saved style-input observation, placed after038 before controls.
+Header-anchored optional document properties, no new cache format/admission key.
+Old compatible cache may need one metadata-only close save. [042](../../doc/reports/patch-series/042-layout-input-observation.md),
+CI45599360375 PASS/device snapshots pending. Do not bypass style-hash guard.
