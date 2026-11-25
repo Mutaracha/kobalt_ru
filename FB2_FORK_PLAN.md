@@ -19,7 +19,10 @@ initial font_list difference остаётся residual observation, не исп�
 Перешли к Hybrid correctness.044 test-only: stop-before-start/park preserves prefix
 frame+anchor, no partial cache, resume/full-count, parked-close+independent rebuild.
 Revisiona3e1c24d/CI45613247416 все jobs PASS. На устройство новый test-only package не нужен.
-Остаются focused notes/body-images, resource-backed lease revoke, session/UI page-count gates.
+045 notes/body-images parity (inpage on/off), reference frames/count/anchors: CI45617219756 PASS.
+[045 report](doc/reports/patch-series/045-hybrid-notes-images.md). Остались resource-backed
+FB2 lease revoke и session/UI page-count gates; generic reader-session target не выполняется
+в selected CI и не считается FB2 evidence.
 7566324a остаётся visual package, Noto balance/neutral hint acceptance pending.
 
 ## Очередь — порядок закрытия
@@ -33,7 +36,7 @@ Revisiona3e1c24d/CI45613247416 все jobs PASS. На устройство но�
 | 1 / B10-UI | partial device accepted | Exit-wordmark, OFF persistence и cleanup wording приняты. About wordmark исправлен через shared Instrument Serif role; CI PASS/device visual pending. |
 | 2 / B10-CACHE | done: observed save/read lifecycle | 46ecb8f: все 12 saves=true; измеренные H1/H2/A1/A2 имеют disk hits, retained отдельно. Низкая стабильная задержка A1 не заявлена: это B10-CACHED-LAYOUT. |
 | 3 / B10-CACHED-LAYOUT | paused: observed lifecycle accepted | User confirms late fast A1/A2 after reboot, disk hits all inputs match9/34ms. Earlier font_list primitive differs, exact inventory cause unknown. No read-path fix claimed; return only on reproducible recurrence. |
-| 4 / B10-HYBRID-COVERAGE | in progress: first CI batch PASS | 044 test-only cancellation/park/close/rebuild PASS in CI45613247416. Remaining targeted notes/body-images, resource-backed lease revocation and session/UI count semantics; no acceleration work. |
+| 4 / B10-HYBRID-COVERAGE | in progress: first CI batch PASS | 044 test-only cancellation/park/close/rebuild PASS in CI45613247416. 045 notes/body-images PASS CI45617219756. Remaining resource-backed lease revocation and session/UI count semantics; no acceleration work. |
 | 5 / B10-FONTS | CI PASS, device visual pending | Full-Monotype task superseded. 055: Noto Serif Display Condensed Regular+Italic only, original beta10 italic semantics, Instrument Serif Kobalt unchanged; Corsiva removed from final package. |
 | 6 / B10-MENU-STATUS | planned: implementation | Общий для всех книг toggle существующей строки состояния: часы + батарея остаются, время текущего сеанса ↔ страница в книге по нажатию. Persistent global preference, формат/estimated/pending как у BookPage колонтитула. Подробный контракт ниже. |
 

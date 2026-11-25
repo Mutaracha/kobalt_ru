@@ -219,3 +219,5 @@ CI45607993683 PASS, visual device pending. No cache/admission change.
 044 — FB2 Hybrid cancellation/park/close correctness **tests only**, no runtime change.
 CI45613247416 PASS; [coverage/remaining gates](../../doc/reports/patch-series/044-hybrid-correctness-gates.md).
 No device update required for this test patch, no speed claim.
+
+045 — test-only FB2 note/body-image parity with inpage footnotes on/off, full fallback allowed. CI45617219756 PASS; no production change/device update.

@@ -101,3 +101,5 @@ cache read path was not fixed during diagnostics. Transition to correctness-only
 gate. Added pre-start stop, park/preserve prefix, resume, parked-close/independent rebuild.
 CI45613247416 all jobs PASS; tests only, device-update not requested. Remaining notes/
 body-image/resource-lease/session-count checks are not declared complete.
+
+[045 Hybrid note/body-image parity](045-hybrid-notes-images.md): test-only, CI45617219756 PASS. Remaining resource-backed revoke/session count gate open.
