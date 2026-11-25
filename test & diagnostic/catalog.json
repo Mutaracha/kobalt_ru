@@ -709,6 +709,26 @@
       "archived": true
     },
     {
+      "path": "test & diagnostic/device-review-letter/screen_001-26.png",
+      "bytes": 316493,
+      "sha256": "72aa36441f6d7bf01f2cae67b3cd53ad7021711737e48f5b776c03b763189231",
+      "versions": [
+        "v1.0-beta.10"
+      ],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/device-review-letter/screen_002-19.png",
+      "bytes": 260613,
+      "sha256": "4c97facad9b8ca826d6bc503671295230fffb558a3fe4d9c6c34c991ca38d35e",
+      "versions": [
+        "v1.0-beta.10"
+      ],
+      "source_commits": [],
+      "archived": false
+    },
+    {
       "path": "test & diagnostic/df8e910a-ui/screen_001-22.png",
       "bytes": 256818,
       "sha256": "f7bd15d022c7ac4517da3792f6469bddeeafff831bc04539e094d97c49783722",

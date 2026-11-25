@@ -15,8 +15,10 @@
 
 ## Последние пакеты
 
+- [054: combined Letter/menu/cache](054-letter-signature-and-device-feedback.md):92a29364, CI45675458450 PASS; краткая cache-проверка пользователя положительная, длительная и новая UI-приёмка pending.
+
 - [053: menu-status](053-reading-menu-status.md):97a5fc9a, CI45672903619 PASS; device review pending.
-- [052: cache-only check](052-system-font-identity-device-package.md):3c7c1b20; пользователь проверяет отдельно, результат неизвестен.
+- [052: cache-only check](052-system-font-identity-device-package.md):3c7c1b20; краткая проверка без повторения задержки, включая reboot; длительная продолжается в combined.
 - [049: актуальные reading roles](049-bundled-roles-and-cyrillic-pickers.md), [050: диагностика](050-f4a708c-diagnostics.md), [051: причина временных путей](051-system-font-path-investigation.md).
 
 ## Основные материалы

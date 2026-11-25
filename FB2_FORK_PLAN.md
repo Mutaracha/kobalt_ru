@@ -3,8 +3,8 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010–060 (включая 033/034), все патчи применяются вместе.
-Последний CI-проверенный бинарник: **97a5fc9a**, [CI45672903619](https://github.com/Mutaracha/kobalt_ru/actions/runs/45672903619),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45672903619/artifacts/15050961898).
+Последний CI-проверенный бинарник: **92a29364**, [CI45675458450](https://github.com/Mutaracha/kobalt_ru/actions/runs/45675458450),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45675458450/artifacts/15051583108).
 CI selected native/Qt5/package PASS; не полная аппаратная приёмка.
 Docs-only обновления не меняют этот бинарник.
 
@@ -16,10 +16,13 @@ Docs-only обновления не меняют этот бинарник.
 - [050: новые логи](doc/reports/patch-series/050-f4a708c-diagnostics.md) подтвердили повторные
   font_list mismatches после рестартов. [051: проверка причины](doc/reports/patch-series/051-system-font-path-investigation.md),
   [052: исправление идентичности](doc/reports/patch-series/052-system-font-identity-device-package.md).
-  Отдельный cache-check пакет3c7c1b20 пользователь сейчас проверяет. Результат пока неизвестен.
+  Пользователь не воспроизвёл задержку в нескольких открытиях, включая после reboot.
+  Краткая проверка положительная; длительную проверку продолжаем в combined92a29364.
 - [053: menu-status](doc/reports/patch-series/053-reading-menu-status.md):059b реализован,
   native/lifecycle/Qt5 gates PASS. Физическая визуальная приёмка и live pending/turn check отдельно.
-  Не подменять этим бинарником результаты текущей cache-only проверки.
+  [054: feedback и Letter signature](doc/reports/patch-series/054-letter-signature-and-device-feedback.md):
+  Close caption визуально принят; подпись Letter Kobalt переведена на Instrument Serif.
+  059c CI PASS, новая device visual/длительная cache-проверка pending.
 - Bounded Hybrid gates046 сохранены. Дополнительного acceleration/cache clearing нет.
 
 ## Очередь — порядок закрытия
@@ -30,9 +33,9 @@ Docs-only обновления не меняют этот бинарник.
 
 | Порядок / ID | Статус | Следующее действие / критерий закрытия |
 |---|---|---|
-| 1 / B10-UI | partial device accepted | Exit-wordmark, OFF persistence и cleanup wording приняты. About wordmark исправлен через shared Instrument Serif role; CI PASS/device visual pending. |
+| 1 / B10-UI | partial device accepted | Exit-wordmark, close caption, OFF persistence и cleanup wording приняты. About wordmark исправлен через shared Instrument Serif role; CI PASS/device visual pending. |
 | 2 / B10-CACHE | done: observed save/read lifecycle | 46ecb8f: все 12 saves=true; измеренные H1/H2/A1/A2 имеют disk hits, retained отдельно. Низкая стабильная задержка A1 не заявлена: это B10-CACHED-LAYOUT. |
-| 3 / B10-CACHED-LAYOUT | 059a CI PASS; device check in progress | Recurrent font_list mismatch in050; temporary system-copy path instability reproduced in051 and corrected in052. Hardware outcome unknown; earlier successful A1/A2 evidence remains valid for those runs. |
+| 3 / B10-CACHED-LAYOUT | short device check positive; extended check pending | Recurrent font_list mismatch in050; temporary system-copy path instability reproduced in051 and corrected in052. Several opens including after reboot without reproduced delay per user; continue longer in combined build, no new log reasons0 claim. |
 | 4 / B10-HYBRID-COVERAGE | done: bounded host tests PASS | 044–046 prefix/full anchors/count/notes/images, park/cancel/close and resource-backed session/lease gates. CI45636420364 PASS; no claim of full device matrix. |
 | 5 / B10-FONTS | CI PASS, device visual pending | 055/056 Noto subset85%; 057 RU Shantell Sans Italic instead of Caveat. English Kalam/classic/Instrument brand unchanged. Report047 cmap audit and sample organization complete. 059/049 supersedes058: NV Literata/KF Sable/NV Publica, cmap picker filter, standalone Literata/Lora removed; CI PASS. |
 | 6 / B10-MENU-STATUS | implemented: CI PASS, device review pending | Общий для всех книг toggle существующей строки состояния: часы + батарея остаются, время текущего сеанса ↔ страница в книге по нажатию. Persistent global preference, формат/estimated/pending как у BookPage колонтитула. Подробный контракт ниже. |
