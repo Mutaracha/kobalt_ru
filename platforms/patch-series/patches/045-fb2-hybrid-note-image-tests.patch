@@ -1,0 +1,71 @@
+diff --git a/tests/model/fb2_engine.cpp b/tests/model/fb2_engine.cpp
+--- a/tests/model/fb2_engine.cpp
++++ b/tests/model/fb2_engine.cpp
+@@ -255,6 +255,59 @@
+     qunsetenv("KOBALT_FB2_HYBRID");
+ }
+ 
++// Compare rendered output against an independently opened full document, not
++// merely the presence of a binary cover or a non-empty search result.
++void prefixNotesAndBodyImages()
++{
++    qputenv("KOBALT_FB2_HYBRID", "1");
++    qputenv("KOBALT_CHAPTER_PAGES", "2");
++    auto bytes = utf8FictionBook();
++    bytes.replace("<FictionBook xmlns=", "<FictionBook xmlns:l='http://www.w3.org/1999/xlink' xmlns=");
++    bytes.replace("<epigraph>", "<image l:href='#cover.png'/><epigraph>");
++    QByteArray tail;
++    for (int n = 0; n < 1200; ++n)
++        tail += "<p>Resource parity filler " + QByteArray::number(n)
++                + " with sufficient text to require a native startup prefix.</p>";
++    tail += "<p>LateBodyImageMarker</p><image l:href='#cover.png'/>";
++    bytes.replace("</section>\n", tail + "</section>\n");
++    for (bool inpage : {false, true}) {
++        const QJsonObject settings{{"inpage_footnotes", inpage}};
++        auto fullSettings = settings;
++        fullSettings["koblaze_first_spine_item"] = -1;
++        QString error;
++        EngineDocument full(test::readerFonts());
++        require(full.open(bytes, {600, 800}, fullSettings, &error), qPrintable(error));
++        EngineDocument prefix(test::readerFonts());
++        require(prefix.open(bytes, {600, 800}, settings, &error), qPrintable(error));
++        // A conservative full fallback is permitted when note layout cannot
++        // safely be represented as a prefix. Either path must match Accurate.
++        require(prefix.image(0) == full.image(0), "FB2 note/image first frame differs");
++        if (prefix.partOfBook()) {
++            require(prefix.wholeBookPageCount() == 0, "note/image prefix claimed final count");
++            require(prefix.prepareFullDocument({}) == Engine::FullDocument::Ready,
++                    "note/image full build failed");
++            require(prefix.setChapterMode(false, appearance::Patch(), {600, 800}),
++                    "note/image full adoption failed");
++        }
++        require(!prefix.partOfBook() && prefix.pages() == full.pages(),
++                "note/image full count differs from Accurate");
++        require(prefix.coverImage({120, 180}) == full.coverImage({120, 180})
++                        && !prefix.coverImage({120, 180}).isNull(),
++                "binary image resource lost during note/image handoff");
++        for (const auto *text : {"Regular paragraph with a note reference", "First", "LateBodyImageMarker"}) {
++            const auto found = full.searchText(text, {}, 10);
++            require(!found.hits.isEmpty(), "reference note/image passage missing");
++            const auto anchor = found.hits.first().start;
++            require(full.goTo(anchor) && prefix.goTo(anchor), "note/image anchor cannot be resolved");
++            require(prefix.position() == full.position()
++                            && prefix.image(prefix.page()) == full.image(full.page()),
++                    "note/image rendered passage differs after full adoption");
++        }
++    }
++    qunsetenv("KOBALT_CHAPTER_PAGES");
++    qunsetenv("KOBALT_FB2_HYBRID");
++}
++
+ }
+ int main(int argc, char **argv)
+ {
+@@ -263,6 +316,7 @@
+     engineAndResources();
+     cachedFictionBook();
+     coldPrefixExperiment();
++    prefixNotesAndBodyImages();
+     setChapterModeOverride(-1);
+     std::puts("PASS: FB2 engine sources, metadata, cover, encoding, preview, EPUB reuse and parsed cache");
+ }
