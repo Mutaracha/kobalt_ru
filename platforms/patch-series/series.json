@@ -145,7 +145,7 @@
       "path": "platforms/patch-series/patches/046-fb2-session-hybrid-gates.patch",
       "sha256": "0d9f27f365f8358d32b2f35f018accd1f1c5591fe71da0864e286c191a6fab9a",
       "scope": "Tests only: resource-backed FB2 pending/final count publication, cancellation/revocation stale-work refusal and close/drain release",
-      "validation": "CI pending"
+      "validation": "CI45625881182 PASS: selected native fb2-cache-session includes resource-backed prefix pending/final counts and revoke/cancel/drain. Existing local-resources tests cover FB2 block-transfer revocation. No production change."
     },
     {
       "id": "050-fork-presentation",
@@ -177,7 +177,7 @@
       "path": "platforms/patch-series/patches/057-ru-shantell-italic.patch",
       "sha256": "6a2a68ca792795fba9aa7a95642baa9b78d15ee7186352902af31e1c75588d91",
       "scope": "RU handwriting preset uses real Shantell Sans Italic instead of Caveat; remove Caveat faces/notice, retain English Kalam and classic UI",
-      "validation": "CI pending"
+      "validation": "Initial CI45625881182 PASS; added explicit root QSS/list-row italic preservation and polished QLabel check. Rerun required after uploaded-source paths moved."
     },
     {
       "id": "060-build-integration",
