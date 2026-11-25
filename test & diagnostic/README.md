@@ -29,3 +29,9 @@ README/catalog/SHA256SUMS не включают сами себя в checksum-н
 включить подробные логи в Debug; не удалять профиль/кэши. Source commit брать из
 startup/About, а не из имени upload commit. Последний diagnostic upload 1da4445c — 74e25306; измеренные запуски ручные. Общие portable fixtures и opt-in
 `tests/manual/books` остаются на месте: они не являются результатами старой сборки.
+
+## Latest supplied fonts
+
+- `font Kobo/fonts/`: seven original device font files, host-only replay; /mnt/onboard/fonts.
+- `Noto Serif Display Condensed/`: original eight faces/OFL, only Regular+Italic selected
+  for final055 runtime. See report041. /mnt/onboard/.adds/kobalt is installation path.

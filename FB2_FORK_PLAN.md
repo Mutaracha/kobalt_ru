@@ -3,23 +3,21 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010–060 (включая 033/034), все патчи применяются вместе.
-Последний проверенный бинарник: **1da4445c**, [CI45491097786](https://github.com/Mutaracha/kobalt_ru/actions/runs/45491097786),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45491097786/artifacts/14965972454).
+Последний проверенный бинарник: **2c1914e3**, [CI45596424824](https://github.com/Mutaracha/kobalt_ru/actions/runs/45596424824),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45596424824/artifacts/15012959489).
 CI: series/native/Qt5/package/qemu PASS; не полная аппаратная приёмка.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-[Host cross-process probe039](doc/reports/patch-series/039-host-cross-process-cache-probe.md):
-037 — только тест, без изменения production cache/preload. Отдельные cold/warm1/warm2
-процессы: короткий и длинный (>250000 символов текста) FB2 оба дают стабильные
-node/global/style hashes и warm reasons0. Changed width отвергается reasons16,
-changed-source isolation сохранена. CI45498201010 и45499862360 все jobs PASS.
-Device mismatch не воспроизведён: нельзя объявить random per-process hash или исправление.
-Следующее bounded действие — реальные source/typography/font inputs, startup/manual ordering.
-Новый device запуск/обновление сейчас не нужны: оставаться на1da4445c. f6c68d26 —
-проверенный test-only revision, не новый performance fix. OFF/cleanup wording приняты,
-About visual acceptance отдельно пока явно не сообщена.
+[041: Noto subset + Kobo fonts](doc/reports/patch-series/041-noto-subset-and-kobo-fonts.md).
+Пользователь заменил задачу полной Monotype family на Noto Serif Display Condensed:
+055 включает только Regular+Italic, удаляет Corsiva из final full-series package,
+сохраняет Instrument Serif wordmark и возвращает opening-label italic condition beta10.
+Runtime2c1914e3, CI45596424824 все jobs PASS; visual device acceptance pending.
+Host replay использует все семь uploaded Kobo fonts; A1/A2 warm reasons0, width16,
+style hashes stable. Device mismatch пока не воспроизведён, FB2 speed fix не заявлен.
+Новый timing run не нужен; visual font gate отдельно. Native paths записаны.
 
 ## Очередь — порядок закрытия
 
@@ -33,7 +31,7 @@ About visual acceptance отдельно пока явно не сообщена
 | 2 / B10-CACHE | done: observed save/read lifecycle | 46ecb8f: все 12 saves=true; измеренные H1/H2/A1/A2 имеют disk hits, retained отдельно. Низкая стабильная задержка A1 не заявлена: это B10-CACHED-LAYOUT. |
 | 3 / B10-CACHED-LAYOUT | in progress: bounded investigation | 035 — завершённый эксперимент, отозван по указанию пользователя; FB2 preload возвращён. Без него disk-hit repagination остаётся (~3.7/16.5 s). 036 device: style-hash mismatch подтверждён; repeat A1 disk reuse работает, после startup mismatch возвращается. Host separate-process short/long fixtures stable (037/CI PASS), device mismatch не воспроизведён. Причина внутри hash пока не установлена; не ослаблять guards, не обещать ускорение. |
 | 4 / B10-HYBRID-COVERAGE | planned: bounded validation | Сверить существующие тесты; закрыть конкретные пробелы prefix/full anchors/count, notes/images и close/cancel/lease revocation. Не строить большую новую матрицу ради незаявленного ускорения. Допустим безопасный full fallback. |
-| 5 / B10-FONTS | planned: integration | Подключить полное новое семейство monotype-corsiva.zip в RU-роли с проверкой внутренних имён/начертаний и regressions. Instrument Serif exit-wordmark не менять. |
+| 5 / B10-FONTS | CI PASS, device visual pending | Full-Monotype task superseded. 055: Noto Serif Display Condensed Regular+Italic only, original beta10 italic semantics, Instrument Serif Kobalt unchanged; Corsiva removed from final package. |
 | 6 / B10-MENU-STATUS | planned: implementation | Общий для всех книг toggle существующей строки состояния: часы + батарея остаются, время текущего сеанса ↔ страница в книге по нажатию. Persistent global preference, формат/estimated/pending как у BookPage колонтитула. Подробный контракт ниже. |
 
 ## B10-MENU-STATUS — согласованный контракт
@@ -86,3 +84,11 @@ About visual acceptance отдельно пока явно не сообщена
 Решения: [действующие](doc/fork-decisions.md). Проверки: [beta10](doc/validation/beta10-device.md).
 Журнал: [beta10](doc/reports/patch-series/README.md). Данные: [каталог](test%20%26%20diagnostic/README.md).
 История: [архив](doc/archive/README.md). Старые pending-статусы оттуда не восстанавливать.
+
+### Superseding font decision
+
+Задача полной Monotype Corsiva family **отозвана** последним решением пользователя.
+В final active series055 Noto Regular+Italic уже интегрированы (CI PASS), device visual
+pending; не добавлять остальные шесть faces, не возобновлять full-Monotype task.
+Standalone RU-only overlay остаётся историческим comparison baseline с прежним шрифтом;
+обновлённый устанавливаемый пакет — полная ordered series с055.

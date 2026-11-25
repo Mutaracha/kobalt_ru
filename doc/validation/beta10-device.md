@@ -39,3 +39,11 @@ short/long warm reasons0, changed-width reasons16, source isolation PASS; device
 не воспроизведён. f6c68d26 test-only, installing generated package не является новым
 диагностическим шагом. На устройстве пока оставаться на1da4445c. Следующее действие
 на host — реальные input/fonts/settings и startup/manual ordering.
+
+## Текущий visual-only package
+
+[2c1914e3/CI45596424824](https://github.com/Mutaracha/kobalt_ru/actions/runs/45596424824/artifacts/15012959489):
+RU Noto Serif Display Condensed Regular+Italic вместо Corsiva; Kobalt Instrument Serif
+не меняется. Проверить settings tabs на clipping, обычную italic подпись opening,
+About и closing wordmark. Кэш не очищать; timing matrix сейчас не требуется.
+Это font presentation update, не FB2 cache-speed fix. Новый полный Monotype task отозван.

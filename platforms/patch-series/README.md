@@ -200,3 +200,8 @@ Beta10-series-prefix-qt5 относится только к предыдущим
 isolation. Короткий и длинный FB2: warm reasons0, device fault не воспроизведён.
 [Отчёт039](../../doc/reports/patch-series/039-host-cross-process-cache-probe.md),
 CI45499862360 PASS; production поведение не меняется, device-update не запрашивается.
+
+055 — final full-series RU serif replacement with supplied Noto Display Condensed
+Regular+Italic only; removes Corsiva runtime file/notice. Standalone RU-only baseline
+is not this updated package. Wordmark unchanged. [041](../../doc/reports/patch-series/041-noto-subset-and-kobo-fonts.md),
+CI45596424824 PASS/device visual pending. Do not resume superseded full-Monotype-family task.

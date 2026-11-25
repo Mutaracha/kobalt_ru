@@ -73,3 +73,9 @@ cross-process воспроизведение, не новый широкий dev
 CI45498201010 и45499862360 all jobs PASS. Short/long actual-text fixtures: warm reasons0,
 width isolation reasons16. Device mismatch не воспроизведён; production не менялся,
 нового device-запуска не требуется. Следующий шаг — приблизить source/fonts/typography/order.
+
+## Noto subset + uploaded Kobo fonts
+
+[041](041-noto-subset-and-kobo-fonts.md): runtime2c1914e3/CI45596424824 all jobs PASS.
+Only Noto Regular+Italic; Corsiva removed from final package, Instrument wordmark unchanged,
+opening italic semantics restored. Actual Kobo font replay warm stable, device FB2 issue open.
