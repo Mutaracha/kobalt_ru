@@ -124,6 +124,14 @@
       "validation": "CI 45375027889 on 489ee408: full 010–050 apply/strings/assets/inventory checks, native locale/Debug UI/presentation/preset/RU controls and prior FB2/cache/comics suites PASS; Qt5 build/check-package/qemu refresh PASS. Beta10-series-prefix-qt5 artifact 14910054747. Physical-device and Qt6/Android validation pending. Hardware df8e910a: book startup/raw FB2 accepted by user. UI font-role correction awaiting CI and device review. Hardware df8e910a: book startup/raw FB2 accepted by user. UI font-role correction awaiting CI and device review. Follow-up: wordmark respects RU Monotype Corsiva; bilingual role regression added. Caveat remains the RU replacement for the playful/Kalam default, not for ordinary Sans UI. Restored serif heading/opening-caption roles (regular face), rather than replacing those roles with Sans. Follow-up: exit-title Latin Kobalt explicitly uses Instrument Serif in both locales; Russian prefix remains Monotype Corsiva. Shipping CI build uses switchable marker-based diagnostics (forced verbose OFF), with persistence regression. CI/device checks pending. Follow-up after 4d9985e2: literal wordmark uses Instrument Serif in About/opening/exit in both locales, heading role unchanged. 035 preload exclusion withdrawn by user; FB2 Home preload restored. CI/device pending."
     },
     {
+      "id": "055-ru-noto-display-subset",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/055-ru-noto-display-subset.patch",
+      "sha256": "c91aecdf917a46fd35782f06ecb59e6892fd797ef64ee75fdefe5c747e822296",
+      "scope": "Replace Russian Monotype Corsiva assets/role with Noto Serif Display Condensed Regular+Italic only; retain literal Instrument Serif wordmark and upstream italic semantics",
+      "validation": "CI and device pending; opening-label italics restored to beta10 conditional, existing italic brand requests retained. Removes Corsiva runtime asset/notice."
+    },
+    {
       "id": "060-build-integration",
       "status": "ready",
       "scope": "Final full-stack packaging, provenance and CI; source/test registration stays with the introducing patch",
