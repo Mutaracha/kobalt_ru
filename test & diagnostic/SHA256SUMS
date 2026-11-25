@@ -88,6 +88,13 @@ baa937a983de05a13b157790d45ad826e401a700097e634ca84d220056ecf0a9  test & diagnos
 8049b15ea03da7982db1152a9927911c47e0a92dc5ed434fa329b143a99b6adb  test & diagnostic/fonts/Kobo/fonts/FiraSans-BoldItalic.ttf
 e48b22ba7f2eab682501ba01b3ddfdbf65dadfafa74d9b2efe1879eb949b5c69  test & diagnostic/fonts/Kobo/fonts/FiraSans-Italic.ttf
 3dabf3d48bf4599f95cffd92f99ea426a014d5311f52a5eb5ec3af265e97cd97  test & diagnostic/fonts/Kobo/fonts/FiraSans-Regular.ttf
+33274290d005dc65abd706b5db900ebd0bc297a0f41a0e16caa3f905677f840f  test & diagnostic/fonts/Literata/Literata-Bold.ttf
+c20229a5c396b05e9ab13a773af4e4fc3b61f9de6878620d77d7b6d486ff3f6b  test & diagnostic/fonts/Literata/Literata-BoldItalic.ttf
+e48dc9674564dc58936960e7a8000c8080155e6882c8d999cadb0854562b5f31  test & diagnostic/fonts/Literata/Literata-Italic.ttf
+83cbae9d86654fd53f3f7e5991fd0b32a9b63a99e0a3932813afee2de2496079  test & diagnostic/fonts/Literata/Literata-Medium.ttf
+90b140d331fe6c3dfeff06fd42335a12a061c013765a32c7472d81e0eb0c2abc  test & diagnostic/fonts/Literata/Literata-MediumItalic.ttf
+7a3127b8aee7ac1f50419a45fd6c9dd19071060a7a6b31194a6b72446ff253b1  test & diagnostic/fonts/Literata/Literata-Regular.ttf
+5e595c1c01c300b068b67962846a22253fa5da6ef945783a35aed37ff4e820a1  test & diagnostic/fonts/Literata/OFL.txt
 7fefed405cfe66604181661ef754b81886ce6d4f83f7f92d94231dc23cfb665e  test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Bold.ttf
 8a900ceaa0bdc87d6e9d0a95d0a5ea3023fdf65170242d588ade030bea5949b8  test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-BoldItalic.ttf
 6ba708fbcf00c8f4cca6be85662b0258df05596a58e684f59d3497f26e945cef  test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Italic.ttf
@@ -98,7 +105,9 @@ e48b22ba7f2eab682501ba01b3ddfdbf65dadfafa74d9b2efe1879eb949b5c69  test & diagnos
 f72663e6fc3ee44b7dc1503e49fcec79200a6d9b4277ced3acf12518da67b490  test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Regular.ttf
 f7933a8d153874eb029b1b74eb9baa002543cabfd4e3388be5f9158055468d71  test & diagnostic/fonts/Noto Serif Display Condensed/OFL.txt
 b751e59aa8c2cdf0fb3786c282254dddac0fae3c0b805980458366780c86d64c  test & diagnostic/fonts/Noto Serif Display Condensed/README.md
+20606324381380678fe12cf7281ad95a65c858bae4555227129ae3bcf500af46  test & diagnostic/fonts/Shantell Sans/OFL.txt
 2c2607a8b400f573ffd43bfebc44fad7621945b95cd9e1ceadc430699a001280  test & diagnostic/fonts/Shantell Sans/ShantellSans-Bold.ttf
+c2edbd7060f88a5daee67d0143507a6d54c3748805882b72bac61ef64050712d  test & diagnostic/fonts/Shantell Sans/ShantellSans-BoldItalic.ttf
 ae42adb94b1f8eb0385fd1bacbfe8c2c9d686aaa4495388537e7863fc76f537a  test & diagnostic/fonts/Shantell Sans/ShantellSans-Italic.ttf
 7ebc788f9f5e20a214646c5ffab6a3c98cbbd958ed7c7d2c4b2531de34d888ce  test & diagnostic/fonts/Shantell Sans/ShantellSans-Medium.ttf
 6ab27a5ea7a26ea1f988e2eaa394c614521f1ec9339ba976e3203d8df2463fdf  test & diagnostic/fonts/Shantell Sans/ShantellSans-MediumItalic.ttf

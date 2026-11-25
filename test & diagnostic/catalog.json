@@ -829,6 +829,62 @@
       "archived": false
     },
     {
+      "path": "test & diagnostic/fonts/Literata/Literata-Bold.ttf",
+      "bytes": 260884,
+      "sha256": "33274290d005dc65abd706b5db900ebd0bc297a0f41a0e16caa3f905677f840f",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Literata/Literata-BoldItalic.ttf",
+      "bytes": 253840,
+      "sha256": "c20229a5c396b05e9ab13a773af4e4fc3b61f9de6878620d77d7b6d486ff3f6b",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Literata/Literata-Italic.ttf",
+      "bytes": 248156,
+      "sha256": "e48dc9674564dc58936960e7a8000c8080155e6882c8d999cadb0854562b5f31",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Literata/Literata-Medium.ttf",
+      "bytes": 255468,
+      "sha256": "83cbae9d86654fd53f3f7e5991fd0b32a9b63a99e0a3932813afee2de2496079",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Literata/Literata-MediumItalic.ttf",
+      "bytes": 248592,
+      "sha256": "90b140d331fe6c3dfeff06fd42335a12a061c013765a32c7472d81e0eb0c2abc",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Literata/Literata-Regular.ttf",
+      "bytes": 255252,
+      "sha256": "7a3127b8aee7ac1f50419a45fd6c9dd19071060a7a6b31194a6b72446ff253b1",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Literata/OFL.txt",
+      "bytes": 4483,
+      "sha256": "5e595c1c01c300b068b67962846a22253fa5da6ef945783a35aed37ff4e820a1",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
       "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Bold.ttf",
       "bytes": 430864,
       "sha256": "7fefed405cfe66604181661ef754b81886ce6d4f83f7f92d94231dc23cfb665e",
@@ -909,9 +965,25 @@
       "archived": false
     },
     {
+      "path": "test & diagnostic/fonts/Shantell Sans/OFL.txt",
+      "bytes": 4491,
+      "sha256": "20606324381380678fe12cf7281ad95a65c858bae4555227129ae3bcf500af46",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
       "path": "test & diagnostic/fonts/Shantell Sans/ShantellSans-Bold.ttf",
       "bytes": 397764,
       "sha256": "2c2607a8b400f573ffd43bfebc44fad7621945b95cd9e1ceadc430699a001280",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Shantell Sans/ShantellSans-BoldItalic.ttf",
+      "bytes": 408200,
+      "sha256": "c2edbd7060f88a5daee67d0143507a6d54c3748805882b72bac61ef64050712d",
       "versions": [],
       "source_commits": [],
       "archived": false

@@ -1,0 +1,1687 @@
+{
+  "criterion": "All 66 Russian letters including Ёё; not a claim of all Cyrillic languages",
+  "runtime": [
+    {
+      "path": "assets/fonts/IBMPlexMono-Bold.ttf",
+      "face": 0,
+      "family": "IBM Plex Mono",
+      "style": "Bold",
+      "sha256": "74e5eedcfa4596497d34e19023cabdabd3a8c852b903007a5654a59591a72ffb",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 194
+    },
+    {
+      "path": "assets/fonts/IBMPlexMono-Medium.ttf",
+      "face": 0,
+      "family": "IBM Plex Mono Medm",
+      "style": "Regular",
+      "sha256": "98fbd727aae340b236955879dabed4d991aac9e8e90b3b2a67ce4a59221cc97c",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 194
+    },
+    {
+      "path": "assets/fonts/IBMPlexMono-Regular.ttf",
+      "face": 0,
+      "family": "IBM Plex Mono",
+      "style": "Regular",
+      "sha256": "7c6fbddca4b700be918f5f6183d9bd4464fa427fe435f0b480d77fe2bb8c5a43",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 194
+    },
+    {
+      "path": "assets/fonts/IBMPlexSans-Bold.ttf",
+      "face": 0,
+      "family": "IBM Plex Sans",
+      "style": "Bold",
+      "sha256": "9e6c74a889a700d707613d24548fe4ffa6bc59559a0689d2cf9e133bdcdafb2f",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 194
+    },
+    {
+      "path": "assets/fonts/IBMPlexSans-Italic.ttf",
+      "face": 0,
+      "family": "IBM Plex Sans",
+      "style": "Italic",
+      "sha256": "a9c6ef9942c49e49d11e11a6dacc0b3a087978757e9b22a06b8ac22a6400fb15",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 194
+    },
+    {
+      "path": "assets/fonts/IBMPlexSans-Medium.ttf",
+      "face": 0,
+      "family": "IBM Plex Sans Medm",
+      "style": "Regular",
+      "sha256": "331c8639d7598b2cde62a911a71db195e30cb655cd6bdf2e324a7e984955f907",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 194
+    },
+    {
+      "path": "assets/fonts/IBMPlexSans-MediumItalic.ttf",
+      "face": 0,
+      "family": "IBM Plex Sans Medm",
+      "style": "Italic",
+      "sha256": "9928852bf60d82fdbbfe30eac86bcecd611e4188f0fa4d98938560659fa99c64",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 194
+    },
+    {
+      "path": "assets/fonts/IBMPlexSans-Regular.ttf",
+      "face": 0,
+      "family": "IBM Plex Sans",
+      "style": "Regular",
+      "sha256": "975dcda37d80f038dcd143c22e33ca2d97a0cc5a929aace1c749153b0fe1afa5",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 194
+    },
+    {
+      "path": "assets/fonts/InstrumentSerif-Italic.ttf",
+      "face": 0,
+      "family": "Instrument Serif",
+      "style": "Italic",
+      "sha256": "08939b8bdf534afec24ae0ef5e03f948940cd9a8fe08e7fecbad040e62327385",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/InstrumentSerif-Regular.ttf",
+      "face": 0,
+      "family": "Instrument Serif",
+      "style": "Regular",
+      "sha256": "498efd461f6ddfcb7a111bf9a565709d2085d48201d501ead960d93e84ffbb88",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/Kalam-Bold.ttf",
+      "face": 0,
+      "family": "Kalam",
+      "style": "Bold",
+      "sha256": "2f6576601db015d4f6c08678120277fc8510b98c06e932ce7a6a9cbff4cbdded",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/Kalam-Regular.ttf",
+      "face": 0,
+      "family": "Kalam",
+      "style": "Regular",
+      "sha256": "57cecb63d4608019371954274ae1d8c397764debd5b19d4a33c1efa4dc923c0b",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoNaskhArabic-Bold.ttf",
+      "face": 0,
+      "family": "Noto Naskh Arabic",
+      "style": "Bold",
+      "sha256": "04017b0ccdd1156dcde3bc386734c1b03165261762f16a025c8afc9088ae76e9",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoNaskhArabic-Regular.ttf",
+      "face": 0,
+      "family": "Noto Naskh Arabic",
+      "style": "Regular",
+      "sha256": "6f0a92031367b2f5a2078fe9d24f3433122b61a0bad57c423aad8f3c39aa2e6e",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSansMath-Regular.ttf",
+      "face": 0,
+      "family": "Noto Sans Math",
+      "style": "Regular",
+      "sha256": "d51afd5739c7ba6c44fcab35a88160e25dfb69a2d4ad0bd99533f8d894af1f96",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerif-Bold.ttf",
+      "face": 0,
+      "family": "Noto Serif",
+      "style": "Bold",
+      "sha256": "96656aa5cec8f1d6fd0e804c1fad397e1a1cfa082e6642124e0bda68cd8363ce",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "assets/fonts/NotoSerif-BoldItalic.ttf",
+      "face": 0,
+      "family": "Noto Serif",
+      "style": "Bold Italic",
+      "sha256": "c710c5b9cf354ae46e7a10472a08019b28220fafeb5887a482a76856f8f6fc0b",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "assets/fonts/NotoSerif-Italic.ttf",
+      "face": 0,
+      "family": "Noto Serif",
+      "style": "Italic",
+      "sha256": "749e80e313ef711f9373c6cce17c72297ef05490b3dcda7967d1d5d90bf1183f",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "assets/fonts/NotoSerif-Regular.ttf",
+      "face": 0,
+      "family": "Noto Serif",
+      "style": "Regular",
+      "sha256": "19e72cd8d595fae5bd74a5206f5d938512e1183d4fed7abb1ec1be1d7efa5f88",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "assets/fonts/NotoSerifArmenian-Bold.ttf",
+      "face": 0,
+      "family": "Noto Serif Armenian",
+      "style": "Bold",
+      "sha256": "79b6e9d36f8409444d16bb88e8c1f091aaf9548fb9ba7e5dba572aec325f905e",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifArmenian-Regular.ttf",
+      "face": 0,
+      "family": "Noto Serif Armenian",
+      "style": "Regular",
+      "sha256": "6dc71b17c55d398c7cc88edeec527292ba1e0573b033ac2136c636ab36c27d76",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifBengali-Bold.ttf",
+      "face": 0,
+      "family": "Noto Serif Bengali",
+      "style": "Bold",
+      "sha256": "7a5a625899a77187518b46a9c9c174671a8b740cdbd88cd2d01766598e8cf6f2",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifBengali-Regular.ttf",
+      "face": 0,
+      "family": "Noto Serif Bengali",
+      "style": "Regular",
+      "sha256": "c1743dce480147e4563e479ddc31d5ff6544372437428622a54c7c867c50f55b",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifCJK-Regular.ttc",
+      "face": 0,
+      "family": "Noto Serif CJK JP",
+      "style": "Regular",
+      "sha256": "5d9c31a059600193c9d7968a998bde886ccdc77e934006ad243b41794c496a7d",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 66
+    },
+    {
+      "path": "assets/fonts/NotoSerifCJK-Regular.ttc",
+      "face": 1,
+      "family": "Noto Serif CJK KR",
+      "style": "Regular",
+      "sha256": "5d9c31a059600193c9d7968a998bde886ccdc77e934006ad243b41794c496a7d",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 66
+    },
+    {
+      "path": "assets/fonts/NotoSerifCJK-Regular.ttc",
+      "face": 2,
+      "family": "Noto Serif CJK SC",
+      "style": "Regular",
+      "sha256": "5d9c31a059600193c9d7968a998bde886ccdc77e934006ad243b41794c496a7d",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 66
+    },
+    {
+      "path": "assets/fonts/NotoSerifCJK-Regular.ttc",
+      "face": 3,
+      "family": "Noto Serif CJK TC",
+      "style": "Regular",
+      "sha256": "5d9c31a059600193c9d7968a998bde886ccdc77e934006ad243b41794c496a7d",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 66
+    },
+    {
+      "path": "assets/fonts/NotoSerifCJK-Regular.ttc",
+      "face": 4,
+      "family": "Noto Serif CJK HK",
+      "style": "Regular",
+      "sha256": "5d9c31a059600193c9d7968a998bde886ccdc77e934006ad243b41794c496a7d",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 66
+    },
+    {
+      "path": "assets/fonts/NotoSerifDevanagari-Bold.ttf",
+      "face": 0,
+      "family": "Noto Serif Devanagari",
+      "style": "Bold",
+      "sha256": "0544878a7b09ea1dc16d9de1f7a1f8cf82beb255d66a287712bb05a24336bcc0",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifDevanagari-Regular.ttf",
+      "face": 0,
+      "family": "Noto Serif Devanagari",
+      "style": "Regular",
+      "sha256": "e272d11d271c61a8d5d0f65764fd368ae53b9f9dabcce244a8941aa8f32ccc70",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifDisplay_Condensed-Italic.ttf",
+      "face": 0,
+      "family": "Noto Serif Display Condensed",
+      "style": "Italic",
+      "sha256": "6ba708fbcf00c8f4cca6be85662b0258df05596a58e684f59d3497f26e945cef",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "assets/fonts/NotoSerifDisplay_Condensed-Regular.ttf",
+      "face": 0,
+      "family": "Noto Serif Display Condensed",
+      "style": "Regular",
+      "sha256": "f72663e6fc3ee44b7dc1503e49fcec79200a6d9b4277ced3acf12518da67b490",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "assets/fonts/NotoSerifGeorgian-Bold.ttf",
+      "face": 0,
+      "family": "Noto Serif Georgian",
+      "style": "Bold",
+      "sha256": "6d30bd1fd83882002cab9da8e3fadb6bbe86fc710913a07305b3aea861de007a",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifGeorgian-Regular.ttf",
+      "face": 0,
+      "family": "Noto Serif Georgian",
+      "style": "Regular",
+      "sha256": "e222862f34ad05bdf950de1049abf6149d250b9e27c1cc482dd645412afb64ff",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifHebrew-Bold.ttf",
+      "face": 0,
+      "family": "Noto Serif Hebrew",
+      "style": "Bold",
+      "sha256": "9dc92fcff313103397ec593cfda58e68f88ee71ff2d4a32aa9cff5a8b2725ea1",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifHebrew-Regular.ttf",
+      "face": 0,
+      "family": "Noto Serif Hebrew",
+      "style": "Regular",
+      "sha256": "dfd5a6aefe97a99f68fe43388342913d50bb9fbf6d3afc4d2c7725661bc4a2b1",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifTamil-Bold.ttf",
+      "face": 0,
+      "family": "Noto Serif Tamil",
+      "style": "Bold",
+      "sha256": "0b3f994281fa5777e5a6fdefa51f0a98cf9b7ea3c25ccf7d448af5f1958fe0eb",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifTamil-BoldItalic.ttf",
+      "face": 0,
+      "family": "Noto Serif Tamil",
+      "style": "Bold Italic",
+      "sha256": "85cda857a9fc90b8b779b94ce619598018b871e9c79f54f75064008c70a82eff",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifTamil-Italic.ttf",
+      "face": 0,
+      "family": "Noto Serif Tamil",
+      "style": "Italic",
+      "sha256": "c2601356d6fe1f7f22cbbb53bc20384a4707598a519ccba16b6d747c758837ca",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifTamil-Regular.ttf",
+      "face": 0,
+      "family": "Noto Serif Tamil",
+      "style": "Regular",
+      "sha256": "8a8cb015a3afec2998e01aabcb42fb365994132d95dbc2150208b4fefd8dc2e4",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifThai-Bold.ttf",
+      "face": 0,
+      "family": "Noto Serif Thai",
+      "style": "Bold",
+      "sha256": "af3f64944248fe0dd9a37c0d2e8eed69930623d962eb5b2130fa81bb9e879dd1",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/NotoSerifThai-Regular.ttf",
+      "face": 0,
+      "family": "Noto Serif Thai",
+      "style": "Regular",
+      "sha256": "747b5bb1fdd329850ddd3218d872a3d2a96ab0dd544f51e5300c6d1b12071b62",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/PlaypenSans.ttf",
+      "face": 0,
+      "family": "Playpen Sans",
+      "style": "Regular",
+      "sha256": "e083f9da8be210e08ea982ab510894641aab37590e70620d6db73f8de881ec4a",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 160
+    },
+    {
+      "path": "assets/fonts/ShantellSans-BoldItalic.ttf",
+      "face": 0,
+      "family": "Shantell Sans",
+      "style": "Bold Italic",
+      "sha256": "c2edbd7060f88a5daee67d0143507a6d54c3748805882b72bac61ef64050712d",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 182
+    },
+    {
+      "path": "assets/fonts/ShantellSans-Italic.ttf",
+      "face": 0,
+      "family": "Shantell Sans",
+      "style": "Italic",
+      "sha256": "ae42adb94b1f8eb0385fd1bacbfe8c2c9d686aaa4495388537e7863fc76f537a",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 182
+    },
+    {
+      "path": "assets/fonts/ebook-core/Libron-Bold.ttf",
+      "face": 0,
+      "family": "Libron",
+      "style": "Bold",
+      "sha256": "da9348facda55d5c584b37fd24659dda3aa2ca0c6fc0c2a9316faa8babace29e",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-core/Libron-BoldItalic.ttf",
+      "face": 0,
+      "family": "Libron",
+      "style": "Bold Italic",
+      "sha256": "d64fd727f7e003e8d787385ebbd76c2986ac6d60c82715b73f59a871188d2ad2",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-core/Libron-Italic.ttf",
+      "face": 0,
+      "family": "Libron",
+      "style": "Italic",
+      "sha256": "b017b66c5764aaa8abbcae83f0f27b6e7b72e6a416592cc70cbdc64fabd5f0e2",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-core/Libron-Regular.ttf",
+      "face": 0,
+      "family": "Libron",
+      "style": "Regular",
+      "sha256": "f7924d25b01d3ef2aac6fc961048272d0ee4ce81bc18be0f6310594e5ef3a6a8",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Ancizar_Serif-Bold.ttf",
+      "face": 0,
+      "family": "NV Ancizar Serif",
+      "style": "Bold",
+      "sha256": "979fdbc84c23e0e44dd9727769147c71fcd212fa7bec2bb0ce74e2a05472306e",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Ancizar_Serif-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Ancizar Serif",
+      "style": "Bold Italic",
+      "sha256": "f18f4ecd28e461aeb50e718df2aabb068255fb0f31e1fd8264afa4e1ee729199",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Ancizar_Serif-Italic.ttf",
+      "face": 0,
+      "family": "NV Ancizar Serif",
+      "style": "Italic",
+      "sha256": "06a42743682d1249ee5a1e0b7cc46e4ace4b6a7c38b8ac7e5639c9953d3e61e6",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Ancizar_Serif-Regular.ttf",
+      "face": 0,
+      "family": "NV Ancizar Serif",
+      "style": "Regular",
+      "sha256": "64131a74593045dc36297bc6b4801bae1bed4f87f78a4726de0cef05acbf39e4",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Bitter-Bold.ttf",
+      "face": 0,
+      "family": "NV Bitter",
+      "style": "Bold",
+      "sha256": "e61d0125eaf803af53aae899528d83adbc7961a0c4c7665ca9bb01322b9c435d",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 240
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Bitter-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Bitter",
+      "style": "Bold Italic",
+      "sha256": "5930edd24a276d8de2bcb72b9e092402ccef65222b5a9a227aef35e2b430397b",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 240
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Bitter-Italic.ttf",
+      "face": 0,
+      "family": "NV Bitter",
+      "style": "Italic",
+      "sha256": "cd0d2d56145047443348ccf931fb292e583a9f6ad3a1048b89319c5bc3f33ac6",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 240
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Bitter-Regular.ttf",
+      "face": 0,
+      "family": "NV Bitter",
+      "style": "Regular",
+      "sha256": "baa77fd4b7216d1f244478f96d4e0fa46753acf8cb52123c8b5f7c5936666283",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 240
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Charis-Bold.ttf",
+      "face": 0,
+      "family": "NV Charis",
+      "style": "Bold",
+      "sha256": "e7f778bd50af828bb5fb04e4b1afb7c5542a7c9a52fc2bda86cda7eb7fb01b43",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 268
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Charis-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Charis",
+      "style": "Bold Italic",
+      "sha256": "7616c5d41d6978389417aa9baed6dac10bf2e7aa1d7a7d9f9c05eb952b7f758a",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 268
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Charis-Italic.ttf",
+      "face": 0,
+      "family": "NV Charis",
+      "style": "Italic",
+      "sha256": "c2d9b1ee33b7f4bdc6249378c57a5e7b1055de69daef796d0ed5f3b21cf5a644",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 268
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Charis-Regular.ttf",
+      "face": 0,
+      "family": "NV Charis",
+      "style": "Regular",
+      "sha256": "0213f5da0747315e2708595b8eaa3378acd9436d6dbc7ff349552a08215eef39",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 268
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Garamond-Bold.ttf",
+      "face": 0,
+      "family": "NV Garamond",
+      "style": "Bold",
+      "sha256": "8d07562938138f4a1f0a7733d9b1281a390ccf890224f0b0ffbc35eb1665fd42",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 241
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Garamond-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Garamond",
+      "style": "Bold Italic",
+      "sha256": "dee44aeb73073a0bb4f632b3760f2f669b7ff24c841c613eb45ab049aa874e2e",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 241
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Garamond-Italic.ttf",
+      "face": 0,
+      "family": "NV Garamond",
+      "style": "Italic",
+      "sha256": "7c33b5187e3b38651e098c24f431906eef09ce86cf1651b92a5c2a0f9624b7e8",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 241
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Garamond-Regular.ttf",
+      "face": 0,
+      "family": "NV Garamond",
+      "style": "Regular",
+      "sha256": "b4c8b9175a5e1100fd4f030ef0c32e6d85cbb60a05c7e7d8714d81404ea275a6",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 241
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Jost-Bold.ttf",
+      "face": 0,
+      "family": "NV Jost",
+      "style": "Bold",
+      "sha256": "7b8702a26284943268b6793a2123927de659a61f9f87968752a5ac03627ba655",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 76
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Jost-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Jost",
+      "style": "Bold Italic",
+      "sha256": "617a171245cf77312d360de26f3238411d6e58696c0302d5df83bda364653fa7",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 76
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Jost-Italic.ttf",
+      "face": 0,
+      "family": "NV Jost",
+      "style": "Italic",
+      "sha256": "7472bd587a47e18bc7917d7b44095807467fda9bf6e99c7652f2843381cf7885",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 76
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Jost-Regular.ttf",
+      "face": 0,
+      "family": "NV Jost",
+      "style": "Regular",
+      "sha256": "8fbacf4728b4d71575091628f113cd40646e513ba86fde8e0a05ff05d16c807b",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 76
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Legible_Next-Bold.ttf",
+      "face": 0,
+      "family": "NV Legible Next",
+      "style": "Bold",
+      "sha256": "32ef0a4ab388d3b8d5acd35ec237c0a85282694ade41f06c434a6c08d347a6c3",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Legible_Next-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Legible Next",
+      "style": "Bold Italic",
+      "sha256": "b05dc580f4ffbc6c26d7db0a65f1f54c314ec3d75887eb8fee8b7fe3c9c32be0",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Legible_Next-Italic.ttf",
+      "face": 0,
+      "family": "NV Legible Next",
+      "style": "Italic",
+      "sha256": "640c97d0ef57ec2d0e2353f744f6abb35923704d778c231eeefa7e02825b1d22",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Legible_Next-Regular.ttf",
+      "face": 0,
+      "family": "NV Legible Next",
+      "style": "Regular",
+      "sha256": "eca414faed6f3d893e5761fae9e0258818da130bf5b98d384eed3c970908600d",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Literata-Bold.ttf",
+      "face": 0,
+      "family": "NV Literata",
+      "style": "Bold",
+      "sha256": "d2603ffe6225c4b146e99a459c81b9b47a41964c8dfaf1a848c06a23a9804247",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 118
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Literata-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Literata",
+      "style": "Bold Italic",
+      "sha256": "2e80f6445a0091cd9a18868786774571b17a9fa4a53d560d1dd864802ebc3930",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 118
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Literata-Italic.ttf",
+      "face": 0,
+      "family": "NV Literata",
+      "style": "Italic",
+      "sha256": "ec7904899291e67fdd460f387d428818579d4e0ea29bd9f824dbe5e8b34c02e3",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 118
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Literata-Regular.ttf",
+      "face": 0,
+      "family": "NV Literata",
+      "style": "Regular",
+      "sha256": "da53d3ab935685576670cb31d2dc882f79ce09d481b9553ff0935489a5cd047b",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 118
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Palatium-Bold.ttf",
+      "face": 0,
+      "family": "NV Palatium",
+      "style": "Bold",
+      "sha256": "f0cc7efd740ffcaf4191a350b2c80e1b77617d8b747dab026f1acdee2a1a7cbc",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 144
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Palatium-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Palatium",
+      "style": "Bold Italic",
+      "sha256": "b6187348eee1fc57c88bafedb9c564e045e60a4af653e8060820c9d23e514092",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 144
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Palatium-Italic.ttf",
+      "face": 0,
+      "family": "NV Palatium",
+      "style": "Italic",
+      "sha256": "c21e6f96f950afabdad5e890158d3413fd1afce0bb2bbb20cb556e3e6b328bf4",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 144
+    },
+    {
+      "path": "assets/fonts/ebook-core/NV_Palatium-Regular.ttf",
+      "face": 0,
+      "family": "NV Palatium",
+      "style": "Regular",
+      "sha256": "2c90dc57e4dbc282300cc10dab6b5e597a2c30e68743298a7e5a8af9941e1783",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 144
+    },
+    {
+      "path": "assets/fonts/ebook-core/Sourcerer-Bold.ttf",
+      "face": 0,
+      "family": "Sourcerer",
+      "style": "Bold",
+      "sha256": "18dad943c32f1d25782fd432bafc92ee46b7ec3aa0bbca006f6da489ce8d1755",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 150
+    },
+    {
+      "path": "assets/fonts/ebook-core/Sourcerer-BoldItalic.ttf",
+      "face": 0,
+      "family": "Sourcerer",
+      "style": "Bold Italic",
+      "sha256": "c6e5483d16dbd9bac0478b0c7cd2abffca395a2eed57be54fb06b8e702b9a36a",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 150
+    },
+    {
+      "path": "assets/fonts/ebook-core/Sourcerer-Italic.ttf",
+      "face": 0,
+      "family": "Sourcerer",
+      "style": "Italic",
+      "sha256": "fdfae4a83cb3b6669d8f1a8cd59bd34862928293d0e392a02ecd3196100de1f8",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 150
+    },
+    {
+      "path": "assets/fonts/ebook-core/Sourcerer-Regular.ttf",
+      "face": 0,
+      "family": "Sourcerer",
+      "style": "Regular",
+      "sha256": "772f8e8db69bc820f205ba3d48961f514362540765aec886d854f9b03e96461e",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 150
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/Cartisse-Bold.ttf",
+      "face": 0,
+      "family": "Cartisse",
+      "style": "Bold",
+      "sha256": "66542400de27106d7005ce651a52ec0365b1bcd7f2d9c2378d5a36dbd5c1cb34",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 146
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/Cartisse-BoldItalic.ttf",
+      "face": 0,
+      "family": "Cartisse",
+      "style": "Bold Italic",
+      "sha256": "53fed1d45879e44691112fb8444c7d2cd4c8f01ec20414e395e2107916beb447",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 146
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/Cartisse-Italic.ttf",
+      "face": 0,
+      "family": "Cartisse",
+      "style": "Italic",
+      "sha256": "4645ce8499bb5cc770a10d7507fb0969d6e37254cb792ed284ef65f618cf3b32",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 146
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/Cartisse-Regular.ttf",
+      "face": 0,
+      "family": "Cartisse",
+      "style": "Regular",
+      "sha256": "8eac77e6acca81acea6d7d40ca09994984ac69ee0a06141917a9fd3ed9b99282",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 146
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Adelph-Bold.ttf",
+      "face": 0,
+      "family": "NV Adelph",
+      "style": "Bold",
+      "sha256": "9f50d6f6ed3ca4df43285df4bc7bd23d78c0def68fae2d5d0f514c38848fb973",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Adelph-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Adelph",
+      "style": "Bold Italic",
+      "sha256": "2efc1db809bc547c10095511683e4610f5b6ebb6992d8c2948e873b3a4085bde",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Adelph-Italic.ttf",
+      "face": 0,
+      "family": "NV Adelph",
+      "style": "Italic",
+      "sha256": "b3a507452b17015107e246a6776bf906adfbce409f1aa981ada2f4b9f736c15a",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Adelph-Regular.ttf",
+      "face": 0,
+      "family": "NV Adelph",
+      "style": "Regular",
+      "sha256": "4dc99122e090420a880efcf725103f916f6d6109e7d9e26e545f8b7c21c64fcd",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Alegreya-Bold.ttf",
+      "face": 0,
+      "family": "NV Alegreya",
+      "style": "Bold",
+      "sha256": "cd4f9b6294ae5b54452457a5f92b81b738fe31dd83cdef2ed929c006a34a66c8",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 186
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Alegreya-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Alegreya",
+      "style": "Bold Italic",
+      "sha256": "21c949581b0af83382587a47e37ffd3786db3f054f50d9f20081162c6041fa75",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 186
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Alegreya-Italic.ttf",
+      "face": 0,
+      "family": "NV Alegreya",
+      "style": "Italic",
+      "sha256": "dfb0524e6e096d5807efa33d29834c6baf6796f19a5afccd0b95e9a8f17e65bc",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 186
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Alegreya-Regular.ttf",
+      "face": 0,
+      "family": "NV Alegreya",
+      "style": "Regular",
+      "sha256": "cf89aa70e7a8750667d5578ba407941df1d83414de3caae96d56cd06e2c373e2",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 186
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Aleo-Bold.ttf",
+      "face": 0,
+      "family": "NV Aleo",
+      "style": "Bold",
+      "sha256": "ee8fa6632c49e797f3f2ed02328cbb1ed40747e434a953dcc38921a976a8b739",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Aleo-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Aleo",
+      "style": "Bold Italic",
+      "sha256": "895ffae393296b05fda2e4706641ea4923dee7852bb320a845bd70c326fa153a",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Aleo-Italic.ttf",
+      "face": 0,
+      "family": "NV Aleo",
+      "style": "Italic",
+      "sha256": "942ff845d5d4660ef576ecd6047398f3d92fea9623ea56b78fe3683389e86839",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Aleo-Regular.ttf",
+      "face": 0,
+      "family": "NV Aleo",
+      "style": "Regular",
+      "sha256": "d632aa5c662c0818c698309ec4ca40e1f09ea5946a566f930279dbb05f8b35e7",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Andada-Bold.ttf",
+      "face": 0,
+      "family": "NV Andada",
+      "style": "Bold",
+      "sha256": "b1aa8a8ff41dfb6c727712b9efc7018c121ff5e364c499b8175343e968a5dbd0",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Andada-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Andada",
+      "style": "Bold Italic",
+      "sha256": "9004196b92dfd26981da71b1e09cf9b0eaa6f8f690fefd3f9ef2a1c800af78a6",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Andada-Italic.ttf",
+      "face": 0,
+      "family": "NV Andada",
+      "style": "Italic",
+      "sha256": "396b4977c387bd0a945e03d1fb709a01daab1607b995c981eb136752c71e25f7",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Andada-Regular.ttf",
+      "face": 0,
+      "family": "NV Andada",
+      "style": "Regular",
+      "sha256": "13e5a2e81c771dd3b97d6aa4916c916dac077397f82809feb5cc8cb23b4c6991",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Basker-Bold.ttf",
+      "face": 0,
+      "family": "NV Basker",
+      "style": "Bold",
+      "sha256": "fff03a03f93770230c869821f463bd1e1198fe3b2c09644baff4f1b88d923b6b",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Basker-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Basker",
+      "style": "Bold Italic",
+      "sha256": "ebc586be11fe69a1330c5466f5982e5c928d9d48e5f2bbc122e40e4acfee092f",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Basker-Italic.ttf",
+      "face": 0,
+      "family": "NV Basker",
+      "style": "Italic",
+      "sha256": "3e8676d0dc42d239b1076358b272ce595edaf84bfa52493e0022192e83a02801",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Basker-Regular.ttf",
+      "face": 0,
+      "family": "NV Basker",
+      "style": "Regular",
+      "sha256": "3090d99e38f6da8859875860617e6a0075ce2322dc2f59f2ab4a3da91a821ce7",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Castoro-Bold.ttf",
+      "face": 0,
+      "family": "NV Castoro",
+      "style": "Bold",
+      "sha256": "8d2f42cb136de94f7e75b3c43fc16018f295f458458013b0340c48c4c7633d13",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Castoro-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Castoro",
+      "style": "Bold Italic",
+      "sha256": "7cf07d0fd9095c3c20e07d4944db5831d97e83113525ba9488d037390804a378",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Castoro-Italic.ttf",
+      "face": 0,
+      "family": "NV Castoro",
+      "style": "Italic",
+      "sha256": "872e6318e865776226abc2d312f7714583c12f1338f1a087a09fb3731e7dd10f",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Castoro-Regular.ttf",
+      "face": 0,
+      "family": "NV Castoro",
+      "style": "Regular",
+      "sha256": "bb46ec2597d2e5995b4e470b514a699e5475b22e431dafa3822fbc4985f67fbc",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Halcyon-Bold.ttf",
+      "face": 0,
+      "family": "NV Halcyon",
+      "style": "Bold",
+      "sha256": "244068170801d32b1ffdfdaa257da51106bb7b2c17151a16cd5700815c94c3ca",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 254
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Halcyon-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Halcyon",
+      "style": "Bold Italic",
+      "sha256": "851970271dff5c0db94c659188ca42b2a06f581c0d4efa51289f71c53a316ae3",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 250
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Halcyon-Italic.ttf",
+      "face": 0,
+      "family": "NV Halcyon",
+      "style": "Italic",
+      "sha256": "37acc0af0d4d5b784604d6246fb7318021fc1962ac243ef57444dd47fbc83fac",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 250
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Halcyon-Regular.ttf",
+      "face": 0,
+      "family": "NV Halcyon",
+      "style": "Regular",
+      "sha256": "d038a7cec4b9fac21d43eeda5864fba056ac3a52a6ee4df444d3194635fede73",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 254
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Publica-Bold.ttf",
+      "face": 0,
+      "family": "NV Publica",
+      "style": "Bold",
+      "sha256": "5374e610fc71aca1b44ad305ce98e99e2a8ccbefc7a2140c79cb8d7285ffb70c",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 220
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Publica-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Publica",
+      "style": "Bold Italic",
+      "sha256": "d5aaf51923a1635a9447a3f7d6e9655404b9cfb71961ddfa4e9b4f7b84c17c14",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 220
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Publica-Italic.ttf",
+      "face": 0,
+      "family": "NV Publica",
+      "style": "Italic",
+      "sha256": "89d7511d3ace20f7758fcafc1dfc54d2dd532740fb21c4eb003145f5bdb22d83",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 220
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Publica-Regular.ttf",
+      "face": 0,
+      "family": "NV Publica",
+      "style": "Regular",
+      "sha256": "193aa1535936d820db00ff21c0bd396bcb25c24063a04a7bbdf054b686f12d1b",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 220
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Scarlet-Bold.ttf",
+      "face": 0,
+      "family": "NV Scarlet",
+      "style": "Bold",
+      "sha256": "f9aca9aa741240b1c6c2052cdf85e0187e6e35dc7640931dfcb8ce6639aec882",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 103
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Scarlet-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Scarlet",
+      "style": "Bold Italic",
+      "sha256": "938afa7b84d7436ace2803c51eacd9a2a5352981234a6480cdf5aef130edba73",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 102
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Scarlet-Italic.ttf",
+      "face": 0,
+      "family": "NV Scarlet",
+      "style": "Italic",
+      "sha256": "33b71d43d24d46d8759e51e369a97679682949be9a5cd0902c79fc0a2dd5cba5",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 102
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Scarlet-Regular.ttf",
+      "face": 0,
+      "family": "NV Scarlet",
+      "style": "Regular",
+      "sha256": "273992591cace8133b7db80680193c0172f4c2a6f09a447f85d15b51605982b5",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 103
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Technical-Bold.ttf",
+      "face": 0,
+      "family": "NV Technical",
+      "style": "Bold",
+      "sha256": "8fa00b418abc8e25c38950aa02dc4290bbb9ece66c13afbd9ba634d825d3b5b9",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 106
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Technical-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Technical",
+      "style": "Bold Italic",
+      "sha256": "bf7c73d3ab1dded7dc81606f095f71d115ac7eba11e24e9706ddc249d8505287",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 106
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Technical-Italic.ttf",
+      "face": 0,
+      "family": "NV Technical",
+      "style": "Italic",
+      "sha256": "6186613090af747adaa38b4a55f27b1edab2fa7ce88841b9b5a027ffe5f7ac45",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 106
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Technical-Regular.ttf",
+      "face": 0,
+      "family": "NV Technical",
+      "style": "Regular",
+      "sha256": "0999c9e6b5f159cd2955291167722f5f498f85bd62efa4c8dd1a756b8904e5e4",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 106
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Yrsa-Bold.ttf",
+      "face": 0,
+      "family": "NV Yrsa",
+      "style": "Bold",
+      "sha256": "5c4163a36979f6d12d890f23f69322cd2424d7fe79341285e77e407f9636f8f6",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Yrsa-BoldItalic.ttf",
+      "face": 0,
+      "family": "NV Yrsa",
+      "style": "Bold Italic",
+      "sha256": "cecc373bd5b9f891ec679cdf9d63e27263acbcf09d00ecc11a304d963af90f32",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Yrsa-Italic.ttf",
+      "face": 0,
+      "family": "NV Yrsa",
+      "style": "Italic",
+      "sha256": "d68466649a557fac91f3b3dddd266cb0712dfed4544e9837b8b835e825af4d3f",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    },
+    {
+      "path": "assets/fonts/ebook-supplemental/NV_Yrsa-Regular.ttf",
+      "face": 0,
+      "family": "NV Yrsa",
+      "style": "Regular",
+      "sha256": "853dbfbfc53359c93353525bd63e7fd631da2fa748ab7ef279eb99e7a7b93654",
+      "russian_66": 0,
+      "missing_russian": "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+      "cyrillic_0400_052f": 0
+    }
+  ],
+  "samples": [
+    {
+      "path": "test & diagnostic/archive/pre-beta10/77564e9/Adventure.ttf",
+      "face": 0,
+      "family": "Adventure",
+      "style": "Regular",
+      "sha256": "49692f3c65c27767ded4ccd357012091d4e2016dc44bc916bc58b6f0fe9ea8b9",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 93
+    },
+    {
+      "path": "test & diagnostic/archive/pre-beta10/77564e9/Caveat/Caveat-Bold.ttf",
+      "face": 0,
+      "family": "Caveat",
+      "style": "Bold",
+      "sha256": "b42cc772f3528d9150c29d6051e2ed3fd472ad4e584c73fe1500ee628d6b1ac0",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 236
+    },
+    {
+      "path": "test & diagnostic/archive/pre-beta10/77564e9/Caveat/Caveat-Medium.ttf",
+      "face": 0,
+      "family": "Caveat Medium",
+      "style": "Regular",
+      "sha256": "2003781246d27c3ea281fb2e7dbd98e9d6ce22baae7ee5e60f35d5969e918a4a",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 236
+    },
+    {
+      "path": "test & diagnostic/archive/pre-beta10/77564e9/Caveat/Caveat-Regular.ttf",
+      "face": 0,
+      "family": "Caveat",
+      "style": "Regular",
+      "sha256": "271ee7c4a60b1be2ba13a66990e7475c76c982ac6e906c9db25139976282f6b8",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 236
+    },
+    {
+      "path": "test & diagnostic/archive/pre-beta10/77564e9/Caveat/Caveat-SemiBold.ttf",
+      "face": 0,
+      "family": "Caveat SemiBold",
+      "style": "Regular",
+      "sha256": "1f44700f4362468de6f8b4d87fed36ad101d14696272dd1b5eceaa5d64b5baa8",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 236
+    },
+    {
+      "path": "test & diagnostic/archive/pre-beta10/77564e9/MTCORSVA.TTF",
+      "face": 0,
+      "family": "Monotype Corsiva",
+      "style": "Regular",
+      "sha256": "a6f6dacb871be365ad93fe1aab09332f768cd2aa35fdfca8e0053a38f5a2662b",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 94
+    },
+    {
+      "path": "test & diagnostic/archive/pre-beta10/77564e9/Oranienbaum-Regular.ttf",
+      "face": 0,
+      "family": "Oranienbaum",
+      "style": "Regular",
+      "sha256": "9d3c42bb47ea4f9c9456dfc84634f505b02933ca9bc07af110ac9e3a12f60f94",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 100
+    },
+    {
+      "path": "test & diagnostic/archive/pre-beta10/77564e9/ViaodaLibre-Regular.ttf",
+      "face": 0,
+      "family": "Viaoda Libre",
+      "style": "Regular",
+      "sha256": "332d2199fecab1abb7867a6036bee3e05dd7d3110b04076d6bf8d09d02120ea0",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 168
+    },
+    {
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraCode-Bold.ttf",
+      "face": 0,
+      "family": "Fira Code",
+      "style": "Bold",
+      "sha256": "41f6554e845e2f5b70adad3950122334b866aac436793b7742ade600067701be",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 288
+    },
+    {
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraCode-Medium.ttf",
+      "face": 0,
+      "family": "Fira Code Medium",
+      "style": "Regular",
+      "sha256": "97091f90623661fb4f7979c10d188f30f4806d8ce326b0bc8d1acc79dcc20d8f",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 288
+    },
+    {
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraCode-Regular.ttf",
+      "face": 0,
+      "family": "Fira Code",
+      "style": "Regular",
+      "sha256": "5992ab9640e2df491b2f609467b1de60e8bc39b2c28db184342a0592d98f6117",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 288
+    },
+    {
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraSans-Bold.ttf",
+      "face": 0,
+      "family": "Fira Sans",
+      "style": "Bold",
+      "sha256": "74b477a3e2b7c745e6dac8c01764c8fd82e53763b47ef1eccd24dce36d2ff71f",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 288
+    },
+    {
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraSans-BoldItalic.ttf",
+      "face": 0,
+      "family": "Fira Sans",
+      "style": "Bold Italic",
+      "sha256": "8049b15ea03da7982db1152a9927911c47e0a92dc5ed434fa329b143a99b6adb",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 288
+    },
+    {
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraSans-Italic.ttf",
+      "face": 0,
+      "family": "Fira Sans",
+      "style": "Italic",
+      "sha256": "e48b22ba7f2eab682501ba01b3ddfdbf65dadfafa74d9b2efe1879eb949b5c69",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 288
+    },
+    {
+      "path": "test & diagnostic/fonts/Kobo/fonts/FiraSans-Regular.ttf",
+      "face": 0,
+      "family": "Fira Sans",
+      "style": "Regular",
+      "sha256": "3dabf3d48bf4599f95cffd92f99ea426a014d5311f52a5eb5ec3af265e97cd97",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 288
+    },
+    {
+      "path": "test & diagnostic/fonts/Literata/Literata-Bold.ttf",
+      "face": 0,
+      "family": "Literata",
+      "style": "Bold",
+      "sha256": "33274290d005dc65abd706b5db900ebd0bc297a0f41a0e16caa3f905677f840f",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 118
+    },
+    {
+      "path": "test & diagnostic/fonts/Literata/Literata-BoldItalic.ttf",
+      "face": 0,
+      "family": "Literata",
+      "style": "Bold Italic",
+      "sha256": "c20229a5c396b05e9ab13a773af4e4fc3b61f9de6878620d77d7b6d486ff3f6b",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 118
+    },
+    {
+      "path": "test & diagnostic/fonts/Literata/Literata-Italic.ttf",
+      "face": 0,
+      "family": "Literata",
+      "style": "Italic",
+      "sha256": "e48dc9674564dc58936960e7a8000c8080155e6882c8d999cadb0854562b5f31",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 118
+    },
+    {
+      "path": "test & diagnostic/fonts/Literata/Literata-Medium.ttf",
+      "face": 0,
+      "family": "Literata Medium",
+      "style": "Regular",
+      "sha256": "83cbae9d86654fd53f3f7e5991fd0b32a9b63a99e0a3932813afee2de2496079",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 118
+    },
+    {
+      "path": "test & diagnostic/fonts/Literata/Literata-MediumItalic.ttf",
+      "face": 0,
+      "family": "Literata Medium",
+      "style": "Italic",
+      "sha256": "90b140d331fe6c3dfeff06fd42335a12a061c013765a32c7472d81e0eb0c2abc",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 118
+    },
+    {
+      "path": "test & diagnostic/fonts/Literata/Literata-Regular.ttf",
+      "face": 0,
+      "family": "Literata",
+      "style": "Regular",
+      "sha256": "7a3127b8aee7ac1f50419a45fd6c9dd19071060a7a6b31194a6b72446ff253b1",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 118
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Bold.ttf",
+      "face": 0,
+      "family": "Noto Serif Display Condensed",
+      "style": "Bold",
+      "sha256": "7fefed405cfe66604181661ef754b81886ce6d4f83f7f92d94231dc23cfb665e",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-BoldItalic.ttf",
+      "face": 0,
+      "family": "Noto Serif Display Condensed",
+      "style": "Bold Italic",
+      "sha256": "8a900ceaa0bdc87d6e9d0a95d0a5ea3023fdf65170242d588ade030bea5949b8",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Italic.ttf",
+      "face": 0,
+      "family": "Noto Serif Display Condensed",
+      "style": "Italic",
+      "sha256": "6ba708fbcf00c8f4cca6be85662b0258df05596a58e684f59d3497f26e945cef",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Light.ttf",
+      "face": 0,
+      "family": "Noto Serif Display Condensed Light",
+      "style": "Regular",
+      "sha256": "8babdbd09ce0ad8d68cf791a3d9a7fe3d8206a16525db59185316fdc3b765373",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-LightItalic.ttf",
+      "face": 0,
+      "family": "Noto Serif Display Condensed Light",
+      "style": "Italic",
+      "sha256": "90d295b1175f29a42f931d957406a1cf4ae03aa8ecce04bd14fc3642c7969ef9",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Medium.ttf",
+      "face": 0,
+      "family": "Noto Serif Display Condensed Medium",
+      "style": "Regular",
+      "sha256": "25f3e9693619ee72f98cd2890d2d388d9dda09dd5c2c0c3eec0f7a52f3ea136c",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-MediumItalic.ttf",
+      "face": 0,
+      "family": "Noto Serif Display Condensed Medium",
+      "style": "Italic",
+      "sha256": "3871f202f4868fc5c1e95eb11227190b9cc7d1a1b762213e20042c7bab525b13",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Regular.ttf",
+      "face": 0,
+      "family": "Noto Serif Display Condensed",
+      "style": "Regular",
+      "sha256": "f72663e6fc3ee44b7dc1503e49fcec79200a6d9b4277ced3acf12518da67b490",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 304
+    },
+    {
+      "path": "test & diagnostic/fonts/Shantell Sans/ShantellSans-Bold.ttf",
+      "face": 0,
+      "family": "Shantell Sans",
+      "style": "Bold",
+      "sha256": "2c2607a8b400f573ffd43bfebc44fad7621945b95cd9e1ceadc430699a001280",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 182
+    },
+    {
+      "path": "test & diagnostic/fonts/Shantell Sans/ShantellSans-BoldItalic.ttf",
+      "face": 0,
+      "family": "Shantell Sans",
+      "style": "Bold Italic",
+      "sha256": "c2edbd7060f88a5daee67d0143507a6d54c3748805882b72bac61ef64050712d",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 182
+    },
+    {
+      "path": "test & diagnostic/fonts/Shantell Sans/ShantellSans-Italic.ttf",
+      "face": 0,
+      "family": "Shantell Sans",
+      "style": "Italic",
+      "sha256": "ae42adb94b1f8eb0385fd1bacbfe8c2c9d686aaa4495388537e7863fc76f537a",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 182
+    },
+    {
+      "path": "test & diagnostic/fonts/Shantell Sans/ShantellSans-Medium.ttf",
+      "face": 0,
+      "family": "Shantell Sans Medium",
+      "style": "Regular",
+      "sha256": "7ebc788f9f5e20a214646c5ffab6a3c98cbbd958ed7c7d2c4b2531de34d888ce",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 182
+    },
+    {
+      "path": "test & diagnostic/fonts/Shantell Sans/ShantellSans-MediumItalic.ttf",
+      "face": 0,
+      "family": "Shantell Sans Medium",
+      "style": "Italic",
+      "sha256": "6ab27a5ea7a26ea1f988e2eaa394c614521f1ec9339ba976e3203d8df2463fdf",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 182
+    },
+    {
+      "path": "test & diagnostic/fonts/Shantell Sans/ShantellSans-Regular.ttf",
+      "face": 0,
+      "family": "Shantell Sans",
+      "style": "Regular",
+      "sha256": "84c3c95a452fbeb3819ed0bb3cd1190adec43595601d13b4b7c9f603731685ed",
+      "russian_66": 66,
+      "missing_russian": "",
+      "cyrillic_0400_052f": 182
+    }
+  ]
+}

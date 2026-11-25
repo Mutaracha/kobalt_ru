@@ -3,27 +3,25 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010–060 (включая 033/034), все патчи применяются вместе.
-Последний проверенный бинарник: **7566324a**, [CI45607993683](https://github.com/Mutaracha/kobalt_ru/actions/runs/45607993683),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45607993683/artifacts/15018104913).
+Последний проверенный бинарник: **3aeb9efb**, [CI45629224994](https://github.com/Mutaracha/kobalt_ru/actions/runs/45629224994),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45629224994/artifacts/15029143933).
 CI: series/native/Qt5/package/qemu PASS; не полная аппаратная приёмка.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-[044: Hybrid correctness](doc/reports/patch-series/044-hybrid-correctness-gates.md).
-Пользователь подтвердил reboot перед поздней быстрой A1/A2 парой upload214bf213.
-Cache investigation paused/observed lifecycle accepted: disk reuse after reboot работает,
-initial font_list difference остаётся residual observation, не исправленным read bug.
-Никакого cache-read algorithm fix между mismatch diagnostics и успешным run не было;
-039 добавлял optional metadata snapshots, не новый admission path.
-Перешли к Hybrid correctness.044 test-only: stop-before-start/park preserves prefix
-frame+anchor, no partial cache, resume/full-count, parked-close+independent rebuild.
-Revisiona3e1c24d/CI45613247416 все jobs PASS. На устройство новый test-only package не нужен.
-045 notes/body-images parity (inpage on/off), reference frames/count/anchors: CI45617219756 PASS.
-[045 report](doc/reports/patch-series/045-hybrid-notes-images.md). Остались resource-backed
-FB2 lease revoke и session/UI page-count gates; generic reader-session target не выполняется
-в selected CI и не считается FB2 evidence.
-7566324a остаётся visual package, Noto balance/neutral hint acceptance pending.
+[046: Hybrid session gates](doc/reports/patch-series/046-hybrid-session-gates.md) завершены:
+resource-backed FB2 pending→exact count, cancel/revoke stale-publication refusal,
+close/drain resource release; mid-block FB2 revocation уже исполняется local-resources.
+CI45629224994 все jobs PASS, bounded Hybrid correctness на host закрыт; не полная device матрица.
+
+[047: Shantell + audit](doc/reports/patch-series/047-shantell-and-font-audit.md): RU Playful
+теперь Shantell Sans Italic вместо Caveat, реальные italic bytes, QFont/QSS согласованы.
+Caveat удалён из final runtime assets, EN Kalam/classic/Instrument Kobalt не менялись.
+Uploaded samples → test & diagnostic/fonts/, hashes intact; actual-device replay path обновлён.
+В133 runtime-source faces найдены некириллические Libron/Ancizar/Legible и др.; остальные
+шрифты автоматически не заменялись. Новый пакет3aeb9efb visual pending (Playful/Noto).
+Следующий feature: persistent status toggle в reading menu; новые ускорения не добавлять.
 
 ## Очередь — порядок закрытия
 
@@ -36,8 +34,8 @@ FB2 lease revoke и session/UI page-count gates; generic reader-session target �
 | 1 / B10-UI | partial device accepted | Exit-wordmark, OFF persistence и cleanup wording приняты. About wordmark исправлен через shared Instrument Serif role; CI PASS/device visual pending. |
 | 2 / B10-CACHE | done: observed save/read lifecycle | 46ecb8f: все 12 saves=true; измеренные H1/H2/A1/A2 имеют disk hits, retained отдельно. Низкая стабильная задержка A1 не заявлена: это B10-CACHED-LAYOUT. |
 | 3 / B10-CACHED-LAYOUT | paused: observed lifecycle accepted | User confirms late fast A1/A2 after reboot, disk hits all inputs match9/34ms. Earlier font_list primitive differs, exact inventory cause unknown. No read-path fix claimed; return only on reproducible recurrence. |
-| 4 / B10-HYBRID-COVERAGE | in progress: first CI batch PASS | 044 test-only cancellation/park/close/rebuild PASS in CI45613247416. 045 notes/body-images PASS CI45617219756. Remaining resource-backed lease revocation and session/UI count semantics; no acceleration work. |
-| 5 / B10-FONTS | CI PASS, device visual pending | Full-Monotype task superseded. 055: Noto Serif Display Condensed Regular+Italic only, original beta10 italic semantics, Instrument Serif Kobalt unchanged; Corsiva removed from final package. |
+| 4 / B10-HYBRID-COVERAGE | done: bounded host tests PASS | 044–046 prefix/full anchors/count/notes/images, park/cancel/close and resource-backed session/lease gates. CI45629224994 PASS; no claim of full device matrix. |
+| 5 / B10-FONTS | CI PASS, device visual pending | 055/056 Noto subset85%; 057 RU Shantell Sans Italic instead of Caveat. English Kalam/classic/Instrument brand unchanged. Report047 cmap audit and sample organization complete. |
 | 6 / B10-MENU-STATUS | planned: implementation | Общий для всех книг toggle существующей строки состояния: часы + батарея остаются, время текущего сеанса ↔ страница в книге по нажатию. Persistent global preference, формат/estimated/pending как у BookPage колонтитула. Подробный контракт ниже. |
 
 ## B10-MENU-STATUS — согласованный контракт

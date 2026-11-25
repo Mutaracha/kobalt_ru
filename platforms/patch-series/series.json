@@ -145,7 +145,7 @@
       "path": "platforms/patch-series/patches/046-fb2-session-hybrid-gates.patch",
       "sha256": "0d9f27f365f8358d32b2f35f018accd1f1c5591fe71da0864e286c191a6fab9a",
       "scope": "Tests only: resource-backed FB2 pending/final count publication, cancellation/revocation stale-work refusal and close/drain release",
-      "validation": "CI pending"
+      "validation": "CI45629224994 all jobs PASS: resource-backed FB2 session pending/final count publication, cancel/revoke stale-work refusal, close/drain; existing FB2 mid-transfer revoke tested in local-resources. See report046."
     },
     {
       "id": "050-fork-presentation",
@@ -177,7 +177,7 @@
       "path": "platforms/patch-series/patches/057-ru-shantell-italic.patch",
       "sha256": "da40a3ad8ba081501ecd31635202f792a26265ac9c6699d92e89743766df4981",
       "scope": "RU handwriting preset uses real Shantell Sans Italic instead of Caveat; remove Caveat faces/notice, retain English Kalam and classic UI",
-      "validation": "CI pending"
+      "validation": "CI45629224994 all jobs PASS including RU/EN QFont and polished child QLabel; actual Italic/Bold Italic uploaded faces bundled. Visual device fitting pending. See report047."
     },
     {
       "id": "060-build-integration",

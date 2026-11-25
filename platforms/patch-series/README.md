@@ -221,3 +221,9 @@ CI45613247416 PASS; [coverage/remaining gates](../../doc/reports/patch-series/04
 No device update required for this test patch, no speed claim.
 
 045 — test-only FB2 note/body-image parity with inpage footnotes on/off, full fallback allowed. CI45617219756 PASS; no production change/device update.
+
+046 — test-only FB2 ReaderSession pending/final count and lease revoke/cancel/close gates.
+057 — RU Playful Shantell Sans **Italic** replaces Caveat; real Italic+Bold Italic faces bundled;
+legacy saved RU Caveat choice migrated, root/list QSS respects slant. EN Kalam/classic unchanged.
+[047 audit/package](../../doc/reports/patch-series/047-shantell-and-font-audit.md).
+Final CI45629224994 all jobs PASS; runtime3aeb9efb. Device visual gate pending.

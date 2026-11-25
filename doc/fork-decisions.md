@@ -34,7 +34,7 @@ Hybrid 034 разрешён как эксперимент начального �
 «Закрыть Kobalt», «Быстро», «Язык интерфейса». Вход языка — первый пункт Debug,
 общий стиль Settings и самостоятельное владение dialog, не About. Выбор persistent,
 без частичной live retranslation. ExtraLocales/C/POSIX и EN fallback сохраняются.
-RU serif-роли — Monotype Corsiva, playful default вместо Kalam — Caveat;
+RU serif-роли — Noto Serif Display Condensed (85%), playful default вместо Kalam — Shantell Sans Italic;
 обычный classic Sans и explicit custom choice не подменяются. Заголовки/opening
 не запрашивают Italic. В строке закрытия латинское **Kobalt — Instrument Serif**,
 русское «Закрыть» — locale face. Полное новое семейство Corsiva ещё ожидает интеграции.

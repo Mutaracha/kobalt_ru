@@ -83,3 +83,12 @@ reboot accepted as observed; earlier font_list difference is residual, not a fix
 Hybrid044 tests pass (CI45613247416), host-only test additions; no device update needed.
 Remaining targeted notes/images/resource-backed revoke/session-count gates in
 [044](../reports/patch-series/044-hybrid-correctness-gates.md). Keep7566324a for visual gate.
+
+## Current visual package3aeb9efb (supersedes7566324a)
+
+[Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45629224994/artifacts/15029143933),
+all selected CI gates PASS. RU Playful: Shantell Sans Italic instead of upright Caveat,
+verify ordinary labels/settings/list clipping and real cursive appearance. Switch Classic/EN
+for isolation. Noto85%/Instrument Kobalt visual balance still pending. No cache clearing or
+timing matrix; font inventory change may legitimately invalidate an old layout once.
+Bounded Hybrid automated gates complete: [046](../reports/patch-series/046-hybrid-session-gates.md).

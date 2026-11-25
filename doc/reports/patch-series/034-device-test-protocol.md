@@ -17,7 +17,7 @@ series с 034; шрифтовые исправления и «Быстро» в�
 файлы между cold/save/reboot/warm измерениями. Видимые имена HYBRID/ACCURATE
 помогают различать копии в индексирующей библиотеке устройства.
 
-В `2e1d1085` добавлен/заменён `test & diagnostic/monotype-corsiva.zip`, внутри:
+В `2e1d1085` добавлен/заменён `test & diagnostic/fonts/legacy/monotype-corsiva.zip`, внутри:
 Regular, Regular-Italic, Bold, Bold-Italic TTF и COPYRIGHT.txt. Этот пользовательский
 архив сам по себе не перестраивает ordered runtime/assets. Пакет `4f2cecd1`
 собран до него, полная новая гарнитура ещё не интегрирована и её device-приёмка

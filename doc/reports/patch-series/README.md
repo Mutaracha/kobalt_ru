@@ -103,3 +103,10 @@ CI45613247416 all jobs PASS; tests only, device-update not requested. Remaining 
 body-image/resource-lease/session-count checks are not declared complete.
 
 [045 Hybrid note/body-image parity](045-hybrid-notes-images.md): test-only, CI45617219756 PASS. Remaining resource-backed revoke/session count gate open.
+
+## Hybrid completion and Shantell/font audit
+
+[046](046-hybrid-session-gates.md): bounded session count/revoke/close gates complete.
+[047](047-shantell-and-font-audit.md): RU Shantell Sans Italic, Caveat removed from
+final package, original samples consolidated,132 runtime faces cmap audit.
+CI45629224994 all jobs PASS; runtime3aeb9efb, visual acceptance pending.

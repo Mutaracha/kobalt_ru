@@ -20,7 +20,7 @@
 Выбор сохраняется, применяется после перезапуска; входа через About нет.
 Автоматический RU учитывает ExtraLocales/CurrentLocale; C/POSIX не навязывает язык,
 английский остаётся fallback. Locale не меняет глобальные настройки Nickel.
-RU serif — Monotype Corsiva, playful handwriting — Caveat вместо Kalam;
+RU serif — Noto Serif Display Condensed (85%), playful handwriting — Shantell Sans Italic вместо Kalam;
 classic Sans и явно выбранные шрифты не подменяются. В строке «Закрыть Kobalt»
 слово Kobalt — Instrument Serif. Полное новое семейство Corsiva ещё не подключено.
 
