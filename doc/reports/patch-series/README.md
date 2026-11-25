@@ -15,7 +15,7 @@
 
 ## Последние пакеты
 
-- [056: консолидация](056-patch-consolidation.md):29→7, без runtime-изменений; byte/mode equivalence1551 файлов локально PASS, CI pending.
+- [056: консолидация](056-patch-consolidation.md):29→7, без runtime-изменений; byte/mode equivalence1551 файлов и CI45693243999 PASS; runtime без изменений.
 
 - [055: settings polish](055-settings-polish.md):5b45f2c7, CI45686709893 PASS; новые подписи/размеры rail, ChoiceSheet языка и время Letter; пользователь принял UI.
 

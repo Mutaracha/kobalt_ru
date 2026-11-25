@@ -70,3 +70,10 @@ archived FB2 replay и Qt5 compile/check-package/configured refresh-qemu/collect
 host cache evidence15058409465,12317bytes. Повторять visual/timing-проверки только ради
 консолидации не требуется; текущий установленный5b45f2c7 имеет тот же runtime source.
 Последующее уточнение validation-полей series.json не меняет patch bytes/reference.
+
+Финальная серия с уточнёнными validation-полями: **39da89adcda2e4990afe94e6681183b918d661be**,
+[CI45693243999](https://github.com/Mutaracha/kobalt_ru/actions/runs/45693243999) также все jobs PASS,
+включая повторную export/equivalence/native/Qt5/package проверку. Patch bytes прежние.
+[Финальный Qt5 artifact15059678135](https://github.com/Mutaracha/kobalt_ru/actions/runs/45693243999/artifacts/15059678135),45430057bytes;
+host cache evidence15060380762,12305bytes. Docs-only завершение не меняет этот бинарник.
+Материалы/контрольные суммы/maintained links проверены check-materials.py: PASS.
