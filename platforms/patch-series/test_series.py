@@ -80,7 +80,11 @@ class SeriesTests(unittest.TestCase):
             actual = (destination / 'assets/ru.strings').read_text()
             # 050 generalizes singular forms from literal 1 to the CLDR count
             # slot (21, 101, ...). All other reviewed 010 entries stay intact.
+            # 059d approved compact rail captions and reading-time Letter wording.
             plural_updates = {
+                'settings.defaults': '"settings.defaults" = "Стандартные";',
+                'settings.about': '"settings.about" = "О программе";',
+                'sleep.letter_remaining': '"sleep.letter_remaining" = "Осталось читать примерно %1.";',
                 'library.count_one': '"library.count_one" = "%1 книга";',
                 'annotations.summary_one': '"annotations.summary_one" = "%1 аннотация";',
                 'chapter_contents.summary_one': '"chapter_contents.summary_one" = "Содержание · %1 глава";',
