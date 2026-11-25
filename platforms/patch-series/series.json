@@ -207,7 +207,7 @@
       "id": "059b-reading-menu-status",
       "status": "ready",
       "path": "platforms/patch-series/patches/059b-reading-menu-status.patch",
-      "sha256": "6e46efea7970270ee1b2156a23455f583c98f2ff4f6fb3b0e2ff37b1d77472e8",
+      "sha256": "f6ba1d65749bed72e35d7aa862bb8c5ceb7692ab0232fb099e5b1f50eebc374a",
       "scope": "Persistent global reading-menu session/page status toggle using shared BookPage formatter; unchanged clock and battery",
       "validation": "CI pending"
     },

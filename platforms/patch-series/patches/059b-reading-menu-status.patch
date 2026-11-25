@@ -1,5 +1,5 @@
 diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
-index d50a0297..6fee498f 100644
+index d50a0297..4c525898 100644
 --- a/platforms/desktop/CMakeLists.txt
 +++ b/platforms/desktop/CMakeLists.txt
 @@ -495,7 +495,7 @@ if(BUILD_TESTING)
@@ -11,6 +11,15 @@ index d50a0297..6fee498f 100644
              textPresetsWithoutOpeningWait panelsAfterBackgroundWork closeWithoutWaitingForHost finishChoiceSurvivesSleepAndRequiresActiveReader finishPromptPersistence progressPercentagesAgree kosyncAccountGating kosyncSignInValidation kosyncOpening kosyncNetwork kosyncBackgroundWifi kosyncWifiRelease kosyncMoments minuteClock clockRestsWithoutConsumers clockAsksPaceForTimeLeft liveBatteryIndicators turnSkipsHiddenControls idleTimers readerStandbySetting wifiPowerSaver wifiPowerSaverAtSleep kosyncManualToolbar kosyncManualConnection kosyncDialogResume kosyncInvalidPosition kosyncFailure kosyncMissingProgress kosyncMetadata kosyncPasswordSleep kosyncSleepSavesSyncTime kosyncPause kosyncFinal nativeProgressWaitsForSleep appearanceRetryCooldown closeWithUnusableSettings recoveryNoticeAfterFirstPage benchmarkNoticeAfterRun activityBatchesAndLowBattery shutdownFinalSave developmentOptions developmentStateReports annotationExportHandoff annotationExportOwnerDestruction
              progressChoiceKeepAndGo progressChoiceWaitsForSettings progressChoiceWaitsForBookmarks
              finishedSyncWithoutPositionKeepsLocalReading
+@@ -857,7 +857,7 @@ if(BUILD_TESTING)
+         "images:^(desktop\\.imageViewer|engine\\.(image-proportions|svg-limits)|resource\\.image-policy)$"
+         "viewport:^(platform\\.reader-orientation|desktop\\.(viewport.*|bookmarkRibbonSafeArea|fullWidthPanels)|engine\\.alternate-layout|lifecycle\\.(rotationOwnership|settingsOrientationHandoff|exactRotationLock|rotationRoundTripKeepsReadingResponsive|sleepRequestFreezesOrientationBeforeHandoff|close.*Orientation.*)|ui\\.libraryCanvasFollowsViewport|model\\.touch-rotation)$"
+         "display:^(platform\\.page-(animation|transition-native)|desktop\\.(pageAnimationCompatibility|pageAnimationDarkMode|androidPageAnimations|boox.*)|ui\\.(pageTurnFrames|boox.*|libraryThemeSurface|.*Paints.*|openingFirstPaintCallback|openingLogoSplash|openingCoverDamage|openingCoverDisabled|openingMessages|openingHandoffLayout|continuationHintClears|hidingSelectionMenuKeepsDamageCompact|keyboardDamageStaysApartFromEditor|navigationPressKeepsDamageInItsTab|navigationRefreshKeepsOverlayAndPanelPolicies)|model\\.(screen-refresh|page-refresh-regions|image-damage|page-pixels)|lifecycle\\.(appearanceOpeningDoesNotRepaintToolbar|navigationDismissalWaitsForPanel))$"
+-        "chrome:^(lifecycle\\.(readingTimeStatsVisibility|layoutTimeEndsWhenWholeBookIsReady|readingTimeStatus|liveBatteryIndicators|clock.*|minuteClock|idleTimers|timeRemainingFormatShared|exit.*|closeGuard.*)|model\\.header-footer|desktop\\.(headerFooter.*|menuCountsPagesWithoutTurn|percentageFormat|batteryPercentageOnly|largeInterfaceScale.*|desktopControls)|ui\\.(chapterPageSurvivesLongTitles|batteryTextAlignment|readingStripChangesLeaveBodyUnpainted))$"
++        "chrome:^(lifecycle\\.(readingMenuStatusToggle|readingTimeStatsVisibility|layoutTimeEndsWhenWholeBookIsReady|readingTimeStatus|liveBatteryIndicators|clock.*|minuteClock|idleTimers|timeRemainingFormatShared|exit.*|closeGuard.*)|model\\.header-footer|desktop\\.(headerFooter.*|menuCountsPagesWithoutTurn|percentageFormat|batteryPercentageOnly|largeInterfaceScale.*|desktopControls)|ui\\.(chapterPageSurvivesLongTitles|batteryTextAlignment|readingStripChangesLeaveBodyUnpainted))$"
+         "library:^(desktop\\.(library.*|resourceFolders|restartFinishedBooks)|ui\\.library.*|model\\.library)$"
+         "input:^(ui\\.(paged.*|pageTurnTapFilter|pageTurnFilterSeparatesInputClocks|hold.*|fontHoldCancellation|canvas.*|cancelledCanvasTouchRestoresSlider|listPressFeedback|optionAndSwatchPressFeedback)|desktop\\.(navigation|swipeChoices|pageSwipes|buttonMapping|buttonMappingActions|buttonMappingFollowsRotation|buttonMappingUnavailable|largeToc|chapterGroups|contentsReturn|mainTextBoundaries|mainTextChapterAnchors|mainTextSplitChapterEnd|illustratedNavigation|printedPageNavigation|hardwarePageButtons\\..*|wordSelection\\..*|touchCursor.*|annotationTwoFingerTapConsumesWholeSequence|annotationRightClickRejectsChords)|lifecycle\\.(pageTurnTimingIgnoresNoopNavigation|pageButtonsAfterTouchUseDeliveryTime|pageFrameDuringHold|pageImageDuringHold|pageGestureBurstIgnoresRapidTurns|remoteKeyActivityRequiresActiveReading))$"
+         "links:^(desktop\\.(links|inpageFootnotes|footnote.*|revealedLinkPress|linkDiscoveryStrip|tappableLinks|bookmarkCornerLinks)|engine\\.(links|search|word-selection)|lifecycle\\.(staleSearchReplyIgnored|searchScopesAndPagination|searchSurvivesReflow|searchHighlightClearsOnReflow))$"
 diff --git a/src/app/reader/views/navigation.cpp b/src/app/reader/views/navigation.cpp
 index d270982e..44016c51 100644
 --- a/src/app/reader/views/navigation.cpp
@@ -282,10 +291,10 @@ index 3be77ccd..16c06db1 100644
      require(ui::initializeInterfaceFonts(test::readerAssets()), "Control fonts unavailable");
      require(ui::brandFont(40).family() == (language == strings::Locale::Russian
 diff --git a/tests/reader_lifecycle.cpp b/tests/reader_lifecycle.cpp
-index d49d638d..ebfd71e5 100644
+index d49d638d..b7779bc6 100644
 --- a/tests/reader_lifecycle.cpp
 +++ b/tests/reader_lifecycle.cpp
-@@ -7572,6 +7572,77 @@ private slots:
+@@ -7572,6 +7572,78 @@ private slots:
      }
  
      // Uses the real reading clock and Settings checklist to hide session text without stopping time collection.
@@ -296,6 +305,7 @@ index d49d638d..ebfd71e5 100644
 +            QTest::newRow(dark ? "night" : "day") << dark;
 +    }
 +
++    // Checks first-minute toggling, global persistence, unchanged layout/time and day/night hit targets.
 +    void readingMenuStatusToggle()
 +    {
 +        QFETCH(bool, dark);
