@@ -16056,10 +16056,10 @@ index cce55f63..7feea590 100644
  inline constexpr int defaultVariableFontWeight = 450;
 diff --git a/src/reading/locale_font_roles.h b/src/reading/locale_font_roles.h
 new file mode 100644
-index 00000000..903d737d
+index 00000000..5bdc9043
 --- /dev/null
 +++ b/src/reading/locale_font_roles.h
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,27 @@
 +#pragma once
 +#include "support/strings.h"
 +#include <QString>
@@ -16082,6 +16082,7 @@ index 00000000..903d737d
 +inline bool hiddenRussianReadingFamily(QString family)
 +{
 +    if (!russianFontRoles()) return false;
++    if (localeReadingFamily(family) != family) return true; // Replaced roles have their new entries.
 +    if (family.startsWith("NV ") || family.startsWith("KF ")) family = family.mid(3);
 +    return QStringList{"Adelph", "Aleo", "Andada", "Basker", "Castoro", "Yrsa"}.contains(family);
 +}
@@ -16173,7 +16174,7 @@ index 678bbfd6..7e2cbfd5 100644
          *changed = facesChanged;
      }
 diff --git a/tests/model/ru_control_ui.cpp b/tests/model/ru_control_ui.cpp
-index 049297dd..a9b117e5 100644
+index 049297dd..57792cfd 100644
 --- a/tests/model/ru_control_ui.cpp
 +++ b/tests/model/ru_control_ui.cpp
 @@ -10,6 +10,8 @@
@@ -16201,10 +16202,10 @@ index 049297dd..a9b117e5 100644
 +            "old reading-role mapping changed custom font or wrong locale");
 +    QVector<ReadingFont> fontChoices;
 +    for (const auto *name : {"NV Adelph", "NV Aleo", "NV Andada", "NV Basker", "NV Castoro", "NV Yrsa",
-+                             "KF Aleo", "Literata", "Lora", "Noto Serif", "User Custom"})
++                             "KF Aleo", "Libron", "NV Legible Next", "NV Ancizar Serif", "Literata", "Lora", "Noto Serif", "User Custom"})
 +        fontChoices.append(ReadingFont{QString::fromLatin1(name), {}, FontOrigin::Interface, {}, {}});
 +    const auto visible = orderedReadingFonts(fontChoices, {"NV Aleo"});
-+    require(visible.size() == (ru ? 4 : 11), "RU font exclusions or EN list isolation failed");
++    require(visible.size() == (ru ? 4 : 14), "RU font exclusions or EN list isolation failed");
 +    require(bundledFontFiles(test::readerAssets()).contains(test::readerAssets().file("fonts/Literata-Regular.ttf")) == ru
 +                    && bundledFontFiles(test::readerAssets()).contains(test::readerAssets().file("fonts/Lora-Italic.ttf")) == ru,
 +            "localized reading faces not available or leaked into EN inventory");
