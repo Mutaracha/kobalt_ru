@@ -124,6 +124,14 @@
       "validation": "CI 45361473628 on 87530065: clean prefix validation, native reader-controls/comics/cache/engine suites and Qt5 build/check-package/qemu refresh PASS. Beta10-series-prefix-qt5 artifact 14904792738. Physical toolbar acceptance pending."
     },
     {
+      "id": "044-fb2-hybrid-cancellation-tests",
+      "status": "ready",
+      "path": "platforms/patch-series/patches/044-fb2-hybrid-cancellation-tests.patch",
+      "sha256": "159a8508c5b82f2a13f4046a139d173a36fdd3e747efd32180987e393edc6fe3",
+      "scope": "Tests only: FB2 prefix survives pre-start cancellation/park, incomplete full cache not saved, parked builder destruction and independent rebuild",
+      "validation": "CI pending; no reader/cache algorithm changes. Remaining notes/images/resource-lease gates tracked separately."
+    },
+    {
       "id": "050-fork-presentation",
       "status": "ready",
       "scope": "Remaining approved brand/About/annotation/UI/locale differences, excluding those already in 010-ru; exclude redundant Russian_EnUS.pattern and its fork-only manifest/notice/list entries, preserve Russian.pattern and translation dictionaries",
