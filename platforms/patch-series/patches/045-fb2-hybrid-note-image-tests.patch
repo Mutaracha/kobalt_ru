@@ -1,7 +1,7 @@
 diff --git a/tests/model/fb2_engine.cpp b/tests/model/fb2_engine.cpp
 --- a/tests/model/fb2_engine.cpp
 +++ b/tests/model/fb2_engine.cpp
-@@ -255,6 +255,59 @@
+@@ -255,6 +255,64 @@
      qunsetenv("KOBALT_FB2_HYBRID");
  }
  
@@ -45,8 +45,13 @@ diff --git a/tests/model/fb2_engine.cpp b/tests/model/fb2_engine.cpp
 +                        && !prefix.coverImage({120, 180}).isNull(),
 +                "binary image resource lost during note/image handoff");
 +        for (const auto *text : {"Regular paragraph with a note reference", "First", "LateBodyImageMarker"}) {
-+            const auto found = full.searchText(text, {}, 10);
-+            require(!found.hits.isEmpty(), "reference note/image passage missing");
++            SearchBatch found;
++            int batches = 0;
++            do {
++                found = full.searchText(text, found.cursor, 10);
++                require(++batches < 10000, "bounded reference search did not finish");
++            } while (found.hits.isEmpty() && !found.done);
++            require(!found.hits.isEmpty(), qPrintable(QString("reference passage missing: %1 (inpage=%2)").arg(text).arg(inpage)));
 +            const auto anchor = found.hits.first().start;
 +            require(full.goTo(anchor) && prefix.goTo(anchor), "note/image anchor cannot be resolved");
 +            require(prefix.position() == full.position()
@@ -61,7 +66,7 @@ diff --git a/tests/model/fb2_engine.cpp b/tests/model/fb2_engine.cpp
  }
  int main(int argc, char **argv)
  {
-@@ -263,6 +316,7 @@
+@@ -263,6 +321,7 @@
      engineAndResources();
      cachedFictionBook();
      coldPrefixExperiment();

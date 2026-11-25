@@ -135,7 +135,7 @@
       "id": "045-fb2-hybrid-note-image-tests",
       "status": "ready",
       "path": "platforms/patch-series/patches/045-fb2-hybrid-note-image-tests.patch",
-      "sha256": "6427fb40fa9f48d36f843583df53b6e63412e5c2b320be84b407c05de991d78e",
+      "sha256": "d7046b5f8c58cdaf20de61e4e7bc6ddd41016c991cb0dcc1079d56a1a02ee926",
       "scope": "Tests only: FB2 prefix/full note and body-image rendered parity with inline footnotes on/off",
       "validation": "CI pending; conservative full fallback allowed; no production change"
     },
