@@ -3,24 +3,24 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010–060 (включая 033/034), все патчи применяются вместе.
-Последний проверенный бинарник: **fd9a70ac**, [CI45636420364](https://github.com/Mutaracha/kobalt_ru/actions/runs/45636420364),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45636420364/artifacts/15034715785).
-CI: series/native/Qt5/package/qemu PASS; не полная аппаратная приёмка.
+Последний CI-проверенный бинарник: **97a5fc9a**, [CI45672903619](https://github.com/Mutaracha/kobalt_ru/actions/runs/45672903619),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45672903619/artifacts/15050961898).
+CI selected native/Qt5/package PASS; не полная аппаратная приёмка.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-[048: RU reading roles](doc/reports/patch-series/048-ru-reading-font-roles.md).
-058: RU Literata вместо Libron, Noto Serif вместо NV Legible Next, Lora вместо
-NV Ancizar Serif. По4 static faces Literata/Lora, real supplied bytes+OFL. Пресеты,
-engine default/generic roles, sleep defaults/registration и annotation export согласованы.
-Старые builtin family names при RU open/load mapped; custom names/EN preserved.
-Шесть families Adelph/Aleo/Andada/Basker/Castoro/Yrsa и replaced role names скрыты
-из RU pickers, engine files остаются. Noto Serif RU доступен как обычный шрифт.
-Runtimefd9a70ac/CI45636420364 все jobs PASS; visual device acceptance pending.
-Новый timing/cache-clear не нужен; typography/font inventory может законно вызвать reflow.
-Bounded Hybrid gates complete (046), Shantell Italic/BoldItalic retained (047).
-Следующий feature — persistent reading-menu status toggle после visual feedback.
+- [049: актуальные RU fonts/pickers](doc/reports/patch-series/049-bundled-roles-and-cyrillic-pickers.md):
+  NV Literata/KF Sable/NV Publica вместо добавленных Literata/Lora и promoted Noto Serif.
+  Noto fallback сохранён; Noto Display/Shantell retained; close caption90%, baseline/wordmark unchanged.
+- [050: новые логи](doc/reports/patch-series/050-f4a708c-diagnostics.md) подтвердили повторные
+  font_list mismatches после рестартов. [051: проверка причины](doc/reports/patch-series/051-system-font-path-investigation.md),
+  [052: исправление идентичности](doc/reports/patch-series/052-system-font-identity-device-package.md).
+  Отдельный cache-check пакет3c7c1b20 пользователь сейчас проверяет. Результат пока неизвестен.
+- [053: menu-status](doc/reports/patch-series/053-reading-menu-status.md):059b реализован,
+  native/lifecycle/Qt5 gates PASS. Физическая визуальная приёмка и live pending/turn check отдельно.
+  Не подменять этим бинарником результаты текущей cache-only проверки.
+- Bounded Hybrid gates046 сохранены. Дополнительного acceleration/cache clearing нет.
 
 ## Очередь — порядок закрытия
 
@@ -32,10 +32,10 @@ Bounded Hybrid gates complete (046), Shantell Italic/BoldItalic retained (047).
 |---|---|---|
 | 1 / B10-UI | partial device accepted | Exit-wordmark, OFF persistence и cleanup wording приняты. About wordmark исправлен через shared Instrument Serif role; CI PASS/device visual pending. |
 | 2 / B10-CACHE | done: observed save/read lifecycle | 46ecb8f: все 12 saves=true; измеренные H1/H2/A1/A2 имеют disk hits, retained отдельно. Низкая стабильная задержка A1 не заявлена: это B10-CACHED-LAYOUT. |
-| 3 / B10-CACHED-LAYOUT | paused: observed lifecycle accepted | User confirms late fast A1/A2 after reboot, disk hits all inputs match9/34ms. Earlier font_list primitive differs, exact inventory cause unknown. No read-path fix claimed; return only on reproducible recurrence. |
+| 3 / B10-CACHED-LAYOUT | 059a CI PASS; device check in progress | Recurrent font_list mismatch in050; temporary system-copy path instability reproduced in051 and corrected in052. Hardware outcome unknown; earlier successful A1/A2 evidence remains valid for those runs. |
 | 4 / B10-HYBRID-COVERAGE | done: bounded host tests PASS | 044–046 prefix/full anchors/count/notes/images, park/cancel/close and resource-backed session/lease gates. CI45636420364 PASS; no claim of full device matrix. |
-| 5 / B10-FONTS | CI PASS, device visual pending | 055/056 Noto subset85%; 057 RU Shantell Sans Italic instead of Caveat. English Kalam/classic/Instrument brand unchanged. Report047 cmap audit and sample organization complete. 058/048 RU reading roles+picker exclusions, CI45636420364 PASS. |
-| 6 / B10-MENU-STATUS | planned: implementation | Общий для всех книг toggle существующей строки состояния: часы + батарея остаются, время текущего сеанса ↔ страница в книге по нажатию. Persistent global preference, формат/estimated/pending как у BookPage колонтитула. Подробный контракт ниже. |
+| 5 / B10-FONTS | CI PASS, device visual pending | 055/056 Noto subset85%; 057 RU Shantell Sans Italic instead of Caveat. English Kalam/classic/Instrument brand unchanged. Report047 cmap audit and sample organization complete. 059/049 supersedes058: NV Literata/KF Sable/NV Publica, cmap picker filter, standalone Literata/Lora removed; CI PASS. |
+| 6 / B10-MENU-STATUS | implemented: CI PASS, device review pending | Общий для всех книг toggle существующей строки состояния: часы + батарея остаются, время текущего сеанса ↔ страница в книге по нажатию. Persistent global preference, формат/estimated/pending как у BookPage колонтитула. Подробный контракт ниже. |
 
 ## B10-MENU-STATUS — согласованный контракт
 

@@ -13,6 +13,12 @@
 | 46614c78 | Instrument Serif exit-wordmark/switchable diagnostics; native и Qt5 проверки прошли, collection не прошёл из-за имени ZIP. Не конечный пакет. |
 | eafb6161 | Collector исправлен; CI45456569246 все jobs PASS, [artifact14952120554](https://github.com/Mutaracha/kobalt_ru/actions/runs/45456569246/artifacts/14952120554). Последний проверенный пакет, device UI/log-toggle pending. |
 
+## Последние пакеты
+
+- [053: menu-status](053-reading-menu-status.md):97a5fc9a, CI45672903619 PASS; device review pending.
+- [052: cache-only check](052-system-font-identity-device-package.md):3c7c1b20; пользователь проверяет отдельно, результат неизвестен.
+- [049: актуальные reading roles](049-bundled-roles-and-cyrillic-pickers.md), [050: диагностика](050-f4a708c-diagnostics.md), [051: причина временных путей](051-system-font-path-investigation.md).
+
 ## Основные материалы
 
 - [Сводка cold Hybrid и последних логов](034-hybrid-summary-and-7f47164.md).
