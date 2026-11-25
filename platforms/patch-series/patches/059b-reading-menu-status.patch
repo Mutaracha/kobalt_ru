@@ -291,7 +291,7 @@ index 3be77ccd..16c06db1 100644
      require(ui::initializeInterfaceFonts(test::readerAssets()), "Control fonts unavailable");
      require(ui::brandFont(40).family() == (language == strings::Locale::Russian
 diff --git a/tests/reader_lifecycle.cpp b/tests/reader_lifecycle.cpp
-index d49d638d..b7779bc6 100644
+index d49d638d..9b91166a 100644
 --- a/tests/reader_lifecycle.cpp
 +++ b/tests/reader_lifecycle.cpp
 @@ -7572,6 +7572,78 @@ private slots:
@@ -373,3 +373,61 @@ index d49d638d..b7779bc6 100644
      void readingTimeStatsVisibility_data()
      {
          QTest::addColumn<bool>("hidden");
+@@ -7710,7 +7782,7 @@ private slots:
+         QCOMPARE(host.book()->sessionReadingMilliseconds(), qint64(12 * 60000));
+     }
+ 
+-    // Checks that reading-time text fits and centers in the status strip for each minute width and radio icon combination.
++    // Checks symmetric screen-centered status bounds, icon separation and minute updates across scales/radio combinations.
+     void readingTimeStatus_data()
+     {
+         QTest::addColumn<bool>("dark");
+@@ -7804,15 +7876,18 @@ private slots:
+                     QVERIFY(session->x() >= clock->geometry().right() + 1);
+                     QVERIFY(session->geometry().right() < right->x());
+                 }
+-                const int available = right->x() - clock->geometry().right() - 1
+-                        - 2 * int(ui::metrics::chrome::inset);
+-                if (session->sizeHint().width() <= available)
+-                    QVERIFY2(session->width() >= session->sizeHint().width(),
+-                             qPrintable(session->text()));
+-                if (available >= 0) {
+-                    const qreal midpoint = (clock->geometry().right() + 1 + right->x()) / 2.;
+-                    QVERIFY(qAbs(QRectF(session->geometry()).center().x() - midpoint) <= .5);
+-                }
++                // Production centers on the screen, not the asymmetric free gap.
++                // Both sides reserve the larger clock/radio inset. Long text is
++                // clipped within these bounds rather than overlapping the icons.
++                const int inset = qMax(clock->geometry().right() + 1
++                                               + int(ui::metrics::chrome::inset),
++                                       session->parentWidget()->width() - right->x()
++                                               + int(ui::metrics::chrome::inset));
++                QCOMPARE(session->x(), inset);
++                QCOMPARE(session->width(), qMax(0, session->parentWidget()->width() - 2 * inset));
++                if (session->width() > 0)
++                    QVERIFY(qAbs(QRectF(session->geometry()).center().x()
++                                 - session->parentWidget()->width() / 2.) <= .5);
+                 if (radios == 3) {
+                     QCOMPARE(bluetooth->geometry(), bluetoothBounds);
+                     QCOMPARE(wifi->geometry(), wifiBounds);
+@@ -7848,12 +7923,14 @@ private slots:
+         QVERIFY(QMetaObject::invokeMethod(timer, "timeout", Qt::DirectConnection));
+         QCOMPARE(clock->text(), clockText);
+         QCOMPARE(clock->width(), clock->sizeHint().width());
+-        const int available =
+-                wifi->x() - clock->geometry().right() - 1 - 2 * int(ui::metrics::chrome::inset);
+-        if (available >= 0) {
+-            const qreal midpoint = (clock->geometry().right() + 1 + wifi->x()) / 2.;
+-            QVERIFY(qAbs(QRectF(session->geometry()).center().x() - midpoint) <= .5);
+-        }
++        const int inset = qMax(clock->geometry().right() + 1 + int(ui::metrics::chrome::inset),
++                               session->parentWidget()->width() - wifi->x()
++                                       + int(ui::metrics::chrome::inset));
++        QCOMPARE(session->x(), inset);
++        QCOMPARE(session->width(), qMax(0, session->parentWidget()->width() - 2 * inset));
++        if (session->width() > 0)
++            QVERIFY(qAbs(QRectF(session->geometry()).center().x()
++                         - session->parentWidget()->width() / 2.) <= .5);
+     }
+ 
+     void remoteKeyActivityRequiresActiveReading()
