@@ -3,25 +3,24 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010–060 (включая 033/034), все патчи применяются вместе.
-Последний проверенный бинарник: **3aeb9efb**, [CI45629224994](https://github.com/Mutaracha/kobalt_ru/actions/runs/45629224994),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45629224994/artifacts/15029143933).
+Последний проверенный бинарник: **fd9a70ac**, [CI45636420364](https://github.com/Mutaracha/kobalt_ru/actions/runs/45636420364),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45636420364/artifacts/15034715785).
 CI: series/native/Qt5/package/qemu PASS; не полная аппаратная приёмка.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-[046: Hybrid session gates](doc/reports/patch-series/046-hybrid-session-gates.md) завершены:
-resource-backed FB2 pending→exact count, cancel/revoke stale-publication refusal,
-close/drain resource release; mid-block FB2 revocation уже исполняется local-resources.
-CI45629224994 все jobs PASS, bounded Hybrid correctness на host закрыт; не полная device матрица.
-
-[047: Shantell + audit](doc/reports/patch-series/047-shantell-and-font-audit.md): RU Playful
-теперь Shantell Sans Italic вместо Caveat, реальные italic bytes, QFont/QSS согласованы.
-Caveat удалён из final runtime assets, EN Kalam/classic/Instrument Kobalt не менялись.
-Uploaded samples → test & diagnostic/fonts/, hashes intact; actual-device replay path обновлён.
-В133 runtime-source faces найдены некириллические Libron/Ancizar/Legible и др.; остальные
-шрифты автоматически не заменялись. Новый пакет3aeb9efb visual pending (Playful/Noto).
-Следующий feature: persistent status toggle в reading menu; новые ускорения не добавлять.
+[048: RU reading roles](doc/reports/patch-series/048-ru-reading-font-roles.md).
+058: RU Literata вместо Libron, Noto Serif вместо NV Legible Next, Lora вместо
+NV Ancizar Serif. По4 static faces Literata/Lora, real supplied bytes+OFL. Пресеты,
+engine default/generic roles, sleep defaults/registration и annotation export согласованы.
+Старые builtin family names при RU open/load mapped; custom names/EN preserved.
+Шесть families Adelph/Aleo/Andada/Basker/Castoro/Yrsa и replaced role names скрыты
+из RU pickers, engine files остаются. Noto Serif RU доступен как обычный шрифт.
+Runtimefd9a70ac/CI45636420364 все jobs PASS; visual device acceptance pending.
+Новый timing/cache-clear не нужен; typography/font inventory может законно вызвать reflow.
+Bounded Hybrid gates complete (046), Shantell Italic/BoldItalic retained (047).
+Следующий feature — persistent reading-menu status toggle после visual feedback.
 
 ## Очередь — порядок закрытия
 
@@ -34,8 +33,8 @@ Uploaded samples → test & diagnostic/fonts/, hashes intact; actual-device repl
 | 1 / B10-UI | partial device accepted | Exit-wordmark, OFF persistence и cleanup wording приняты. About wordmark исправлен через shared Instrument Serif role; CI PASS/device visual pending. |
 | 2 / B10-CACHE | done: observed save/read lifecycle | 46ecb8f: все 12 saves=true; измеренные H1/H2/A1/A2 имеют disk hits, retained отдельно. Низкая стабильная задержка A1 не заявлена: это B10-CACHED-LAYOUT. |
 | 3 / B10-CACHED-LAYOUT | paused: observed lifecycle accepted | User confirms late fast A1/A2 after reboot, disk hits all inputs match9/34ms. Earlier font_list primitive differs, exact inventory cause unknown. No read-path fix claimed; return only on reproducible recurrence. |
-| 4 / B10-HYBRID-COVERAGE | done: bounded host tests PASS | 044–046 prefix/full anchors/count/notes/images, park/cancel/close and resource-backed session/lease gates. CI45629224994 PASS; no claim of full device matrix. |
-| 5 / B10-FONTS | CI PASS, device visual pending | 055/056 Noto subset85%; 057 RU Shantell Sans Italic instead of Caveat. English Kalam/classic/Instrument brand unchanged. Report047 cmap audit and sample organization complete. |
+| 4 / B10-HYBRID-COVERAGE | done: bounded host tests PASS | 044–046 prefix/full anchors/count/notes/images, park/cancel/close and resource-backed session/lease gates. CI45636420364 PASS; no claim of full device matrix. |
+| 5 / B10-FONTS | CI PASS, device visual pending | 055/056 Noto subset85%; 057 RU Shantell Sans Italic instead of Caveat. English Kalam/classic/Instrument brand unchanged. Report047 cmap audit and sample organization complete. 058/048 RU reading roles+picker exclusions, CI45636420364 PASS. |
 | 6 / B10-MENU-STATUS | planned: implementation | Общий для всех книг toggle существующей строки состояния: часы + батарея остаются, время текущего сеанса ↔ страница в книге по нажатию. Persistent global preference, формат/estimated/pending как у BookPage колонтитула. Подробный контракт ниже. |
 
 ## B10-MENU-STATUS — согласованный контракт

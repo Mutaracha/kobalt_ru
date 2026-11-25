@@ -885,6 +885,62 @@
       "archived": false
     },
     {
+      "path": "test & diagnostic/fonts/Lora/Lora-Bold.ttf",
+      "bytes": 133828,
+      "sha256": "7d74015e950c2fb66519c7295b8155621d22200ae2ca2a4c6b43ce3c490cac87",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Lora/Lora-BoldItalic.ttf",
+      "bytes": 140332,
+      "sha256": "152f87e71f5ddb60d5c57ecd9132807c947e65c42977193c9164e7c5a6690081",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Lora/Lora-Italic.ttf",
+      "bytes": 139328,
+      "sha256": "be627e595184e8afe521f08da0607eee613f1997d423bc8dadc5798995581377",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Lora/Lora-Medium.ttf",
+      "bytes": 134004,
+      "sha256": "fd57ed9e3945de65de667f1919c2978b79937a13d246508fc4f64bb562e53196",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Lora/Lora-MediumItalic.ttf",
+      "bytes": 140264,
+      "sha256": "c3de4a2d67a382297ffb01524220a1d05eef08c4dcc4a596c9d8232ab13ccfbf",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Lora/Lora-Regular.ttf",
+      "bytes": 133888,
+      "sha256": "7ed00e7c9cdf16ab7e2fd2361fe45d4f0b61263cd60aae398b27b7ee08108827",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/fonts/Lora/OFL.txt",
+      "bytes": 4516,
+      "sha256": "41cf75bf229a1435b7df209ac7419622516eff7e8cab79260fb0fb9b1cc8ced2",
+      "versions": [],
+      "source_commits": [],
+      "archived": false
+    },
+    {
       "path": "test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Bold.ttf",
       "bytes": 430864,
       "sha256": "7fefed405cfe66604181661ef754b81886ce6d4f83f7f92d94231dc23cfb665e",

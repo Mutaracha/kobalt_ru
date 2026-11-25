@@ -92,3 +92,12 @@ verify ordinary labels/settings/list clipping and real cursive appearance. Switc
 for isolation. Noto85%/Instrument Kobalt visual balance still pending. No cache clearing or
 timing matrix; font inventory change may legitimately invalidate an old layout once.
 Bounded Hybrid automated gates complete: [046](../reports/patch-series/046-hybrid-session-gates.md).
+
+## Current packagefd9a70ac: RU reading roles058
+
+[Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45636420364/artifacts/15034715785),
+CI all jobs PASS. [048](../reports/patch-series/048-ru-reading-font-roles.md).
+Check RU default Literata, Bookish Lora, Noto Serif selection/Publisher generic text;
+excluded/replaced names absent in RU pickers, English unaffected. Check sleep-letter
+and HTML export typeface. Shantell/Noto decorative visual gates remain pending.
+No timing matrix/cache clearing. Font/layout change may legitimately cause one reflow.

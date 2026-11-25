@@ -95,6 +95,13 @@ e48dc9674564dc58936960e7a8000c8080155e6882c8d999cadb0854562b5f31  test & diagnos
 90b140d331fe6c3dfeff06fd42335a12a061c013765a32c7472d81e0eb0c2abc  test & diagnostic/fonts/Literata/Literata-MediumItalic.ttf
 7a3127b8aee7ac1f50419a45fd6c9dd19071060a7a6b31194a6b72446ff253b1  test & diagnostic/fonts/Literata/Literata-Regular.ttf
 5e595c1c01c300b068b67962846a22253fa5da6ef945783a35aed37ff4e820a1  test & diagnostic/fonts/Literata/OFL.txt
+7d74015e950c2fb66519c7295b8155621d22200ae2ca2a4c6b43ce3c490cac87  test & diagnostic/fonts/Lora/Lora-Bold.ttf
+152f87e71f5ddb60d5c57ecd9132807c947e65c42977193c9164e7c5a6690081  test & diagnostic/fonts/Lora/Lora-BoldItalic.ttf
+be627e595184e8afe521f08da0607eee613f1997d423bc8dadc5798995581377  test & diagnostic/fonts/Lora/Lora-Italic.ttf
+fd57ed9e3945de65de667f1919c2978b79937a13d246508fc4f64bb562e53196  test & diagnostic/fonts/Lora/Lora-Medium.ttf
+c3de4a2d67a382297ffb01524220a1d05eef08c4dcc4a596c9d8232ab13ccfbf  test & diagnostic/fonts/Lora/Lora-MediumItalic.ttf
+7ed00e7c9cdf16ab7e2fd2361fe45d4f0b61263cd60aae398b27b7ee08108827  test & diagnostic/fonts/Lora/Lora-Regular.ttf
+41cf75bf229a1435b7df209ac7419622516eff7e8cab79260fb0fb9b1cc8ced2  test & diagnostic/fonts/Lora/OFL.txt
 7fefed405cfe66604181661ef754b81886ce6d4f83f7f92d94231dc23cfb665e  test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Bold.ttf
 8a900ceaa0bdc87d6e9d0a95d0a5ea3023fdf65170242d588ade030bea5949b8  test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-BoldItalic.ttf
 6ba708fbcf00c8f4cca6be85662b0258df05596a58e684f59d3497f26e945cef  test & diagnostic/fonts/Noto Serif Display Condensed/NotoSerifDisplay_Condensed-Italic.ttf

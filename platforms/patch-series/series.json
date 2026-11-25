@@ -185,7 +185,7 @@
       "path": "platforms/patch-series/patches/058-ru-reading-font-roles.patch",
       "sha256": "0e238b5c02f31598197c740ff019a0d009a4276fc16f220a7b76efe796a20758",
       "scope": "RU reading roles Literata/Lora/Noto Serif, preserve EN and custom families; hide six families from RU pickers without removing engine files",
-      "validation": "CI pending; old layout may legitimately repaginate after font changes"
+      "validation": "CI45636420364 all jobs PASS: native actual RU/EN engine roles/presets/exclusions/Noto picker classification, annotation export and existing selected gates; actual-font replay; Qt5 package. Visual device acceptance pending. See report048."
     },
     {
       "id": "060-build-integration",

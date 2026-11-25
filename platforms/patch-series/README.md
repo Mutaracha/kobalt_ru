@@ -227,3 +227,8 @@ No device update required for this test patch, no speed claim.
 legacy saved RU Caveat choice migrated, root/list QSS respects slant. EN Kalam/classic unchanged.
 [047 audit/package](../../doc/reports/patch-series/047-shantell-and-font-audit.md).
 Final CI45629224994 all jobs PASS; runtime3aeb9efb. Device visual gate pending.
+
+058 — RU reading-role replacements: Literata/Libron, Noto Serif/Legible Next,
+Lora/Ancizar; exact-name RU picker exclusions, preserved engine compatibility/EN lists.
+[048](../../doc/reports/patch-series/048-ru-reading-font-roles.md). Four static faces per
+new family, OFL/manifest included; typography may legitimately invalidate old layout.

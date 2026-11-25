@@ -8,4 +8,6 @@
 Historical fonts attached to old diagnostic archives stay in `../archive/`; do not
 rewrite their provenance or bundle them. File hashes are in ../catalog.json and ../SHA256SUMS.
 
-- `Literata/`: newly supplied six static faces and OFL; samples only, no automatic runtime replacement.
+- `Literata/`: six supplied static faces and OFL; Regular/Italic/Bold/BoldItalic now bundled for RU reading roles.
+
+- `Lora/`: six supplied static faces and OFL; four corresponding standard styles bundled for RU Bookish.

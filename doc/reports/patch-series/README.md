@@ -110,3 +110,6 @@ body-image/resource-lease/session-count checks are not declared complete.
 [047](047-shantell-and-font-audit.md): RU Shantell Sans Italic, Caveat removed from
 final package, original samples consolidated,132 runtime faces cmap audit.
 CI45629224994 all jobs PASS; runtime3aeb9efb, visual acceptance pending.
+
+[048: RU reading roles and exclusions](048-ru-reading-font-roles.md): Literata/
+Noto Serif/Lora replace built-in roles only in RU; six families hidden, engine assets retained.
