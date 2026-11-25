@@ -15,6 +15,8 @@
 
 ## Последние пакеты
 
+- [055: settings polish](055-settings-polish.md):5b45f2c7, CI45686709893 PASS; новые подписи/размеры rail, ChoiceSheet языка и время Letter; device visual pending.
+
 - [054: combined Letter/menu/cache](054-letter-signature-and-device-feedback.md):92a29364, CI45675458450 PASS; краткая cache-проверка пользователя положительная, длительная и новая UI-приёмка pending.
 
 - [053: menu-status](053-reading-menu-status.md):97a5fc9a, CI45672903619 PASS; device review pending.

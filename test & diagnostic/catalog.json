@@ -729,6 +729,90 @@
       "archived": false
     },
     {
+      "path": "test & diagnostic/device-review-settings-polish/screen_001-27.png",
+      "bytes": 316232,
+      "sha256": "138e33cdd02037c8c32c01a9b1c8b34359f565eefbe9b4f439e65ebdd8cb0040",
+      "versions": [
+        "v1.0-beta.10"
+      ],
+      "source_commits": [
+        "92a2936401383d57278575af613e0b8ce3198295"
+      ],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/device-review-settings-polish/screen_002-20.png",
+      "bytes": 241020,
+      "sha256": "030014f37fd6d86a289443ae3d27988250d9b0d1d136feef3c33a373db92024d",
+      "versions": [
+        "v1.0-beta.10"
+      ],
+      "source_commits": [
+        "92a2936401383d57278575af613e0b8ce3198295"
+      ],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/device-review-settings-polish/screen_005-5.png",
+      "bytes": 265613,
+      "sha256": "f2d20ae5b579aa2419d99874047a6b95117c8a49e1651f4effbb920acd845021",
+      "versions": [
+        "v1.0-beta.10"
+      ],
+      "source_commits": [
+        "92a2936401383d57278575af613e0b8ce3198295"
+      ],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/device-review-settings-polish/screen_007-2.png",
+      "bytes": 147263,
+      "sha256": "1395cf686ca05dd44dc44137d3dfdf6f3c2e512d841e13358c77751ccc8055fa",
+      "versions": [
+        "v1.0-beta.10"
+      ],
+      "source_commits": [
+        "92a2936401383d57278575af613e0b8ce3198295"
+      ],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/device-review-settings-polish/screen_008-2.png",
+      "bytes": 179777,
+      "sha256": "fc3957900b5a2dfa852bfaf3a1e3806b0c8f6c539013901148a27ca203dc7a1c",
+      "versions": [
+        "v1.0-beta.10"
+      ],
+      "source_commits": [
+        "92a2936401383d57278575af613e0b8ce3198295"
+      ],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/device-review-settings-polish/screen_009-2.png",
+      "bytes": 176685,
+      "sha256": "713b33028069001139a0d2bf3ba2eb7ab8ec6f0feb55741e9b8c97ec4a49ba4f",
+      "versions": [
+        "v1.0-beta.10"
+      ],
+      "source_commits": [
+        "92a2936401383d57278575af613e0b8ce3198295"
+      ],
+      "archived": false
+    },
+    {
+      "path": "test & diagnostic/device-review-settings-polish/screen_010-2.png",
+      "bytes": 131366,
+      "sha256": "aad75880a0c1151c6f7ba1aa102c403f655cb5a49a2b95b2525b90e861575353",
+      "versions": [
+        "v1.0-beta.10"
+      ],
+      "source_commits": [
+        "92a2936401383d57278575af613e0b8ce3198295"
+      ],
+      "archived": false
+    },
+    {
       "path": "test & diagnostic/df8e910a-ui/screen_001-22.png",
       "bytes": 256818,
       "sha256": "f7bd15d022c7ac4517da3792f6469bddeeafff831bc04539e094d97c49783722",
