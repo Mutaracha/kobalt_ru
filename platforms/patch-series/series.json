@@ -48,7 +48,7 @@
       "id": "050-presentation",
       "path": "platforms/patch-series/patches/050-presentation.patch",
       "status": "ready",
-      "sha256": "b637712bf938bccde304f586141a8b1dbc0d47ed1ad78d721645fa158c073002",
+      "sha256": "ea785894b2d277d05ebd1036674288b49983b884c9b0654d4666ac7b23d182ca",
       "scope": "Shared UI/brand/sleep/annotation presentation and tests; no superseded intermediate fonts.",
       "validation": "R08: share navigation action styling across settings/bookmarks/search/sync/annotate and existing fork buttons; real lifecycle native regression added. CI/device pending."
     },

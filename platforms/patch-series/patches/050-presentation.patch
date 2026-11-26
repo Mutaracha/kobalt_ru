@@ -667,15 +667,16 @@ index c4612bac..cbebbaf0 100644
      row->addSpacing(chrome::cellWidth);
      row->addWidget(title, 1);
 diff --git a/src/app/reader/views/navigation.cpp b/src/app/reader/views/navigation.cpp
-index 0d53abd0..5b1f602e 100644
+index 0d53abd0..8090a332 100644
 --- a/src/app/reader/views/navigation.cpp
 +++ b/src/app/reader/views/navigation.cpp
-@@ -1,3 +1,4 @@
+@@ -1,3 +1,5 @@
++#include "fork_navigation.h"
 +#include "ui/style/locale_text.h"
  #include "support/percentage_text.h"
  #include "ui/controls/buttons.h"
  #include "ui/controls/icons.h"
-@@ -493,7 +494,9 @@ protected:
+@@ -493,7 +495,9 @@ protected:
          painter.setFont(label);
          ui::drawOpticalText(
                  painter,
@@ -686,7 +687,7 @@ index 0d53abd0..5b1f602e 100644
                  text(), true);
      }
  
-@@ -811,12 +814,13 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
+@@ -811,12 +815,13 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
        annotate(controls.annotate),
        clock(controls.clock),
        session(controls.session),
@@ -701,7 +702,7 @@ index 0d53abd0..5b1f602e 100644
  {
      zenViewBase = new ZenViewBase(parent);
      zenViewBase->setObjectName("rrZenViewBase");
-@@ -839,48 +843,13 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
+@@ -839,48 +844,13 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
      zenStatsPanel = new ZenStatsPanel(toolbar);
      zenStatsPanel->hide();
      sessionStyle = session->styleSheet();
@@ -756,7 +757,7 @@ index 0d53abd0..5b1f602e 100644
      if (formattingWarning) {
          formattingWarningStyle = formattingWarning->styleSheet();
          formattingWarning->setFixedSize(chrome::cellWidth, chrome::actionHeight);
-@@ -926,30 +895,11 @@ Navigation::~Navigation()
+@@ -926,30 +896,11 @@ Navigation::~Navigation()
          formattingWarning->setFixedSize(ui::metrics::control::toolbarButtonSize,
                                          ui::metrics::control::toolbarButtonSize);
      }
@@ -791,7 +792,7 @@ index 0d53abd0..5b1f602e 100644
      settings->setStyleSheet(settingsStyle);
      bookmarks->setStyleSheet(bookmarksStyle);
      settings->setFixedSize(ui::metrics::control::toolbarButtonSize,
-@@ -976,6 +926,8 @@ void Navigation::stackPanel(QWidget *panel) const
+@@ -976,6 +927,8 @@ void Navigation::stackPanel(QWidget *panel) const
  void Navigation::placeZenToolbar(QSize size, const QVector<QWidget *> &actions,
                                   const NavigationState &state)
  {
@@ -800,7 +801,7 @@ index 0d53abd0..5b1f602e 100644
      // The back arrow, reading stats and Settings in a centered group, below a
      // status line with the Zen mark, the clock and a low battery. The other
      // actions are tabs in the bottom group, or hidden. Like the bottom group,
-@@ -1097,6 +1049,7 @@ void Navigation::placeToolbar(QSize size, const QVector<QWidget *> &actions)
+@@ -1097,6 +1050,7 @@ void Navigation::placeToolbar(QSize size, const QVector<QWidget *> &actions)
      }
      clock->setVisible(statusVisible);
      updateBatteryVisibility();
@@ -808,7 +809,7 @@ index 0d53abd0..5b1f602e 100644
      settings->setFixedWidth(chrome::cellWidth);
      int rightActions = 0;
      for (auto *action : actions)
-@@ -1181,7 +1134,7 @@ void Navigation::update(QSize size, const NavigationState &state)
+@@ -1181,7 +1135,7 @@ void Navigation::update(QSize size, const NavigationState &state)
      rules->show();
      rules->raise();
      const QVector<QWidget *> actions{
@@ -817,7 +818,7 @@ index 0d53abd0..5b1f602e 100644
      };
      if (zenTop)
          placeZenToolbar(size, actions, state);
-@@ -1321,10 +1274,19 @@ void Navigation::updateSessionGeometry()
+@@ -1321,10 +1275,19 @@ void Navigation::updateSessionGeometry()
      if (wifi && wifi->active())
          right = qMin(right, wifi->x());
      right = qMax(0, right - int(chrome::inset));

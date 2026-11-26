@@ -4062,8 +4062,8 @@
     },
     "src/app/reader/views/navigation.cpp": {
       "mode": "100644",
-      "size": 54334,
-      "sha256": "6a0193b391ecdae6781bf517ee642e6048b4ec7fd63896fe938eaa36009ecf45"
+      "size": 54363,
+      "sha256": "58bb69afbc4dc108a02dfa960978d5fa73a67ad64384b7a97cd3e27b0f9eba40"
     },
     "src/app/reader/views/navigation.h": {
       "mode": "100644",
