@@ -2702,8 +2702,8 @@
     },
     "platforms/kobo/common/home_sleep_screen.cpp": {
       "mode": "100644",
-      "sha256": "a612e7448e62e337e842eef5ab78262c88271fa57a1b84170c27dc9a0cf08c1d",
-      "size": 23579
+      "size": 24760,
+      "sha256": "b8209107ebfdbde418d12f82d8d57f837538358cffb52983053872409eb84175"
     },
     "platforms/kobo/common/home_sleep_screen.h": {
       "mode": "100644",
@@ -6897,8 +6897,8 @@
     },
     "tests/kobo_power_screen.cpp": {
       "mode": "100644",
-      "sha256": "043239193248fa97f67804fcca4083de3d7684c0f27d11093a4f4f8b3cc73f4a",
-      "size": 62610
+      "size": 65574,
+      "sha256": "111648da40a9e5cdcdd551a0453ebed71ebcb0109bc1631111a2ac2ca5b61d64"
     },
     "tests/kobo_shutdown.cpp": {
       "mode": "100644",
@@ -8125,6 +8125,26 @@
       },
       "basis": "Targeted post-R09 FB2 fixes/regressions: zero-fraction restart preserves startup prefix; investigate comics preview round-trip.",
       "review": "doc/reports/patch-series/068-preview-and-hybrid-device-findings.md"
+    },
+    {
+      "paths": [
+        "platforms/kobo/common/home_sleep_screen.cpp",
+        "tests/kobo_power_screen.cpp"
+      ],
+      "previous": {
+        "platforms/kobo/common/home_sleep_screen.cpp": {
+          "mode": "100644",
+          "sha256": "a612e7448e62e337e842eef5ab78262c88271fa57a1b84170c27dc9a0cf08c1d",
+          "size": 23579
+        },
+        "tests/kobo_power_screen.cpp": {
+          "mode": "100644",
+          "sha256": "043239193248fa97f67804fcca4083de3d7684c0f27d11093a4f4f8b3cc73f4a",
+          "size": 62610
+        }
+      },
+      "basis": "Home sleep/power-off: when native cover is missing, use only a token-matched, public, clean persisted cover backdrop; retain current metadata and privacy guards.",
+      "review": "doc/reports/patch-series/070-home-sleep-cover-fallback.md"
     }
   ]
 }

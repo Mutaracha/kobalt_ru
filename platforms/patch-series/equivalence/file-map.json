@@ -233,6 +233,12 @@
       "action": "modify"
     },
     {
+      "path": "platforms/kobo/common/home_sleep_screen.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [],
+      "action": "modify"
+    },
+    {
       "path": "platforms/kobo/common/reader_coordinator.cpp",
       "patch": "010-ru-localization",
       "old_patches": [
@@ -1381,6 +1387,12 @@
         "056-ru-serif-optical-scale",
         "057-ru-shantell-italic"
       ],
+      "action": "modify"
+    },
+    {
+      "path": "tests/kobo_power_screen.cpp",
+      "patch": "040-reader-controls-settings",
+      "old_patches": [],
       "action": "modify"
     },
     {

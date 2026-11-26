@@ -40,7 +40,7 @@
       "id": "040-reader-controls-settings",
       "path": "platforms/patch-series/patches/040-reader-controls-settings.patch",
       "status": "ready",
-      "sha256": "da1f83769b3812fb094425683607b9fed98c553711764d24080f943001596658",
+      "sha256": "c3e76030b0771b6eb46d84ea930f60401617f51ce861cb7d84b2d392377b5e36",
       "scope": "Final reader window/host wiring, swipe/toolbar/settings/menu-status integration and tests.",
       "validation": "CI45860538561 on 1894d058: full seven-layer export, selected native regressions including real FB2 Layout replay, archived FB2/font replay and Qt5 package PASS. User accepted Hybrid opening of a new book and comics preview round-trip. See doc/reports/patch-series/069-fb2-preview-and-zero-fraction-fixes.md."
     },

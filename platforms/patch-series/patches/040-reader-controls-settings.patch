@@ -1707,3 +1707,101 @@ index d49d638d..56715f24 100644
      }
  
      void remoteKeyActivityRequiresActiveReading()
+diff --git a/platforms/kobo/common/home_sleep_screen.cpp b/platforms/kobo/common/home_sleep_screen.cpp
+index 5d4f5f2a..263c91b4 100644
+--- a/platforms/kobo/common/home_sleep_screen.cpp
++++ b/platforms/kobo/common/home_sleep_screen.cpp
+@@ -426,6 +426,26 @@ bool HomeSleepScreen::prepareHomeScreen(bool powerOff, const QString &openingIde
+         if (!cover.isNull()) {
+             shot.image = sleep::coverBackground(cover, size);
+             shot.coverArea = sleep::coverArea(cover.size(), size);
++        } else {
++            // The reader can decode a cover that Nickel never cached. Its
++            // saved clean backdrop is usable only for the same current book
++            // token, never for a private book or a reading-page fallback.
++            mainthread::AllowBlocking allow("home sleep cover fallback");
++            finishSave();
++            const auto token = readToken(database, identity);
++            const auto saved = storage::readSleepSnapshot(paths.sleepScreen(), token,
++                                                          sleep::Mode::Cover);
++            if (!saved.privateBook && !saved.dimPage && !saved.coverArea.isEmpty()
++                && !saved.image.isNull() && saved.image.rect().contains(saved.coverArea)) {
++                if (saved.image.size() == size) {
++                    shot.image = saved.image;
++                    shot.coverArea = saved.coverArea;
++                } else {
++                    const auto restored = saved.image.copy(saved.coverArea);
++                    shot.image = sleep::coverBackground(restored, size);
++                    shot.coverArea = sleep::coverArea(restored.size(), size);
++                }
++            }
+         }
+     } else if (look.mode == sleep::Mode::Wallpaper) {
+         const auto custom = sleep::custom(preferences.object);
+diff --git a/tests/kobo_power_screen.cpp b/tests/kobo_power_screen.cpp
+index f6385d86..02298aae 100644
+--- a/tests/kobo_power_screen.cpp
++++ b/tests/kobo_power_screen.cpp
+@@ -757,6 +757,62 @@ private slots:
+                  reader::sleepDesignImage(expected.image, expected, 67,
+                                           reader::SleepStatus::Charging));
+         owner.clear();
++        // Kobalt decoded this cover, but Nickel has no N3_FULL cache for it.
++        // Reuse only its clean backdrop; metadata still comes from current data.
++        auto savedCover = expected;
++        savedCover.mode = sleep::Mode::Cover;
++        savedCover.image.fill(Qt::red);
++        savedCover.coverArea = savedCover.image.rect();
++        savedCover.details.title = "obsolete snapshot title";
++        savedCover.percent = 3;
++        owner.remember(savedCover, "kobalt-book");
++        owner.finishSave();
++        for (bool powerOff : {false, true}) {
++            // A new owner also covers persistence across Kobalt retirement.
++            nickel::HomeSleepScreen restored(paths, nullptr);
++            QVERIFY(restored.prepareHomeScreen(powerOff));
++            restored.present();
++            auto *coverFrame = power.findChild<QWidget *>("rrSleepFrame");
++            QVERIFY(coverFrame);
++            auto current = expected;
++            current.mode = sleep::Mode::Cover;
++            current.image = savedCover.image;
++            current.coverArea = savedCover.coverArea;
++            QCOMPARE(coverFrame->grab().toImage().convertToFormat(QImage::Format_RGB32),
++                     reader::sleepDesignImage(current.image, current, 67,
++                         powerOff ? reader::SleepStatus::PoweredOff : reader::SleepStatus::Charging));
++            restored.clear();
++        }
++        // Never turn a reading-page fallback or private/unknown image into
++        // a public cover, even if its token still matches the current book.
++        for (int invalid = 0; invalid < 3; ++invalid) {
++            auto unsafe = savedCover;
++            if (invalid == 0) unsafe.dimPage = true;
++            if (invalid == 1) unsafe.privateBook = true;
++            if (invalid == 2) unsafe.coverArea = {};
++            owner.remember(unsafe, "kobalt-book");
++            owner.finishSave();
++            QVERIFY(owner.prepareHomeScreen());
++            owner.present();
++            frame = power.findChild<QWidget *>("rrSleepFrame");
++            QVERIFY(frame);
++            QCOMPARE(frame->grab().toImage().convertToFormat(QImage::Format_RGB32),
++                     reader::sleepDesignImage(expected.image, expected, 67,
++                                              reader::SleepStatus::Charging));
++            owner.clear();
++        }
++        owner.remember(savedCover, "kobalt-book");
++        owner.finishSave();
++        // A changed last-read token must reject the old saved cover.
++        QVERIFY(query.exec("UPDATE content SET DateLastRead = '2026-11-14T09:00:00Z'"));
++        QVERIFY(owner.prepareHomeScreen());
++        owner.present();
++        frame = power.findChild<QWidget *>("rrSleepFrame");
++        QVERIFY(frame);
++        QCOMPARE(frame->grab().toImage().convertToFormat(QImage::Format_RGB32),
++                 reader::sleepDesignImage(expected.image, expected, 67,
++                                          reader::SleepStatus::Charging));
++        owner.clear();
+         // Reading page dims what Nickel shows and keeps its bookmark over it.
+         choose(sleep::Design::Page);
+         QVERIFY(owner.prepareHomeScreen(true));
