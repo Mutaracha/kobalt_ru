@@ -3,19 +3,19 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010/020/030/034/040/050/060 после консолидации; все патчи применяются вместе.
-Последний CI-проверенный бинарник: **7d13ec2c**, [CI45815527684](https://github.com/Mutaracha/kobalt_ru/actions/runs/45815527684),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45815527684/artifacts/15114663890).
+Последний CI-проверенный бинарник: **b390fefa**, [CI45820117357](https://github.com/Mutaracha/kobalt_ru/actions/runs/45820117357),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45820117357/artifacts/15118510937).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-R01–R03 приняты; пользователь подтвердил проверку шрифтов и строки статуса
-на последней сборке. Полный custom-preset/EN-RU чек-лист R04 не заявляется.
+R01–R03 приняты; пользователь подтвердил проверку шрифтов и строки статуса на R05.
+Полный custom-preset/EN-RU чек-лист R04 не заявляется. Аппаратная приёмка R06 открыта.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R06 — cmap probe: implemented, CI/device pending.** Файловая FreeType-проверка
+**R06 — cmap probe: implemented, CI PASS, device pending.** Файловая FreeType-проверка
 отделена от cache/list policy с явным Unknown/Missing/Supported. Правила агрегации,
 EN и кэш вёрстки не меняются. 15 локальных Python tests PASS; native cases расширены.
-Следующий шаг: CI и [чек-лист R06](doc/reports/patch-series/063-font-coverage-refactor.md).
+CI45820117357 все 3 jobs PASS. Следующий шаг: [чек-лист R06](doc/reports/patch-series/063-font-coverage-refactor.md).
 
 **Проверка устройства R04/R05:** пользователь сообщил «проверил изменение шрифтов
 и сноску в статусбаре. можно переходить дальше». Фиксируем положительный результат
