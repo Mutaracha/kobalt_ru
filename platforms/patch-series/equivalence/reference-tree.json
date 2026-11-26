@@ -2472,8 +2472,8 @@
     },
     "platforms/desktop/CMakeLists.txt": {
       "mode": "100644",
-      "sha256": "cd9852a60d6dc87b06c1463332952c528c3e7652256672b5ca5be7504467933e",
-      "size": 79221
+      "size": 79247,
+      "sha256": "c79efd0687fcf6d66bc69b1ac8e3659923bd0a2f1ccd00df6eca8a66a0df9b86"
     },
     "platforms/desktop/CMakePresets.json": {
       "mode": "100644",
@@ -8073,6 +8073,20 @@
           "mode": "100644",
           "size": 694655,
           "sha256": "12379807d4843d2b3d1b14163cd568e4089e9ad1c8b43f43f3cda15f2d809741"
+        }
+      },
+      "basis": "Targeted post-R09 FB2 fixes/regressions: zero-fraction restart preserves startup prefix; investigate comics preview round-trip.",
+      "review": "doc/reports/patch-series/068-preview-and-hybrid-device-findings.md"
+    },
+    {
+      "paths": [
+        "platforms/desktop/CMakeLists.txt"
+      ],
+      "previous": {
+        "platforms/desktop/CMakeLists.txt": {
+          "mode": "100644",
+          "sha256": "cd9852a60d6dc87b06c1463332952c528c3e7652256672b5ca5be7504467933e",
+          "size": 79221
         }
       },
       "basis": "Targeted post-R09 FB2 fixes/regressions: zero-fraction restart preserves startup prefix; investigate comics preview round-trip.",

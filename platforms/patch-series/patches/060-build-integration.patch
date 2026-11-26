@@ -29,7 +29,7 @@ index 69a70d14..9fda861d 100644
  
  file(GLOB_RECURSE shared CONFIGURE_DEPENDS "${source}/*.cpp" "${source}/*.h")
 diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
-index 08d4f7ee..4c525898 100644
+index 08d4f7ee..7814cd41 100644
 --- a/platforms/desktop/CMakeLists.txt
 +++ b/platforms/desktop/CMakeLists.txt
 @@ -107,7 +107,10 @@ add_library(kobalt-core OBJECT ${shared} display.cpp ../standalone/native_image.
@@ -43,6 +43,15 @@ index 08d4f7ee..4c525898 100644
      "${source}/publication/resource_cache.cpp" "${source}/publication/local_resources.cpp"
      "${source}/publication/image_policy.cpp"
      "${source}/publication/native_resources.cpp" "${source}/publication/resource_server.cpp"
+@@ -475,7 +478,7 @@ if(BUILD_TESTING)
+             endif()
+         endforeach()
+     endfunction()
+-    foreach(check teardownRemovesApplicationFilter settingsTeardownReleasesConfirmation settingsChoiceSheetReusesRows settingsFontSheetReusesRows interfaceFontSections settingsChoiceFitsAfterResize appearancePreviewInterruptsEstimate appearanceTeardownStopsPanelCallbacks shutdownFinalSaveTimesOut
++    foreach(check teardownRemovesApplicationFilter settingsTeardownReleasesConfirmation settingsChoiceSheetReusesRows settingsFontSheetReusesRows interfaceFontSections settingsChoiceFitsAfterResize appearancePreviewInterruptsEstimate appearanceTeardownStopsPanelCallbacks fb2ComicsPreviewRoundTrip shutdownFinalSaveTimesOut
+             backgroundWriteFailureRetriesWithoutCountingPause backgroundCheckpointStopsBeforeOtherCallbacks standaloneReadingHistory navigationDismissalWaitsForPanel uneditedPanelTransitions lightReplacesDefaultMenu appearanceApplyOnNavigation appearanceRelayoutPreservesPassage
+             overflowClosesCurrentPanel appearanceSettingsRetainsDraft appearanceWriteFailureRetainsDraft
+             appearanceSleepRetainsDraft appearanceFailedPreviewDismisses appearanceApplyFailureCanExit
 @@ -492,7 +495,7 @@ if(BUILD_TESTING)
              sleepSnapshotMatchesTheDisplayedPage
              sleepSnapshotReplacesEachClockWithoutChangingTheReadingPage sleepTimeLeftUsesHoursAboveTwoHours sleepTimeLeftApproximate timeRemainingFormatShared
