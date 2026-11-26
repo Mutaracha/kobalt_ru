@@ -6,22 +6,27 @@
 Последний CI-проверенный бинарник: **66c21df1**, [CI45833426741](https://github.com/Mutaracha/kobalt_ru/actions/runs/45833426741),
 [пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45833426741/artifacts/15123082151).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-R08 принят пользователем по всему списку; R09 ещё не проверен на устройстве.
+R09 принят пользователем; R08 ранее подтверждён по всему списку.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R09 — представление данных чтения: implemented, CI PASS, device pending.**
-Подготовка текста StatsCell отделена от геометрии без изменения правил.
-15 локальных tests и все 3 CI jobs PASS; frozen-algorithm и real-widget regressions прошли.
-Следующий шаг: [чек-лист R09](doc/reports/patch-series/066-reading-data-presentation-refactor.md).
+**Ограниченный цикл рефакторинга завершён.** R01–R09 выполнены;
+R10 lifecycle оценён и оставлен без runtime-изменений: польза дополнительного
+объединения не оправдывает риск отмены задач/сохранения/USB/Hybrid.
+[Оценка R10 и итоговая ревизия](doc/reports/patch-series/067-lifecycle-review-and-refactor-closeout.md).
+Новая сборка не нужна: последний принятый пакет — R09, `66c21df1`.
+
+**R09 — done, CI PASS, device accepted.** Подготовка текста StatsCell отделена
+от геометрии; frozen-algorithm и real-widget regressions PASS.
+[Область и проверки](doc/reports/patch-series/066-reading-data-presentation-refactor.md).
 
 **R08 — done, CI PASS, device accepted по всему списку.**
 
-**Остаток цикла согласован:** R08 UI/settings → R09 представление данных чтения →
-R10 lifecycle книги (с оценкой риска/возможным defer). Не дробить каждую мелкую
-функцию на отдельную сборку. Кэш/Hybrid algorithms и beta11 font-cache integration
-не входят в эти блоки; не переписывать код без обоснованной пользы.
+Порядок всех семи патчей и их SHA256 повторно проверен. 15 локальных tests PASS;
+1552 runtime files соответствуют reference. Кэш/Hybrid algorithms и beta11
+font-cache integration не менялись. R10 не реализован и не объявляется проверенным
+на устройстве: возврат только с отдельной пользой/дефектом и scope.
 
 **R07 — done, CI PASS, device accepted.** Пользователь подтвердил c0ebc0fe.
 [Область](doc/reports/patch-series/064-feature-normalization-refactor.md).

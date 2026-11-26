@@ -66,6 +66,14 @@ R08 объединяет lifecycle style/restore действий Navigation, с
 Integration regression покрывает реальные вход/выход панели и optional actions.
 [Блок UI/settings и чек-лист](../../doc/reports/patch-series/065-ui-settings-refactor.md).
 
+R09 отделяет неизменённые правила выбора/переноса текста StatsCell от геометрии;
+frozen-algorithm и real-widget regressions PASS. R08/R09 приняты пользователем.
+[Блок представления данных](../../doc/reports/patch-series/066-reading-data-presentation-refactor.md).
+
+R10 оценён: lifecycle без изменений, дополнительное объединение отложено из-за
+риска для async/save/USB/cache/Hybrid. Ограниченный цикл R01–R09 завершён;
+[итоговая ревизия и границы приёмки](../../doc/reports/patch-series/067-lifecycle-review-and-refactor-closeout.md).
+
 ## Проверка эквивалентности
 
 Эталон — полная прежняя серия runtime `5b45f2c74857180f0689f80b5e48a9134f58bec7`.

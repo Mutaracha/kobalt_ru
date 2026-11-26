@@ -1,6 +1,6 @@
 # R09 — представление данных статистики
 
-Статус: implemented; local series и полный CI PASS; device pending.
+Статус: done; local series и полный CI PASS; device accepted.
 База — 91224b24, runtime R08 7b9e2caf. Пользователь подтвердил R08 по всему списку.
 
 ## Граница
@@ -47,3 +47,5 @@ Runtime `66c21df1c9b4a914272aa9d1abef09c90fbd0b60`:
 и archived FB2 replay), Qt5/package.
 [Пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45833426741/artifacts/15123082151)
 45 429 910 байт. Приёмка устройства остаётся открытой.
+
+Пользователь подтвердил R09: «проверил, продолжаем».
