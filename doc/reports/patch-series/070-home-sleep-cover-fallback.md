@@ -1,6 +1,6 @@
 # Обложка сна/выключения после выхода из ридера
 
-Статус: implemented, local/CI/device pending.
+Статус: implemented, 15 local series tests PASS; CI/device pending.
 Источник: 34faf24, `test & diagnostic/94498e7/diagnostics.zip`.
 Пользователь подтверждает оба формата: FB2 и EPUB. В архиве home-sleep-screen
 дважды mode=plain, design=bookmark (18:49:40.168 и 18:50:44.866 UTC устройства).
@@ -26,6 +26,12 @@ Durable privacy check по-прежнему выполняется первым.
 в новый экран. Не открываем и не верстаем книгу во время сна/выключения;
 не пишем в кэш Nickel и не ослабляем fingerprint/token/privacy guards.
 
+Также исправлен источник сохранённой обложки: прежде public exit snapshot
+записывался только в scenario/benchmark режиме. Теперь обычное успешное закрытие
+сохраняет чистый cover backdrop, если обложка действительно готова и выбрана
+для сна или выключения. Stock/reading-page/нет-обложки не записываются;
+USB/closeWithoutSaving остаются без такой записи. Private path сохранён.
+
 ## Проверки
 
 Дополнен реальный homeScreenDrawsLastKobaltBook в kobo_power_screen.cpp:
@@ -36,8 +42,13 @@ Durable privacy check по-прежнему выполняется первым.
 Workflow собирает kobalt-power-screen-tests и включает весь platform.kobo-power-screen
 в selected native suite, не только новый case.
 
-Основной 040 содержит два изменённых runtime пути: home_sleep_screen.cpp и
-kobo_power_screen.cpp. File map и reference amendment обновлены явно. Порядок
+Реальный lifecycle.closedReaderSavesOnlyCoverBackdrop проверяет запись при
+обычном close с cover light/dark и отсутствие записи для stock/page. Прежний
+usbDoesNotSaveSleepScreen остаётся в CI. Имя close-теста и регистрация обновлены
+в 060.
+
+Основной 040 содержит home_sleep_screen.cpp, reader.cpp, kobo_power_screen.cpp и
+reader_lifecycle.cpp; 060 — имя существующего теста в desktop CMake. File map и reference amendment обновлены явно. Порядок
 всех семи патчей не меняется. Текущая правка не затрагивает FB2/EPUB engine,
 Hybrid, книжный кэш или формат persistence.
 

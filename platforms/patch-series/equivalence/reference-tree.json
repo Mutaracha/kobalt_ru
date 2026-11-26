@@ -2473,7 +2473,7 @@
     "platforms/desktop/CMakeLists.txt": {
       "mode": "100644",
       "size": 79273,
-      "sha256": "7a030249187d3d0be4c71b973939ba12cc76b1ffbf59b6e24b1b86b9390a51f2"
+      "sha256": "7923188484a69277c2ee59ca2d45d70410a947e376cc38b6e631fa5c6e1363d2"
     },
     "platforms/desktop/CMakePresets.json": {
       "mode": "100644",
@@ -4147,8 +4147,8 @@
     },
     "src/app/reader/window/reader.cpp": {
       "mode": "100644",
-      "size": 166923,
-      "sha256": "2c63d57d7f63387e5fac8f3fc55a245b78996b69b513a42bb13b756824197708"
+      "size": 167495,
+      "sha256": "3333103efcc732d9622a1fa60e814777badccaae2e73e0170b16cc2b618d5500"
     },
     "src/app/reader/window/reader_activity.cpp": {
       "mode": "100644",
@@ -7617,8 +7617,8 @@
     },
     "tests/reader_lifecycle.cpp": {
       "mode": "100644",
-      "size": 695685,
-      "sha256": "9adb4595e0cf42db9650e520aa2e5322e3048314ba7f0228f30cd4c86404cff4"
+      "size": 696080,
+      "sha256": "3bbeb2000d26371ddb4f7c92f8e5437ec794e90207ee44f7f4eb03509e0a3434"
     },
     "tests/reader_ui.cpp": {
       "mode": "100644",
@@ -8144,6 +8144,52 @@
         }
       },
       "basis": "Home sleep/power-off: when native cover is missing, use only a token-matched, public, clean persisted cover backdrop; retain current metadata and privacy guards.",
+      "review": "doc/reports/patch-series/070-home-sleep-cover-fallback.md"
+    },
+    {
+      "paths": [
+        "platforms/kobo/common/home_sleep_screen.cpp",
+        "tests/kobo_power_screen.cpp",
+        "src/app/reader/window/reader.cpp",
+        "tests/reader_lifecycle.cpp"
+      ],
+      "previous": {
+        "platforms/kobo/common/home_sleep_screen.cpp": {
+          "mode": "100644",
+          "size": 24760,
+          "sha256": "b8209107ebfdbde418d12f82d8d57f837538358cffb52983053872409eb84175"
+        },
+        "tests/kobo_power_screen.cpp": {
+          "mode": "100644",
+          "size": 65574,
+          "sha256": "111648da40a9e5cdcdd551a0453ebed71ebcb0109bc1631111a2ac2ca5b61d64"
+        },
+        "src/app/reader/window/reader.cpp": {
+          "mode": "100644",
+          "size": 166923,
+          "sha256": "2c63d57d7f63387e5fac8f3fc55a245b78996b69b513a42bb13b756824197708"
+        },
+        "tests/reader_lifecycle.cpp": {
+          "mode": "100644",
+          "size": 695685,
+          "sha256": "9adb4595e0cf42db9650e520aa2e5322e3048314ba7f0228f30cd4c86404cff4"
+        }
+      },
+      "basis": "Home sleep/power-off: when native cover is missing, use only a token-matched, public, clean persisted cover backdrop; retain current metadata and privacy guards.",
+      "review": "doc/reports/patch-series/070-home-sleep-cover-fallback.md"
+    },
+    {
+      "paths": [
+        "platforms/desktop/CMakeLists.txt"
+      ],
+      "previous": {
+        "platforms/desktop/CMakeLists.txt": {
+          "mode": "100644",
+          "size": 79273,
+          "sha256": "7a030249187d3d0be4c71b973939ba12cc76b1ffbf59b6e24b1b86b9390a51f2"
+        }
+      },
+      "basis": "Rename close regression to describe clean-cover exception.",
       "review": "doc/reports/patch-series/070-home-sleep-cover-fallback.md"
     }
   ]
