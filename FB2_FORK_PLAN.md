@@ -6,26 +6,25 @@
 Последний CI-проверенный бинарник: **1894d058**, [CI45860538561](https://github.com/Mutaracha/kobalt_ru/actions/runs/45860538561),
 [пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45860538561/artifacts/15137394036).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-R09 принят пользователем; R08 ранее подтверждён по всему списку.
+1894d058 принят для Hybrid на новой книге и предпросмотра comics; R09 принят ранее.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**Текущий шаг — проверка targeted FB2 fixes на устройстве.** Runtime 1894d058,
-все 3 CI jobs PASS. Исправлены пустой anchored preview после comics off и
-избыточный full promotion при fraction0. Дефект preview воспроизведён до fix
-на архивной книге через настоящую панель; тот же regression теперь PASS.
-[Исправления, red/green evidence и чек-лист](doc/reports/patch-series/069-fb2-preview-and-zero-fraction-fixes.md).
-Новые логи до проверки сборки не нужны. Saved-position/cache/size guards Hybrid
-сохранены; любая FB2 не обязана открываться частично. Последний device-accepted
-runtime пока R09 66c21df1; новые fixes ещё не приняты.
+**Targeted FB2 fixes — done, CI PASS, device accepted.** Runtime 1894d058.
+Пользователь подтвердил Hybrid на новой книге и предпросмотр после comics on/off.
+Оба исправления находятся в основном 030; regressions — в 030/034/040,
+регистрация — в 060. Восьмого патча/отдельной накладки нет.
+[Исправления, red/green evidence и приёмка](doc/reports/patch-series/069-fb2-preview-and-zero-fraction-fixes.md).
+Saved-position/cache/size guards Hybrid сохранены. Дополнительные логи и новая
+установка не нужны; это обновление статусов не меняет принятый runtime.
 
 **Ограниченный цикл рефакторинга завершён.** R01–R09 выполнены;
 R10 lifecycle оценён и оставлен без runtime-изменений: польза дополнительного
 объединения не оправдывает риск отмены задач/сохранения/USB/Hybrid.
 [Оценка R10 и итоговая ревизия](doc/reports/patch-series/067-lifecycle-review-and-refactor-closeout.md).
-Этот завершённый рефакторинг не включал новые targeted fixes выше; последний
-принятый пользователем пакет пока R09, `66c21df1`.
+Этот завершённый рефакторинг не включал последующие targeted fixes выше;
+последняя принятая сборка с ними — `1894d058`.
 
 **R09 — done, CI PASS, device accepted.** Подготовка текста StatsCell отделена
 от геометрии; frozen-algorithm и real-widget regressions PASS.

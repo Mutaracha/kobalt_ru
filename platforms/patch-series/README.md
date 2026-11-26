@@ -74,6 +74,16 @@ R10 оценён: lifecycle без изменений, дополнительн�
 риска для async/save/USB/cache/Hybrid. Ограниченный цикл R01–R09 завершён;
 [итоговая ревизия и границы приёмки](../../doc/reports/patch-series/067-lifecycle-review-and-refactor-closeout.md).
 
+## Принятые FB2 fixes после R09
+
+1894d058: Hybrid не переводится в полный документ ради перехода к fraction0;
+пустой anchored preview после comics off заменяется свежим пригодным frame
+того же draft. Оба сценария подтверждены пользователем, полный CI PASS.
+Основной 030 содержит fixes и engine tests; 034 — session restart regression,
+040 — real Layout regression, 060 — регистрацию. Все семь патчей применяются
+вместе, отдельных дополнительных overlays нет.
+[Подробности и evidence](../../doc/reports/patch-series/069-fb2-preview-and-zero-fraction-fixes.md).
+
 ## Проверка эквивалентности
 
 Эталон — полная прежняя серия runtime `5b45f2c74857180f0689f80b5e48a9134f58bec7`.

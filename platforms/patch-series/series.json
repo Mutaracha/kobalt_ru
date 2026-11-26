@@ -25,8 +25,8 @@
       "path": "platforms/patch-series/patches/030-engine-integration.patch",
       "status": "ready",
       "sha256": "dc86ea8957cda76931f10e2c5b5ecaaa5acacf6dcfa96dc38cbcb325e54b1780",
-      "scope": "Final FB2/comics engine and rendering/cache/font identity integration, engine tests; no runtime changes.",
-      "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
+      "scope": "Final FB2/comics engine, rendering/cache/font identity integration and tests; includes post-R09 zero-fraction startup and anchored-preview fixes.",
+      "validation": "CI45860538561 on 1894d058: full seven-layer export, selected native regressions including real FB2 Layout replay, archived FB2/font replay and Qt5 package PASS. User accepted Hybrid opening of a new book and comics preview round-trip. See doc/reports/patch-series/069-fb2-preview-and-zero-fraction-fixes.md."
     },
     {
       "id": "034-session-hybrid",
@@ -34,7 +34,7 @@
       "status": "ready",
       "sha256": "fdc73ae19bcf7742c8df8e9b4c090294088aa434c181f3e1916b5b925ccd3622",
       "scope": "Session/resource cache lifecycle, initial FB2 Hybrid and observation/replay/cancellation/note/image tests.",
-      "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
+      "validation": "CI45860538561 on 1894d058: full seven-layer export, selected native regressions including real FB2 Layout replay, archived FB2/font replay and Qt5 package PASS. User accepted Hybrid opening of a new book and comics preview round-trip. See doc/reports/patch-series/069-fb2-preview-and-zero-fraction-fixes.md."
     },
     {
       "id": "040-reader-controls-settings",
@@ -42,7 +42,7 @@
       "status": "ready",
       "sha256": "da1f83769b3812fb094425683607b9fed98c553711764d24080f943001596658",
       "scope": "Final reader window/host wiring, swipe/toolbar/settings/menu-status integration and tests.",
-      "validation": "R07: table-driven dependent feature-option resets; exhaustive 1024 flag combinations x 3 menu modes compared to frozen old rules. CI/device pending."
+      "validation": "CI45860538561 on 1894d058: full seven-layer export, selected native regressions including real FB2 Layout replay, archived FB2/font replay and Qt5 package PASS. User accepted Hybrid opening of a new book and comics preview round-trip. See doc/reports/patch-series/069-fb2-preview-and-zero-fraction-fixes.md."
     },
     {
       "id": "050-presentation",
@@ -58,7 +58,7 @@
       "status": "ready",
       "sha256": "a79dd6f9825fc21708bc5fcd9e548912c08ca1a8d7613e1e9000aea14e9421f1",
       "scope": "Final CMake/packaging/CI source integration and validation support.",
-      "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
+      "validation": "CI45860538561 on 1894d058: full seven-layer export, selected native regressions including real FB2 Layout replay, archived FB2/font replay and Qt5 package PASS. User accepted Hybrid opening of a new book and comics preview round-trip. See doc/reports/patch-series/069-fb2-preview-and-zero-fraction-fixes.md."
     }
   ]
 }
