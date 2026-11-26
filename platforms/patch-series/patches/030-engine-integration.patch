@@ -2210,7 +2210,7 @@ index 4d80a9fb..65a25a03 100644
          if (node->isNodeName("head") || node->isNodeName("style") || node->isNodeName("script"))
              continue;
 diff --git a/src/engine/blaze/adapter/reader_slices.cpp b/src/engine/blaze/adapter/reader_slices.cpp
-index 16e0bd8b..22b09fe9 100644
+index 16e0bd8b..3feea681 100644
 --- a/src/engine/blaze/adapter/reader_slices.cpp
 +++ b/src/engine/blaze/adapter/reader_slices.cpp
 @@ -1,4 +1,5 @@
@@ -2370,10 +2370,15 @@ index 16e0bd8b..22b09fe9 100644
      if (windowFirst_ < 0)
          return chapters();
      return fullDocumentReady() ? full_->chapters() : QVector<ChapterLink>{};
-@@ -1499,6 +1545,10 @@ QVector<int> EngineDocument::chapterBookPages(const QStringList &positions,
+@@ -1499,6 +1545,15 @@ QVector<int> EngineDocument::chapterBookPages(const QStringList &positions,
  
  bool EngineDocument::goToFraction(double fraction)
  {
++    // The start of the book is already present in the native FB2 prefix.
++    // Host restart/position fallback must not build the whole book just to
++    // select its first page. Other fractions still need whole-book geometry.
++    if (fb2StartupSlice_ && fraction <= 0)
++        return pages() > 0 && go(0);
 +    if (fb2StartupSlice_) {
 +        diagnostic("fb2-startup-promote", { { "reason", "fraction-jump" } }, false);
 +        return setChapterMode(false, appearance::Patch(), size_) && goToFraction(fraction);
@@ -3204,12 +3209,13 @@ index 6c11388a..390a24b7 100644
  // Bundled face for MathML and the generic math family.
 diff --git a/tests/model/comics.cpp b/tests/model/comics.cpp
 new file mode 100644
-index 00000000..1890ff55
+index 00000000..6ee75918
 --- /dev/null
 +++ b/tests/model/comics.cpp
-@@ -0,0 +1,403 @@
+@@ -0,0 +1,424 @@
 +#include "check.h"
 +#include "reader_inputs.h"
++#include "render/page_content.h"
 +#include "reader_source_index_probe.h"
 +#include "reading/appearance_settings.h"
 +#include "engine/blaze/adapter/page_draw_buffer.h"
@@ -3371,6 +3377,26 @@ index 00000000..1890ff55
 +                qPrintable(QString("Comics prose bounds (FB2=%1): first y=%2 h=%3, second y=%4 h=%5")
 +                    .arg(fictionBook).arg(first.y()).arg(first.height()).arg(second.y()).arg(second.height())));
 +        require(prose.pages() > 1, "Comics prose collapsed into a single page");
++        const auto firstPosition = prose.position();
++        // Real Layout preview path after on/off/on/off, with an unchanged
++        // viewport as well as the smaller body used when reader chrome returns.
++        for (int cycle = 0; cycle < 3; ++cycle) {
++            for (bool enabled : {false, true, false}) {
++                const QSize viewport(800, enabled ? 1000 : 920);
++                require(prose.applyAppearance(appearance::Patch(QJsonObject{
++                            {appearance::comicsModeKey, enabled}, {"margin_pixels", 18},
++                            {"top_margin_pixels", 12}, {"bottom_margin_pixels", 12}}), viewport),
++                        "toggle prose comics preview");
++                require(prose.goTo(firstPosition), "restore prose preview anchor");
++                const auto frame = prose.image(prose.page());
++                const auto preview = prose.imageFromAnchor(true);
++                require(!frame.isNull() && !pageNeedsTextSample(frame), "prose reading frame is blank");
++                require(!preview.isNull() && !pageNeedsTextSample(preview),
++                        qPrintable(QString("Layout preview lost prose after comics=%1 FB2=%2 cycle=%3")
++                                   .arg(enabled).arg(fictionBook).arg(cycle)));
++            }
++        }
++
 +    }
 +
 +    // Mixed source sequence: portrait + portrait, a wide spread, and an odd portrait.
@@ -3752,10 +3778,10 @@ index 00000000..69bccbec
 +}
 diff --git a/tests/model/fb2_engine.cpp b/tests/model/fb2_engine.cpp
 new file mode 100644
-index 00000000..1ea4202f
+index 00000000..36858366
 --- /dev/null
 +++ b/tests/model/fb2_engine.cpp
-@@ -0,0 +1,327 @@
+@@ -0,0 +1,333 @@
 +// Covers raw FB2 engine loading, resources, EPUB reuse, reflow, preview and cache lifecycle.
 +#include "book_fixtures.h"
 +#include "check.h"
@@ -3982,6 +4008,12 @@ index 00000000..1ea4202f
 +    require(!resumed.partOfBook() && resumed.position() == distant, "saved FB2 position used prefix");
 +    EngineDocument fraction(test::readerFonts());
 +    require(fraction.open(bytes, {600, 800}, {}, &error), qPrintable(error));
++    const auto firstFractionImage = fraction.image(0);
++    require(fraction.go(1), "advance inside prefix before restart");
++    require(fraction.goToFraction(0) && fraction.partOfBook() && fraction.page() == 0
++                    && fraction.image(0) == firstFractionImage && !fraction.fullDocumentStarted(),
++            "restart at zero promoted the FB2 prefix");
++    require(fraction.goToFraction(-1) && fraction.partOfBook(), "negative fraction did not clamp to prefix start");
 +    require(fraction.goToFraction(0.9) && !fraction.partOfBook(), "fraction jump stayed in prefix");
 +    // Destroy a prefix with a parked full build. Reopening independently must
 +    // remain usable and must not find a partial full-book cache from that build.

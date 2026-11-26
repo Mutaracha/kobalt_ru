@@ -4467,8 +4467,8 @@
     },
     "src/engine/blaze/adapter/reader_slices.cpp": {
       "mode": "100644",
-      "sha256": "cd898d4755266937803c1d25809ae6586ff589d3767a843995e2c17b8e0cea40",
-      "size": 67551
+      "size": 67859,
+      "sha256": "676124cd85dfb0cc7f1f1fa3712c4ffcb96f85eb59f11b194f39ab741a6bae11"
     },
     "src/engine/blaze/adapter/reader_source.cpp": {
       "mode": "100644",
@@ -6997,8 +6997,8 @@
     },
     "tests/model/comics.cpp": {
       "mode": "100644",
-      "sha256": "cccaa634a08b314a0f83141df3944856d7e24914f8912391690ec7323731eb38",
-      "size": 27356
+      "size": 28691,
+      "sha256": "0124140437118a6e6f33069e1228ae9b887cef61520da725a176a1f0ec049f0f"
     },
     "tests/model/comics_layout.cpp": {
       "mode": "100644",
@@ -7092,8 +7092,8 @@
     },
     "tests/model/fb2_engine.cpp": {
       "mode": "100644",
-      "sha256": "3b6de832fcb9025b3b637d26fa4affe4aedab7224dc6fa7b36f12bd7bc98e37c",
-      "size": 18088
+      "size": 18569,
+      "sha256": "bef134cb539e6e4531aff3332e373ac39f089cb6f9665d2f422fd50446b7c2c3"
     },
     "tests/model/figure_layout.cpp": {
       "mode": "100644",
@@ -8003,6 +8003,32 @@
       },
       "basis": "R09: separate unchanged statistics text formatting from widget geometry; frozen pre-refactor algorithm and real StatsCell integration regression.",
       "review": "doc/reports/patch-series/066-reading-data-presentation-refactor.md"
+    },
+    {
+      "paths": [
+        "src/engine/blaze/adapter/reader_slices.cpp",
+        "tests/model/fb2_engine.cpp",
+        "tests/model/comics.cpp"
+      ],
+      "previous": {
+        "src/engine/blaze/adapter/reader_slices.cpp": {
+          "mode": "100644",
+          "sha256": "cd898d4755266937803c1d25809ae6586ff589d3767a843995e2c17b8e0cea40",
+          "size": 67551
+        },
+        "tests/model/fb2_engine.cpp": {
+          "mode": "100644",
+          "sha256": "3b6de832fcb9025b3b637d26fa4affe4aedab7224dc6fa7b36f12bd7bc98e37c",
+          "size": 18088
+        },
+        "tests/model/comics.cpp": {
+          "mode": "100644",
+          "sha256": "cccaa634a08b314a0f83141df3944856d7e24914f8912391690ec7323731eb38",
+          "size": 27356
+        }
+      },
+      "basis": "Targeted post-R09 FB2 fixes/regressions: zero-fraction restart preserves startup prefix; investigate comics preview round-trip.",
+      "review": "doc/reports/patch-series/068-preview-and-hybrid-device-findings.md"
     }
   ]
 }
