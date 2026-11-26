@@ -1767,8 +1767,8 @@
     },
     "assets/ru.strings": {
       "mode": "100644",
-      "sha256": "87eb94e64e52aa6bb44908cda57d0af08f7b5d8354130293509d834660c56314",
-      "size": 162466
+      "size": 162741,
+      "sha256": "184a4cb4a6e890908772f1344a6edc192704f150c5ace4ef6ee70669f525cb48"
     },
     "assets/samples/hanging-punctuation.html": {
       "mode": "100644",
@@ -7759,5 +7759,17 @@
   "reference_commit": "5b45f2c74857180f0689f80b5e48a9134f58bec7",
   "schema": 1,
   "series_commit": "b45add66fb50f6d66a02a9dcd55c895b1916e3b9",
-  "upstream": "1796a32559dbb2912bd565990d1c7a0ca7ac4e52"
+  "upstream": "1796a32559dbb2912bd565990d1c7a0ca7ac4e52",
+  "approved_amendments": [
+    {
+      "path": "assets/ru.strings",
+      "basis": "User accepted beta9→beta10 translation review, Letter proposal and explicit wording corrections; restored omitted animation-mode descriptions.",
+      "previous": {
+        "mode": "100644",
+        "sha256": "87eb94e64e52aa6bb44908cda57d0af08f7b5d8354130293509d834660c56314",
+        "size": 162466
+      },
+      "review": "doc/reports/translation-beta10/accepted.md"
+    }
+  ]
 }

@@ -74,7 +74,7 @@ class SeriesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix='series-regression-', dir=build) as tmp:
             destination = Path(tmp)
             apply_to(ROOT, ROOT / 'platforms/patch-series/series.json', destination, ready_only=True)
-            # Consolidation must not change a single resulting runtime file.
+            # Verify the original consolidation plus explicitly recorded approved amendments.
             from verify_equivalence import verify
             verify(destination, ROOT / 'platforms/patch-series/equivalence/reference-tree.json')
             # Later ordered patches may append new translated UI strings; the reviewed
@@ -92,6 +92,12 @@ class SeriesTests(unittest.TestCase):
                 'annotations.summary_one': '"annotations.summary_one" = "%1 аннотация";',
                 'chapter_contents.summary_one': '"chapter_contents.summary_one" = "Содержание · %1 глава";',
             }
+            accepted = json.loads((ROOT / 'doc/reports/translation-beta10/accepted.json').read_text())['strings']
+            plural_updates.update({key: json.dumps(key, ensure_ascii=False) + ' = '
+                                   + json.dumps(value, ensure_ascii=False) + ';'
+                                   for key, value in accepted.items()})
+            for line in plural_updates.values():
+                self.assertIn(line, actual)
             for line in overlay.splitlines():
                 match = re.match(r'^"([^"\n]+)"\s*=', line)
                 if match:
