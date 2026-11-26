@@ -1,6 +1,13 @@
 # Обложка сна/выключения после выхода из ридера
 
-Статус: implemented, 15 local series tests PASS; CI/device pending.
+Статус: implemented, 15 local series tests PASS; полный CI PASS; device pending.
+Runtime commit: ac9cb0b8fb27fec5b5f81a41b125741ba3954f04.
+CI: https://github.com/Mutaracha/kobalt_ru/actions/runs/45884236158 — all 3 PASS
+(check-ready-prefix, Linux native tests, Qt5 device package).
+Qt5 artifact: https://github.com/Mutaracha/kobalt_ru/actions/runs/45884236158/artifacts/15148563392
+(45,436,084 bytes). Новый close lifecycle test, USB test и весь
+platform.kobo-power-screen включены в обязательный native gate.
+Локально: 15 series/package/equivalence tests PASS, 1552 runtime files identical.
 Источник: 34faf24, `test & diagnostic/94498e7/diagnostics.zip`.
 Пользователь подтверждает оба формата: FB2 и EPUB. В архиве home-sleep-screen
 дважды mode=plain, design=bookmark (18:49:40.168 и 18:50:44.866 UTC устройства).
