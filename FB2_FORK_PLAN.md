@@ -3,18 +3,18 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010/020/030/034/040/050/060 после консолидации; все патчи применяются вместе.
-Последний CI-проверенный бинарник: **c0ebc0fe**, [CI45822684939](https://github.com/Mutaracha/kobalt_ru/actions/runs/45822684939),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45822684939/artifacts/15119725504).
+Последний CI-проверенный бинарник: **7b9e2caf**, [CI45829135561](https://github.com/Mutaracha/kobalt_ru/actions/runs/45829135561),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45829135561/artifacts/15121062716).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
 R07 принят пользователем; новый R08 ещё не принят на устройстве.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R08 — UI/settings: implemented, CI/device pending.** Одинаковые lifecycle
+**R08 — UI/settings: implemented, CI PASS, device pending.** Одинаковые lifecycle
 операции toolbar actions сведены к общему пути; особые Settings/Bookmarks и
 warning restore sequences сохранены. Добавлен real Navigation lifecycle regression.
-15 локальных Python tests PASS. Следующий шаг: CI и [чек-лист R08](doc/reports/patch-series/065-ui-settings-refactor.md).
+15 локальных Python tests и все 3 CI jobs PASS. Следующий шаг: [чек-лист R08](doc/reports/patch-series/065-ui-settings-refactor.md).
 
 **Остаток цикла согласован:** R08 UI/settings → R09 представление данных чтения →
 R10 lifecycle книги (с оценкой риска/возможным defer). Не дробить каждую мелкую

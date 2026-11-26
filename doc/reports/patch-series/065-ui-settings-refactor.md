@@ -1,6 +1,6 @@
 # R08 — общий lifecycle оформления действий интерфейса
 
-Статус: implemented; local series PASS; CI/device pending.
+Статус: implemented; local series и полный CI PASS; device pending.
 R07 на c0ebc0fe пользователь назвал проверенным. Согласованный остаток цикла:
 R08 UI/settings, R09 представление данных чтения, R10 lifecycle книги с отдельной
 оценкой риска; это не обязательство переписать код без доказуемой пользы.
@@ -82,3 +82,14 @@ CI45828013808 на b06c2026: host compile теста указал неверны
 ToolbarComposition (тип в kobalt, не kobalt::reader). Исправлен только fixture;
 Qt5 production в этих повторных попытках собирался. Окончательная приёмка CI
 остаётся отдельным gate, ни одна частично успешная попытка не предлагается устройству.
+
+## Финальный CI R08
+
+Runtime: `7b9e2caf2732cbf8f0c416f39156e5d5a39760c5`.
+[CI45829135561](https://github.com/Mutaracha/kobalt_ru/actions/runs/45829135561):
+все три jobs PASS — check-ready-prefix, compile-prepared-prefix (linux),
+compile-prepared-prefix (qt5). Native integration regression не отключался;
+archived FB2 host replay также PASS.
+[Пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45829135561/artifacts/15121062716):
+45 427 187 байт. Проверка устройства остаётся открытой; R07 — последняя
+подтверждённая пользователем сборка.
