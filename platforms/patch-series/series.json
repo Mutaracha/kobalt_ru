@@ -40,9 +40,9 @@
       "id": "040-reader-controls-settings",
       "path": "platforms/patch-series/patches/040-reader-controls-settings.patch",
       "status": "ready",
-      "sha256": "66e2a67a1f8848bb657d553b32112308a809243732028d3c169fd047d7b2342e",
+      "sha256": "eb16043a55a57a2f451091f6a23b8f916366c4db797690896f0555a2c550155e",
       "scope": "Final reader window/host wiring, swipe/toolbar/settings/menu-status integration and tests.",
-      "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
+      "validation": "R05: centralize menu-status serialization and toggle request; native invalid-input/persistence regressions added. CI/device pending."
     },
     {
       "id": "050-presentation",

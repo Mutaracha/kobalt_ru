@@ -305,7 +305,7 @@ index 00000000..a2b646e4
 +
 +} // namespace kobalt::reader
 diff --git a/src/app/reader/window/reader.cpp b/src/app/reader/window/reader.cpp
-index c4c2f8a7..c592f938 100644
+index c4c2f8a7..c0ead4c9 100644
 --- a/src/app/reader/window/reader.cpp
 +++ b/src/app/reader/window/reader.cpp
 @@ -681,7 +681,7 @@ sleep::Details Reader::sleepDetails()
@@ -334,12 +334,11 @@ index c4c2f8a7..c592f938 100644
              registerPickerFonts(face);
              navigation->setTextFace(face);
          }
-@@ -4019,6 +4019,8 @@ void Reader::describe(QJsonObject &state)
+@@ -4019,6 +4019,7 @@ void Reader::describe(QJsonObject &state)
      state["reading_chrome_font"] = QFontInfo(page->font()).family();
      state["session_reading_ms"] = double(book->sessionReadingMilliseconds());
      state["menu_session_text"] = menuSession->text();
-+    state[menustatus::preferenceKey] = menustatus::showsPage(preferences)
-+            ? QStringLiteral("book_page") : QStringLiteral("session");
++    state[menustatus::preferenceKey] = menustatus::value(preferences);
      state["menu_clock_font"] = QFontInfo(menuClock->font()).family();
      state["menu_battery_font"] = QFontInfo(menuBattery->font()).family();
      state["ui_icon_set"] = QStringLiteral("Phosphor");
@@ -432,7 +431,7 @@ index cd439b9b..8ca3151c 100644
      } else {
          actions.append({ "rrAnnotationAddNote", ui::ControlIcon::Note,
 diff --git a/src/app/reader/window/reader_build.cpp b/src/app/reader/window/reader_build.cpp
-index 0e09f527..b0b87470 100644
+index 0e09f527..feeb53e9 100644
 --- a/src/app/reader/window/reader_build.cpp
 +++ b/src/app/reader/window/reader_build.cpp
 @@ -1,3 +1,4 @@
@@ -467,7 +466,7 @@ index 0e09f527..b0b87470 100644
      }
  };
  
-@@ -821,6 +824,21 @@ void Reader::buildToolbar()
+@@ -821,6 +824,18 @@ void Reader::buildToolbar()
      auto *top = new QHBoxLayout;
      toolbar->addLayout(top);
      top->setSpacing(metrics::panel::toolbarGap);
@@ -477,10 +476,7 @@ index 0e09f527..b0b87470 100644
 +    menuStatusButton->setCheckable(true);
 +    toolbarComposition.statusToggle = menuStatusButton;
 +    connect(menuStatusButton, &QAbstractButton::clicked, this, [this] {
-+        auto next = preferences;
-+        next[menustatus::preferenceKey] = menustatus::showsPage(preferences)
-+                ? QStringLiteral("session") : QStringLiteral("book_page");
-+        savePreferences(next, [this](bool saved) {
++        savePreferences(menustatus::toggledPreferences(preferences), [this](bool saved) {
 +            updateMenuStatus();
 +            if (saved)
 +                navigation->updateSessionGeometry();
@@ -489,7 +485,7 @@ index 0e09f527..b0b87470 100644
      updateMenuStatus();
      const auto returnLabel = services.backButtonLabel.isEmpty() ? strings::get("reader.exit")
                                                                  : services.backButtonLabel;
-@@ -835,10 +853,11 @@ void Reader::buildToolbar()
+@@ -835,10 +850,11 @@ void Reader::buildToolbar()
  
      auto *returnTitle = new ReturnTitle(returnLabel, back);
      returnTitle->setObjectName("rrReturnTitle");
@@ -502,7 +498,7 @@ index 0e09f527..b0b87470 100644
      returnTitle->ensurePolished();
      returnRow->addSpacing(back->labelStart(returnTitle->font()));
      returnRow->addWidget(returnTitle, 1);
-@@ -891,6 +910,15 @@ void Reader::buildToolbar()
+@@ -891,6 +907,15 @@ void Reader::buildToolbar()
              iconButton(topControls, top, "rrGraph", strings::get("reader.chapter_lengths"),
                         ControlIcon::Graph, [this] { toggleGraph(); });
      toolbarButtons.graph->setCheckable(true);
@@ -518,7 +514,7 @@ index 0e09f527..b0b87470 100644
      toolbarComposition.search =
              iconButton(topControls, top, "rrSearchOpen", strings::get("reader.search_book"),
                         ControlIcon::Search,
-@@ -944,9 +972,9 @@ void Reader::buildToolbar()
+@@ -944,9 +969,9 @@ void Reader::buildToolbar()
           topControls->findChildren<QPushButton *>(QString(), Qt::FindDirectChildrenOnly)) {
          if (button == back)
              continue;
@@ -531,7 +527,7 @@ index 0e09f527..b0b87470 100644
              topActions.append(button);
          if (auto *action = dynamic_cast<kobalt::ui::Button *>(button))
              action->setPaintMode(kobalt::ui::ButtonPaintMode::ToolbarSquare);
-@@ -1240,6 +1268,19 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
+@@ -1240,6 +1265,19 @@ void Reader::buildAppearance(const kobalt::reader::AppearanceLayout &layout)
          weightControls += slider->stepButtons();
      }
      spacingSlider = appearance.spacingSlider;
@@ -551,7 +547,7 @@ index 0e09f527..b0b87470 100644
      marginSlider = appearance.marginSlider;
      verticalMarginSlider = appearance.verticalMarginSlider;
      buildTextPresets();
-@@ -2423,11 +2464,11 @@ void Reader::showFontPicker()
+@@ -2423,11 +2461,11 @@ void Reader::showFontPicker()
                               strings::get("reader.recommended_fonts") } };
      pickerNativeFamilies = services.fontFamilies();
      const auto state = settings->state();
@@ -565,7 +561,7 @@ index 0e09f527..b0b87470 100644
              items[0].fontFiles = font.files;
      for (int row = fonts.size() - 1; row >= 0; --row) {
          const auto &font = fonts[row];
-@@ -2457,13 +2498,13 @@ void Reader::showFontPicker()
+@@ -2457,13 +2495,13 @@ void Reader::showFontPicker()
          if (items[i].value == defaultFace)
              defaultIndex = i;
      if (defaultIndex < 0 && !settings->fontFaces().contains(defaultFace)) {
@@ -581,7 +577,7 @@ index 0e09f527..b0b87470 100644
      items[personalCount].detail = embedded > 0
              ? (embedded == 1 ? strings::get("reader.one_embedded_font")
                               : strings::get("reader.embedded_fonts").arg(embedded))
-@@ -2481,7 +2522,7 @@ void Reader::showFontPicker()
+@@ -2481,7 +2519,7 @@ void Reader::showFontPicker()
      slot.placeholder = true;
      // The Publisher fonts row samples Libron to fit its two-line caption.
      // Without this registration the sample can measure a fallback face.
@@ -1088,10 +1084,10 @@ index f3778b67..69b29eb2 100644
  // fields of the header and footer picker and the Fast rendering engine.
 diff --git a/src/reading/menu_status.h b/src/reading/menu_status.h
 new file mode 100644
-index 00000000..eff1f413
+index 00000000..93c22806
 --- /dev/null
 +++ b/src/reading/menu_status.h
-@@ -0,0 +1,17 @@
+@@ -0,0 +1,31 @@
 +#pragma once
 +#include "header_footer.h"
 +#include <QJsonObject>
@@ -1102,6 +1098,20 @@ index 00000000..eff1f413
 +{
 +    return preferences.value(preferenceKey).toString() == "book_page";
 +}
++// Serialize the effective choice, including the existing fallback for invalid data.
++inline QString value(const QJsonObject &preferences)
++{
++    return showsPage(preferences) ? QStringLiteral("book_page") : QStringLiteral("session");
++}
++
++// Return a request for the existing preference writer, without changing live state.
++inline QJsonObject toggledPreferences(const QJsonObject &preferences)
++{
++    auto next = preferences;
++    next[preferenceKey] = showsPage(preferences) ? QStringLiteral("session")
++                                               : QStringLiteral("book_page");
++    return next;
++}
 +inline QString text(const QJsonObject &preferences, const headerfooter::Values &values)
 +{
 +    return showsPage(preferences)
@@ -1110,10 +1120,10 @@ index 00000000..eff1f413
 +}
 +} // namespace kobalt::menustatus
 diff --git a/tests/model/appearance_settings.cpp b/tests/model/appearance_settings.cpp
-index 155708b4..18f35b77 100644
+index 155708b4..77c49d05 100644
 --- a/tests/model/appearance_settings.cpp
 +++ b/tests/model/appearance_settings.cpp
-@@ -7,6 +7,7 @@
+@@ -7,10 +7,12 @@
  #include "reading/session_timeout.h"
  #include "reading/remaining_time.h"
  #include "reading/header_footer.h"
@@ -1121,10 +1131,49 @@ index 155708b4..18f35b77 100644
  #include "reading/rendering_mode.h"
  #include "support/qt_compat.h"
  #include "check.h"
-@@ -19,6 +20,19 @@ using namespace kobalt;
+ #include <QJsonArray>
++#include <QJsonDocument>
+ #include <cstdio>
+ #include <utility>
+ 
+@@ -19,6 +21,53 @@ using namespace kobalt;
  // Checks appearance settings: defaults, invalid values, migrations, global and book precedence, new-book inheritance, which changes need a new layout and how an opening merges the saved book state.
  int main()
  {
++    {
++        const QJsonValue cases[] = {QJsonValue(), QJsonValue(QJsonValue::Undefined),
++            QJsonValue(false), QJsonValue(true), QJsonValue(1), QJsonValue(QJsonArray()),
++            QJsonValue(QJsonObject()), QJsonValue(QString()), QJsonValue(QStringLiteral("bad")),
++            QJsonValue(QStringLiteral("BOOK_PAGE")), QJsonValue(QStringLiteral("session")),
++            QJsonValue(QStringLiteral("book_page"))};
++        for (const auto &choice : cases) {
++            QJsonObject original{{QStringLiteral("unrelated"), QStringLiteral("keep")},
++                                 {QStringLiteral("nested"), QJsonObject{{QStringLiteral("x"), 7}}}};
++            original[menustatus::preferenceKey] = choice;
++            const auto before = original;
++            const bool page = choice.isString() && choice.toString() == QStringLiteral("book_page");
++            require(menustatus::value(original)
++                            == (page ? QStringLiteral("book_page") : QStringLiteral("session")),
++                    "Menu status effective-value fallback changed");
++            const auto next = menustatus::toggledPreferences(original);
++            require(original == before && menustatus::showsPage(next) == !page,
++                    "Menu status toggle changed its input or failed to invert mode");
++            auto unrelated = next;
++            unrelated.remove(menustatus::preferenceKey);
++            auto expected = before;
++            expected.remove(menustatus::preferenceKey);
++            require(unrelated == expected, "Menu status toggle changed another preference");
++            const auto roundTrip = menustatus::toggledPreferences(next);
++            require(menustatus::showsPage(roundTrip) == page,
++                    "Two menu status toggles did not restore the effective mode");
++            const auto persisted = QJsonDocument::fromJson(QJsonDocument(next).toJson()).object();
++            require(persisted == next
++                            && menustatus::showsPage(appearance::cleanPreferences(persisted)) == !page,
++                    "Toggled menu status did not survive JSON persistence/cleaning");
++        }
++        require(menustatus::showsPage(menustatus::toggledPreferences({})),
++                "First toggle without a saved preference must select book page");
++    }
 +    {
 +        const QJsonObject pageMode{ { menustatus::preferenceKey, "book_page" } };
 +        require(!menustatus::showsPage({}), "Default menu status must remain session time");
@@ -1141,7 +1190,7 @@ index 155708b4..18f35b77 100644
      {
          const auto original = qt::object({ { "font_pixels", 40 },
                                             { "line_spacing", 150 },
-@@ -557,7 +571,7 @@ int main()
+@@ -557,7 +606,7 @@ int main()
              "Dictionary UI preferences invalidated the book layout");
      // Appearance settings decide the layout. The list must stay complete, because a
      // missing key would let a retained layout survive a changed setting.
@@ -1150,7 +1199,7 @@ index 155708b4..18f35b77 100644
      require(appearance::bookDefaults({}).value("paragraph_indent").toInt() == -1,
              "Paragraph indentation no longer defaults to Publisher");
      for (int percent : { -1, 0, 100, 300 }) {
-@@ -1258,6 +1272,46 @@ int main()
+@@ -1258,6 +1307,46 @@ int main()
                          && !job.saved.contains("imported_native_location"),
                  "A host restart must ignore the host position");
      }

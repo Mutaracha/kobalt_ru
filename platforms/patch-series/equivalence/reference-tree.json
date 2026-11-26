@@ -4147,8 +4147,8 @@
     },
     "src/app/reader/window/reader.cpp": {
       "mode": "100644",
-      "sha256": "45b12f2b5e554c1c3dc7c9a875bfb36b7522903f90c72c4fb4c963d5f37714aa",
-      "size": 166997
+      "size": 166923,
+      "sha256": "2c63d57d7f63387e5fac8f3fc55a245b78996b69b513a42bb13b756824197708"
     },
     "src/app/reader/window/reader_activity.cpp": {
       "mode": "100644",
@@ -4162,8 +4162,8 @@
     },
     "src/app/reader/window/reader_build.cpp": {
       "mode": "100644",
-      "sha256": "781ed6fba87368f9523855010a693196daaea4b643e75df31ded011e71e7357d",
-      "size": 119047
+      "size": 118901,
+      "sha256": "252b508b4ffa93f0a6890374d4bce5d3d27549dc42db4f458a5e80cc65053a7f"
     },
     "src/app/reader/window/reader_debug.cpp": {
       "mode": "100644",
@@ -5847,8 +5847,8 @@
     },
     "src/reading/menu_status.h": {
       "mode": "100644",
-      "sha256": "ccdb69bdfc859ba7b91c978c58ad4eade096c14a240c4824a6444dbed3f59ad6",
-      "size": 557
+      "size": 1153,
+      "sha256": "cc9fb62ec78576da4eabe51400be47b93eef3eac0bb7506ecfe5f43a4ac38578"
     },
     "src/reading/native_activity_result.h": {
       "mode": "100644",
@@ -6947,8 +6947,8 @@
     },
     "tests/model/appearance_settings.cpp": {
       "mode": "100644",
-      "sha256": "f6de5d9d70df14509fb9db34724400c6b0e61bfe2ccc9d6a9849e744d997c73e",
-      "size": 82685
+      "size": 85014,
+      "sha256": "19541ad9a9879eb0f52c789c5c5f63b915abd13495e241f5bba3b08f808af181"
     },
     "tests/model/beautifier.cpp": {
       "mode": "100644",
@@ -7879,6 +7879,38 @@
       },
       "basis": "R04: move bilingual persisted-name matching behind strings API; preserve preset display behavior and saved data.",
       "review": "doc/reports/patch-series/061-preset-name-refactor.md"
+    },
+    {
+      "paths": [
+        "src/reading/menu_status.h",
+        "src/app/reader/window/reader.cpp",
+        "src/app/reader/window/reader_build.cpp",
+        "tests/model/appearance_settings.cpp"
+      ],
+      "previous": {
+        "src/reading/menu_status.h": {
+          "mode": "100644",
+          "sha256": "ccdb69bdfc859ba7b91c978c58ad4eade096c14a240c4824a6444dbed3f59ad6",
+          "size": 557
+        },
+        "src/app/reader/window/reader.cpp": {
+          "mode": "100644",
+          "sha256": "45b12f2b5e554c1c3dc7c9a875bfb36b7522903f90c72c4fb4c963d5f37714aa",
+          "size": 166997
+        },
+        "src/app/reader/window/reader_build.cpp": {
+          "mode": "100644",
+          "sha256": "781ed6fba87368f9523855010a693196daaea4b643e75df31ded011e71e7357d",
+          "size": 119047
+        },
+        "tests/model/appearance_settings.cpp": {
+          "mode": "100644",
+          "sha256": "f6de5d9d70df14509fb9db34724400c6b0e61bfe2ccc9d6a9849e744d997c73e",
+          "size": 82685
+        }
+      },
+      "basis": "R05: move unchanged effective menu-status serialization/toggle into existing model helper; preserve save callback and fallbacks.",
+      "review": "doc/reports/patch-series/062-menu-status-refactor.md"
     }
   ]
 }

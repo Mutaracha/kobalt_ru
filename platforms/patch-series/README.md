@@ -52,6 +52,10 @@ R04 убирает прямой доступ preset displayName к внутре�
 и покрывает сохранённые EN/RU имена независимыми cases. [Область](../../doc/reports/patch-series/061-preset-name-refactor.md).
 R03 принят пользователем на устройстве; приёмка R04 отдельная.
 
+R05 объединяет правила сериализации/toggle статуса меню в menustatus, без изменения
+writer/callback. [Область](../../doc/reports/patch-series/062-menu-status-refactor.md).
+На будущее beta11: [согласование font-cache upstream fix](../../doc/reports/patch-series/beta11-upgrade-checklist.md).
+
 ## Проверка эквивалентности
 
 Эталон — полная прежняя серия runtime `5b45f2c74857180f0689f80b5e48a9134f58bec7`.

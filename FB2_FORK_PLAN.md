@@ -11,6 +11,17 @@ Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
+**R05 — статус меню: implemented, CI/device pending.** Сериализация эффективного
+режима и чистая операция toggle перенесены в существующий menustatus модуль.
+UI writer/callback и глобальный выбор сохраняются. 15 локальных Python tests PASS,
+новые native cases добавлены. Следующий шаг: CI и [чек-лист R05](doc/reports/patch-series/062-menu-status-refactor.md).
+R04 пока остаётся device pending; продолжение работы не трактуется как его приёмка.
+
+**U11-FONT-CACHE — deferred до обновления upstream.** При выборе базы beta11
+проверить включение 88c417a и согласовать upstream content-addressed font identity
+с нашим SetFontFileIdentity, не накладывая два исправления вслепую. Текущий 030
+не менять. [Порядок интеграции и проверки](doc/reports/patch-series/beta11-upgrade-checklist.md).
+
 **R04 — имена встроенных стилей: implemented, CI PASS, device pending.** Потребитель
 больше не обращается к strings::detail: точное EN/RU распознавание инкапсулировано
 в строковом слое. Поведение и запись preset не меняются. Добавлены независимые
