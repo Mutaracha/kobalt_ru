@@ -1,5 +1,7 @@
 # Журнал beta10: состояние и evidence
 
+[English report for upstream: temporary system-font paths and layout-cache invalidation](057-upstream-system-font-cache-report.md) — symptom, diagnostic instrumentation, implemented fix and EPUB validation scope; no fork commit identifiers.
+
 Текущая очередь — [план](../../../FB2_FORK_PLAN.md), не старые next/pending внутри
 поэтапных отчётов. Технические отчёты здесь сохраняют результаты на указанном SHA;
 ранние формулировки «не реализовано» не описывают последующие сборки.
