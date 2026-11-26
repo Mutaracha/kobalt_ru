@@ -2156,7 +2156,7 @@ index c563ea02..4c1b15f5 100644
      QJsonObject startedOperation, endedOperation;
 diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
 new file mode 100644
-index 00000000..bbc45d32
+index 00000000..05f684d2
 --- /dev/null
 +++ b/tests/model/fork_presentation.cpp
 @@ -0,0 +1,385 @@
@@ -2308,14 +2308,14 @@ index 00000000..bbc45d32
 +        QVector<ui::Button *> actions;
 +        QVector<QString> styles;
 +        QVector<ui::ButtonPaintMode> paints;
-+        QPushButton **slots[] = {&controls.settings, &controls.bookmarks, &controls.annotate,
++        QPushButton **actionTargets[] = {&controls.settings, &controls.bookmarks, &controls.annotate,
 +            &controls.search, &controls.sync, &controls.formattingWarning,
 +            &controls.darkTheme, &controls.comics};
 +        for (int index = 0; index < 8; ++index) {
 +            if (index >= 2 && !(mask & (1u << (index - 2))))
 +                continue;
 +            auto *button = new ui::Button(panel);
-+            *slots[index] = button;
++            *actionTargets[index] = button;
 +            const auto style = QStringLiteral("QPushButton{padding:%1px;}").arg(index + 1);
 +            const auto paint = index % 2 ? ui::ButtonPaintMode::ToolbarSquare
 +                                        : ui::ButtonPaintMode::OutlinedAction;
