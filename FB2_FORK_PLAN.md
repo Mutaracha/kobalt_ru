@@ -3,33 +3,34 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010/020/030/034/040/050/060 после консолидации; все патчи применяются вместе.
-Последний CI-проверенный бинарник: **39da89ad**, [CI45693243999](https://github.com/Mutaracha/kobalt_ru/actions/runs/45693243999),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45693243999/artifacts/15059678135).
-CI selected native/Qt5/package PASS; не полная аппаратная приёмка.
-Docs-only обновления не меняют этот бинарник.
+Последний CI-проверенный бинарник: **ef732b78**, [CI45803184134](https://github.com/Mutaracha/kobalt_ru/actions/runs/45803184134),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45803184134/artifacts/15107828580).
+Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
+Аппаратная приёмка R01 и длина новых переводов ещё открыты. Docs-only обновления
+не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R01 — рефакторинг кода: implemented, CI/device pending.** Пользователь разрешил
+**R01 — рефакторинг кода: implemented, CI PASS, device pending.** Пользователь разрешил
 рефакторинг после консолидации и готов проверить сборку. Первый изолированный шаг:
 общие операции style/restore для dark/comics toolbar buttons в 050, без изменения
 контрактов и состояния кнопок. Добавлен native round-trip regression; 15 локальных
-Python regressions PASS. Следующий шаг: CI/native/Qt5/package, затем устройство
+Python regressions PASS; CI45803184134 все 3 jobs PASS. Следующий шаг: устройство
 по [чек-листу R01](doc/reports/patch-series/058-toolbar-code-refactor.md).
 Исходная база до рефакторинга — b753ef28; не объявлять новый runtime идентичным ей.
 
-**Полная сверка переводов — done (реализация), CI/device pending.** Пользователь
+**Полная сверка переводов — done (реализация), CI PASS, device pending.** Пользователь
 принял аудит с исключениями: описание light gesture не менять, «Каждую страницу»,
 описание ленточки с процентом и «По файлу» без пометы default. Применены 18 значений
 в 010; 1837 ключей/placeholders проверены, 15 локальных regressions PASS. Меняется
-только RU-каталог. Следующий шаг: новый CI/native/Qt5/package и проверка длины
+только RU-каталог. Включено в успешный CI45803184134. Следующий шаг: проверка длины
 на устройстве. [Итог](doc/reports/translation-beta10/full-catalog-accepted.md).
 
-**Перевод — реализовано, CI/device pending.** Приняты предложения beta9→beta10,
+**Перевод — реализовано, CI PASS, device pending.** Приняты предложения beta9→beta10,
 «Письмо» и поправки publisher pages / international fonts / kosync. Восстановлены
 пропущенные сведения о режимах анимации. Изменён только RU-каталог в010;
 15 локальных series/package/equivalence тестов PASS,1837 EN/RU ключей и placeholders
-проверены. Следующий шаг: новый CI/native/Qt5/package и длина текста на устройстве.
+проверены. Включено в успешный CI45803184134; длина текста на устройстве ещё не проверена.
 [Состав и точные значения](doc/reports/translation-beta10/accepted.md).
 
 Пользователь принял последние интерфейсные доработки **5b45f2c7**: компактные вкладки,
