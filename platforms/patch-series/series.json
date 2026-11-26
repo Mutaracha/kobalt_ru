@@ -48,9 +48,9 @@
       "id": "050-presentation",
       "path": "platforms/patch-series/patches/050-presentation.patch",
       "status": "ready",
-      "sha256": "975b64551738a1cc1a2380e995dc213722d03255edff19a83de148335772a182",
+      "sha256": "754da8a4c3deee5f4df5c433a1e3ca7b3faa072f47f5e9f823b5aa2d7d99ba07",
       "scope": "Shared UI/brand/sleep/annotation presentation and tests; no superseded intermediate fonts.",
-      "validation": "R08: share navigation action styling across settings/bookmarks/search/sync/annotate and existing fork buttons; real lifecycle native regression added. CI/device pending."
+      "validation": "R08 CI/device accepted. R09: isolate StatsCell text selection/wrapping, frozen old algorithm and widget integration regression; CI/device pending."
     },
     {
       "id": "060-build-integration",

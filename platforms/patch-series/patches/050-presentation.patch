@@ -527,7 +527,7 @@ index 15f04b5e..804cd846 100644
      }
  }
 diff --git a/src/app/reader/panels/stats_cell.h b/src/app/reader/panels/stats_cell.h
-index 9d9a32d6..070d354c 100644
+index 9d9a32d6..4999c2c9 100644
 --- a/src/app/reader/panels/stats_cell.h
 +++ b/src/app/reader/panels/stats_cell.h
 @@ -1,3 +1,4 @@
@@ -535,7 +535,57 @@ index 9d9a32d6..070d354c 100644
  #pragma once
  #include "ui/controls/text.h"
  #include "ui/style/fonts.h"
-@@ -28,7 +29,7 @@ public:
+@@ -8,6 +9,49 @@
+ #include <QWidget>
+ 
+ namespace kobalt {
++namespace statstext {
++// A detail that does not fit breaks at the space that gives the most even
++// lines, so "≈ 12 h 45 min left" never leaves one word alone. Without such
++// a space, the first line takes what fits and the second line shortens.
++inline QString twoLines(const QFont &metrics, const QString &text, int width)
++{
++    if (ui::interfaceTextWidth(text, metrics) <= width)
++        return text;
++    int best = -1, bestWidth = width + 1, last = -1;
++    for (int space = text.indexOf(' '); space > 0; space = text.indexOf(' ', space + 1)) {
++        const int first = ui::interfaceTextWidth(text.left(space), metrics);
++        if (first > width)
++            break;
++        last = space;
++        const int longer = qMax(first, ui::interfaceTextWidth(text.mid(space + 1), metrics));
++        if (longer < bestWidth) {
++            best = space;
++            bestWidth = longer;
++        }
++    }
++    if (best < 0)
++        best = last;
++    if (best < 0)
++        return ui::elideInterfaceText(text, metrics, width);
++    return text.left(best) + '\n' + ui::elideInterfaceText(text.mid(best + 1), metrics, width);
++}
++
++// Presentation only: choose the existing short alternative, then wrap or elide.
++// Callers retain values, geometry, fonts and ownership.
++inline QString detail(const QFont &metrics, const QString &full, const QString &shortened,
++                      const QString &extra, int width)
++{
++    const bool shorten = !shortened.isEmpty()
++            && ui::interfaceTextWidth(full, metrics) > width
++            && ui::interfaceTextWidth(shortened, metrics) <= width;
++    const auto text = shorten ? shortened : full;
++    return extra.isEmpty()
++                            ? twoLines(metrics, text, width)
++                            : ui::elideInterfaceText(text, metrics, width) + '\n'
++                                    + ui::elideInterfaceText(extra, metrics, width);
++}
++} // namespace statstext
++
+ // A caption with an optional percentage, a large figure with its unit, and one
+ // grey line of detail. A short screen adds the word total as a second line.
+ class StatsCell : public QWidget
+@@ -28,7 +72,7 @@ public:
          figure->setObjectName(prefix + "Figure");
          figure->setTextFormat(Qt::PlainText);
          ui::readerStyle(figure,
@@ -544,7 +594,7 @@ index 9d9a32d6..070d354c 100644
                                  + "background:transparent;");
          unit = new ui::InterfaceLabel(this);
          unit->setObjectName(prefix + "Unit");
-@@ -74,7 +75,7 @@ private:
+@@ -74,7 +118,7 @@ private:
      {
          const int inner = qMax(1, width() - 2 * ui::metrics::chrome::inset);
          const QFont captionMetrics(ui::captionFont()),
@@ -553,6 +603,58 @@ index 9d9a32d6..070d354c 100644
                  unitMetrics(ui::interfaceFont(ui::metrics::chapters::unitText));
          caption->setGeometry(ui::metrics::chrome::inset, ui::metrics::chapters::cellPadding, inner,
                               ui::interfaceLineHeight(captionMetrics));
+@@ -92,7 +136,7 @@ private:
+         // takes two lines, the last on the figure's baseline, as in a narrow
+         // cell on a phone; only then does it shorten.
+         const int unitWidth = qMax(1, width() - ui::metrics::chrome::inset - unitLeft);
+-        const auto unitText = twoLines(unitMetrics, unitValue, unitWidth);
++        const auto unitText = statstext::twoLines(unitMetrics, unitValue, unitWidth);
+         const int unitLines = unitText.count('\n') + 1;
+         const int lineHeight = ui::interfaceLineHeight(unitMetrics);
+         unit->setGeometry(unitLeft,
+@@ -105,40 +149,9 @@ private:
+                             ui::interfaceLineHeight(unitMetrics)
+                                     + (ui::metrics::chapters::detailLines - 1)
+                                             * ui::interfaceLineHeight(unitMetrics));
+-        const bool shorten = !shortValue.isEmpty()
+-                && ui::interfaceTextWidth(detailValue, unitMetrics) > inner
+-                && ui::interfaceTextWidth(shortValue, unitMetrics) <= inner;
+-        const auto text = shorten ? shortValue : detailValue;
+-        detail->setText(extraValue.isEmpty()
+-                                ? twoLines(unitMetrics, text, inner)
+-                                : ui::elideInterfaceText(text, unitMetrics, inner) + '\n'
+-                                        + ui::elideInterfaceText(extraValue, unitMetrics, inner));
++        detail->setText(statstext::detail(unitMetrics, detailValue, shortValue, extraValue, inner));
+     }
+ 
+-    // A detail that does not fit breaks at the space that gives the most even
+-    // lines, so "≈ 12 h 45 min left" never leaves one word alone. Without such
+-    // a space, the first line takes what fits and the second line shortens.
+-    static QString twoLines(const QFont &metrics, const QString &text, int width)
+-    {
+-        if (ui::interfaceTextWidth(text, metrics) <= width)
+-            return text;
+-        int best = -1, bestWidth = width + 1, last = -1;
+-        for (int space = text.indexOf(' '); space > 0; space = text.indexOf(' ', space + 1)) {
+-            const int first = ui::interfaceTextWidth(text.left(space), metrics);
+-            if (first > width)
+-                break;
+-            last = space;
+-            const int longer = qMax(first, ui::interfaceTextWidth(text.mid(space + 1), metrics));
+-            if (longer < bestWidth) {
+-                best = space;
+-                bestWidth = longer;
+-            }
+-        }
+-        if (best < 0)
+-            best = last;
+-        if (best < 0)
+-            return ui::elideInterfaceText(text, metrics, width);
+-        return text.left(best) + '\n' + ui::elideInterfaceText(text.mid(best + 1), metrics, width);
+-    }
++
+ };
+ } // namespace kobalt
 diff --git a/src/app/reader/panels/word_list.cpp b/src/app/reader/panels/word_list.cpp
 index 08af4818..d89b55d3 100644
 --- a/src/app/reader/panels/word_list.cpp
@@ -2156,11 +2258,12 @@ index c563ea02..4c1b15f5 100644
      QJsonObject startedOperation, endedOperation;
 diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
 new file mode 100644
-index 00000000..e09de9b5
+index 00000000..e216a223
 --- /dev/null
 +++ b/tests/model/fork_presentation.cpp
-@@ -0,0 +1,385 @@
+@@ -0,0 +1,448 @@
 +#include "check.h"
++#include "app/reader/panels/stats_cell.h"
 +#include "app/reader/views/sleep_letter_text.h"
 +#include "app/reader/views/fork_navigation.h"
 +#include "app/reader/views/navigation.h"
@@ -2290,6 +2393,67 @@ index 00000000..e09de9b5
 +    strings::setLocale(strings::Locale::English);
 +}
 +
++
++// Frozen pre-R09 algorithm: preserve spaces, tie breaking and elision exactly.
++QString previousTwoLines(const QFont &metrics, const QString &text, int width)
++{
++    if (ui::interfaceTextWidth(text, metrics) <= width)
++        return text;
++    int best = -1, bestWidth = width + 1, last = -1;
++    for (int space = text.indexOf(' '); space > 0; space = text.indexOf(' ', space + 1)) {
++        const int first = ui::interfaceTextWidth(text.left(space), metrics);
++        if (first > width)
++            break;
++        last = space;
++        const int longer = qMax(first, ui::interfaceTextWidth(text.mid(space + 1), metrics));
++        if (longer < bestWidth) {
++            best = space;
++            bestWidth = longer;
++        }
++    }
++    if (best < 0)
++        best = last;
++    if (best < 0)
++        return ui::elideInterfaceText(text, metrics, width);
++    return text.left(best) + '\n' + ui::elideInterfaceText(text.mid(best + 1), metrics, width);
++}
++void statisticsTextPresentation()
++{
++    for (auto locale : {strings::Locale::English, strings::Locale::Russian}) {
++        strings::setLocale(locale);
++        const QFont font(ui::interfaceFont(ui::metrics::chapters::unitText));
++        const QStringList samples = {QString(), QStringLiteral("12 h 45 min left"),
++            QString::fromUtf8("≈ 12 ч 45 мин осталось"), QStringLiteral("longunbrokenword123456789"),
++            QStringLiteral(" leading space"), QStringLiteral("two  spaces "),
++            QString::fromUtf8("12\u00a0345 страниц"), QStringLiteral("line\nbreak")};
++        StatsCell cell(nullptr, QStringLiteral("test"), QStringLiteral("caption"));
++        for (int width : {1, 16, 48, 96, 180, 400, 1000}) {
++            cell.resize(width + 2 * ui::metrics::chrome::inset, 300);
++            for (const auto &full : samples) {
++                require(statstext::twoLines(font, full, width) == previousTwoLines(font, full, width),
++                        "Statistics wrapping changed");
++                for (const auto &shortened : samples) {
++                    for (const auto &extra : {QString(), QStringLiteral("total")}) {
++                        const bool shorten = !shortened.isEmpty()
++                                && ui::interfaceTextWidth(full, font) > width
++                                && ui::interfaceTextWidth(shortened, font) <= width;
++                        const auto chosen = shorten ? shortened : full;
++                        const auto expected = extra.isEmpty() ? previousTwoLines(font, chosen, width)
++                                : ui::elideInterfaceText(chosen, font, width) + '\n'
++                                        + ui::elideInterfaceText(extra, font, width);
++                        require(statstext::detail(font, full, shortened, extra, width) == expected,
++                                "Statistics detail selection changed");
++                        cell.set(QStringLiteral("12345"), full, full, QStringLiteral("42%"), shortened, extra);
++                        require(cell.detail->text() == expected && cell.figure->text() == QStringLiteral("12345")
++                                        && cell.percent->text() == QStringLiteral("42%"),
++                                "StatsCell did not retain presentation values");
++                    }
++                }
++            }
++        }
++    }
++}
++
 +void navigationActionLifecycle()
 +{
 +    // Full, absent and independently missing optional controls. Real Navigation
@@ -2408,6 +2572,7 @@ index 00000000..e09de9b5
 +    letterTemplateSubstitution();
 +    savedPresetNames();
 +    require(ui::initializeInterfaceFonts(test::readerAssets()), "presentation fonts unavailable");
++    statisticsTextPresentation();
 +    navigationActionLifecycle();
 +    QImage letterSignatures[2][2];
 +    for (auto locale : {strings::Locale::English, strings::Locale::Russian}) {

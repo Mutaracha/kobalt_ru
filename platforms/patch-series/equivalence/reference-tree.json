@@ -3852,8 +3852,8 @@
     },
     "src/app/reader/panels/stats_cell.h": {
       "mode": "100644",
-      "sha256": "c562bd2cb1bab1229fd20fa7c5ef1d61e47a94a828d6c2d5e456766fa33b2e33",
-      "size": 7076
+      "size": 7337,
+      "sha256": "c132778c92e4a79842c2c2470d4b5e09a69366cfe786d9ac59a446cb4f0d4bd3"
     },
     "src/app/reader/panels/word_list.cpp": {
       "mode": "100644",
@@ -7112,8 +7112,8 @@
     },
     "tests/model/fork_presentation.cpp": {
       "mode": "100644",
-      "size": 22174,
-      "sha256": "7d867c6e0573623129c589e3307fb17b92905bec74109d4a96e94c6ea054ddee"
+      "size": 25573,
+      "sha256": "e1aec45294c86ac9167b916316c719d24b8514a90b4040828bbaa440ca78502f"
     },
     "tests/model/header_footer.cpp": {
       "mode": "100644",
@@ -7983,6 +7983,26 @@
       },
       "basis": "R08 UI/settings block: reuse exact action-style/restore operations; preserve mandatory-control and warning-specific restoration order. Real Navigation lifecycle cases added.",
       "review": "doc/reports/patch-series/065-ui-settings-refactor.md"
+    },
+    {
+      "paths": [
+        "src/app/reader/panels/stats_cell.h",
+        "tests/model/fork_presentation.cpp"
+      ],
+      "previous": {
+        "src/app/reader/panels/stats_cell.h": {
+          "mode": "100644",
+          "sha256": "c562bd2cb1bab1229fd20fa7c5ef1d61e47a94a828d6c2d5e456766fa33b2e33",
+          "size": 7076
+        },
+        "tests/model/fork_presentation.cpp": {
+          "mode": "100644",
+          "size": 22174,
+          "sha256": "7d867c6e0573623129c589e3307fb17b92905bec74109d4a96e94c6ea054ddee"
+        }
+      },
+      "basis": "R09: separate unchanged statistics text formatting from widget geometry; frozen pre-refactor algorithm and real StatsCell integration regression.",
+      "review": "doc/reports/patch-series/066-reading-data-presentation-refactor.md"
     }
   ]
 }

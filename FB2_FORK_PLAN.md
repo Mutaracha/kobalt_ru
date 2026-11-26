@@ -6,15 +6,17 @@
 Последний CI-проверенный бинарник: **7b9e2caf**, [CI45829135561](https://github.com/Mutaracha/kobalt_ru/actions/runs/45829135561),
 [пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45829135561/artifacts/15121062716).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-R07 принят пользователем; новый R08 ещё не принят на устройстве.
+R08 принят пользователем по всему списку.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R08 — UI/settings: implemented, CI PASS, device pending.** Одинаковые lifecycle
-операции toolbar actions сведены к общему пути; особые Settings/Bookmarks и
-warning restore sequences сохранены. Добавлен real Navigation lifecycle regression.
-15 локальных Python tests и все 3 CI jobs PASS. Следующий шаг: [чек-лист R08](doc/reports/patch-series/065-ui-settings-refactor.md).
+**R09 — представление данных чтения: implemented, CI/device pending.**
+Подготовка текста StatsCell отделена от геометрии без изменения правил.
+15 локальных tests PASS; добавлены frozen-algorithm и real-widget regressions.
+Следующий шаг: CI и [чек-лист R09](doc/reports/patch-series/066-reading-data-presentation-refactor.md).
+
+**R08 — done, CI PASS, device accepted по всему списку.**
 
 **Остаток цикла согласован:** R08 UI/settings → R09 представление данных чтения →
 R10 lifecycle книги (с оценкой риска/возможным defer). Не дробить каждую мелкую
