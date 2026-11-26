@@ -24,7 +24,7 @@
       "id": "030-engine-integration",
       "path": "platforms/patch-series/patches/030-engine-integration.patch",
       "status": "ready",
-      "sha256": "1927d44e7a04e149bea85db720dff71427a0e2c64e2be36f24af3d62bf39d566",
+      "sha256": "3b7a6cc9a31b4624935616f90a04d50df61bd6e08d2f057a043536b9f30dd3b8",
       "scope": "Final FB2/comics engine and rendering/cache/font identity integration, engine tests; no runtime changes.",
       "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
     },
@@ -32,7 +32,7 @@
       "id": "034-session-hybrid",
       "path": "platforms/patch-series/patches/034-session-hybrid.patch",
       "status": "ready",
-      "sha256": "aaf2cd4574651bc548338e5f3b7a2c43cb1453aff2c7e9b672dae8d5438def49",
+      "sha256": "fdc73ae19bcf7742c8df8e9b4c090294088aa434c181f3e1916b5b925ccd3622",
       "scope": "Session/resource cache lifecycle, initial FB2 Hybrid and observation/replay/cancellation/note/image tests.",
       "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
     },

@@ -7087,13 +7087,13 @@
     },
     "tests/model/fb2_cache_session.cpp": {
       "mode": "100644",
-      "sha256": "25784ea827ad280d0e58e319e0f10c8b30ee72450246f5c06b2f29fc22dfef30",
-      "size": 19053
+      "size": 19917,
+      "sha256": "ff1b47076824a7ba831d8b7cf543f9bbefce6fcbf216655fc154643965456466"
     },
     "tests/model/fb2_engine.cpp": {
       "mode": "100644",
-      "size": 18569,
-      "sha256": "bef134cb539e6e4531aff3332e373ac39f089cb6f9665d2f422fd50446b7c2c3"
+      "size": 19798,
+      "sha256": "e6fe52709a62f47c05ecd886cbc881689b9f61efdd64c6800b5655e559f8fc1c"
     },
     "tests/model/figure_layout.cpp": {
       "mode": "100644",
@@ -8025,6 +8025,26 @@
           "mode": "100644",
           "sha256": "cccaa634a08b314a0f83141df3944856d7e24914f8912391690ec7323731eb38",
           "size": 27356
+        }
+      },
+      "basis": "Targeted post-R09 FB2 fixes/regressions: zero-fraction restart preserves startup prefix; investigate comics preview round-trip.",
+      "review": "doc/reports/patch-series/068-preview-and-hybrid-device-findings.md"
+    },
+    {
+      "paths": [
+        "tests/model/fb2_engine.cpp",
+        "tests/model/fb2_cache_session.cpp"
+      ],
+      "previous": {
+        "tests/model/fb2_engine.cpp": {
+          "mode": "100644",
+          "size": 18569,
+          "sha256": "bef134cb539e6e4531aff3332e373ac39f089cb6f9665d2f422fd50446b7c2c3"
+        },
+        "tests/model/fb2_cache_session.cpp": {
+          "mode": "100644",
+          "sha256": "25784ea827ad280d0e58e319e0f10c8b30ee72450246f5c06b2f29fc22dfef30",
+          "size": 19053
         }
       },
       "basis": "Targeted post-R09 FB2 fixes/regressions: zero-fraction restart preserves startup prefix; investigate comics preview round-trip.",

@@ -3778,13 +3778,14 @@ index 00000000..69bccbec
 +}
 diff --git a/tests/model/fb2_engine.cpp b/tests/model/fb2_engine.cpp
 new file mode 100644
-index 00000000..36858366
+index 00000000..745f9bac
 --- /dev/null
 +++ b/tests/model/fb2_engine.cpp
-@@ -0,0 +1,333 @@
+@@ -0,0 +1,352 @@
 +// Covers raw FB2 engine loading, resources, EPUB reuse, reflow, preview and cache lifecycle.
 +#include "book_fixtures.h"
 +#include "check.h"
++#include "render/page_content.h"
 +#include "reader_inputs.h"
 +#include "engine/blaze/adapter/engine_document.h"
 +#include "publication/local_resources.h"
@@ -3875,6 +3876,24 @@ index 00000000..36858366
 +        require(preview.openPreview(document, {600, 800}, &error), qPrintable(error));
 +        require(preview.pages() > 0 && !preview.image(preview.page()).isNull(), "FB2 preview is blank");
 +        require(document.position() == anchor, "FB2 preview changed source position");
++        const auto previewAnchor = preview.position();
++        for (int cycle = 0; cycle < 3; ++cycle) {
++            for (bool comics : {true, false}) {
++                require(preview.applyAppearance(appearance::Patch(QJsonObject{
++                            {appearance::comicsModeKey, comics}, {"margin_pixels", 18},
++                            {"top_margin_pixels", 12}, {"bottom_margin_pixels", 12}}),
++                            QSize(600, comics ? 800 : 760)), "FB2 preview comics toggle");
++                const auto frame = preview.image(preview.page());
++                const auto layoutPreview = preview.imageFromAnchor(true);
++                require(!frame.isNull() && !pageNeedsTextSample(frame), "FB2 preview frame lost text");
++                require(!layoutPreview.isNull() && !pageNeedsTextSample(layoutPreview),
++                        qPrintable(QString("FB2 draft Layout preview blank after comics=%1 cycle=%2")
++                                   .arg(comics).arg(cycle)));
++                require(preview.position() == previewAnchor && document.position() == anchor,
++                        "FB2 preview comics toggle moved source or draft anchor");
++            }
++        }
++
 +    }
 +    QTemporaryDir root;
 +    require(root.isValid(), "temporary directory");

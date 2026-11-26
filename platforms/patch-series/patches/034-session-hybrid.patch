@@ -100,10 +100,10 @@ index 782ea0bb..979a7e51 100644
      result.markup = captureFrameMarkup(engine, markup, markupGeneration, result.image.cacheKey());
 diff --git a/tests/model/fb2_cache_session.cpp b/tests/model/fb2_cache_session.cpp
 new file mode 100644
-index 00000000..5e2632e9
+index 00000000..b4e6d543
 --- /dev/null
 +++ b/tests/model/fb2_cache_session.cpp
-@@ -0,0 +1,363 @@
+@@ -0,0 +1,380 @@
 +#include "check.h"
 +#include "reader_inputs.h"
 +#include "reading/reader_session.h"
@@ -290,6 +290,23 @@ index 00000000..5e2632e9
 +        require(full.open(bytes, {600, 800}, {{"koblaze_first_spine_item", -1}}, &error), qPrintable(error));
 +        exactPages = full.pages();
 +    }
++    // A real host restart request selects fraction zero after openResources.
++    // That selection must not replace the just-created prefix with a full book.
++    {
++        ReaderSession reader(test::readerFonts(), test::readerPlaceholder());
++        auto lease = std::make_shared<SourceLease>();
++        OpenRequest request{path, path, QSize(600, 800), {}, {}, lease, localResourceFactory(path, lease)};
++        request.restartAtStart = true;
++        bool opened = false;
++        reader.open(std::move(request), [&](OpeningResult result) {
++            require(result.ready() && reader.paginationPending() && reader.continuesAfter(),
++                    "host restart promoted FB2 before publishing first frame");
++            opened = true;
++        });
++        waitUntil([&] { return opened && !reader.busy(); });
++        reader.cancelSource();
++    }
++    drain();
 +    // One real resource-backed session publishes a pending count, then the
 +    // final count, without falsely declaring its short prefix the whole book.
 +    {
