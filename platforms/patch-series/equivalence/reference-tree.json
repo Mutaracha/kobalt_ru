@@ -5802,8 +5802,8 @@
     },
     "src/reading/features.h": {
       "mode": "100644",
-      "sha256": "351d2cb1bbacdc6cbd17c42f7a9778bbb8a705d77fad2ee10dfee463fd4a41a4",
-      "size": 2527
+      "size": 2717,
+      "sha256": "a5a557d52acfcbc03d7e76dfc6a5f6c3293f6e1d27d68da5496f7a331f8123bd"
     },
     "src/reading/fork_text_preset_names.h": {
       "mode": "100644",
@@ -6947,8 +6947,8 @@
     },
     "tests/model/appearance_settings.cpp": {
       "mode": "100644",
-      "size": 85014,
-      "sha256": "19541ad9a9879eb0f52c789c5c5f63b915abd13495e241f5bba3b08f808af181"
+      "size": 88783,
+      "sha256": "b96424f0b4c7e8af6ff8f0af25eb023c7b55236034aa9b304078315682671199"
     },
     "tests/model/beautifier.cpp": {
       "mode": "100644",
@@ -7931,6 +7931,26 @@
       },
       "basis": "R06: isolate unchanged per-file Russian glyph probe with explicit unknown/missing/supported states; preserve family aggregation/cache keys.",
       "review": "doc/reports/patch-series/063-font-coverage-refactor.md"
+    },
+    {
+      "paths": [
+        "src/reading/features.h",
+        "tests/model/appearance_settings.cpp"
+      ],
+      "previous": {
+        "src/reading/features.h": {
+          "mode": "100644",
+          "sha256": "351d2cb1bbacdc6cbd17c42f7a9778bbb8a705d77fad2ee10dfee463fd4a41a4",
+          "size": 2527
+        },
+        "tests/model/appearance_settings.cpp": {
+          "mode": "100644",
+          "size": 85014,
+          "sha256": "19541ad9a9879eb0f52c789c5c5f63b915abd13495e241f5bba3b08f808af181"
+        }
+      },
+      "basis": "R07: table-driven independent dependent-option resets; preserve view fallback and shared marks sort rules. Exhaustive native comparison added.",
+      "review": "doc/reports/patch-series/064-feature-normalization-refactor.md"
     }
   ]
 }

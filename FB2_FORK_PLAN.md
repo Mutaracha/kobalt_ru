@@ -7,15 +7,18 @@
 [пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45820117357/artifacts/15118510937).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
 R01–R03 приняты; пользователь подтвердил проверку шрифтов и строки статуса на R05.
-Полный custom-preset/EN-RU чек-лист R04 не заявляется. Аппаратная приёмка R06 открыта.
+Полный custom-preset/EN-RU чек-лист R04 не заявляется. R06 принят пользователем; новый R07 ещё не принят.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R06 — cmap probe: implemented, CI PASS, device pending.** Файловая FreeType-проверка
-отделена от cache/list policy с явным Unknown/Missing/Supported. Правила агрегации,
-EN и кэш вёрстки не меняются. 15 локальных Python tests PASS; native cases расширены.
-CI45820117357 все 3 jobs PASS. Следующий шаг: [чек-лист R06](doc/reports/patch-series/063-font-coverage-refactor.md).
+**R07 — нормализация скрытых функций: implemented, CI/device pending.** Шесть
+независимых reset-правил сведены в таблицу без изменения flags/schema/defaults.
+Добавлен frozen reference: 1024 комбинации × 3 меню, malformed inputs, идемпотентность.
+15 локальных Python tests PASS. Следующий шаг: CI и [чек-лист R07](doc/reports/patch-series/064-feature-normalization-refactor.md).
+
+**R06 — done, CI PASS, device accepted.** Пользователь проверил b390fefa и разрешил
+продолжать. [Область](doc/reports/patch-series/063-font-coverage-refactor.md).
 
 **Проверка устройства R04/R05:** пользователь сообщил «проверил изменение шрифтов
 и сноску в статусбаре. можно переходить дальше». Фиксируем положительный результат

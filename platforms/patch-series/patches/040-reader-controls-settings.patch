@@ -1066,7 +1066,7 @@ index 19f6ee66..7feea590 100644
                                                      "line_spacing",
                                                      "paragraph_spacing",
 diff --git a/src/reading/features.h b/src/reading/features.h
-index f3778b67..69b29eb2 100644
+index f3778b67..bb315f63 100644
 --- a/src/reading/features.h
 +++ b/src/reading/features.h
 @@ -5,9 +5,10 @@ namespace kobalt::features {
@@ -1082,6 +1082,41 @@ index f3778b67..69b29eb2 100644
  
  // Settings > System > Developer. Debug mode shows the Debug tab, the debug
  // fields of the header and footer picker and the Fast rendering engine.
+@@ -36,20 +37,22 @@ inline void normalize(QJsonObject &preferences)
+     if ((!enabled(preferences, Navigate) && view == "seek")
+         || (!enabled(preferences, Stats) && view == "stats"))
+         preferences["default_menu_view"] = QStringLiteral("none");
+-    if (!enabled(preferences, Navigate))
+-        preferences.remove("navigation_bar_buttons");
+-    if (!enabled(preferences, Stats)) {
+-        preferences.remove("dense_stats_chart");
+-        preferences.remove("stats_word_scope");
+-    }
+-    if (!enabled(preferences, Annotations)) {
+-        preferences.remove("minimal_annotation_mode");
+-        preferences.remove("annotation_interaction");
+-    }
++    // Only dependent options belong here, never feature flags themselves.
++    // Removals are independent, so their order does not affect normalization.
++    struct ResetRule { Feature feature; const char *option; };
++    static constexpr ResetRule resetRules[] = {
++        { Navigate, "navigation_bar_buttons" },
++        { Stats, "dense_stats_chart" },
++        { Stats, "stats_word_scope" },
++        { Annotations, "minimal_annotation_mode" },
++        { Annotations, "annotation_interaction" },
++        { Words, "save_looked_up_words" },
++    };
++    for (const auto &rule : resetRules)
++        if (!enabled(preferences, rule.feature))
++            preferences.remove(rule.option);
+     if (!enabled(preferences, Annotations) && !enabled(preferences, Bookmarks)
+         && !enabled(preferences, Words))
+         preferences.remove("marks_sort");
+-    if (!enabled(preferences, Words))
+-        preferences.remove("save_looked_up_words");
+ }
+ } // namespace kobalt::features
 diff --git a/src/reading/menu_status.h b/src/reading/menu_status.h
 new file mode 100644
 index 00000000..93c22806
@@ -1120,10 +1155,10 @@ index 00000000..93c22806
 +}
 +} // namespace kobalt::menustatus
 diff --git a/tests/model/appearance_settings.cpp b/tests/model/appearance_settings.cpp
-index 155708b4..77c49d05 100644
+index 155708b4..bfc317ac 100644
 --- a/tests/model/appearance_settings.cpp
 +++ b/tests/model/appearance_settings.cpp
-@@ -7,10 +7,12 @@
+@@ -7,18 +7,142 @@
  #include "reading/session_timeout.h"
  #include "reading/remaining_time.h"
  #include "reading/header_footer.h"
@@ -1136,10 +1171,86 @@ index 155708b4..77c49d05 100644
  #include <cstdio>
  #include <utility>
  
-@@ -19,6 +21,53 @@ using namespace kobalt;
+ using namespace kobalt;
+ 
++namespace {
++// Frozen pre-R07 behavior, deliberately independent of the new reset-rule table.
++void referenceFeatureNormalization(QJsonObject &preferences)
++{
++    const char *flags[] = {"disable_navigate", "disable_stats", "disable_annotations",
++        "disable_bookmarks", "disable_kosync", "disable_words", "disable_highlight_links",
++        "disable_activity", "disable_dark_mode", "disable_comics"};
++    for (const auto *key : flags)
++        if (preferences.contains(key) && !preferences.value(key).isBool())
++            preferences.remove(key);
++    const auto hidden = [&](const char *key) { return preferences.value(key).toBool(false); };
++    const auto view = preferences.value("default_menu_view").toString();
++    if ((hidden("disable_navigate") && view == "seek")
++            || (hidden("disable_stats") && view == "stats"))
++        preferences["default_menu_view"] = QStringLiteral("none");
++    if (hidden("disable_navigate")) preferences.remove("navigation_bar_buttons");
++    if (hidden("disable_stats")) {
++        preferences.remove("dense_stats_chart");
++        preferences.remove("stats_word_scope");
++    }
++    if (hidden("disable_annotations")) {
++        preferences.remove("minimal_annotation_mode");
++        preferences.remove("annotation_interaction");
++    }
++    if (hidden("disable_annotations") && hidden("disable_bookmarks") && hidden("disable_words"))
++        preferences.remove("marks_sort");
++    if (hidden("disable_words")) preferences.remove("save_looked_up_words");
++}
++
++void featureNormalizationEquivalence()
++{
++    const char *flags[] = {"disable_navigate", "disable_stats", "disable_annotations",
++        "disable_bookmarks", "disable_kosync", "disable_words", "disable_highlight_links",
++        "disable_activity", "disable_dark_mode", "disable_comics"};
++    static_assert(std::size(flags) == std::size(features::keys), "Review new feature normalization");
++    for (int i = 0; i < int(std::size(flags)); ++i)
++        require(QString::fromLatin1(flags[i]) == QString::fromLatin1(features::keys[i]),
++                "Saved feature key/index changed");
++    const QJsonObject options{{"navigation_bar_buttons", "pages"}, {"dense_stats_chart", true},
++        {"stats_word_scope", "volume"}, {"minimal_annotation_mode", true},
++        {"annotation_interaction", "quick"}, {"marks_sort", "newest"},
++        {"save_looked_up_words", true}, {"future_option", QJsonObject{{"keep", 42}}}};
++    const auto check = [](const QJsonObject &input) {
++        auto expected = input;
++        referenceFeatureNormalization(expected);
++        auto actual = input;
++        features::normalize(actual);
++        require(actual == expected, "Feature normalization differs from pre-R07 behavior");
++        const auto once = actual;
++        features::normalize(actual);
++        require(actual == once, "Feature normalization is not idempotent");
++    };
++    for (int mask = 0; mask < (1 << int(std::size(flags))); ++mask) {
++        for (const auto *view : {"none", "seek", "stats"}) {
++            auto input = options;
++            input["default_menu_view"] = QString::fromLatin1(view);
++            for (int i = 0; i < int(std::size(flags)); ++i)
++                input[flags[i]] = bool(mask & (1 << i));
++            check(input);
++        }
++    }
++    check({});
++    for (const auto *flag : flags)
++        for (const auto &invalid : {QJsonValue(), QJsonValue(QJsonValue::Undefined),
++                                    QJsonValue("true"), QJsonValue(1),
++                                    QJsonValue(QJsonArray()), QJsonValue(QJsonObject())}) {
++            auto input = options;
++            input[flag] = invalid;
++            input["default_menu_view"] = QStringLiteral("seek");
++            check(input);
++        }
++}
++} // namespace
++
  // Checks appearance settings: defaults, invalid values, migrations, global and book precedence, new-book inheritance, which changes need a new layout and how an opening merges the saved book state.
  int main()
  {
++    featureNormalizationEquivalence();
 +    {
 +        const QJsonValue cases[] = {QJsonValue(), QJsonValue(QJsonValue::Undefined),
 +            QJsonValue(false), QJsonValue(true), QJsonValue(1), QJsonValue(QJsonArray()),
@@ -1190,7 +1301,7 @@ index 155708b4..77c49d05 100644
      {
          const auto original = qt::object({ { "font_pixels", 40 },
                                             { "line_spacing", 150 },
-@@ -557,7 +606,7 @@ int main()
+@@ -557,7 +681,7 @@ int main()
              "Dictionary UI preferences invalidated the book layout");
      // Appearance settings decide the layout. The list must stay complete, because a
      // missing key would let a retained layout survive a changed setting.
@@ -1199,7 +1310,7 @@ index 155708b4..77c49d05 100644
      require(appearance::bookDefaults({}).value("paragraph_indent").toInt() == -1,
              "Paragraph indentation no longer defaults to Publisher");
      for (int percent : { -1, 0, 100, 300 }) {
-@@ -1258,6 +1307,46 @@ int main()
+@@ -1258,6 +1382,46 @@ int main()
                          && !job.saved.contains("imported_native_location"),
                  "A host restart must ignore the host position");
      }

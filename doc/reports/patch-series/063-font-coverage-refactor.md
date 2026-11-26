@@ -1,6 +1,6 @@
 # R06 — отделение cmap-проверки от политики списка шрифтов
 
-Статус: implemented; local series/native CI/Qt5/package PASS; device pending.
+Статус: implemented; local series/native CI/Qt5/package PASS; device accepted.
 База — a84f960f (runtime 7d13ec2c). Пользователь сообщил: «проверил изменение
 шрифтов и сноску в статусбаре. можно переходить дальше». Это подтверждает
 проверенные им сценарии шрифтов/статуса, не все пункты EN/RU/custom-preset R04.
@@ -61,3 +61,8 @@ ru-control-ui), Qt5/package и archived FB2 replay. Новые C++ cases вып�
 
 [Qt5 / Libra2 пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45820117357/artifacts/15118510937):
 `Kobalt-ru-beta10-series-qt5`, 45 431 883 bytes. Аппаратная приёмка R06 открыта.
+
+## Приёмка устройства
+
+Пользователь сообщил «проверил, продолжай»: R06 на b390fefa принят в пределах
+предложенного чек-листа. Это не приёмка следующего R07.
