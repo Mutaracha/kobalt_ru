@@ -7617,8 +7617,8 @@
     },
     "tests/reader_lifecycle.cpp": {
       "mode": "100644",
-      "sha256": "15064cc69d695da7698c1a70bddf71a80c9d949936d28f4576f9957627364712",
-      "size": 691453
+      "size": 694655,
+      "sha256": "12379807d4843d2b3d1b14163cd568e4089e9ad1c8b43f43f3cda15f2d809741"
     },
     "tests/reader_ui.cpp": {
       "mode": "100644",
@@ -8045,6 +8045,20 @@
           "mode": "100644",
           "sha256": "25784ea827ad280d0e58e319e0f10c8b30ee72450246f5c06b2f29fc22dfef30",
           "size": 19053
+        }
+      },
+      "basis": "Targeted post-R09 FB2 fixes/regressions: zero-fraction restart preserves startup prefix; investigate comics preview round-trip.",
+      "review": "doc/reports/patch-series/068-preview-and-hybrid-device-findings.md"
+    },
+    {
+      "paths": [
+        "tests/reader_lifecycle.cpp"
+      ],
+      "previous": {
+        "tests/reader_lifecycle.cpp": {
+          "mode": "100644",
+          "sha256": "15064cc69d695da7698c1a70bddf71a80c9d949936d28f4576f9957627364712",
+          "size": 691453
         }
       },
       "basis": "Targeted post-R09 FB2 fixes/regressions: zero-fraction restart preserves startup prefix; investigate comics preview round-trip.",

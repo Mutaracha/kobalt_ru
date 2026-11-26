@@ -70,7 +70,7 @@ jobs:
                   QT_QPA_PLATFORM=offscreen "/work/build/desktop-linux/kobalt-$test-tests"
                 done
                 QT_QPA_PLATFORM=offscreen /work/build/desktop-linux/kobalt-ru-control-ui-tests en
-                if QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^lifecycle\.(readingMenuStatusToggle|readingTimeStatsVisibility|readingTimeStatus|sleepLetterPreservesLiteralPlaceholders)$" > /tmp/menu-tests.log 2>&1; then
+                if QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^lifecycle\.(fb2ComicsPreviewRoundTrip|readingMenuStatusToggle|readingTimeStatsVisibility|readingTimeStatus|sleepLetterPreservesLiteralPlaceholders)$" > /tmp/menu-tests.log 2>&1; then
                   cat /tmp/menu-tests.log
                 else
                   cat /tmp/menu-tests.log
