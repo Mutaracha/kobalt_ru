@@ -568,10 +568,10 @@ index 08af4818..d89b55d3 100644
          count->setTextFormat(Qt::PlainText);
 diff --git a/src/app/reader/views/fork_navigation.cpp b/src/app/reader/views/fork_navigation.cpp
 new file mode 100644
-index 00000000..40dd3a68
+index 00000000..0c7ab986
 --- /dev/null
 +++ b/src/app/reader/views/fork_navigation.cpp
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,63 @@
 +#include "ui/controls/rows.h"
 +#include <QEvent>
 +#include "fork_navigation.h"
@@ -597,58 +597,61 @@ index 00000000..40dd3a68
 +    return ui::interfaceInkBounds(sample, ui::interfaceFont(pixels));
 +}
 +
++void forkui::styleToolbarAction(QPushButton *action, QString &savedStyle,
++                                 ui::ButtonPaintMode &savedPaint)
++{
++    if (!action)
++        return;
++    savedStyle = action->styleSheet();
++    ui::readerStyle(action, "QPushButton{border:none;padding:0;}");
++    action->setFixedSize(chrome::cellWidth, chrome::actionHeight);
++    if (auto *button = dynamic_cast<ui::Button *>(action)) {
++        savedPaint = button->paintMode();
++        button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
++    }
++}
++
++void forkui::restoreToolbarAction(QPushButton *action, const QString &savedStyle,
++                                   ui::ButtonPaintMode savedPaint)
++{
++    if (!action)
++        return;
++    action->setStyleSheet(savedStyle);
++    action->setFixedSize(ui::metrics::control::toolbarButtonSize,
++                         ui::metrics::control::toolbarButtonSize);
++    if (auto *button = dynamic_cast<ui::Button *>(action))
++        button->setPaintMode(savedPaint);
++}
++
 +void Navigation::styleForkToolbarActions()
 +{
-+    if (darkTheme) {
-+        darkThemeStyle = darkTheme->styleSheet();
-+        ui::readerStyle(darkTheme, "QPushButton{border:none;padding:0;}");
-+        darkTheme->setFixedSize(chrome::cellWidth, chrome::actionHeight);
-+        if (auto *button = dynamic_cast<ui::Button *>(darkTheme)) {
-+            darkThemePaint = button->paintMode();
-+            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
-+        }
-+    }
-+    if (comics) {
-+        comicsStyle = comics->styleSheet();
-+        ui::readerStyle(comics, "QPushButton{border:none;padding:0;}");
-+        comics->setFixedSize(chrome::cellWidth, chrome::actionHeight);
-+        if (auto *button = dynamic_cast<ui::Button *>(comics)) {
-+            comicsPaint = button->paintMode();
-+            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
-+        }
-+    }
++    forkui::styleToolbarAction(darkTheme, darkThemeStyle, darkThemePaint);
++    forkui::styleToolbarAction(comics, comicsStyle, comicsPaint);
 +}
 +
 +void Navigation::restoreForkToolbarActions()
 +{
-+    if (darkTheme) {
-+        darkTheme->setStyleSheet(darkThemeStyle);
-+        darkTheme->setFixedSize(ui::metrics::control::toolbarButtonSize,
-+                                ui::metrics::control::toolbarButtonSize);
-+        if (auto *button = dynamic_cast<ui::Button *>(darkTheme)) {
-+            button->setPaintMode(darkThemePaint);
-+        }
-+    }
-+    if (comics) {
-+        comics->setStyleSheet(comicsStyle);
-+        comics->setFixedSize(ui::metrics::control::toolbarButtonSize,
-+                             ui::metrics::control::toolbarButtonSize);
-+        if (auto *button = dynamic_cast<ui::Button *>(comics)) {
-+            button->setPaintMode(comicsPaint);
-+        }
-+    }
++    forkui::restoreToolbarAction(darkTheme, darkThemeStyle, darkThemePaint);
++    forkui::restoreToolbarAction(comics, comicsStyle, comicsPaint);
 +}
 +} // namespace kobalt::reader
 diff --git a/src/app/reader/views/fork_navigation.h b/src/app/reader/views/fork_navigation.h
 new file mode 100644
-index 00000000..4109ca84
+index 00000000..6ceeb170
 --- /dev/null
 +++ b/src/app/reader/views/fork_navigation.h
-@@ -0,0 +1,5 @@
+@@ -0,0 +1,12 @@
 +#pragma once
++#include "ui/controls/icons.h"
 +#include <QRect>
++#include <QString>
++class QPushButton;
 +namespace kobalt::reader::forkui {
 +QRect tabInkBounds(int pixels);
++// A navigation view temporarily borrows reader-owned toolbar buttons.
++// Preserve each button's style and paint mode; its normal size is fixed by metrics.
++void styleToolbarAction(QPushButton *action, QString &savedStyle, ui::ButtonPaintMode &savedPaint);
++void restoreToolbarAction(QPushButton *action, const QString &savedStyle, ui::ButtonPaintMode savedPaint);
 +} // namespace kobalt::reader::forkui
 diff --git a/src/app/reader/views/image_viewer.cpp b/src/app/reader/views/image_viewer.cpp
 index c4612bac..cbebbaf0 100644
@@ -2043,11 +2046,14 @@ index c563ea02..4c1b15f5 100644
      QJsonObject startedOperation, endedOperation;
 diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
 new file mode 100644
-index 00000000..985d2e48
+index 00000000..bad08e45
 --- /dev/null
 +++ b/tests/model/fork_presentation.cpp
-@@ -0,0 +1,157 @@
+@@ -0,0 +1,209 @@
 +#include "check.h"
++#include "app/reader/views/fork_navigation.h"
++#include "ui/controls/buttons.h"
++#include "ui/style/metrics.h"
 +#include "reader_inputs.h"
 +#include "app/about/about_page.h"
 +#include "app/reader/views/sleep_screen.h"
@@ -2063,10 +2069,59 @@ index 00000000..985d2e48
 +#include <QFileInfo>
 +#include <QtMath>
 +using namespace kobalt;
++namespace {
++void toolbarActionRoundTrip()
++{
++    using namespace reader::forkui;
++    QString untouched = QStringLiteral("unchanged");
++    auto paint = ui::ButtonPaintMode::OutlinedAction;
++    styleToolbarAction(nullptr, untouched, paint);
++    restoreToolbarAction(nullptr, untouched, paint);
++    require(untouched == QStringLiteral("unchanged")
++                    && paint == ui::ButtonPaintMode::OutlinedAction,
++            "Absent toolbar action changed saved state");
++    ui::Button dark;
++    ui::Button comics;
++    QPushButton plain;
++    dark.setPaintMode(ui::ButtonPaintMode::OutlinedAction);
++    comics.setPaintMode(ui::ButtonPaintMode::ToolbarSquare);
++    int index = 0;
++    for (auto *action : {static_cast<QPushButton *>(&dark),
++                         static_cast<QPushButton *>(&comics), &plain}) {
++        const auto originalStyle = QStringLiteral("QPushButton{padding:%1px;}").arg(++index);
++        action->setStyleSheet(originalStyle);
++        action->setCheckable(true);
++        action->setChecked(true);
++        action->setEnabled(false);
++        auto *button = dynamic_cast<ui::Button *>(action);
++        const auto originalPaint = button ? button->paintMode() : ui::ButtonPaintMode::Native;
++        for (int cycle = 0; cycle < 3; ++cycle) {
++            QString savedStyle;
++            auto savedPaint = ui::ButtonPaintMode::Native;
++            styleToolbarAction(action, savedStyle, savedPaint);
++            require(savedStyle == originalStyle
++                            && action->size() == QSize(ui::metrics::chrome::cellWidth,
++                                                       ui::metrics::chrome::actionHeight),
++                    "Navigation did not capture style or apply toolbar geometry");
++            require(!button || button->paintMode() == ui::ButtonPaintMode::ToolbarCell,
++                    "Navigation did not apply toolbar paint mode");
++            restoreToolbarAction(action, savedStyle, savedPaint);
++            require(action->styleSheet() == originalStyle
++                            && action->size() == QSize(ui::metrics::control::toolbarButtonSize,
++                                                       ui::metrics::control::toolbarButtonSize)
++                            && (!button || button->paintMode() == originalPaint),
++                    "Toolbar action did not restore its own style, geometry and paint mode");
++            require(action->isCheckable() && action->isChecked() && !action->isEnabled(),
++                    "Toolbar styling changed action state");
++        }
++    }
++}
++} // namespace
 +// Checks retained presentation on both languages/densities without changing saved presets.
 +int main(int argc, char **argv)
 +{
 +    QApplication app(argc, argv);
++    toolbarActionRoundTrip();
 +    require(ui::initializeInterfaceFonts(test::readerAssets()), "presentation fonts unavailable");
 +    QImage letterSignatures[2][2];
 +    for (auto locale : {strings::Locale::English, strings::Locale::Russian}) {

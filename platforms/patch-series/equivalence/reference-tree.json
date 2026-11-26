@@ -4032,13 +4032,13 @@
     },
     "src/app/reader/views/fork_navigation.cpp": {
       "mode": "100644",
-      "sha256": "31f623314163bc27d5ed3be64cddd7c15c40f6df7afbd617eee59d1922a30f28",
-      "size": 2581
+      "size": 2346,
+      "sha256": "36d30632aed07953b44069faf6845f177c91d1b100c830dde671183daa374514"
     },
     "src/app/reader/views/fork_navigation.h": {
       "mode": "100644",
-      "sha256": "89f0bef56bfd333e55f546237ab84b9083d7eaa7f9c06d5967aab1d1c479d2e4",
-      "size": 135
+      "size": 567,
+      "sha256": "05fe86382a9e9ff61514e429611d39acadfd2f416e7c8d6adb3a6c583ac332ad"
     },
     "src/app/reader/views/image_viewer.cpp": {
       "mode": "100644",
@@ -7107,8 +7107,8 @@
     },
     "tests/model/fork_presentation.cpp": {
       "mode": "100644",
-      "sha256": "2fc35557b92ac89a15fbb577aa7cc8c0c4812118048e0250ce5ae45a2dbac5f1",
-      "size": 9729
+      "size": 12424,
+      "sha256": "70e85ff6d3e0cacb0e567e56563ea63302d86949a30102734b446cd8373a45c6"
     },
     "tests/model/header_footer.cpp": {
       "mode": "100644",
@@ -7780,6 +7780,32 @@
         "sha256": "184a4cb4a6e890908772f1344a6edc192704f150c5ace4ef6ee70669f525cb48"
       },
       "review": "doc/reports/translation-beta10/full-catalog-accepted.md"
+    },
+    {
+      "paths": [
+        "src/app/reader/views/fork_navigation.cpp",
+        "src/app/reader/views/fork_navigation.h",
+        "tests/model/fork_presentation.cpp"
+      ],
+      "basis": "User authorized code refactoring after consolidation; shared toolbar style/restore extraction, no intended behavior change. Native tests are new and require CI.",
+      "previous": {
+        "src/app/reader/views/fork_navigation.cpp": {
+          "mode": "100644",
+          "sha256": "31f623314163bc27d5ed3be64cddd7c15c40f6df7afbd617eee59d1922a30f28",
+          "size": 2581
+        },
+        "src/app/reader/views/fork_navigation.h": {
+          "mode": "100644",
+          "sha256": "89f0bef56bfd333e55f546237ab84b9083d7eaa7f9c06d5967aab1d1c479d2e4",
+          "size": 135
+        },
+        "tests/model/fork_presentation.cpp": {
+          "mode": "100644",
+          "sha256": "2fc35557b92ac89a15fbb577aa7cc8c0c4812118048e0250ce5ae45a2dbac5f1",
+          "size": 9729
+        }
+      },
+      "review": "doc/reports/patch-series/058-toolbar-code-refactor.md"
     }
   ]
 }
