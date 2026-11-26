@@ -28736,10 +28736,10 @@ index 4c67f679..b704bab9 100644
      return fonts;
 diff --git a/src/reading/locale_font_roles.h b/src/reading/locale_font_roles.h
 new file mode 100644
-index 00000000..b42c1847
+index 00000000..74b01688
 --- /dev/null
 +++ b/src/reading/locale_font_roles.h
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,60 @@
 +#pragma once
 +#include "support/strings.h"
 +#include <QString>
@@ -28747,15 +28747,49 @@ index 00000000..b42c1847
 +
 +namespace kobalt {
 +inline bool russianFontRoles() { return strings::locale() == strings::Locale::Russian; }
-+inline const char *localeDefaultFontFace() { return russianFontRoles() ? "NV Literata" : "Libron"; }
-+inline const char *localePublisherSansFontFace() { return russianFontRoles() ? "NV Publica" : "NV Legible Next"; }
-+inline const char *localeBookishFontFace() { return russianFontRoles() ? "KF Sable" : "NV Ancizar Serif"; }
++namespace reading_font_roles {
++struct Role {
++    const char *english;
++    const char *russian;
++    const char *aliases[4];
++};
++// Aliases are exact, case-sensitive saved family names, not normalized names.
++// Keep role targets shared by defaults and legacy-preference migration.
++inline constexpr Role defaultText{
++    "Libron", "NV Literata", {"Libron", "KF Libron", "Literata", "KF Literata"}
++};
++inline constexpr Role publisherSans{
++    "NV Legible Next", "NV Publica", {"NV Legible Next", "KF Legible Next", "Noto Serif", nullptr}
++};
++inline constexpr Role bookish{
++    "NV Ancizar Serif", "KF Sable", {"NV Ancizar Serif", "KF Ancizar Serif", "Lora", "NV Sable"}
++};
++inline const char *localizedFace(const Role &role)
++{
++    return russianFontRoles() ? role.russian : role.english;
++}
++} // namespace reading_font_roles
++inline const char *localeDefaultFontFace()
++{
++    return reading_font_roles::localizedFace(reading_font_roles::defaultText);
++}
++inline const char *localePublisherSansFontFace()
++{
++    return reading_font_roles::localizedFace(reading_font_roles::publisherSans);
++}
++inline const char *localeBookishFontFace()
++{
++    return reading_font_roles::localizedFace(reading_font_roles::bookish);
++}
 +inline QString localeReadingFamily(QString family)
 +{
-+    if (!russianFontRoles()) return family;
-+    if (family == "Libron" || family == "KF Libron" || family == "Literata" || family == "KF Literata") return "NV Literata";
-+    if (family == "NV Legible Next" || family == "KF Legible Next" || family == "Noto Serif") return "NV Publica";
-+    if (family == "NV Ancizar Serif" || family == "KF Ancizar Serif" || family == "Lora" || family == "NV Sable") return "KF Sable";
++    if (!russianFontRoles())
++        return family;
++    using namespace reading_font_roles;
++    for (const auto *role : {&defaultText, &publisherSans, &bookish})
++        for (const auto *alias : role->aliases)
++            if (alias && family == alias)
++                return role->russian;
 +    return family;
 +}
 +inline bool hiddenRussianReadingFamily(QString family)
@@ -29632,11 +29666,12 @@ index 00000000..5562dc8a
 +}
 diff --git a/tests/model/strings_locale.cpp b/tests/model/strings_locale.cpp
 new file mode 100644
-index 00000000..9303ec89
+index 00000000..d2710a61
 --- /dev/null
 +++ b/tests/model/strings_locale.cpp
-@@ -0,0 +1,276 @@
+@@ -0,0 +1,326 @@
 +#include "check.h"
++#include "reading/locale_font_roles.h"
 +#include "support/locale.h"
 +#include "support/strings.h"
 +
@@ -29653,6 +29688,54 @@ index 00000000..9303ec89
 +using namespace kobalt;
 +
 +namespace {
++void readingFontRoles()
++{
++    struct Mapping { const char *saved; const char *russian; };
++    // Expectations intentionally independent of the production role table.
++    const Mapping mappings[] = {
++        {"Libron", "NV Literata"}, {"KF Libron", "NV Literata"},
++        {"Literata", "NV Literata"}, {"KF Literata", "NV Literata"},
++        {"NV Legible Next", "NV Publica"}, {"KF Legible Next", "NV Publica"},
++        {"Noto Serif", "NV Publica"}, {"NV Ancizar Serif", "KF Sable"},
++        {"KF Ancizar Serif", "KF Sable"}, {"Lora", "KF Sable"}, {"NV Sable", "KF Sable"}
++    };
++    for (auto locale : {strings::Locale::English, strings::Locale::Russian}) {
++        strings::setLocale(locale);
++        const bool russian = locale == strings::Locale::Russian;
++        require(QString::fromLatin1(localeDefaultFontFace())
++                        == (russian ? QStringLiteral("NV Literata") : QStringLiteral("Libron")),
++                "Default font role changed");
++        require(QString::fromLatin1(localePublisherSansFontFace())
++                        == (russian ? QStringLiteral("NV Publica") : QStringLiteral("NV Legible Next")),
++                "Publisher sans role changed");
++        require(QString::fromLatin1(localeBookishFontFace())
++                        == (russian ? QStringLiteral("KF Sable") : QStringLiteral("NV Ancizar Serif")),
++                "Bookish font role changed");
++        for (const auto &mapping : mappings) {
++            const auto saved = QString::fromLatin1(mapping.saved);
++            const auto expected = russian ? QString::fromLatin1(mapping.russian) : saved;
++            require(localeReadingFamily(saved) == expected, "Legacy font mapping changed");
++            require(localeReadingFamily(expected) == expected, "Font mapping is not idempotent");
++            require(hiddenRussianReadingFamily(saved) == russian,
++                    "Legacy alias visibility changed");
++        }
++        for (const auto *name : {"NV Literata", "NV Publica", "KF Sable", "User Font", "",
++                                  "libron", "Libron ", "NV Lora"}) {
++            const auto family = QString::fromLatin1(name);
++            require(localeReadingFamily(family) == family, "Unknown or canonical font was remapped");
++            require(!hiddenRussianReadingFamily(family), "Canonical or unrelated font was hidden");
++        }
++        for (const auto *name : {"Adelph", "Aleo", "Andada", "Basker", "Castoro", "Yrsa",
++                                  "Kalam", "Instrument Serif"}) {
++            const auto family = QString::fromLatin1(name);
++            for (const auto &prefix : {QString(), QStringLiteral("NV "), QStringLiteral("KF ")})
++                require(hiddenRussianReadingFamily(prefix + family) == russian,
++                        "Explicit font exclusion or English visibility changed");
++        }
++    }
++    strings::setLocale(strings::Locale::English);
++}
++
 +void normalizeCodes() {
 +    using strings::Locale;
 +    require(strings::normalizeLocaleCode(QStringLiteral("ru")) == Locale::Russian, "ru must select Russian");
@@ -29899,6 +29982,7 @@ index 00000000..9303ec89
 +
 +int main(int argc, char **argv) {
 +    QCoreApplication app(argc, argv);
++    readingFontRoles();
 +    normalizeCodes();
 +    translatedLookup();
 +    completeTableLookup();

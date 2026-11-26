@@ -5832,8 +5832,8 @@
     },
     "src/reading/locale_font_roles.h": {
       "mode": "100644",
-      "sha256": "a8d928b96fd69f5a0a1ea1dc2dab8f676ef58cf625a43dd311a0f77c04bcaf6f",
-      "size": 1406
+      "size": 2152,
+      "sha256": "b0bb2e3d583a4e02f2c0a47bdb221773a75faa611a80dd60dc45a1e410bf33d9"
     },
     "src/reading/logical_word_counter.h": {
       "mode": "100644",
@@ -7452,8 +7452,8 @@
     },
     "tests/model/strings_locale.cpp": {
       "mode": "100644",
-      "sha256": "7202fe5810021462836b421a2d2de944972ef3a037ac3bee141bd5684742613d",
-      "size": 15826
+      "size": 18783,
+      "sha256": "54dd5b6fe0d5db6af5c8684ba949622b50ee5f3c9b1abf7191af3c0d98e483d4"
     },
     "tests/model/style_sample_cache.cpp": {
       "mode": "100644",
@@ -7806,6 +7806,26 @@
         }
       },
       "review": "doc/reports/patch-series/058-toolbar-code-refactor.md"
+    },
+    {
+      "paths": [
+        "src/reading/locale_font_roles.h",
+        "tests/model/strings_locale.cpp"
+      ],
+      "previous": {
+        "src/reading/locale_font_roles.h": {
+          "mode": "100644",
+          "sha256": "a8d928b96fd69f5a0a1ea1dc2dab8f676ef58cf625a43dd311a0f77c04bcaf6f",
+          "size": 1406
+        },
+        "tests/model/strings_locale.cpp": {
+          "mode": "100644",
+          "sha256": "7202fe5810021462836b421a2d2de944972ef3a037ac3bee141bd5684742613d",
+          "size": 15826
+        }
+      },
+      "basis": "R02: consolidate locale font role names, preserve all aliases and visibility; independent native expectations added.",
+      "review": "doc/reports/patch-series/059-font-role-refactor.md"
     }
   ]
 }

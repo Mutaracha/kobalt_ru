@@ -6,18 +6,19 @@
 Последний CI-проверенный бинарник: **ef732b78**, [CI45803184134](https://github.com/Mutaracha/kobalt_ru/actions/runs/45803184134),
 [пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45803184134/artifacts/15107828580).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-Аппаратная приёмка R01 и длина новых переводов ещё открыты. Docs-only обновления
+R01 пользователь проверил и разрешил продолжать. Отдельная полная проверка длины
+всех новых переводов не заявляется. Docs-only обновления
 не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R01 — рефакторинг кода: implemented, CI PASS, device pending.** Пользователь разрешил
-рефакторинг после консолидации и готов проверить сборку. Первый изолированный шаг:
-общие операции style/restore для dark/comics toolbar buttons в 050, без изменения
-контрактов и состояния кнопок. Добавлен native round-trip regression; 15 локальных
-Python regressions PASS; CI45803184134 все 3 jobs PASS. Следующий шаг: устройство
-по [чек-листу R01](doc/reports/patch-series/058-toolbar-code-refactor.md).
-Исходная база до рефакторинга — b753ef28; не объявлять новый runtime идентичным ей.
+**R02 — роли шрифтов: implemented, CI/device pending.** Канонические имена ролей
+и legacy aliases сведены к трём дескрипторам, без изменения соответствий/видимости.
+Добавлены независимые native regression cases; 15 локальных Python tests PASS.
+Следующий шаг: CI/native/Qt5/package, затем [чек-лист R02](doc/reports/patch-series/059-font-role-refactor.md).
+
+**R01 — done, CI PASS, device accepted.** Пользователь проверил ef732b78 и разрешил
+продолжать. [Область приёмки](doc/reports/patch-series/058-toolbar-code-refactor.md).
 
 **Полная сверка переводов — done (реализация), CI PASS, device pending.** Пользователь
 принял аудит с исключениями: описание light gesture не менять, «Каждую страницу»,
