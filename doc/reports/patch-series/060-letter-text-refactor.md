@@ -1,6 +1,6 @@
 # R03 — отдельная подстановка текста «Письма»
 
-Статус: implemented; local series PASS; CI/device pending.
+Статус: implemented; local series/native CI/Qt5/package PASS; device pending.
 R02 на 9bd9c6b4 пользователь проверил и разрешил продолжать. Это отдельная
 приёмка R02; она не распространяется на будущие изменения.
 
@@ -53,3 +53,14 @@ SDK нет: новый native test требует CI. Translation 010, кэш, �
    эти варианты также покрыты native template cases, искусственный сброс не нужен.
 
 Не требуется переименовывать книги, загружать новые файлы или измерять скорость.
+
+## CI и пакет
+
+Runtime source: `2ffacc749d84250f2a840906a9a49d0dc450e42d`.
+[CI45810235128](https://github.com/Mutaracha/kobalt_ru/actions/runs/45810235128):
+все 3 jobs PASS — series/export/inventory, selected native/Linux (новые cases
+в fork-presentation и прежний pixel-test подписи), Qt5/package и host FB2 replay.
+Новые C++ тесты выполнены в CI, не локальным SDK.
+
+[Qt5 / Libra2 пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45810235128/artifacts/15113890616):
+`Kobalt-ru-beta10-series-qt5`, 45 431 724 bytes. Приёмка устройства R03 остаётся открытой.

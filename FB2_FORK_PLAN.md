@@ -3,19 +3,19 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010/020/030/034/040/050/060 после консолидации; все патчи применяются вместе.
-Последний CI-проверенный бинарник: **9bd9c6b4**, [CI45806985346](https://github.com/Mutaracha/kobalt_ru/actions/runs/45806985346),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45806985346/artifacts/15110980211).
+Последний CI-проверенный бинарник: **2ffacc74**, [CI45810235128](https://github.com/Mutaracha/kobalt_ru/actions/runs/45810235128),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45810235128/artifacts/15113890616).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-R01 и R02 приняты пользователем на устройстве; новый R03 ещё не принят.
+R01 и R02 приняты пользователем на устройстве; аппаратная приёмка R03 открыта.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R03 — подстановка «Письма»: implemented, CI/device pending.** Существующий
+**R03 — подстановка «Письма»: implemented, CI PASS, device pending.** Существующий
 single-pass formatter вынесен из рисования в отдельный тестируемый helper без
 изменения алгоритма. Добавлены прямые native cases для метаданных с %n и EN/RU
-шаблонов; 15 локальных Python tests PASS. Следующий шаг: CI/native/Qt5/package,
-затем [чек-лист R03](doc/reports/patch-series/060-letter-text-refactor.md).
+шаблонов; 15 локальных Python tests PASS, CI45810235128 все 3 jobs PASS.
+Следующий шаг: [чек-лист R03](doc/reports/patch-series/060-letter-text-refactor.md).
 
 **R02 — done, CI PASS, device accepted.** Пользователь проверил 9bd9c6b4 и разрешил
 продолжать. [Область](doc/reports/patch-series/059-font-role-refactor.md).
