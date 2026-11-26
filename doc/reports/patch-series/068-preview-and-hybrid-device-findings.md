@@ -51,3 +51,8 @@ reader_slices.cpp::goToFraction безусловно переводит акти
 нужно разбирать отдельно. Не ослаблять guards и не включать saved-middle slicing
 под видом исправления. Следующий scope: воспроизведение/регрессии preview round-trip
 и раннего fraction-jump, затем минимальные fixes с полным CI/device gate.
+
+## Продолжение
+
+Реализованные fixes, воспроизводящий red/green regression и финальный CI:
+[069](069-fb2-preview-and-zero-fraction-fixes.md). Device acceptance остаётся отдельной.
