@@ -3,18 +3,18 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010/020/030/034/040/050/060 после консолидации; все патчи применяются вместе.
-Последний CI-проверенный бинарник: **2258d58b**, [CI45812629293](https://github.com/Mutaracha/kobalt_ru/actions/runs/45812629293),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45812629293/artifacts/15113673764).
+Последний CI-проверенный бинарник: **7d13ec2c**, [CI45815527684](https://github.com/Mutaracha/kobalt_ru/actions/runs/45815527684),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45815527684/artifacts/15114663890).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-R01–R03 приняты пользователем на устройстве; аппаратная приёмка R04 открыта.
+R01–R03 приняты пользователем на устройстве; аппаратная приёмка R04/R05 открыта.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R05 — статус меню: implemented, CI/device pending.** Сериализация эффективного
+**R05 — статус меню: implemented, CI PASS, device pending.** Сериализация эффективного
 режима и чистая операция toggle перенесены в существующий menustatus модуль.
 UI writer/callback и глобальный выбор сохраняются. 15 локальных Python tests PASS,
-новые native cases добавлены. Следующий шаг: CI и [чек-лист R05](doc/reports/patch-series/062-menu-status-refactor.md).
+новые native cases выполнены CI45815527684 (все 3 jobs PASS). Следующий шаг: [чек-лист R05](doc/reports/patch-series/062-menu-status-refactor.md).
 R04 пока остаётся device pending; продолжение работы не трактуется как его приёмка.
 
 **U11-FONT-CACHE — deferred до обновления upstream.** При выборе базы beta11

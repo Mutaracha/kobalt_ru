@@ -1,6 +1,6 @@
 # R05 — сериализация и переключение статуса меню
 
-Статус: implemented; local series PASS; CI/device pending.
+Статус: implemented; local series/native CI/Qt5/package PASS; device pending.
 База — b2cdb129 (runtime 2258d58b). Аппаратная приёмка R04 отдельно не подтверждена;
 новый пакет включает R04, но продолжение работы не считается его приёмкой.
 
@@ -45,3 +45,15 @@ regressions PASS. Локального Qt/cmake SDK нет; C++ cases требу
    стилей по [его чек-листу](061-preset-name-refactor.md); результат указать отдельно.
 
 Новые замеры времени, сброс профиля, очистка кэша и изменение колонтитулов не нужны.
+
+## CI и пакет
+
+Runtime source: `7d13ec2c032307f553459536dacd52be51454d86`.
+[CI45815527684](https://github.com/Mutaracha/kobalt_ru/actions/runs/45815527684):
+все 3 jobs PASS — series/export/inventory, selected native/Linux (новые cases
+в model.appearance-settings), Qt5/package и archived FB2 replay.
+Новый C++ тест выполнен CI; локальный Qt SDK запуск не заявляется.
+
+[Qt5 / Libra2 пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45815527684/artifacts/15114663890):
+`Kobalt-ru-beta10-series-qt5`, 45 438 239 bytes. Устройство R05 ещё не проверено;
+R04 включён, его отдельная аппаратная приёмка также пока не подтверждена.
