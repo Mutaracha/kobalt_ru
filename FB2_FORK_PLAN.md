@@ -3,18 +3,18 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010/020/030/034/040/050/060 после консолидации; все патчи применяются вместе.
-Последний CI-проверенный бинарник: **7b9e2caf**, [CI45829135561](https://github.com/Mutaracha/kobalt_ru/actions/runs/45829135561),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45829135561/artifacts/15121062716).
+Последний CI-проверенный бинарник: **66c21df1**, [CI45833426741](https://github.com/Mutaracha/kobalt_ru/actions/runs/45833426741),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45833426741/artifacts/15123082151).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-R08 принят пользователем по всему списку.
+R08 принят пользователем по всему списку; R09 ещё не проверен на устройстве.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R09 — представление данных чтения: implemented, CI/device pending.**
+**R09 — представление данных чтения: implemented, CI PASS, device pending.**
 Подготовка текста StatsCell отделена от геометрии без изменения правил.
-15 локальных tests PASS; добавлены frozen-algorithm и real-widget regressions.
-Следующий шаг: CI и [чек-лист R09](doc/reports/patch-series/066-reading-data-presentation-refactor.md).
+15 локальных tests и все 3 CI jobs PASS; frozen-algorithm и real-widget regressions прошли.
+Следующий шаг: [чек-лист R09](doc/reports/patch-series/066-reading-data-presentation-refactor.md).
 
 **R08 — done, CI PASS, device accepted по всему списку.**
 
