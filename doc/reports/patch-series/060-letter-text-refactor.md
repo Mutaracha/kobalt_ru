@@ -1,6 +1,6 @@
 # R03 — отдельная подстановка текста «Письма»
 
-Статус: implemented; local series/native CI/Qt5/package PASS; device pending.
+Статус: implemented; local series/native CI/Qt5/package PASS; device accepted.
 R02 на 9bd9c6b4 пользователь проверил и разрешил продолжать. Это отдельная
 приёмка R02; она не распространяется на будущие изменения.
 
@@ -64,3 +64,8 @@ Runtime source: `2ffacc749d84250f2a840906a9a49d0dc450e42d`.
 
 [Qt5 / Libra2 пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45810235128/artifacts/15113890616):
 `Kobalt-ru-beta10-series-qt5`, 45 431 724 bytes. Приёмка устройства R03 остаётся открытой.
+
+## Приёмка устройства
+
+Пользователь сообщил «проверил, продолжаем»: R03 на 2ffacc74 принят в пределах
+предложенного чек-листа. Это не приёмка R04 и последующих изменений.

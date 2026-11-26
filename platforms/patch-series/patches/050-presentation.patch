@@ -1167,10 +1167,10 @@ index b9ef681b..b1e3131d 100644
  // Fits the cover without cropping. Unused space is always black.
 diff --git a/src/reading/fork_text_preset_names.h b/src/reading/fork_text_preset_names.h
 new file mode 100644
-index 00000000..a128d117
+index 00000000..29c74e13
 --- /dev/null
 +++ b/src/reading/fork_text_preset_names.h
-@@ -0,0 +1,26 @@
+@@ -0,0 +1,20 @@
 +#pragma once
 +#include "text_presets.h"
 +#include "support/strings.h"
@@ -1186,13 +1186,7 @@ index 00000000..a128d117
 +            && preset.id != "classic"))
 +        return preset.name;
 +    const auto key = QByteArray("text_presets.example_") + preset.id.toUtf8();
-+    int count = 0;
-+    const auto *table = strings::entries(&count);
-+    const auto *english = strings::detail::find(table, count, key.constData());
-+    table = strings::detail::russianTable(&count);
-+    const auto *russian = strings::detail::find(table, count, key.constData());
-+    if ((english && preset.name == QString::fromUtf8(english->value))
-+        || (russian && preset.name == QString::fromUtf8(russian->value)))
++    if (strings::matchesTranslation(key.constData(), preset.name))
 +        return strings::get(key.constData());
 +    return preset.name;
 +}
@@ -2087,10 +2081,10 @@ index c563ea02..4c1b15f5 100644
      QJsonObject startedOperation, endedOperation;
 diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
 new file mode 100644
-index 00000000..61d23a4f
+index 00000000..83d9d477
 --- /dev/null
 +++ b/tests/model/fork_presentation.cpp
-@@ -0,0 +1,259 @@
+@@ -0,0 +1,317 @@
 +#include "check.h"
 +#include "app/reader/views/sleep_letter_text.h"
 +#include "app/reader/views/fork_navigation.h"
@@ -2112,6 +2106,63 @@ index 00000000..61d23a4f
 +#include <QtMath>
 +using namespace kobalt;
 +namespace {
++void savedPresetNames()
++{
++    struct Name { const char *id; const char *english; const char *russian; };
++    const Name names[] = {
++        {"kobalt", "Kobalt", "Kobalt"}, {"bookish", "Bookish", "Книжный"},
++        {"modern", "Modern", "Современный"}, {"classic", "Classic", "Классический"}
++    };
++    for (auto locale : {strings::Locale::English, strings::Locale::Russian}) {
++        strings::setLocale(locale);
++        for (bool keys : {false, true}) {
++            strings::showKeys(keys);
++            for (const auto &name : names) {
++                const auto key = QByteArray("text_presets.example_") + name.id;
++                for (const auto *savedName : {name.english, name.russian}) {
++                    textpresets::Preset preset;
++                    preset.id = QString::fromLatin1(name.id);
++                    preset.name = QString::fromUtf8(savedName);
++                    preset.example = true;
++                    preset.halfPoints = 37;
++                    preset.fontFace = QStringLiteral("User font");
++                    const auto before = preset;
++                    require(strings::matchesTranslation(key.constData(), preset.name),
++                            "Saved EN/RU name was not recognized");
++                    require(textpresets::displayName(preset) == strings::get(key.constData())
++                                    && preset == before,
++                            "Display-name localization modified persisted preset fields");
++                    preset.example = false;
++                    require(textpresets::displayName(preset) == preset.name,
++                            "User preset with a shipped name was translated");
++                    preset.example = true;
++                    preset.id = QStringLiteral("user-defined");
++                    require(textpresets::displayName(preset) == preset.name,
++                            "Unknown example id was translated");
++                }
++                for (const auto &custom : {QString(), QStringLiteral("My name"),
++                                           QString::fromUtf8(name.english).toLower(),
++                                           QString::fromUtf8(name.english) + QLatin1Char(' ')}) {
++                    textpresets::Preset preset;
++                    preset.id = QString::fromLatin1(name.id);
++                    preset.name = custom;
++                    preset.example = true;
++                    require(!strings::matchesTranslation(key.constData(), custom)
++                                    && textpresets::displayName(preset) == custom,
++                            "Renamed, empty or differently cased preset was translated");
++                }
++            }
++            require(!strings::matchesTranslation("missing.preset.key", QStringLiteral("missing.preset.key"))
++                            && !strings::matchesTranslation("missing.preset.key", QString()),
++                    "Missing key was treated as shipped copy");
++            require(strings::locale() == locale && strings::keyDisplay().load() == keys,
++                    "Name recognition changed locale or key-display state");
++        }
++    }
++    strings::showKeys(false);
++    strings::setLocale(strings::Locale::English);
++}
++
 +void letterTemplateSubstitution()
 +{
 +    using reader::sleeptext::fill;
@@ -2213,6 +2264,7 @@ index 00000000..61d23a4f
 +    QApplication app(argc, argv);
 +    toolbarActionRoundTrip();
 +    letterTemplateSubstitution();
++    savedPresetNames();
 +    require(ui::initializeInterfaceFonts(test::readerAssets()), "presentation fonts unavailable");
 +    QImage letterSignatures[2][2];
 +    for (auto locale : {strings::Locale::English, strings::Locale::Russian}) {

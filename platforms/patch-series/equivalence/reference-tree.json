@@ -5807,8 +5807,8 @@
     },
     "src/reading/fork_text_preset_names.h": {
       "mode": "100644",
-      "sha256": "b9d96358ec77ee2954f3baee284d5b3848a081531f631a159b48dd2ce6bc6a71",
-      "size": 1159
+      "size": 802,
+      "sha256": "982c1176aa5d64af06fbee1ae1027a4c36c656942b8dc19c6e2a1ce700492913"
     },
     "src/reading/header_footer.cpp": {
       "mode": "100644",
@@ -6337,8 +6337,8 @@
     },
     "src/support/strings.h": {
       "mode": "100644",
-      "sha256": "cfc306faacd2e802d75e79ba7f055e39e36ce4b24d0842760f4b98a8f4071be8",
-      "size": 2241
+      "size": 2921,
+      "sha256": "e8ba8012844c733ed6ed5cd4db9cf303615b9fbfa781e2070d18b1a78391d969"
     },
     "src/sync/kosync.cpp": {
       "mode": "100644",
@@ -7112,8 +7112,8 @@
     },
     "tests/model/fork_presentation.cpp": {
       "mode": "100644",
-      "size": 15458,
-      "sha256": "515f1ac8378644f241bb821e3b2c0de0dccd1a38fbca42d0b9ccabc7dee551de"
+      "size": 18726,
+      "sha256": "342296374c2dd409d86afbfd372cc56315552d9c7c23d85c29c2a92dbd99eeea"
     },
     "tests/model/header_footer.cpp": {
       "mode": "100644",
@@ -7853,6 +7853,32 @@
       },
       "basis": "R03: move unchanged Letter interpolation to testable helper, add native regression cases; no intended wording/layout change.",
       "review": "doc/reports/patch-series/060-letter-text-refactor.md"
+    },
+    {
+      "paths": [
+        "src/support/strings.h",
+        "src/reading/fork_text_preset_names.h",
+        "tests/model/fork_presentation.cpp"
+      ],
+      "previous": {
+        "src/support/strings.h": {
+          "mode": "100644",
+          "sha256": "cfc306faacd2e802d75e79ba7f055e39e36ce4b24d0842760f4b98a8f4071be8",
+          "size": 2241
+        },
+        "src/reading/fork_text_preset_names.h": {
+          "mode": "100644",
+          "sha256": "b9d96358ec77ee2954f3baee284d5b3848a081531f631a159b48dd2ce6bc6a71",
+          "size": 1159
+        },
+        "tests/model/fork_presentation.cpp": {
+          "mode": "100644",
+          "size": 15458,
+          "sha256": "515f1ac8378644f241bb821e3b2c0de0dccd1a38fbca42d0b9ccabc7dee551de"
+        }
+      },
+      "basis": "R04: move bilingual persisted-name matching behind strings API; preserve preset display behavior and saved data.",
+      "review": "doc/reports/patch-series/061-preset-name-refactor.md"
     }
   ]
 }

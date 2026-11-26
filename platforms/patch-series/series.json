@@ -8,9 +8,9 @@
       "id": "010-ru-localization",
       "path": "platforms/patch-series/patches/010-ru-localization.patch",
       "status": "ready",
-      "sha256": "1cda46d2575b8196314e4394eb9af7ce5f731e9a49e774480aa169605e567e47",
+      "sha256": "96e70f777d59654b5b226a0503f0bc9e227a5679dd6d83b75ed8d13a2e896bde",
       "scope": "Final RU strings, Russian font roles/assets/licences and font UI; locale tests. Standalone historical control overlay remains separate.",
-      "validation": "R02: shared canonical font-role descriptors and native alias/visibility regressions. Local series checks required; CI/device pending."
+      "validation": "R04: encapsulated persisted translation-name matching; native EN/RU/key-mode/user-name regressions added. CI/device pending."
     },
     {
       "id": "020-publication-resources",
@@ -48,9 +48,9 @@
       "id": "050-presentation",
       "path": "platforms/patch-series/patches/050-presentation.patch",
       "status": "ready",
-      "sha256": "6519ac767ecadd444a7092bfaad936b45174ac63f94e4059d596fa6e59f9289c",
+      "sha256": "aa359c462d573c1b30edbff44d4725451925ef06d05fc1525cd0016e9fc0bdd3",
       "scope": "Shared UI/brand/sleep/annotation presentation and tests; no superseded intermediate fonts.",
-      "validation": "R03: extract unchanged Letter single-pass interpolation and add direct metadata/locale regressions. Local series checks required; CI/device pending."
+      "validation": "R04: encapsulated persisted translation-name matching; native EN/RU/key-mode/user-name regressions added. CI/device pending."
     },
     {
       "id": "060-build-integration",

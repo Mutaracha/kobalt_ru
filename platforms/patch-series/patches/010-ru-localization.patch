@@ -29078,7 +29078,7 @@ index 00000000..54112f52
 +} // namespace detail
 +} // namespace kobalt::strings
 diff --git a/src/support/strings.h b/src/support/strings.h
-index 9f2c994d..689f8691 100644
+index 9f2c994d..f8c7b30e 100644
 --- a/src/support/strings.h
 +++ b/src/support/strings.h
 @@ -2,28 +2,26 @@
@@ -29152,10 +29152,23 @@ index 9f2c994d..689f8691 100644
          return QString::fromLatin1(key);
      const QString value = QString::fromUtf8(entry->value);
      if (!keyDisplay().load())
-@@ -67,4 +62,11 @@ inline QString get(const char *key)
+@@ -67,4 +62,24 @@ inline QString get(const char *key)
          result += " [" + seen.join(", ") + "]";
      return result;
  }
++// Recognize persisted display copy without changing the active UI language.
++// This is an exact match against shipped EN/RU values, independent of key mode.
++// Missing keys are not translations (unlike get(), which returns the key).
++inline bool matchesTranslation(const char *key, const QString &value)
++{
++    int count = 0;
++    const auto *table = detail::englishTable(&count);
++    const auto *english = detail::find(table, count, key);
++    table = detail::russianTable(&count);
++    const auto *russian = detail::find(table, count, key);
++    return (english && value == QString::fromUtf8(english->value))
++            || (russian && value == QString::fromUtf8(russian->value));
++}
 +// Locale-specific inflection is owned by string_locale.h.
 +inline QString plural(int count, const char *baseKey)
 +{
