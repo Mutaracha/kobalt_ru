@@ -3,19 +3,18 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010/020/030/034/040/050/060 после консолидации; все патчи применяются вместе.
-Последний CI-проверенный бинарник: **ef732b78**, [CI45803184134](https://github.com/Mutaracha/kobalt_ru/actions/runs/45803184134),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45803184134/artifacts/15107828580).
+Последний CI-проверенный бинарник: **9bd9c6b4**, [CI45806985346](https://github.com/Mutaracha/kobalt_ru/actions/runs/45806985346),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45806985346/artifacts/15110980211).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-R01 пользователь проверил и разрешил продолжать. Отдельная полная проверка длины
-всех новых переводов не заявляется. Docs-only обновления
-не меняют этот бинарник.
+R01 на ef732b78 принят пользователем; аппаратная приёмка нового R02 открыта.
+Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R02 — роли шрифтов: implemented, CI/device pending.** Канонические имена ролей
+**R02 — роли шрифтов: implemented, CI PASS, device pending.** Канонические имена ролей
 и legacy aliases сведены к трём дескрипторам, без изменения соответствий/видимости.
 Добавлены независимые native regression cases; 15 локальных Python tests PASS.
-Следующий шаг: CI/native/Qt5/package, затем [чек-лист R02](doc/reports/patch-series/059-font-role-refactor.md).
+CI45806985346 все 3 jobs PASS. Следующий шаг: [чек-лист R02](doc/reports/patch-series/059-font-role-refactor.md).
 
 **R01 — done, CI PASS, device accepted.** Пользователь проверил ef732b78 и разрешил
 продолжать. [Область приёмки](doc/reports/patch-series/058-toolbar-code-refactor.md).

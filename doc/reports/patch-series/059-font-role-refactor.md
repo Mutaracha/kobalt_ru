@@ -1,6 +1,6 @@
 # R02 — единый источник названий ролей шрифтов
 
-Статус: implemented; local series PASS; CI/device pending.
+Статус: implemented; local series/native CI/Qt5/package PASS; device pending.
 Предыдущий этап R01 на ef732b78 пользователь проверил на устройстве и разрешил
 продолжать. Это приёмка проверенного R01, не всех будущих изменений.
 
@@ -50,3 +50,15 @@ Qt/cmake SDK отсутствует. Native/Qt5/package должен подтв�
 
 Не нужно добавлять внешние шрифты, сбрасывать профиль или заново измерять скорость.
 Физическая проверка R02 остаётся открытой до ответа пользователя.
+
+## CI и пакет
+
+Runtime source: `9bd9c6b46619e4d4acbb22df2a7f94add7da8f99`.
+[CI45806985346](https://github.com/Mutaracha/kobalt_ru/actions/runs/45806985346):
+все 3 jobs PASS: series/export/inventory, selected native/Linux (в том числе
+model.strings-locale с новыми font-role cases), Qt5/package и archived FB2 replay.
+Локальный C++ запуск по-прежнему не заявляется; native-тест выполнен CI.
+
+[Qt5 / Libra2 пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45806985346/artifacts/15110980211):
+`Kobalt-ru-beta10-series-qt5`, 45 433 530 bytes.
+Пакет включает принятый R01 и все согласованные переводы. Следующий gate — устройство.
