@@ -612,6 +612,12 @@
       "action": "modify"
     },
     {
+      "path": "src/app/reader/views/sleep_letter_text.h",
+      "patch": "050-presentation",
+      "old_patches": [],
+      "action": "add"
+    },
+    {
       "path": "src/app/reader/views/sleep_ribbon_text.cpp",
       "patch": "050-presentation",
       "old_patches": [

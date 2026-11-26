@@ -4092,8 +4092,13 @@
     },
     "src/app/reader/views/sleep_designs.cpp": {
       "mode": "100644",
-      "sha256": "92d4a06c184112ede28a2f7f06d33f1f4af1a4c75ff8957338fbaf8d1f5b1164",
-      "size": 70533
+      "size": 69995,
+      "sha256": "62f67eb772cc4b4a16fc5e8338f6d54fc94ab953d2f592bb1754a93d746de952"
+    },
+    "src/app/reader/views/sleep_letter_text.h": {
+      "mode": "100644",
+      "size": 839,
+      "sha256": "c8ebb3d6aca8959fc9ddf367fbe036bd868e6bb5f6a6999318e9b1e00069559e"
     },
     "src/app/reader/views/sleep_ribbon_text.cpp": {
       "mode": "100644",
@@ -7107,8 +7112,8 @@
     },
     "tests/model/fork_presentation.cpp": {
       "mode": "100644",
-      "size": 12424,
-      "sha256": "70e85ff6d3e0cacb0e567e56563ea63302d86949a30102734b446cd8373a45c6"
+      "size": 15458,
+      "sha256": "515f1ac8378644f241bb821e3b2c0de0dccd1a38fbca42d0b9ccabc7dee551de"
     },
     "tests/model/header_footer.cpp": {
       "mode": "100644",
@@ -7826,6 +7831,28 @@
       },
       "basis": "R02: consolidate locale font role names, preserve all aliases and visibility; independent native expectations added.",
       "review": "doc/reports/patch-series/059-font-role-refactor.md"
+    },
+    {
+      "paths": [
+        "src/app/reader/views/sleep_letter_text.h",
+        "src/app/reader/views/sleep_designs.cpp",
+        "tests/model/fork_presentation.cpp"
+      ],
+      "previous": {
+        "src/app/reader/views/sleep_letter_text.h": null,
+        "src/app/reader/views/sleep_designs.cpp": {
+          "mode": "100644",
+          "sha256": "92d4a06c184112ede28a2f7f06d33f1f4af1a4c75ff8957338fbaf8d1f5b1164",
+          "size": 70533
+        },
+        "tests/model/fork_presentation.cpp": {
+          "mode": "100644",
+          "size": 12424,
+          "sha256": "70e85ff6d3e0cacb0e567e56563ea63302d86949a30102734b446cd8373a45c6"
+        }
+      },
+      "basis": "R03: move unchanged Letter interpolation to testable helper, add native regression cases; no intended wording/layout change.",
+      "review": "doc/reports/patch-series/060-letter-text-refactor.md"
     }
   ]
 }

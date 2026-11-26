@@ -48,9 +48,9 @@
       "id": "050-presentation",
       "path": "platforms/patch-series/patches/050-presentation.patch",
       "status": "ready",
-      "sha256": "976d02d4b992af1ca77fef21f836743bc82471dcbe14537e2f82f48835bacafe",
+      "sha256": "6519ac767ecadd444a7092bfaad936b45174ac63f94e4059d596fa6e59f9289c",
       "scope": "Shared UI/brand/sleep/annotation presentation and tests; no superseded intermediate fonts.",
-      "validation": "First code refactor: shared fork toolbar style/restore operations; native round-trip regressions added. Local series checks required; CI and device validation pending."
+      "validation": "R03: extract unchanged Letter single-pass interpolation and add direct metadata/locale regressions. Local series checks required; CI/device pending."
     },
     {
       "id": "060-build-integration",

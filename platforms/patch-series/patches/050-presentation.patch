@@ -926,16 +926,17 @@ index 8361348b..10371e91 100644
  
      int headerTextPixels() const
 diff --git a/src/app/reader/views/sleep_designs.cpp b/src/app/reader/views/sleep_designs.cpp
-index dc97b650..3f8a8baa 100644
+index dc97b650..6dfcb922 100644
 --- a/src/app/reader/views/sleep_designs.cpp
 +++ b/src/app/reader/views/sleep_designs.cpp
-@@ -1,3 +1,5 @@
+@@ -1,3 +1,6 @@
++#include "sleep_letter_text.h"
 +#include "reading/locale_font_roles.h"
 +#include "ui/style/locale_text.h"
  #include "sleep_screen.h"
  
  #include "ui/controls/panels.h"
-@@ -124,9 +126,14 @@ QFont body(const QString &family, qreal pixels)
+@@ -124,9 +127,14 @@ QFont body(const QString &family, qreal pixels)
  void text(QPainter &painter, const QFont &font, const QColor &color, const QRectF &area,
            const QString &value, Qt::Alignment alignment = Qt::AlignLeft | Qt::AlignVCenter)
  {
@@ -952,7 +953,7 @@ index dc97b650..3f8a8baa 100644
  }
  
  // Draws one line so its baseline sits at `baseline`, like SVG text.
-@@ -284,7 +291,10 @@ void drawBlock(QPainter &painter, const Block &value, QPointF topLeft, const QCo
+@@ -284,7 +292,10 @@ void drawBlock(QPainter &painter, const Block &value, QPointF topLeft, const QCo
  
  QString escaped(const QString &value)
  {
@@ -964,7 +965,7 @@ index dc97b650..3f8a8baa 100644
  }
  
  std::unique_ptr<Block> titleBlock(const QString &value, const QFont &font, qreal width,
-@@ -772,8 +782,16 @@ void paintWidgets(QPainter &painter, const Frame &frame, const Content &content,
+@@ -772,8 +783,16 @@ void paintWidgets(QPainter &painter, const Frame &frame, const Content &content,
                QPointF(layout.left.left() + pad, layout.left.center().y() - caption->height / 2.0),
                colors.ink);
      const auto &left = content.shot.details.left;
@@ -983,16 +984,56 @@ index dc97b650..3f8a8baa 100644
  }
  
  // ---------------------------------------------------------------- C09
-@@ -1223,7 +1241,7 @@ QStringList letterParagraphs(const Content &content, const Palette &colors)
+@@ -1192,43 +1211,27 @@ QStringList letterParagraphs(const Content &content, const Palette &colors)
+     const auto title = content.shot.privateBook
+             ? escaped(strings::get("sleep.private_book"))
+             : QStringLiteral("<i>%1</i>").arg(escaped(details.title));
+-    // Substitute only placeholders from the template, never from book metadata.
+-    const auto fill = [](const QString &text, const QStringList &values) {
+-        QString result;
+-        for (int i = 0; i < text.size(); ++i) {
+-            if (text[i] == QLatin1Char('%') && i + 1 < text.size()) {
+-                const int index = text[i + 1].digitValue() - 1;
+-                if (index >= 0 && index < values.size()) {
+-                    result += values[index];
+-                    ++i;
+-                    continue;
+-                }
+-            }
+-            result += text[i];
+-        }
+-        return result;
+-    };
+     QString main;
+     if (content.shot.percent >= 100) {
+-        main = fill(strings::get(off ? "sleep.letter_finished_off" : "sleep.letter_finished"),
++        main = sleeptext::fill(strings::get(off ? "sleep.letter_finished_off" : "sleep.letter_finished"),
+                     { title });
+     } else {
+         const auto chapter = details.chapter.isEmpty()
+                 ? QString()
+-                : fill(strings::get("sleep.letter_chapter"), { escaped(details.chapter) });
++                : sleeptext::fill(strings::get("sleep.letter_chapter"), { escaped(details.chapter) });
+         const auto percent = mark(sleepPercentText(content.shot), colors);
+-        main = fill(strings::get(off ? "sleep.letter_progress_off" : "sleep.letter_progress"),
++        main = sleeptext::fill(strings::get(off ? "sleep.letter_progress_off" : "sleep.letter_progress"),
+                     { percent, title, chapter });
+     }
      QStringList paragraphs{ escaped(strings::get("sleep.letter_greeting")), main };
      if (content.shot.percent < 100 && !details.left.isEmpty())
          paragraphs.append(
 -                fill(strings::get("sleep.letter_remaining"), { mark(details.left, colors) }));
-+                fill(strings::get("sleep.letter_remaining"), { mark(QString(details.left).replace(QLatin1Char(' '), QChar(0x00a0)), colors) }));
++                sleeptext::fill(strings::get("sleep.letter_remaining"), { mark(QString(details.left).replace(QLatin1Char(' '), QChar(0x00a0)), colors) }));
      if (content.charging()) {
          // The battery level starts its own line.
          const auto level = mark(strings::percentage(content.battery), colors);
-@@ -1252,8 +1270,9 @@ void paintLetter(QPainter &painter, const Frame &frame, const Content &content,
+         paragraphs.append(escaped(strings::get("sleep.letter_charging")) + QStringLiteral("<br>")
+-                          + fill(strings::get("sleep.letter_battery"), { level }));
++                          + sleeptext::fill(strings::get("sleep.letter_battery"), { level }));
+     }
+     paragraphs.append(escaped(strings::get(off ? "sleep.letter_restart" : "sleep.letter_wake")));
+     return paragraphs;
+@@ -1252,8 +1255,9 @@ void paintLetter(QPainter &painter, const Frame &frame, const Content &content,
      // The reader's chosen body face; Libron, the default, when none is known.
      const auto &family = content.shot.details.font;
      const QFont font =
@@ -1004,7 +1045,7 @@ index dc97b650..3f8a8baa 100644
      const qreal signatureTop = frame.bottom(12) - lineHeight(signature) * 1.1;
      const qreal gap = 2.4 * frame.v;
      const qreal available = signatureTop - lineHeight(font) - gap - frame.y(20);
-@@ -1319,7 +1338,8 @@ void paintLetter(QPainter &painter, const Frame &frame, const Content &content,
+@@ -1319,7 +1323,8 @@ void paintLetter(QPainter &painter, const Frame &frame, const Content &content,
  QVector<QRect> letterAreas(const Frame &frame, QSize size)
  {
      // The charging line moves the paragraph after it, so the whole body repaints.
@@ -2046,11 +2087,12 @@ index c563ea02..4c1b15f5 100644
      QJsonObject startedOperation, endedOperation;
 diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
 new file mode 100644
-index 00000000..bad08e45
+index 00000000..61d23a4f
 --- /dev/null
 +++ b/tests/model/fork_presentation.cpp
-@@ -0,0 +1,209 @@
+@@ -0,0 +1,259 @@
 +#include "check.h"
++#include "app/reader/views/sleep_letter_text.h"
 +#include "app/reader/views/fork_navigation.h"
 +#include "ui/controls/buttons.h"
 +#include "ui/style/metrics.h"
@@ -2070,6 +2112,54 @@ index 00000000..bad08e45
 +#include <QtMath>
 +using namespace kobalt;
 +namespace {
++void letterTemplateSubstitution()
++{
++    using reader::sleeptext::fill;
++    require(fill(QStringLiteral("%2 / %1 / %2"), {QStringLiteral("A"), QStringLiteral("B")})
++                    == QStringLiteral("B / A / B"),
++            "Letter template changed repeated or reordered slots");
++    require(fill(QStringLiteral("%1|%2|%3"),
++                 {QStringLiteral("22%"), QStringLiteral("<i>Book %3 &amp; %1</i>"),
++                  QStringLiteral(" Chapter %2.")})
++                    == QStringLiteral("22%|<i>Book %3 &amp; %1</i>| Chapter %2."),
++            "Letter substituted placeholders inside metadata or changed markup/percent");
++    require(fill(QStringLiteral("%1.%2"), {QStringLiteral("Book"), QString()})
++                    == QStringLiteral("Book."),
++            "Empty optional Letter suffix was not removed");
++    require(fill(QStringLiteral("%0 %9 %x %"), {QStringLiteral("A")})
++                    == QStringLiteral("%0 %9 %x %"),
++            "Letter changed unsupported or missing slots");
++    require(fill(QStringLiteral("%10"), {QStringLiteral("A")}) == QStringLiteral("A0"),
++            "Letter single-digit slot grammar changed");
++    require(fill(QStringLiteral("%%1"), {QStringLiteral("A")}) == QStringLiteral("%A"),
++            "Letter literal percent handling changed");
++    require(fill(QString(), {QStringLiteral("A")}).isEmpty()
++                    && fill(QStringLiteral("%1"), {}) == QStringLiteral("%1"),
++            "Letter empty template/value-list behavior changed");
++    for (auto locale : {strings::Locale::English, strings::Locale::Russian}) {
++        strings::setLocale(locale);
++        const auto title = QStringLiteral("<i>Title %3</i>");
++        const auto chapter = fill(strings::get("sleep.letter_chapter"),
++                                  {QStringLiteral("Chapter %1")});
++        for (const auto *key : {"sleep.letter_progress", "sleep.letter_progress_off"}) {
++            const auto text = fill(strings::get(key), {QStringLiteral("22%"), title, chapter});
++            require(text.contains(title) && text.contains(chapter)
++                            && text.count(QStringLiteral("22%")) == 1,
++                    "Localized Letter progress reinterpreted metadata");
++            require(fill(strings::get(key), {QStringLiteral("22%"), title, QString()})
++                            .contains(title),
++                    "Letter without chapter lost the title");
++        }
++        for (const auto *key : {"sleep.letter_finished", "sleep.letter_finished_off"})
++            require(fill(strings::get(key), {title}).contains(title),
++                    "Finished Letter reinterpreted the title");
++        const auto duration = QStringLiteral("18") + QChar(0x00a0) + QStringLiteral("h");
++        require(fill(strings::get("sleep.letter_remaining"), {duration}).contains(duration),
++                "Letter remaining time changed its no-break space");
++    }
++    strings::setLocale(strings::Locale::English);
++}
++
 +void toolbarActionRoundTrip()
 +{
 +    using namespace reader::forkui;
@@ -2122,6 +2212,7 @@ index 00000000..bad08e45
 +{
 +    QApplication app(argc, argv);
 +    toolbarActionRoundTrip();
++    letterTemplateSubstitution();
 +    require(ui::initializeInterfaceFonts(test::readerAssets()), "presentation fonts unavailable");
 +    QImage letterSignatures[2][2];
 +    for (auto locale : {strings::Locale::English, strings::Locale::Russian}) {
@@ -2300,3 +2391,34 @@ index 824e502c..d9273e4b 100644
      // An empty saved list stays empty: deleting every preset is respected.
      QJsonObject empty;
      store(empty, {});
+diff --git a/src/app/reader/views/sleep_letter_text.h b/src/app/reader/views/sleep_letter_text.h
+new file mode 100644
+index 00000000..c7454976
+--- /dev/null
++++ b/src/app/reader/views/sleep_letter_text.h
+@@ -0,0 +1,25 @@
++#pragma once
++#include <QString>
++#include <QStringList>
++
++namespace kobalt::reader::sleeptext {
++// Letter templates use single-digit slots. Substitute template slots only:
++// inserted (already escaped/styled) metadata is never interpreted again.
++// This helper does not escape HTML; callers retain that responsibility.
++inline QString fill(const QString &text, const QStringList &values)
++{
++    QString result;
++    for (int i = 0; i < text.size(); ++i) {
++        if (text[i] == QLatin1Char('%') && i + 1 < text.size()) {
++            const int index = text[i + 1].digitValue() - 1;
++            if (index >= 0 && index < values.size()) {
++                result += values[index];
++                ++i;
++                continue;
++            }
++        }
++        result += text[i];
++    }
++    return result;
++}
++} // namespace kobalt::reader::sleeptext

@@ -1,6 +1,6 @@
 # R02 — единый источник названий ролей шрифтов
 
-Статус: implemented; local series/native CI/Qt5/package PASS; device pending.
+Статус: implemented; local series/native CI/Qt5/package PASS; device accepted.
 Предыдущий этап R01 на ef732b78 пользователь проверил на устройстве и разрешил
 продолжать. Это приёмка проверенного R01, не всех будущих изменений.
 
@@ -62,3 +62,8 @@ model.strings-locale с новыми font-role cases), Qt5/package и archived F
 [Qt5 / Libra2 пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45806985346/artifacts/15110980211):
 `Kobalt-ru-beta10-series-qt5`, 45 433 530 bytes.
 Пакет включает принятый R01 и все согласованные переводы. Следующий gate — устройство.
+
+## Приёмка устройства
+
+Пользователь сообщил «проверил, продолжаем»: R02 на 9bd9c6b4 принят в пределах
+предложенного чек-листа. Это не приёмка следующего этапа R03.

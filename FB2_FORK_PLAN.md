@@ -6,15 +6,19 @@
 Последний CI-проверенный бинарник: **9bd9c6b4**, [CI45806985346](https://github.com/Mutaracha/kobalt_ru/actions/runs/45806985346),
 [пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45806985346/artifacts/15110980211).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-R01 на ef732b78 принят пользователем; аппаратная приёмка нового R02 открыта.
+R01 и R02 приняты пользователем на устройстве; новый R03 ещё не принят.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R02 — роли шрифтов: implemented, CI PASS, device pending.** Канонические имена ролей
-и legacy aliases сведены к трём дескрипторам, без изменения соответствий/видимости.
-Добавлены независимые native regression cases; 15 локальных Python tests PASS.
-CI45806985346 все 3 jobs PASS. Следующий шаг: [чек-лист R02](doc/reports/patch-series/059-font-role-refactor.md).
+**R03 — подстановка «Письма»: implemented, CI/device pending.** Существующий
+single-pass formatter вынесен из рисования в отдельный тестируемый helper без
+изменения алгоритма. Добавлены прямые native cases для метаданных с %n и EN/RU
+шаблонов; 15 локальных Python tests PASS. Следующий шаг: CI/native/Qt5/package,
+затем [чек-лист R03](doc/reports/patch-series/060-letter-text-refactor.md).
+
+**R02 — done, CI PASS, device accepted.** Пользователь проверил 9bd9c6b4 и разрешил
+продолжать. [Область](doc/reports/patch-series/059-font-role-refactor.md).
 
 **R01 — done, CI PASS, device accepted.** Пользователь проверил ef732b78 и разрешил
 продолжать. [Область приёмки](doc/reports/patch-series/058-toolbar-code-refactor.md).
