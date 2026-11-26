@@ -1767,8 +1767,8 @@
     },
     "assets/ru.strings": {
       "mode": "100644",
-      "size": 162741,
-      "sha256": "184a4cb4a6e890908772f1344a6edc192704f150c5ace4ef6ee70669f525cb48"
+      "size": 163172,
+      "sha256": "23c26e709a6d0a91eb277357caa68db8c6f368890138a095b3a8bdd985e4f803"
     },
     "assets/samples/hanging-punctuation.html": {
       "mode": "100644",
@@ -7770,6 +7770,16 @@
         "size": 162466
       },
       "review": "doc/reports/translation-beta10/accepted.md"
+    },
+    {
+      "path": "assets/ru.strings",
+      "basis": "Full-catalog audit accepted with explicit exceptions; typo Кажудую normalized to Каждую.",
+      "previous": {
+        "mode": "100644",
+        "size": 162741,
+        "sha256": "184a4cb4a6e890908772f1344a6edc192704f150c5ace4ef6ee70669f525cb48"
+      },
+      "review": "doc/reports/translation-beta10/full-catalog-accepted.md"
     }
   ]
 }

@@ -26504,12 +26504,12 @@ index 00000000..5a9d5251
 +OTHER DEALINGS IN THE FONT SOFTWARE.
 diff --git a/assets/ru.strings b/assets/ru.strings
 new file mode 100644
-index 00000000..eb21398a
+index 00000000..ac014bdb
 --- /dev/null
 +++ b/assets/ru.strings
 @@ -0,0 +1,1867 @@
 +/* Russian overlay based on 8bd576f; terminology review recorded in translation-review.md. */
-+"about.description" = "Альтернативный ридер EPUB на движке CREngine с интерфейсом чтения на Qt, с упором на скорость и превосходный пользовательский опыт.";
++"about.description" = "Ридер на движке Blaze — форке CREngine от Kobalt — с интерфейсом на Qt.";
 +"about.version" = "Версия %1 (Qt%2)";
 +"acknowledgments.acknowledgments" = "Благодарности";
 +"acknowledgments.group_author" = "Также от автора";
@@ -26715,7 +26715,7 @@ index 00000000..eb21398a
 +"annotations.remove" = "Удалить";
 +"annotations.remove_detail" = "Сохранённый фрагмент будет удалён из этой книги.";
 +"annotations.remove_prompt" = "Удалить это выделение?";
-+"annotations.save_failed" = "Не удалось сохранить выделение. Ваше выделение сохранено.";
++"annotations.save_failed" = "Не удалось сохранить пометку. Текущее выделение оставлено на экране.";
 +"annotations.save_then_edit" = "Сохранить выделение и изменить пометку";
 +"annotations.stop" = "Завершить выделение";
 +"annotations.style" = "Стиль";
@@ -27007,7 +27007,7 @@ index 00000000..eb21398a
 +"dictionaries.installed_book" = "Установлен для этой книги · %1";
 +"dictionaries.installed_dictionary_is_damaged" = "Установленный словарь повреждён.";
 +"dictionaries.installed_inflection_index_is_damaged" = "Индекс словоформ установленного словаря повреждён.";
-+"dictionaries.installed_other" = "Установка · другие языки";
++"dictionaries.installed_other" = "Установлены · другие языки";
 +"dictionaries.installing" = "Установка";
 +"dictionaries.installing_name" = "Устанавливается %1";
 +"dictionaries.invalid_dictzip_data" = "Некорректные данные dictzip.";
@@ -27092,7 +27092,7 @@ index 00000000..eb21398a
 +"error.missing_epub_container" = "Отсутствует контейнер EPUB";
 +"error.missing_publication_body" = "Отсутствует тело публикации";
 +"error.missing_publication_container" = "Отсутствует контейнер публикации";
-+"error.native_chapter_is_not_in_the_publication_spine" = "Системная глава отсутствует в корешке публикации";
++"error.native_chapter_is_not_in_the_publication_spine" = "Системная глава отсутствует в порядке чтения публикации";
 +"error.native_chapter_source_is_incomplete" = "Источник системной главы неполон";
 +"error.native_chapter_source_is_unavailable" = "Источник системной главы недоступен";
 +"error.native_offset_splits_a_unicode_character" = "Системное смещение разрезает символ Unicode";
@@ -27187,7 +27187,7 @@ index 00000000..eb21398a
 +"features.kosync" = "KOSync";
 +"features.kosync_description" = "Останавливает KOSync и скрывает его настройки. Аккаунт сохраняется. Не влияет на синхронизацию Kobo.";
 +"features.navigate" = "Навигация";
-+"features.navigate_description" = "Скрывает вкладку навигации и её параметры. Если она выбрана стартовой, выбор сбрасывается на «Нет».";
++"features.navigate_description" = "Скрывает вкладку навигации и её параметры. Если она выбрана стартовой, стиль меню возвращается к варианту «По умолчанию».";
 +"features.stats" = "Статистика";
 +"features.stats_description" = "Скрывает вкладку статистики и её параметры. История чтения и расчёт времени сохраняются.";
 +"features.words" = "Мои слова";
@@ -27317,7 +27317,7 @@ index 00000000..eb21398a
 +"kosync.device_name_title" = "Имя устройства";
 +"kosync.device_unknown" = "Неизвестное устройство";
 +"kosync.dns_error" = "Не удалось определить адрес сервера синхронизации. Проверьте адрес сервера и работу DNS в вашей сети.";
-+"kosync.filename_unavailable" = "Исходное имя файла недоступно. Импортируйте книгу на Android заново или выберите сопоставление по содержимому.";
++"kosync.filename_unavailable" = "Исходное имя файла недоступно. Импортируйте книгу на Android заново или выберите сопоставление «По файлу».";
 +"kosync.forbidden" = "Сервер запретил синхронизацию. Проверьте права учётной записи и поддержку авторизации KOSync x-auth по этому адресу.";
 +"kosync.from" = "Сейчас";
 +"kosync.go_back" = "Вернуться назад";
@@ -27326,7 +27326,7 @@ index 00000000..eb21398a
 +"kosync.hide_password_accessible" = "Скрыть пароль";
 +"kosync.http_error" = "Сервер синхронизации вернул неожиданный HTTP-статус. Проверьте адрес и совместимость сервера с KOSync.";
 +"kosync.interrupted" = "Соединение синхронизации прервано. Повторите попытку. Позиция чтения сохранена.";
-+"kosync.interval_0" = "Постоянно";
++"kosync.interval_0" = "Каждую страницу";
 +"kosync.interval_1" = "Каждую минуту";
 +"kosync.interval_15" = "Каждые 15 минут";
 +"kosync.interval_30" = "Каждые 30 минут";
@@ -27343,7 +27343,7 @@ index 00000000..eb21398a
 +"kosync.kobo_cloud" = "Эта книга синхронизирует прогресс через Kobo Cloud. KOSync недоступен для этой копии.";
 +"kosync.last_synced" = "Последняя синхронизация: %1";
 +"kosync.learn_more" = "Подробнее";
-+"kosync.learn_more_description" = "Книги из магазина Kobo используют встроенную синхронизацию Kobo, даже без DRM. Kobalt оставляет синхронизацию их прогресса Kobo.\n\nKOSync — отдельный сервис для KOReader и Kobalt. Для этой книги добавьте копию без DRM как отдельную загруженную вручную книгу и откройте её.\n\nНа всех устройствах используйте один файл книги. Передаётся только прогресс чтения, без книг, закладок и аннотаций.";
++"kosync.learn_more_description" = "Книги, которыми управляет Kobo, используют встроенную синхронизацию Kobo, даже если файл не защищён DRM. Kobalt оставляет синхронизацию их прогресса Kobo.\n\nKOSync — отдельный сервис для KOReader и Kobalt. Чтобы использовать его для этой книги, добавьте на устройство копию без DRM как отдельную книгу вручную и откройте эту копию.\n\nНа всех устройствах используйте один и тот же файл книги. Передаётся только прогресс чтения: книги, закладки и аннотации не переносятся.";
 +"kosync.learn_more_title" = "Синхронизация Kobo и KOSync";
 +"kosync.login" = "Войти";
 +"kosync.logout" = "Выйти";
@@ -27623,8 +27623,8 @@ index 00000000..eb21398a
 +"reader.font_weight" = "Вариативная насыщенность:";
 +"reader.footer" = "Нижний";
 +"reader.formatting_warning" = "Предупреждение о форматировании";
-+"reader.formatting_warning_description" = "В этой книге возможны проблемы с форматированием. Можно продолжить чтение, но часть текста или вёрстки может отображаться не так, как задумано.";
-+"reader.front_matter" = "Авантитул";
++"reader.formatting_warning_description" = "На этой странице используется неподдерживаемое форматирование. Можно продолжить чтение, но часть текста или вёрстки может отображаться не так, как задумано.";
++"reader.front_matter" = "Вводная часть";
 +"reader.go_to_synced_position" = "Перейти к синхронизированной позиции";
 +"reader.header" = "Верхний";
 +"reader.hide_nonlinear_fragments" = "Скрыть дополнительные разделы";
@@ -27668,7 +27668,7 @@ index 00000000..eb21398a
 +"reader.restore_book_defaults" = "Восстановить настройки книги по умолчанию";
 +"reader.restore_book_defaults_detail" = "Шрифт, размер, межстрочный интервал, выравнивание, насыщенность и переносы этой книги вернутся к настройкам «Текст новых книг» либо к варианту «Как в книге», если выбрано «Как в прошлой книге». Другие книги и настройки не изменятся. Настройки применятся после закрытия раздела «Настройки».";
 +"reader.restore_book_defaults_prompt" = "Восстановить настройки книги по умолчанию?";
-+"reader.restore_default_font_description" = "Libron станет исходным переопределением шрифта для новых книг. Пометка «Шрифт по умолчанию» появится под Libron.";
++"reader.restore_default_font_description" = "NV Literata станет шрифтом по умолчанию для новых книг. Под ним появится подпись «Шрифт по умолчанию».";
 +"reader.restore_defaults" = "Восстановить значения по умолчанию";
 +"reader.return_page" = "Вернуться на страницу %1";
 +"reader.return_screen" = "Вернуться к экрану %1";
@@ -27781,7 +27781,7 @@ index 00000000..eb21398a
 +"settings.beautifier_initials_description" = "Превращать текстовые буквицы в обычные буквы.";
 +"settings.beautifier_spacing" = "Убрать интервалы между абзацами";
 +"settings.beautifier_spacing_description" = "Убирать пустое место между обычными абзацами. Разрывы сцен и особые блоки сохраняются.";
-+"settings.beautifier_summary" = "Выберите набор правил или настройте оформление издателя.";
++"settings.beautifier_summary" = "Выберите набор правил или настройте, как корректировать оформление издателя.";
 +"settings.brightness_gesture_feedback" = "Индикация регулировки яркости";
 +"settings.chapter_groups" = "Сворачиваемые главы";
 +"settings.chapter_groups_all" = "Все главы";
@@ -27822,7 +27822,7 @@ index 00000000..eb21398a
 +"settings.disable_reader_standby" = "Отключить ожидание";
 +"settings.disable_reader_standby_description" = "Не даёт устройству переходить в режим ожидания во время чтения. Увеличивает расход батареи. Не рекомендуется.";
 +"settings.disable_reader_standby_title" = "Отключить режим ожидания при чтении?";
-+"settings.disable_reader_standby_warning" = "Отключение режима ожидания может значительно сократить время работы. На некоторых устройствах это может помочь при периодических зависаниях или пропусках перелистывания. Устройство по-прежнему можно вручную перевести в сон. Вы уверены, что хотите отключить режим ожидания?";
++"settings.disable_reader_standby_warning" = "Отключение режима ожидания может значительно сократить время работы от батареи. На некоторых устройствах это может помочь при периодических зависаниях или пропусках перелистывания, но в целом не рекомендуется. Устройство по-прежнему можно перевести в сон. Вы уверены, что хотите отключить режим ожидания?";
 +"settings.display" = "Экран";
 +"settings.edge_brightness_description" = "Проводите вверх или вниз вдоль левого края для регулировки яркости.";
 +"settings.edge_light_description" = "Свайпы у самой границы экрана: слева — яркость, справа — теплота подсветки.";
@@ -27875,7 +27875,7 @@ index 00000000..eb21398a
 +"settings.light_gesture_feedback_description" = "Показывать всплывающее окно с процентами после изменения подсветки свайпом.";
 +"settings.lookup" = "Поиск";
 +"settings.menu_view_none" = "По умолчанию";
-+"settings.menu_view_none_description" = "Касание центра экрана открывает базовое меню чтения.";
++"settings.menu_view_none_description" = "Касание центра экрана открывает базовое меню чтения. Вариант Kobalt по умолчанию.";
 +"settings.menu_view_seek" = "Режим навигации";
 +"settings.menu_view_seek_description" = "Показывает миниатюры страниц и расширенные элементы навигации по книге. Для тех, кто обычно использует вкладку «Навигация».";
 +"settings.menu_view_stats" = "Режим статистики";
@@ -27946,7 +27946,7 @@ index 00000000..eb21398a
 +"settings.refresh_smart_description" = "В начале глав, не чаще одного раза в %1 перелистываний.";
 +"settings.rendering" = "Режим рендеринга";
 +"settings.rendering_accurate" = "Точный";
-+"settings.rendering_accurate_description" = "Сразу рассчитывает всю книгу при её открытии. Медленнее.";
++"settings.rendering_accurate_description" = "Сначала рассчитывает вёрстку всей книги. Большие книги открываются дольше.";
 +"settings.rendering_description" = "После закрытия настроек книга перезагрузится на текущем месте.";
 +"settings.rendering_fast" = "Быстро";
 +"settings.rendering_fast_description" = "Рассчитывает только текущую главу. Страницы приблизительные. Быстрее всего.";
@@ -28017,7 +28017,7 @@ index 00000000..eb21398a
 +"settings.sleep_stock_description" = "Использовать обычный экран сна Kobo.";
 +"settings.sleep_tile" = "Индикатор на экране сна";
 +"settings.sleep_tile_bookmark" = "Закладка";
-+"settings.sleep_tile_bookmark_description" = "Ленточка в правом верхнем углу экрана.";
++"settings.sleep_tile_bookmark_description" = "Ленточка в правом верхнем углу экрана, показывает процент прочитанного";
 +"settings.sleep_tile_card" = "Карточка";
 +"settings.sleep_tile_card_description" = "Область с информацией о чтении в левом нижнем углу экрана.";
 +"settings.sleep_tile_none" = "Нет";
@@ -28067,7 +28067,7 @@ index 00000000..eb21398a
 +"settings.vertical_spacing_center" = "Центрировать текст";
 +"settings.vertical_spacing_center_description" = "Центрировать текст, занимающий не менее %1 высоты области чтения. Межстрочный интервал не меняется.";
 +"settings.vertical_spacing_center_short" = "По центру";
-+"settings.vertical_spacing_description" = "Распределение свободной высоты страницы.";
++"settings.vertical_spacing_description" = "Распределение свободного места на почти заполненных страницах.";
 +"settings.vertical_spacing_expand" = "Растянуть строки";
 +"settings.vertical_spacing_expand_description" = "Распределяет свободную высоту между строками. Первая строка остаётся на месте.";
 +"settings.vertical_spacing_expand_short" = "Растянуть";
@@ -28187,7 +28187,7 @@ index 00000000..eb21398a
 +"sleep.read" = "прочитано";
 +"sleep.read_label" = "Прочитано";
 +"sleep.reading_time_failed" = "Не удалось сохранить время чтения";
-+"sleep.reading_time_failed_detail" = "Не удалось сохранить время последнего сеанса чтения. Можно повторить попытку, не закрывая книгу.";
++"sleep.reading_time_failed_detail" = "Не удалось сохранить время чтения до перехода в сон. Можно повторить попытку прямо здесь, не покидая эту страницу.";
 +"sleep.reading_time_retry_failed" = "Время чтения пока не сохранено. Можно повторить попытку или читать дальше.";
 +"sleep.retry_save" = "Сохранить снова";
 +"sleep.rotation_disabled" = "Экран сна будет только в книжной ориентации.";

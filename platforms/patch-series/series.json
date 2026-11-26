@@ -8,9 +8,9 @@
       "id": "010-ru-localization",
       "path": "platforms/patch-series/patches/010-ru-localization.patch",
       "status": "ready",
-      "sha256": "c729e056fdc06a5d4c673cf1db8bd7faaae06d8ec14cd598dad1de6bd1d70cb9",
+      "sha256": "13fdec0e71a5802f08192d07f78d67ce6f15c94236baad68b58e40d3ac366ed5",
       "scope": "Final RU strings, Russian font roles/assets/licences and font UI; locale tests. Standalone historical control overlay remains separate.",
-      "validation": "Approved beta9→beta10 Russian translations and Letter follow-up applied; animation descriptions restored. Local full-stack, parity/placeholder and series regression checks required; new CI/device validation pending."
+      "validation": "Approved full-catalog audit fixes applied with user exceptions. Local full-stack/parity/regression checks required; new CI/device validation pending."
     },
     {
       "id": "020-publication-resources",
