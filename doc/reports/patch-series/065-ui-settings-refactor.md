@@ -77,3 +77,8 @@ CI45826665962 на 7a09d8af: Qt5/package собран, host compile нового
 остановился на локальном имени slots (макрос Qt). Массив переименован в
 actionTargets. Production behavior этим исправлением не меняется; 15 локальных
 series tests снова PASS. Финальная полная проверка ещё требуется.
+
+CI45828013808 на b06c2026: host compile теста указал неверный namespace
+ToolbarComposition (тип в kobalt, не kobalt::reader). Исправлен только fixture;
+Qt5 production в этих повторных попытках собирался. Окончательная приёмка CI
+остаётся отдельным gate, ни одна частично успешная попытка не предлагается устройству.

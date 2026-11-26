@@ -2156,7 +2156,7 @@ index c563ea02..4c1b15f5 100644
      QJsonObject startedOperation, endedOperation;
 diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
 new file mode 100644
-index 00000000..05f684d2
+index 00000000..e09de9b5
 --- /dev/null
 +++ b/tests/model/fork_presentation.cpp
 @@ -0,0 +1,385 @@
@@ -2301,7 +2301,7 @@ index 00000000..05f684d2
 +        auto *session = new QLabel(QStringLiteral("session"), panel);
 +        const auto sessionStyle = QStringLiteral("QLabel{padding:3px;}");
 +        session->setStyleSheet(sessionStyle);
-+        reader::ToolbarComposition controls;
++        ToolbarComposition controls;
 +        controls.panel = panel;
 +        controls.rows = rows;
 +        controls.session = session;
