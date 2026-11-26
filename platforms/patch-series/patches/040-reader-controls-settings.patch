@@ -1477,15 +1477,24 @@ index 00000000..9ebefe6f
 +    std::puts("PASS: quick action ownership, feature independence and state glyphs");
 +}
 diff --git a/tests/reader_lifecycle.cpp b/tests/reader_lifecycle.cpp
-index d49d638d..4fc6530e 100644
+index d49d638d..13ef911e 100644
 --- a/tests/reader_lifecycle.cpp
 +++ b/tests/reader_lifecycle.cpp
-@@ -1229,6 +1229,67 @@ private slots:
+@@ -1229,6 +1229,88 @@ private slots:
                   "Opening the chooser in landscape clips its card");
      }
  
++    void fb2ComicsPreviewRoundTrip_data()
++    {
++        QTest::addColumn<bool>("archived");
++        QTest::newRow("synthetic") << false;
++        if (!qgetenv("KOBALT_PREVIEW_REPLAY_SOURCE").isEmpty())
++            QTest::newRow("device-book") << true;
++    }
++
 +    void fb2ComicsPreviewRoundTrip()
 +    {
++        QFETCH(bool, archived);
 +        const auto path = directory->filePath("preview-round-trip.fb2");
 +        QByteArray bytes("<FictionBook xmlns='http://www.gribuser.ru/xml/fictionbook/2.0'>"
 +                         "<description><title-info><book-title>Preview</book-title><lang>en</lang>"
@@ -1494,13 +1503,23 @@ index d49d638d..4fc6530e 100644
 +            bytes += "<p>Readable preview paragraph with enough words to fill the page. "
 +                     "The same book text must return after leaving comics mode.</p>";
 +        bytes += "</section></body></FictionBook>";
++        if (archived) {
++            QFile input(QString::fromLocal8Bit(qgetenv("KOBALT_PREVIEW_REPLAY_SOURCE")));
++            QVERIFY(input.open(QIODevice::ReadOnly));
++            bytes = input.readAll();
++            QVERIFY(!bytes.isEmpty());
++        }
 +        QFile file(path);
 +        QVERIFY(file.open(QIODevice::WriteOnly));
 +        QCOMPARE(file.write(bytes), qint64(bytes.size()));
 +        file.close();
 +        QVERIFY(storage::writeJson(testPaths().preferences(),
 +                    {{"page_margins", QJsonObject{{"margin_pixels", 18},
-+                        {"top_margin_pixels", 12}, {"bottom_margin_pixels", 12}}}}));
++                        {"top_margin_pixels", 12}, {"bottom_margin_pixels", 12}}},
++                     {"default_font_face", "NV Literata"}, {"inpage_footnotes", true},
++                     {"last_text_layout", QJsonObject{{"font_face", "NV Literata"},
++                        {"font_pixels", 54}, {"line_spacing", 120}, {"line_spacing_version", 1},
++                        {"reading_ppi", 300}}}}));
 +        ReaderFixture host(testPaths(), testFonts, testPlaceholder);
 +        CloseHost cleanup{host};
 +        QSignalSpy opened(&host, &ReaderFixture::opened);
@@ -1508,6 +1527,8 @@ index d49d638d..4fc6530e 100644
 +        QTRY_COMPARE_WITH_TIMEOUT(opened.count(), 1, 30000);
 +        host.window()->show();
 +        QVERIFY(QTest::qWaitForWindowExposed(host.window()));
++        QTRY_VERIFY(!host.session()->busy());
++        QVERIFY(host.session()->go(3));
 +        QTRY_VERIFY(!host.session()->busy());
 +        auto *page = static_cast<ReadingPage *>(host.window()->findChild<QWidget *>("rrPage"));
 +        QVERIFY(page);
@@ -1548,7 +1569,7 @@ index d49d638d..4fc6530e 100644
      void appearanceTeardownStopsPanelCallbacks_data()
      {
          QTest::addColumn<QString>("buttonName");
-@@ -7572,6 +7633,78 @@ private slots:
+@@ -7572,6 +7654,78 @@ private slots:
      }
  
      // Uses the real reading clock and Settings checklist to hide session text without stopping time collection.
@@ -1627,7 +1648,7 @@ index d49d638d..4fc6530e 100644
      void readingTimeStatsVisibility_data()
      {
          QTest::addColumn<bool>("hidden");
-@@ -7710,7 +7843,7 @@ private slots:
+@@ -7710,7 +7864,7 @@ private slots:
          QCOMPARE(host.book()->sessionReadingMilliseconds(), qint64(12 * 60000));
      }
  
@@ -1636,7 +1657,7 @@ index d49d638d..4fc6530e 100644
      void readingTimeStatus_data()
      {
          QTest::addColumn<bool>("dark");
-@@ -7804,15 +7937,18 @@ private slots:
+@@ -7804,15 +7958,18 @@ private slots:
                      QVERIFY(session->x() >= clock->geometry().right() + 1);
                      QVERIFY(session->geometry().right() < right->x());
                  }
@@ -1664,7 +1685,7 @@ index d49d638d..4fc6530e 100644
                  if (radios == 3) {
                      QCOMPARE(bluetooth->geometry(), bluetoothBounds);
                      QCOMPARE(wifi->geometry(), wifiBounds);
-@@ -7848,12 +7984,14 @@ private slots:
+@@ -7848,12 +8005,14 @@ private slots:
          QVERIFY(QMetaObject::invokeMethod(timer, "timeout", Qt::DirectConnection));
          QCOMPARE(clock->text(), clockText);
          QCOMPARE(clock->width(), clock->sizeHint().width());

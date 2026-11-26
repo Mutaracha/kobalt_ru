@@ -40,7 +40,7 @@
       "id": "040-reader-controls-settings",
       "path": "platforms/patch-series/patches/040-reader-controls-settings.patch",
       "status": "ready",
-      "sha256": "df2d82aa043f1637cec4a5280e7954e5fe773267b9671ded56ebe32e2f4a5da2",
+      "sha256": "3e24c138b7b6953169e204cb5d338aa4ba904cd5fef32badc46e344132b509a4",
       "scope": "Final reader window/host wiring, swipe/toolbar/settings/menu-status integration and tests.",
       "validation": "R07: table-driven dependent feature-option resets; exhaustive 1024 flag combinations x 3 menu modes compared to frozen old rules. CI/device pending."
     },

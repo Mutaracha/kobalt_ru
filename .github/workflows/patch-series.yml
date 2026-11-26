@@ -48,6 +48,17 @@ jobs:
           git fetch --no-tags https://github.com/nicoverbruggen/kobalt.git 1796a32559dbb2912bd565990d1c7a0ca7ac4e52
           python3 platforms/patch-series/package.py prepare "$PWD" "$PWD/build/prepared-prefix"
           cmake -DROOT="$PWD/build/prepared-prefix" -P platforms/control-beta10/validate.cmake
+      - name: Prepare reported FB2 preview source
+        if: matrix.sdk == 'linux'
+        run: |
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          import zipfile
+          with zipfile.ZipFile('test & diagnostic/FB2-034-test-inputs.zip') as z:
+              out = Path('build/prepared-prefix/build/preview-input.fb2')
+              out.parent.mkdir(parents=True, exist_ok=True)
+              out.write_bytes(z.read('034-2-ACCURATE.fb2'))
+          PYCODE
       - name: Compile complete ordered series (hardware unverified)
         env:
           SDK: ${{ matrix.sdk }}
@@ -70,7 +81,7 @@ jobs:
                   QT_QPA_PLATFORM=offscreen "/work/build/desktop-linux/kobalt-$test-tests"
                 done
                 QT_QPA_PLATFORM=offscreen /work/build/desktop-linux/kobalt-ru-control-ui-tests en
-                if QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^lifecycle\.(fb2ComicsPreviewRoundTrip|readingMenuStatusToggle|readingTimeStatsVisibility|readingTimeStatus|sleepLetterPreservesLiteralPlaceholders)$" > /tmp/menu-tests.log 2>&1; then
+                if KOBALT_PREVIEW_REPLAY_SOURCE=/work/build/preview-input.fb2 QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^lifecycle\.(fb2ComicsPreviewRoundTrip|readingMenuStatusToggle|readingTimeStatsVisibility|readingTimeStatus|sleepLetterPreservesLiteralPlaceholders)$" > /tmp/menu-tests.log 2>&1; then
                   cat /tmp/menu-tests.log
                 else
                   cat /tmp/menu-tests.log
