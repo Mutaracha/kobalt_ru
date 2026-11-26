@@ -4327,8 +4327,8 @@
     },
     "src/engine/blaze/adapter/engine_document.cpp": {
       "mode": "100644",
-      "sha256": "b78ab81da932e9a4adb222388233bea2446fe9b565a54ea1dbd1e0ab3ae68bcc",
-      "size": 104702
+      "size": 105639,
+      "sha256": "4b0914270534fd7ab5929d1471b3d87f45d41eee7487f807be8b0bf22ab9bb12"
     },
     "src/engine/blaze/adapter/engine_document.h": {
       "mode": "100644",
@@ -8107,6 +8107,20 @@
           "mode": "100644",
           "size": 695601,
           "sha256": "8684db17fb57932a156fd94f4bfffafcb446eac4349492f94648289a054c77eb"
+        }
+      },
+      "basis": "Targeted post-R09 FB2 fixes/regressions: zero-fraction restart preserves startup prefix; investigate comics preview round-trip.",
+      "review": "doc/reports/patch-series/068-preview-and-hybrid-device-findings.md"
+    },
+    {
+      "paths": [
+        "src/engine/blaze/adapter/engine_document.cpp"
+      ],
+      "previous": {
+        "src/engine/blaze/adapter/engine_document.cpp": {
+          "mode": "100644",
+          "sha256": "b78ab81da932e9a4adb222388233bea2446fe9b565a54ea1dbd1e0ab3ae68bcc",
+          "size": 104702
         }
       },
       "basis": "Targeted post-R09 FB2 fixes/regressions: zero-fraction restart preserves startup prefix; investigate comics preview round-trip.",

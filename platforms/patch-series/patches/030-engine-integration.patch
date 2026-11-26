@@ -299,7 +299,7 @@ index 00000000..f2907e5e
 +}
 +} // namespace kobalt
 diff --git a/src/engine/blaze/adapter/engine_document.cpp b/src/engine/blaze/adapter/engine_document.cpp
-index bb48c5c6..d23f58e3 100644
+index bb48c5c6..bfe8fcce 100644
 --- a/src/engine/blaze/adapter/engine_document.cpp
 +++ b/src/engine/blaze/adapter/engine_document.cpp
 @@ -1,3 +1,7 @@
@@ -947,7 +947,37 @@ index bb48c5c6..d23f58e3 100644
          return image(current);
      const int pageIndex = engine_->getBookmarkPage(anchor);
      if (pageIndex < 0 || pageIndex >= list->length()
-@@ -1908,6 +1725,13 @@ QImage EngineDocument::image(int pageNumber)
+@@ -1863,6 +1680,11 @@ QImage EngineDocument::imageFromAnchor(bool stayInChapter)
+     }
+     // Stop after the last whole line, the same way that a page break does.
+     int height = qMin(screen, chapterLimits.second - start);
++    // A chapter boundary can precede the restored text anchor after a reflow.
++    // Do not lend a non-positive page to the renderer; the ordinary current
++    // frame uses the same new settings and already contains the anchor.
++    if (height <= 0)
++        return image(current);
+     const auto last = document->createXPointer(lvPoint(0, start + height - 1),
+                                                PT_DIR_SCAN_BACKWARD_LOGICAL_FIRST);
+     lvRect box;
+@@ -1887,6 +1709,17 @@ QImage EngineDocument::imageFromAnchor(bool stayInChapter)
+     if (!kept.isNull())
+         cache_.insert(pageIndex, kept);
+     damage_ = keptDamage;
++    // Reflowing an FB2 draft out of comics can leave the anchored crop empty
++    // even though its ordinary page contains text. Never replace that valid
++    // current frame with an empty crop. This is a fresh frame of this draft,
++    // not a saved picture from the previous mode/viewport. Image-only pages
++    // and genuinely empty reading pages retain their existing behavior.
++    if (result.isNull() || (pageNeedsTextSample(result)
++                           && pageContent(result).images.rectangles.isEmpty())) {
++        const auto frame = image(current);
++        if (!frame.isNull() && !pageNeedsTextSample(frame))
++            return frame;
++    }
+     return result;
+ }
+ 
+@@ -1908,6 +1741,13 @@ QImage EngineDocument::image(int pageNumber)
      if (result.isNull())
          return {};
      PageDrawBuffer buffer(result, darkMode_, true, normalizeTextColors_, &imageInversion_);
@@ -961,7 +991,7 @@ index bb48c5c6..d23f58e3 100644
      if (columns_ == 1) {
          engine_->drawColumn(buffer, pageNumber, 0);
      } else {
-@@ -1938,6 +1762,8 @@ QImage EngineDocument::image(int pageNumber)
+@@ -1938,6 +1778,8 @@ QImage EngineDocument::image(int pageNumber)
                  buffer.imageRegions.append(region.translated(x, 0));
          }
      }
@@ -970,7 +1000,7 @@ index bb48c5c6..d23f58e3 100644
      // CREngine composites into 0x00RRGGBB. Qt's opaque RGB32 contract requires
      // 0xffRRGGBB, including when a painter uses this image as a source.
      bool hasColor = false;
-@@ -2127,6 +1953,10 @@ quint64 EngineDocument::layoutSignature() const
+@@ -2127,6 +1969,10 @@ quint64 EngineDocument::layoutSignature() const
      mix(quint64(quintptr(engine_->getDocument())));
      mix(engine_->getDocumentRenderingHash(true));
      mix(columns_);
@@ -981,7 +1011,7 @@ index bb48c5c6..d23f58e3 100644
      mix(columns_ > 1 && hideNonlinearFragments_);
      mix(columns_ > 1 && chapterStartsSpread_);
      mix(verticalSpacing_ == "center" ? 2 : verticalSpacing_ == "expand" ? 1 : 0);
-@@ -2457,7 +2287,7 @@ PageInfo EngineDocument::pageInfo() const
+@@ -2457,7 +2303,7 @@ PageInfo EngineDocument::pageInfo() const
      if (!engine_ || total <= 0)
          return info;
      const LayoutGeneration generation{ 0, layoutSignature() };
@@ -990,7 +1020,7 @@ index bb48c5c6..d23f58e3 100644
          // The window can start or end inside a contents entry. Its page
          // indexes describe neither the entire chapter nor the entire book.
          info.bookPage = info.bookPages = Query<int>::pending(generation);
-@@ -2516,6 +2346,8 @@ QString EngineDocument::textFontFace() const
+@@ -2516,6 +2362,8 @@ QString EngineDocument::textFontFace() const
  
  int EngineDocument::embeddedFontCount() const
  {
@@ -999,7 +1029,7 @@ index bb48c5c6..d23f58e3 100644
      if (source_ && source_->embeddedFonts >= 0) {
          return source_->embeddedFonts;
      }
-@@ -2580,7 +2412,8 @@ QJsonObject EngineDocument::settingsState() const
+@@ -2580,7 +2428,8 @@ QJsonObject EngineDocument::settingsState() const
                { "reduce_chapter_spacing", reduceChapterSpacing_ },
                { "vertical_justification", verticalSpacing_ },
                { "vertical_spacing_scope", verticalSpacingScope_ },

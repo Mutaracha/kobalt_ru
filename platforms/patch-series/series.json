@@ -24,7 +24,7 @@
       "id": "030-engine-integration",
       "path": "platforms/patch-series/patches/030-engine-integration.patch",
       "status": "ready",
-      "sha256": "3b7a6cc9a31b4624935616f90a04d50df61bd6e08d2f057a043536b9f30dd3b8",
+      "sha256": "dc86ea8957cda76931f10e2c5b5ecaaa5acacf6dcfa96dc38cbcb325e54b1780",
       "scope": "Final FB2/comics engine and rendering/cache/font identity integration, engine tests; no runtime changes.",
       "validation": "CI45692070662 on f0df8c4e: full seven-layer export/equivalence, selected native regressions, archived FB2 replay and Qt5 package PASS; runtime bytes/modes match 5b45f2c7."
     },
