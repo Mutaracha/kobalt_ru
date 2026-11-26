@@ -1,6 +1,6 @@
 # R07 — таблица сброса зависимых параметров скрытых функций
 
-Статус: implemented; local series PASS; CI/device pending.
+Статус: implemented; local series/native CI/Qt5/package PASS; device pending.
 R06 на b390fefa пользователь проверил и разрешил продолжать. База R07 — 06a713f0
 (runtime b390fefa). Приёмка R06 не распространяется автоматически на R07.
 
@@ -43,3 +43,14 @@ regressions PASS. Qt/cmake SDK отсутствует локально; C++ case
 Не нужно скрывать все функции разом: как и прежде, скрытие навигации/статистики/
 аннотаций/слов сбрасывает некоторые их зависимые параметры. Эту матрицу проверяет
 native regression; ради неё не требуется менять пользовательский профиль на устройстве.
+
+## CI и пакет
+
+Runtime source: `c0ebc0fe5f8ce8125e71b66437c68aecc62720e1`.
+[CI45822684939](https://github.com/Mutaracha/kobalt_ru/actions/runs/45822684939):
+все 3 jobs PASS: series/export/inventory, selected native/Linux (включая 3072
+feature-normalization comparisons), Qt5/package и archived FB2 replay.
+Новые C++ cases выполнены CI, не локальным SDK.
+
+[Qt5 / Libra2 пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45822684939/artifacts/15119725504):
+`Kobalt-ru-beta10-series-qt5`, 45 435 814 bytes. Приёмка устройства R07 открыта.

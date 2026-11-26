@@ -3,19 +3,18 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010/020/030/034/040/050/060 после консолидации; все патчи применяются вместе.
-Последний CI-проверенный бинарник: **b390fefa**, [CI45820117357](https://github.com/Mutaracha/kobalt_ru/actions/runs/45820117357),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45820117357/artifacts/15118510937).
+Последний CI-проверенный бинарник: **c0ebc0fe**, [CI45822684939](https://github.com/Mutaracha/kobalt_ru/actions/runs/45822684939),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45822684939/artifacts/15119725504).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-R01–R03 приняты; пользователь подтвердил проверку шрифтов и строки статуса на R05.
-Полный custom-preset/EN-RU чек-лист R04 не заявляется. R06 принят пользователем; новый R07 ещё не принят.
+R06 принят пользователем; аппаратная приёмка нового R07 открыта.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R07 — нормализация скрытых функций: implemented, CI/device pending.** Шесть
+**R07 — нормализация скрытых функций: implemented, CI PASS, device pending.** Шесть
 независимых reset-правил сведены в таблицу без изменения flags/schema/defaults.
 Добавлен frozen reference: 1024 комбинации × 3 меню, malformed inputs, идемпотентность.
-15 локальных Python tests PASS. Следующий шаг: CI и [чек-лист R07](doc/reports/patch-series/064-feature-normalization-refactor.md).
+15 локальных Python tests PASS; CI45822684939 все 3 jobs PASS. Следующий шаг: [чек-лист R07](doc/reports/patch-series/064-feature-normalization-refactor.md).
 
 **R06 — done, CI PASS, device accepted.** Пользователь проверил b390fefa и разрешил
 продолжать. [Область](doc/reports/patch-series/063-font-coverage-refactor.md).
