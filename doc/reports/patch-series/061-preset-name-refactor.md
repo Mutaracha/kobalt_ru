@@ -1,6 +1,6 @@
 # R04 — граница строкового слоя для имён встроенных стилей
 
-Статус: implemented; local series PASS; CI/device pending.
+Статус: implemented; local series/native CI/Qt5/package PASS; device pending.
 R03 на 2ffacc74 пользователь проверил и разрешил продолжать. Его приёмка не
 распространяется автоматически на этот этап. База — e1282aab (runtime 2ffacc74).
 
@@ -49,3 +49,15 @@ Reference-tree содержит прежние хеши этих файлов к
 
 Не требуется сбрасывать стили, профиль или создавать новый пользовательский стиль.
 Кэш, Hybrid, Letter, файлы шрифтов и touch/button navigation не менялись.
+
+## CI и пакет
+
+Runtime source: `2258d58bb6eb95bac18d4afbbee31db879d4acd5`.
+[CI45812629293](https://github.com/Mutaracha/kobalt_ru/actions/runs/45812629293):
+все 3 jobs PASS: series/export/inventory, selected native/Linux (в том числе
+новые saved-name cases в fork-presentation), Qt5/package и archived FB2 replay.
+C++ cases выполнены CI; локальный SDK запуск не заявляется.
+
+[Qt5 / Libra2 пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45812629293/artifacts/15113673764):
+`Kobalt-ru-beta10-series-qt5`, 45 431 043 bytes. Включает принятые R01–R03.
+Приёмка устройства R04 остаётся открытой.

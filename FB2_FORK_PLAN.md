@@ -3,19 +3,19 @@
 Единственная активная очередь. История сборок не является очередью задач.
 База: upstream `1796a32559dbb2912bd565990d1c7a0ca7ac4e52`, полная ordered серия
 010/020/030/034/040/050/060 после консолидации; все патчи применяются вместе.
-Последний CI-проверенный бинарник: **2ffacc74**, [CI45810235128](https://github.com/Mutaracha/kobalt_ru/actions/runs/45810235128),
-[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45810235128/artifacts/15113890616).
+Последний CI-проверенный бинарник: **2258d58b**, [CI45812629293](https://github.com/Mutaracha/kobalt_ru/actions/runs/45812629293),
+[пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45812629293/artifacts/15113673764).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-R01–R03 приняты пользователем на устройстве; аппаратная приёмка нового R04 открыта.
+R01–R03 приняты пользователем на устройстве; аппаратная приёмка R04 открыта.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R04 — имена встроенных стилей: implemented, CI/device pending.** Потребитель
+**R04 — имена встроенных стилей: implemented, CI PASS, device pending.** Потребитель
 больше не обращается к strings::detail: точное EN/RU распознавание инкапсулировано
 в строковом слое. Поведение и запись preset не меняются. Добавлены независимые
-native cases, 15 локальных Python tests PASS. Следующий шаг: CI/native/Qt5/package,
-затем [чек-лист R04](doc/reports/patch-series/061-preset-name-refactor.md).
+native cases, 15 локальных Python tests PASS; CI45812629293 все 3 jobs PASS.
+Следующий шаг: [чек-лист R04](doc/reports/patch-series/061-preset-name-refactor.md).
 
 **R03 — done, CI PASS, device accepted.** Пользователь проверил 2ffacc74 и разрешил
 продолжать. [Область](doc/reports/patch-series/060-letter-text-refactor.md).
