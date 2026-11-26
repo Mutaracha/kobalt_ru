@@ -1,6 +1,6 @@
 # R07 — таблица сброса зависимых параметров скрытых функций
 
-Статус: implemented; local series/native CI/Qt5/package PASS; device pending.
+Статус: implemented; local series/native CI/Qt5/package PASS; device accepted.
 R06 на b390fefa пользователь проверил и разрешил продолжать. База R07 — 06a713f0
 (runtime b390fefa). Приёмка R06 не распространяется автоматически на R07.
 
@@ -54,3 +54,9 @@ feature-normalization comparisons), Qt5/package и archived FB2 replay.
 
 [Qt5 / Libra2 пакет](https://github.com/Mutaracha/kobalt_ru/actions/runs/45822684939/artifacts/15119725504):
 `Kobalt-ru-beta10-series-qt5`, 45 435 814 bytes. Приёмка устройства R07 открыта.
+
+## Приёмка устройства
+
+Пользователь сообщил «эта сборка проверена»: R07 на c0ebc0fe принят
+в пределах предложенного чек-листа. Согласован остаток цикла из трёх блоков:
+R08 UI/settings, R09 данные чтения, R10 lifecycle с оценкой риска.

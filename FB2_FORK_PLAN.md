@@ -6,15 +6,23 @@
 Последний CI-проверенный бинарник: **c0ebc0fe**, [CI45822684939](https://github.com/Mutaracha/kobalt_ru/actions/runs/45822684939),
 [пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45822684939/artifacts/15119725504).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-R06 принят пользователем; аппаратная приёмка нового R07 открыта.
+R07 принят пользователем; новый R08 ещё не принят на устройстве.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R07 — нормализация скрытых функций: implemented, CI PASS, device pending.** Шесть
-независимых reset-правил сведены в таблицу без изменения flags/schema/defaults.
-Добавлен frozen reference: 1024 комбинации × 3 меню, malformed inputs, идемпотентность.
-15 локальных Python tests PASS; CI45822684939 все 3 jobs PASS. Следующий шаг: [чек-лист R07](doc/reports/patch-series/064-feature-normalization-refactor.md).
+**R08 — UI/settings: implemented, CI/device pending.** Одинаковые lifecycle
+операции toolbar actions сведены к общему пути; особые Settings/Bookmarks и
+warning restore sequences сохранены. Добавлен real Navigation lifecycle regression.
+15 локальных Python tests PASS. Следующий шаг: CI и [чек-лист R08](doc/reports/patch-series/065-ui-settings-refactor.md).
+
+**Остаток цикла согласован:** R08 UI/settings → R09 представление данных чтения →
+R10 lifecycle книги (с оценкой риска/возможным defer). Не дробить каждую мелкую
+функцию на отдельную сборку. Кэш/Hybrid algorithms и beta11 font-cache integration
+не входят в эти блоки; не переписывать код без обоснованной пользы.
+
+**R07 — done, CI PASS, device accepted.** Пользователь подтвердил c0ebc0fe.
+[Область](doc/reports/patch-series/064-feature-normalization-refactor.md).
 
 **R06 — done, CI PASS, device accepted.** Пользователь проверил b390fefa и разрешил
 продолжать. [Область](doc/reports/patch-series/063-font-coverage-refactor.md).

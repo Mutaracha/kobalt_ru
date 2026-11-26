@@ -62,6 +62,10 @@ R06 отделяет tri-state cmap probe от политики RU picker/cache 
 R07 сводит независимые reset options скрытых функций к таблице; frozen reference
 проверяет все 1024 комбинации flags × 3 menu modes. [Область](../../doc/reports/patch-series/064-feature-normalization-refactor.md).
 
+R08 объединяет lifecycle style/restore действий Navigation, сохраняя особые ветви.
+Integration regression покрывает реальные вход/выход панели и optional actions.
+[Блок UI/settings и чек-лист](../../doc/reports/patch-series/065-ui-settings-refactor.md).
+
 ## Проверка эквивалентности
 
 Эталон — полная прежняя серия runtime `5b45f2c74857180f0689f80b5e48a9134f58bec7`.

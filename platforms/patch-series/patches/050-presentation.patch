@@ -568,7 +568,7 @@ index 08af4818..d89b55d3 100644
          count->setTextFormat(Qt::PlainText);
 diff --git a/src/app/reader/views/fork_navigation.cpp b/src/app/reader/views/fork_navigation.cpp
 new file mode 100644
-index 00000000..0c7ab986
+index 00000000..a6d4c78a
 --- /dev/null
 +++ b/src/app/reader/views/fork_navigation.cpp
 @@ -0,0 +1,63 @@
@@ -597,7 +597,7 @@ index 00000000..0c7ab986
 +    return ui::interfaceInkBounds(sample, ui::interfaceFont(pixels));
 +}
 +
-+void forkui::styleToolbarAction(QPushButton *action, QString &savedStyle,
++void forkui::styleToolbarAction(QWidget *action, QString &savedStyle,
 +                                 ui::ButtonPaintMode &savedPaint)
 +{
 +    if (!action)
@@ -611,7 +611,7 @@ index 00000000..0c7ab986
 +    }
 +}
 +
-+void forkui::restoreToolbarAction(QPushButton *action, const QString &savedStyle,
++void forkui::restoreToolbarAction(QWidget *action, const QString &savedStyle,
 +                                   ui::ButtonPaintMode savedPaint)
 +{
 +    if (!action)
@@ -637,7 +637,7 @@ index 00000000..0c7ab986
 +} // namespace kobalt::reader
 diff --git a/src/app/reader/views/fork_navigation.h b/src/app/reader/views/fork_navigation.h
 new file mode 100644
-index 00000000..6ceeb170
+index 00000000..738a13ed
 --- /dev/null
 +++ b/src/app/reader/views/fork_navigation.h
 @@ -0,0 +1,12 @@
@@ -645,13 +645,13 @@ index 00000000..6ceeb170
 +#include "ui/controls/icons.h"
 +#include <QRect>
 +#include <QString>
-+class QPushButton;
++class QWidget;
 +namespace kobalt::reader::forkui {
 +QRect tabInkBounds(int pixels);
 +// A navigation view temporarily borrows reader-owned toolbar buttons.
 +// Preserve each button's style and paint mode; its normal size is fixed by metrics.
-+void styleToolbarAction(QPushButton *action, QString &savedStyle, ui::ButtonPaintMode &savedPaint);
-+void restoreToolbarAction(QPushButton *action, const QString &savedStyle, ui::ButtonPaintMode savedPaint);
++void styleToolbarAction(QWidget *action, QString &savedStyle, ui::ButtonPaintMode &savedPaint);
++void restoreToolbarAction(QWidget *action, const QString &savedStyle, ui::ButtonPaintMode savedPaint);
 +} // namespace kobalt::reader::forkui
 diff --git a/src/app/reader/views/image_viewer.cpp b/src/app/reader/views/image_viewer.cpp
 index c4612bac..cbebbaf0 100644
@@ -667,7 +667,7 @@ index c4612bac..cbebbaf0 100644
      row->addSpacing(chrome::cellWidth);
      row->addWidget(title, 1);
 diff --git a/src/app/reader/views/navigation.cpp b/src/app/reader/views/navigation.cpp
-index 0d53abd0..44016c51 100644
+index 0d53abd0..5b1f602e 100644
 --- a/src/app/reader/views/navigation.cpp
 +++ b/src/app/reader/views/navigation.cpp
 @@ -1,3 +1,4 @@
@@ -701,23 +701,97 @@ index 0d53abd0..44016c51 100644
  {
      zenViewBase = new ZenViewBase(parent);
      zenViewBase->setObjectName("rrZenViewBase");
-@@ -863,6 +867,7 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
-             button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
-         }
-     }
+@@ -839,48 +843,13 @@ Navigation::Navigation(QWidget *parent, const ToolbarComposition &controls)
+     zenStatsPanel = new ZenStatsPanel(toolbar);
+     zenStatsPanel->hide();
+     sessionStyle = session->styleSheet();
+-    settingsStyle = settings->styleSheet();
+-    bookmarksStyle = bookmarks->styleSheet();
+     ui::readerStyle(session, ui::styles::font(chrome::countText) + "font-style:italic;");
+-    ui::readerStyle(settings, "QPushButton{border:none;padding:0;}");
+-    settings->setFixedSize(chrome::cellWidth, chrome::actionHeight);
+-    if (auto *button = dynamic_cast<ui::Button *>(settings)) {
+-        settingsPaint = button->paintMode();
+-        button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
+-    }
+-    ui::readerStyle(bookmarks, "QPushButton{border:none;padding:0;}");
+-    bookmarks->setFixedSize(chrome::cellWidth, chrome::actionHeight);
+-    if (auto *button = dynamic_cast<ui::Button *>(bookmarks)) {
+-        bookmarksPaint = button->paintMode();
+-        button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
+-    }
+-    if (search) {
+-        searchStyle = search->styleSheet();
+-        ui::readerStyle(search, "QPushButton{border:none;padding:0;}");
+-        search->setFixedSize(chrome::cellWidth, chrome::actionHeight);
+-        if (auto *button = dynamic_cast<ui::Button *>(search)) {
+-            searchPaint = button->paintMode();
+-            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
+-        }
+-    }
+-    if (sync) {
+-        syncStyle = sync->styleSheet();
+-        ui::readerStyle(sync, "QPushButton{border:none;padding:0;}");
+-        sync->setFixedSize(chrome::cellWidth, chrome::actionHeight);
+-        if (auto *button = dynamic_cast<ui::Button *>(sync)) {
+-            syncPaint = button->paintMode();
+-            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
+-        }
+-    }
+-    if (annotate) {
+-        annotateStyle = annotate->styleSheet();
+-        ui::readerStyle(annotate, "QPushButton{border:none;padding:0;}");
+-        annotate->setFixedSize(chrome::cellWidth, chrome::actionHeight);
+-        if (auto *button = dynamic_cast<ui::Button *>(annotate)) {
+-            annotatePaint = button->paintMode();
+-            button->setPaintMode(ui::ButtonPaintMode::ToolbarCell);
+-        }
+-    }
++    forkui::styleToolbarAction(settings, settingsStyle, settingsPaint);
++    forkui::styleToolbarAction(bookmarks, bookmarksStyle, bookmarksPaint);
++    forkui::styleToolbarAction(search, searchStyle, searchPaint);
 +    styleForkToolbarActions();
-     if (sync) {
-         syncStyle = sync->styleSheet();
-         ui::readerStyle(sync, "QPushButton{border:none;padding:0;}");
-@@ -942,6 +947,7 @@ Navigation::~Navigation()
-             button->setPaintMode(searchPaint);
-         }
++    forkui::styleToolbarAction(sync, syncStyle, syncPaint);
++    forkui::styleToolbarAction(annotate, annotateStyle, annotatePaint);
+     if (formattingWarning) {
+         formattingWarningStyle = formattingWarning->styleSheet();
+         formattingWarning->setFixedSize(chrome::cellWidth, chrome::actionHeight);
+@@ -926,30 +895,11 @@ Navigation::~Navigation()
+         formattingWarning->setFixedSize(ui::metrics::control::toolbarButtonSize,
+                                         ui::metrics::control::toolbarButtonSize);
      }
+-    if (annotate) {
+-        annotate->setStyleSheet(annotateStyle);
+-        annotate->setFixedSize(ui::metrics::control::toolbarButtonSize,
+-                               ui::metrics::control::toolbarButtonSize);
+-        if (auto *button = dynamic_cast<ui::Button *>(annotate)) {
+-            button->setPaintMode(annotatePaint);
+-        }
+-    }
+-    if (search) {
+-        search->setStyleSheet(searchStyle);
+-        search->setFixedSize(ui::metrics::control::toolbarButtonSize,
+-                             ui::metrics::control::toolbarButtonSize);
+-        if (auto *button = dynamic_cast<ui::Button *>(search)) {
+-            button->setPaintMode(searchPaint);
+-        }
+-    }
++    forkui::restoreToolbarAction(annotate, annotateStyle, annotatePaint);
++    forkui::restoreToolbarAction(search, searchStyle, searchPaint);
 +    restoreForkToolbarActions();
      session->setStyleSheet(sessionStyle);
-     if (sync) {
-         sync->setStyleSheet(syncStyle);
-@@ -976,6 +982,8 @@ void Navigation::stackPanel(QWidget *panel) const
+-    if (sync) {
+-        sync->setStyleSheet(syncStyle);
+-        sync->setFixedSize(ui::metrics::control::toolbarButtonSize,
+-                           ui::metrics::control::toolbarButtonSize);
+-        if (auto *button = dynamic_cast<ui::Button *>(sync))
+-            button->setPaintMode(syncPaint);
+-    }
++    forkui::restoreToolbarAction(sync, syncStyle, syncPaint);
+     settings->setStyleSheet(settingsStyle);
+     bookmarks->setStyleSheet(bookmarksStyle);
+     settings->setFixedSize(ui::metrics::control::toolbarButtonSize,
+@@ -976,6 +926,8 @@ void Navigation::stackPanel(QWidget *panel) const
  void Navigation::placeZenToolbar(QSize size, const QVector<QWidget *> &actions,
                                   const NavigationState &state)
  {
@@ -726,7 +800,7 @@ index 0d53abd0..44016c51 100644
      // The back arrow, reading stats and Settings in a centered group, below a
      // status line with the Zen mark, the clock and a low battery. The other
      // actions are tabs in the bottom group, or hidden. Like the bottom group,
-@@ -1097,6 +1105,7 @@ void Navigation::placeToolbar(QSize size, const QVector<QWidget *> &actions)
+@@ -1097,6 +1049,7 @@ void Navigation::placeToolbar(QSize size, const QVector<QWidget *> &actions)
      }
      clock->setVisible(statusVisible);
      updateBatteryVisibility();
@@ -734,7 +808,7 @@ index 0d53abd0..44016c51 100644
      settings->setFixedWidth(chrome::cellWidth);
      int rightActions = 0;
      for (auto *action : actions)
-@@ -1181,7 +1190,7 @@ void Navigation::update(QSize size, const NavigationState &state)
+@@ -1181,7 +1134,7 @@ void Navigation::update(QSize size, const NavigationState &state)
      rules->show();
      rules->raise();
      const QVector<QWidget *> actions{
@@ -743,7 +817,7 @@ index 0d53abd0..44016c51 100644
      };
      if (zenTop)
          placeZenToolbar(size, actions, state);
-@@ -1321,10 +1330,19 @@ void Navigation::updateSessionGeometry()
+@@ -1321,10 +1274,19 @@ void Navigation::updateSessionGeometry()
      if (wifi && wifi->active())
          right = qMin(right, wifi->x());
      right = qMax(0, right - int(chrome::inset));
@@ -2081,13 +2155,17 @@ index c563ea02..4c1b15f5 100644
      QJsonObject startedOperation, endedOperation;
 diff --git a/tests/model/fork_presentation.cpp b/tests/model/fork_presentation.cpp
 new file mode 100644
-index 00000000..83d9d477
+index 00000000..bbc45d32
 --- /dev/null
 +++ b/tests/model/fork_presentation.cpp
-@@ -0,0 +1,317 @@
+@@ -0,0 +1,385 @@
 +#include "check.h"
 +#include "app/reader/views/sleep_letter_text.h"
 +#include "app/reader/views/fork_navigation.h"
++#include "app/reader/views/navigation.h"
++#include "ui/controls/panels.h"
++#include <QVBoxLayout>
++#include <QLabel>
 +#include "ui/controls/buttons.h"
 +#include "ui/style/metrics.h"
 +#include "reader_inputs.h"
@@ -2211,6 +2289,69 @@ index 00000000..83d9d477
 +    strings::setLocale(strings::Locale::English);
 +}
 +
++void navigationActionLifecycle()
++{
++    // Full, absent and independently missing optional controls. Real Navigation
++    // construction/destruction, not just the extracted helper in isolation.
++    for (unsigned mask : {0u, 63u, 21u, 42u}) {
++        QWidget parent;
++        auto *panel = new ui::Panel(&parent);
++        auto *rows = new QVBoxLayout(panel);
++        auto *session = new QLabel(QStringLiteral("session"), panel);
++        const auto sessionStyle = QStringLiteral("QLabel{padding:3px;}");
++        session->setStyleSheet(sessionStyle);
++        reader::ToolbarComposition controls;
++        controls.panel = panel;
++        controls.rows = rows;
++        controls.session = session;
++        QVector<ui::Button *> actions;
++        QVector<QString> styles;
++        QVector<ui::ButtonPaintMode> paints;
++        QPushButton **slots[] = {&controls.settings, &controls.bookmarks, &controls.annotate,
++            &controls.search, &controls.sync, &controls.formattingWarning,
++            &controls.darkTheme, &controls.comics};
++        for (int index = 0; index < 8; ++index) {
++            if (index >= 2 && !(mask & (1u << (index - 2))))
++                continue;
++            auto *button = new ui::Button(panel);
++            *slots[index] = button;
++            const auto style = QStringLiteral("QPushButton{padding:%1px;}").arg(index + 1);
++            const auto paint = index % 2 ? ui::ButtonPaintMode::ToolbarSquare
++                                        : ui::ButtonPaintMode::OutlinedAction;
++            button->setStyleSheet(style);
++            button->setPaintMode(paint);
++            button->setCheckable(true);
++            button->setChecked(true);
++            button->setEnabled(false);
++            actions.append(button);
++            styles.append(style);
++            paints.append(paint);
++        }
++        for (int cycle = 0; cycle < 3; ++cycle) {
++            {
++                reader::Navigation navigation(&parent, controls);
++                require(!rows->isEnabled(), "Navigation did not borrow toolbar layout");
++                for (auto *button : actions)
++                    require(button->paintMode() == ui::ButtonPaintMode::ToolbarCell
++                                    && button->size() == QSize(ui::metrics::chrome::cellWidth,
++                                                               ui::metrics::chrome::actionHeight),
++                            "Navigation action did not receive shared styling");
++            }
++            require(rows->isEnabled() && session->styleSheet() == sessionStyle,
++                    "Navigation did not restore layout/session style");
++            for (int index = 0; index < actions.size(); ++index) {
++                const auto *button = actions[index];
++                require(button->styleSheet() == styles[index] && button->paintMode() == paints[index]
++                                && button->size() == QSize(ui::metrics::control::toolbarButtonSize,
++                                                           ui::metrics::control::toolbarButtonSize),
++                        "Navigation restored another action's style or paint mode");
++                require(button->isChecked() && !button->isEnabled(),
++                        "Navigation changed an action's checked/enabled state");
++            }
++        }
++    }
++}
++
 +void toolbarActionRoundTrip()
 +{
 +    using namespace reader::forkui;
@@ -2266,6 +2407,7 @@ index 00000000..83d9d477
 +    letterTemplateSubstitution();
 +    savedPresetNames();
 +    require(ui::initializeInterfaceFonts(test::readerAssets()), "presentation fonts unavailable");
++    navigationActionLifecycle();
 +    QImage letterSignatures[2][2];
 +    for (auto locale : {strings::Locale::English, strings::Locale::Russian}) {
 +        strings::setLocale(locale);

@@ -4032,13 +4032,13 @@
     },
     "src/app/reader/views/fork_navigation.cpp": {
       "mode": "100644",
-      "size": 2346,
-      "sha256": "36d30632aed07953b44069faf6845f177c91d1b100c830dde671183daa374514"
+      "size": 2338,
+      "sha256": "aea0df0e7830cce6b5ba4d14696f656ceccb020ffab00405e7bbe4eb5d611f41"
     },
     "src/app/reader/views/fork_navigation.h": {
       "mode": "100644",
-      "size": 567,
-      "sha256": "05fe86382a9e9ff61514e429611d39acadfd2f416e7c8d6adb3a6c583ac332ad"
+      "size": 555,
+      "sha256": "254fad3441e5ea9f02fb627f9ff3073a506c9903254124add55e0e1205b40969"
     },
     "src/app/reader/views/image_viewer.cpp": {
       "mode": "100644",
@@ -4062,8 +4062,8 @@
     },
     "src/app/reader/views/navigation.cpp": {
       "mode": "100644",
-      "sha256": "b0799498ad674b35b8cb8ad4531969427af980964a728da9f4551c72c4c2250a",
-      "size": 56697
+      "size": 54334,
+      "sha256": "6a0193b391ecdae6781bf517ee642e6048b4ec7fd63896fe938eaa36009ecf45"
     },
     "src/app/reader/views/navigation.h": {
       "mode": "100644",
@@ -7112,8 +7112,8 @@
     },
     "tests/model/fork_presentation.cpp": {
       "mode": "100644",
-      "size": 18726,
-      "sha256": "342296374c2dd409d86afbfd372cc56315552d9c7c23d85c29c2a92dbd99eeea"
+      "size": 22166,
+      "sha256": "eaa843c49544a359cc450ea81633db7bc363f258d908749e45a5d9f587e11b7a"
     },
     "tests/model/header_footer.cpp": {
       "mode": "100644",
@@ -7951,6 +7951,38 @@
       },
       "basis": "R07: table-driven independent dependent-option resets; preserve view fallback and shared marks sort rules. Exhaustive native comparison added.",
       "review": "doc/reports/patch-series/064-feature-normalization-refactor.md"
+    },
+    {
+      "paths": [
+        "src/app/reader/views/navigation.cpp",
+        "src/app/reader/views/fork_navigation.cpp",
+        "src/app/reader/views/fork_navigation.h",
+        "tests/model/fork_presentation.cpp"
+      ],
+      "previous": {
+        "src/app/reader/views/navigation.cpp": {
+          "mode": "100644",
+          "sha256": "b0799498ad674b35b8cb8ad4531969427af980964a728da9f4551c72c4c2250a",
+          "size": 56697
+        },
+        "src/app/reader/views/fork_navigation.cpp": {
+          "mode": "100644",
+          "size": 2346,
+          "sha256": "36d30632aed07953b44069faf6845f177c91d1b100c830dde671183daa374514"
+        },
+        "src/app/reader/views/fork_navigation.h": {
+          "mode": "100644",
+          "size": 567,
+          "sha256": "05fe86382a9e9ff61514e429611d39acadfd2f416e7c8d6adb3a6c583ac332ad"
+        },
+        "tests/model/fork_presentation.cpp": {
+          "mode": "100644",
+          "size": 18726,
+          "sha256": "342296374c2dd409d86afbfd372cc56315552d9c7c23d85c29c2a92dbd99eeea"
+        }
+      },
+      "basis": "R08 UI/settings block: reuse exact action-style/restore operations; preserve mandatory-control and warning-specific restoration order. Real Navigation lifecycle cases added.",
+      "review": "doc/reports/patch-series/065-ui-settings-refactor.md"
     }
   ]
 }
