@@ -1,0 +1,2995 @@
+{
+  "schema": 1,
+  "status": "proposal-only-not-applied",
+  "sources": {
+    "beta9": "be47258850ffdc3295257475afdf8b8f6cb53176",
+    "beta10": "1796a32559dbb2912bd565990d1c7a0ca7ac4e52",
+    "current_branch": "arena/9e626d86-kobalt-ru",
+    "current_source": "2a27c23d58dce841b66d81e7e0e6a6dbacda872e",
+    "test_branch": "arena/83c6bb75-kobalt-ru",
+    "test_source": "8bd576f144069de7eac7a21fbbc79ce602486c93"
+  },
+  "summary": {
+    "english_beta9": 1632,
+    "english_beta10": 1808,
+    "added": 186,
+    "changed": 50,
+    "removed": 10,
+    "agreed_in_delta": 8,
+    "delta_proposals": 228,
+    "letter_followup": 5,
+    "changed_ru_proposals": 78
+  },
+  "rows": [
+    {
+      "key": "bookmarks.pin_title",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Pin Bookmark",
+      "current_ru": "Закрепить закладку",
+      "status": "proposed",
+      "proposed_ru": "Закрепить закладку",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "bookmarks.modify_title",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Modify Pinned Bookmark",
+      "current_ru": "Изменить закреплённую закладку",
+      "status": "proposed",
+      "proposed_ru": "Изменить закреплённую закладку",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "chapter_contents.additional_actions",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Additional actions",
+      "current_ru": "Дополнительные действия",
+      "status": "proposed",
+      "proposed_ru": "Дополнительные действия",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "chapter_contents.enter_printed_page",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Enter a page number from the print edition.",
+      "current_ru": "Введите номер страницы из печатного издания.",
+      "status": "proposed",
+      "proposed_ru": "Введите номер страницы печатного издания.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "chapter_contents.other_labels",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Other page labels",
+      "current_ru": "Другие обозначения страниц",
+      "status": "proposed",
+      "proposed_ru": "Другие обозначения страниц",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "chapter_contents.more",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "More navigation options",
+      "current_ru": "Другие способы навигации",
+      "status": "proposed",
+      "proposed_ru": "Другие способы перехода",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "chapter_contents.go_to_printed_page",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Go to printed page",
+      "current_ru": "Перейти к печатной странице",
+      "status": "proposed",
+      "proposed_ru": "К печатной странице",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "chapter_contents.no_printed_pages",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "This book doesn’t include printed page numbers.",
+      "current_ru": "В этой книге нет номеров печатных страниц.",
+      "status": "proposed",
+      "proposed_ru": "В книге не указаны номера страниц печатного издания.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "chapter_contents.view_landmarks",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "View book landmarks",
+      "current_ru": "Посмотреть ориентиры книги",
+      "status": "proposed",
+      "proposed_ru": "К основным разделам книги",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "chapter_contents.landmarks",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Landmarks",
+      "current_ru": "Ориентиры",
+      "status": "proposed",
+      "proposed_ru": "Основные разделы",
+      "changed_ru": true,
+      "note": "Навигационные ориентиры EPUB (обложка, начало текста и т. п.); не путать со списком глав."
+    },
+    {
+      "key": "chapter_contents.landmark_count",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Landmarks · %1",
+      "current_ru": "Ориентиры · %1",
+      "status": "proposed",
+      "proposed_ru": "Основные разделы · %1",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "chapter_contents.preview_image",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "View illustration for %1",
+      "current_ru": "Посмотреть иллюстрацию: %1",
+      "status": "proposed",
+      "proposed_ru": "Посмотреть иллюстрацию: %1",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "chapter_contents.illustrated_entry",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Illustrated entry %1",
+      "current_ru": "Пункт с иллюстрацией %1",
+      "status": "proposed",
+      "proposed_ru": "Пункт с иллюстрацией: %1",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "chapter_contents.printed_pages",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Printed pages",
+      "current_ru": "Печатные страницы",
+      "status": "proposed",
+      "proposed_ru": "Печатные страницы",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "chapter_contents.printed_count",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Printed pages · %1",
+      "current_ru": "Печатные страницы · %1",
+      "status": "proposed",
+      "proposed_ru": "Печатные страницы · %1",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "chapter_contents.mark_start",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Mark as start",
+      "current_ru": "Отметить как начало",
+      "status": "proposed",
+      "proposed_ru": "Отметить как начало",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "chapter_contents.mark_end",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Mark as end",
+      "current_ru": "Отметить как конец",
+      "status": "proposed",
+      "proposed_ru": "Отметить как конец",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "chapter_contents.reset_start",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Restore default start",
+      "current_ru": "Восстановить исходное начало",
+      "status": "proposed",
+      "proposed_ru": "Восстановить начало",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "chapter_contents.reset_end",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Restore default end",
+      "current_ru": "Восстановить исходный конец",
+      "status": "proposed",
+      "proposed_ru": "Восстановить конец",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "chapter_contents.start",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Start",
+      "current_ru": "Начало",
+      "status": "proposed",
+      "proposed_ru": "Начало",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "chapter_contents.end",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "End",
+      "current_ru": "Конец",
+      "status": "proposed",
+      "proposed_ru": "Конец",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "chapter_contents.both",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Start and end",
+      "current_ru": "Начало и конец",
+      "status": "proposed",
+      "proposed_ru": "Начало и конец",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "common.screen",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "screen",
+      "current_ru": "экран",
+      "status": "proposed",
+      "proposed_ru": "экран",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "common.screens",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "screens",
+      "current_ru": "экраны",
+      "status": "proposed",
+      "proposed_ru": "экраны",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "header_footer.header_off_hint",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Tap a footer slot to edit it. Turn on Header to edit its slots.",
+      "current_ru": "Нажмите на поле нижнего колонтитула, чтобы изменить его. Включите верхний колонтитул, чтобы изменить его поля.",
+      "status": "proposed",
+      "proposed_ru": "Нажмите на поле нижнего колонтитула, чтобы изменить его. Для настройки верхнего колонтитула сначала включите его.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "header_footer.footer_off_hint",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Tap a header slot to edit it. Turn on Footer to edit its slots.",
+      "current_ru": "Нажмите на поле верхнего колонтитула, чтобы изменить его. Включите нижний колонтитул, чтобы изменить его поля.",
+      "status": "proposed",
+      "proposed_ru": "Нажмите на поле верхнего колонтитула, чтобы изменить его. Для настройки нижнего колонтитула сначала включите его.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "header_footer.both_off_hint",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Turn on Header or Footer below, then tap a slot to edit it.",
+      "current_ru": "Включите верхний или нижний колонтитул ниже, затем нажмите на поле, чтобы изменить его.",
+      "status": "proposed",
+      "proposed_ru": "Включите верхний или нижний колонтитул, затем нажмите на нужное поле.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "header_footer.progress_bar_bottom",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Bottom",
+      "current_ru": "Снизу",
+      "status": "proposed",
+      "proposed_ru": "Снизу",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "header_footer.progress_bar_top",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Top",
+      "current_ru": "Сверху",
+      "status": "proposed",
+      "proposed_ru": "Сверху",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "header_footer.progress_ticks",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Chapter ticks",
+      "current_ru": "Метки глав",
+      "status": "proposed",
+      "proposed_ru": "Метки глав",
+      "changed_ru": false,
+      "note": "Строка upstream. Не означает возврата удалённых fork progress ticks в runtime."
+    },
+    {
+      "key": "header_footer.field.chapter_screen",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Screen in chapter",
+      "current_ru": "Экран в главе",
+      "status": "proposed",
+      "proposed_ru": "Экран в главе",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "header_footer.field.chapter_screens_left",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Screens remaining in chapter",
+      "current_ru": "Осталось экранов в главе",
+      "status": "proposed",
+      "proposed_ru": "Осталось экранов в главе",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "header_footer.field.chapter_and_screen",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Chapter and screen in chapter",
+      "current_ru": "Глава и экран в главе",
+      "status": "proposed",
+      "proposed_ru": "Глава и экран в главе",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "shutdown.shutting_down",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Shutting down",
+      "current_ru": "Выключение",
+      "status": "proposed",
+      "proposed_ru": "Выключение",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "shutdown.restarting",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Restarting",
+      "current_ru": "Перезапуск",
+      "status": "proposed",
+      "proposed_ru": "Перезапуск",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "shutdown.saving",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Saving your progress first...",
+      "current_ru": "Сначала сохраняем прогресс чтения…",
+      "status": "proposed",
+      "proposed_ru": "Сначала сохраняем данные чтения…",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "closing.sync_title",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Your Kobo is syncing",
+      "current_ru": "Kobo выполняет синхронизацию",
+      "status": "proposed",
+      "proposed_ru": "Синхронизация Kobo",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "closing.wait_for_sync",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Wait for sync to complete",
+      "current_ru": "Дождаться завершения синхронизации",
+      "status": "proposed",
+      "proposed_ru": "Дождаться синхронизации",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "closing.waiting_for_sync",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Waiting for sync to complete…",
+      "current_ru": "Ожидание завершения синхронизации…",
+      "status": "proposed",
+      "proposed_ru": "Ожидание синхронизации…",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "closing.sync_detail",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Kobalt will close when sync finishes. If Kobo has a different reading position, you can choose which one to keep. Tap outside this message to keep reading.",
+      "current_ru": "Kobalt закроется после завершения синхронизации. Если на Kobo сохранена другая позиция чтения, вы сможете выбрать, какую оставить. Нажмите вне этого сообщения, чтобы продолжить чтение.",
+      "status": "proposed",
+      "proposed_ru": "Kobalt закроется после завершения синхронизации. Если на Kobo сохранена другая позиция чтения, вы сможете выбрать, какую оставить. Нажмите вне сообщения, чтобы продолжить чтение.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "closing.local_only",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Exit without sending progress",
+      "current_ru": "Выйти без отправки прогресса",
+      "status": "proposed",
+      "proposed_ru": "Выйти без отправки прогресса",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "reader.applying_theme",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Applying theme...",
+      "current_ru": "Применение темы…",
+      "status": "proposed",
+      "proposed_ru": "Применяем тему…",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "reader.zoom_screen_range",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Screens %1 to %2 of %3",
+      "current_ru": "Экраны с %1 по %2 из %3",
+      "status": "proposed",
+      "proposed_ru": "Экраны с %1 по %2 из %3",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "reader.strip_padding",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Padding",
+      "current_ru": "Отступы",
+      "status": "proposed",
+      "proposed_ru": "Отступы",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "reader.text_preview_sample",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "This page has no text to preview. This sample shows how your text settings will look.",
+      "current_ru": "На этой странице нет текста для предпросмотра. Этот образец показывает, как будут выглядеть выбранные настройки текста.",
+      "status": "proposed",
+      "proposed_ru": "На этой странице нет текста. Образец показывает, как будут выглядеть выбранные настройки.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "reader.text_preview_lifted",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "The preview starts below the illustration so you can see how your text settings look.",
+      "current_ru": "Предпросмотр начинается под иллюстрацией, чтобы были видны выбранные настройки текста.",
+      "status": "proposed",
+      "proposed_ru": "Предпросмотр начинается под иллюстрацией, чтобы были видны изменения текста.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "reader.menu_screen_of",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "SCREEN %1 OF %2",
+      "current_ru": "ЭКРАН %1 ИЗ %2",
+      "status": "proposed",
+      "proposed_ru": "ЭКРАН %1 ИЗ %2",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "reader.restore_book_defaults",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Restore book defaults",
+      "current_ru": "Восстановить настройки книги по умолчанию",
+      "status": "proposed",
+      "proposed_ru": "Восстановить настройки книги по умолчанию",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "reader.restore_book_defaults_prompt",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Restore book defaults?",
+      "current_ru": "Восстановить настройки книги по умолчанию?",
+      "status": "proposed",
+      "proposed_ru": "Восстановить настройки книги по умолчанию?",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "reader.restore_book_defaults_detail",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "The font, size, line spacing, alignment, weight and hyphenation of this book return to Text for new books, or to Book default when that is Same as last book. Other books and other settings do not change. The defaults apply when you close Settings.",
+      "current_ru": "Шрифт, размер, межстрочный интервал, выравнивание, насыщенность и переносы этой книги вернутся к настройкам «Текст новых книг» либо к варианту «Как в книге», если выбрано «Как в прошлой книге». Другие книги и настройки не изменятся. Настройки применятся после закрытия раздела «Настройки».",
+      "status": "agreed",
+      "proposed_ru": "Шрифт, размер, межстрочный интервал, выравнивание, насыщенность и переносы этой книги вернутся к настройкам «Текст новых книг» либо к варианту «Как в книге», если выбрано «Как в прошлой книге». Другие книги и настройки не изменятся. Настройки применятся после закрытия раздела «Настройки».",
+      "changed_ru": false,
+      "note": "Согласованная правка в текущей ветке: сохранить без повторного перевода."
+    },
+    {
+      "key": "reader.book_defaults_selected",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Book defaults selected",
+      "current_ru": "Выбраны настройки книги по умолчанию",
+      "status": "proposed",
+      "proposed_ru": "Выбраны настройки книги по умолчанию",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "reader.return_screen",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Return to screen %1",
+      "current_ru": "Вернуться к экрану %1",
+      "status": "proposed",
+      "proposed_ru": "Вернуться к экрану %1",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "reader.counting_pages",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Counting pages",
+      "current_ru": "Подсчёт страниц",
+      "status": "proposed",
+      "proposed_ru": "Подсчёт страниц",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "reader.counting_screens",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Counting screens",
+      "current_ru": "Подсчёт экранов",
+      "status": "proposed",
+      "proposed_ru": "Подсчёт экранов",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "reader.strip_size_value",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "%1 px",
+      "current_ru": "%1 пикс.",
+      "status": "proposed",
+      "proposed_ru": "%1 пикс.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "search_panel.screen_detail",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Screen %1: %2",
+      "current_ru": "Экран %1: %2",
+      "status": "proposed",
+      "proposed_ru": "Экран %1: %2",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.dark_mode",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Dark Mode",
+      "current_ru": "Тёмный режим",
+      "status": "proposed",
+      "proposed_ru": "Тёмный режим",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.night_mode_description",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Also known as Night Mode. Displays light text on a dark background, and inverts some colors.",
+      "current_ru": "Также известен как ночной режим. Показывает светлый текст на тёмном фоне и инвертирует некоторые цвета.",
+      "status": "proposed",
+      "proposed_ru": "Также известен как ночной режим. Показывает светлый текст на тёмном фоне и инвертирует некоторые цвета.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.secondary_numbers",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Secondary page numbers",
+      "current_ru": "Дополнительная нумерация страниц",
+      "status": "proposed",
+      "proposed_ru": "Нумерация вне основного текста",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "settings.secondary_numbers_hint",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Choose how pages before and after the main text are numbered in every book.",
+      "current_ru": "Выберите способ нумерации страниц до и после основного текста во всех книгах.",
+      "status": "proposed",
+      "proposed_ru": "Как нумеровать страницы до и после основного текста. Настройка действует для всех книг.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "settings.secondary_roman",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Lowercase Roman",
+      "current_ru": "Строчные римские цифры",
+      "status": "proposed",
+      "proposed_ru": "Римские строчные",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "settings.secondary_arabic",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Arabic numerals",
+      "current_ru": "Арабские цифры",
+      "status": "proposed",
+      "proposed_ru": "Арабские цифры",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.secondary_letters",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Lowercase letters",
+      "current_ru": "Строчные буквы",
+      "status": "proposed",
+      "proposed_ru": "Строчные буквы",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.secondary_prefixed",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Section-prefixed numbers",
+      "current_ru": "Номера с префиксом раздела",
+      "status": "proposed",
+      "proposed_ru": "С префиксом раздела",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "settings.secondary_upper_roman",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Uppercase Roman",
+      "current_ru": "Прописные римские цифры",
+      "status": "proposed",
+      "proposed_ru": "Римские прописные",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "settings.secondary_preview",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Front  %1   ·   Back  %2",
+      "current_ru": "До текста  %1   ·   После текста  %2",
+      "status": "proposed",
+      "proposed_ru": "До текста  %1   ·   После текста  %2",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.publisher_page_numbers",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Always display publisher provided page numbers",
+      "current_ru": "Всегда показывать номера страниц издателя",
+      "status": "proposed",
+      "proposed_ru": "Номера страниц издателя",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "settings.publisher_page_numbers_description",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Use the print edition’s page labels when available. Kobalt counts its own layout in screens.",
+      "current_ru": "Использовать обозначения страниц печатного издания, если они есть. Собственную раскладку Kobalt считает в экранах.",
+      "status": "proposed",
+      "proposed_ru": "Всегда показывать номера страниц печатного издания, если они есть. Страницы собственной вёрстки Kobalt называет экранами.",
+      "changed_ru": true,
+      "note": "Отделить метки печатного издания от экранов собственной вёрстки Kobalt."
+    },
+    {
+      "key": "settings.sideloaded_fonts_first",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Show sideloaded fonts first",
+      "current_ru": "Показывать пользовательские шрифты первыми",
+      "status": "proposed",
+      "proposed_ru": "Сначала пользовательские шрифты",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "settings.sideloaded_fonts_first_description",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "List your own fonts before recommended fonts in every typeface picker.",
+      "current_ru": "Показывать ваши шрифты перед рекомендуемыми во всех списках выбора гарнитуры.",
+      "status": "proposed",
+      "proposed_ru": "Во всех списках выбора показывать ваши шрифты перед рекомендуемыми.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "sleep.status_random",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Random status",
+      "current_ru": "Случайный статус",
+      "status": "proposed",
+      "proposed_ru": "Случайный вариант",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "reader.screen_number",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Screen %1",
+      "current_ru": "Экран %1",
+      "status": "proposed",
+      "proposed_ru": "Экран %1",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "bookmarks.remove_screen_detail",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Screen %1 · %2",
+      "current_ru": "Экран %1 · %2",
+      "status": "proposed",
+      "proposed_ru": "Экран %1 · %2",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "chapter_contents.location",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Location",
+      "current_ru": "Позиция",
+      "status": "proposed",
+      "proposed_ru": "Позиция",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "search_panel.screen_chapter",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Screen %1 · %2",
+      "current_ru": "Экран %1 · %2",
+      "status": "proposed",
+      "proposed_ru": "Экран %1 · %2",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "stats.screen_of",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Screen %1 of %2",
+      "current_ru": "Экран %1 из %2",
+      "status": "proposed",
+      "proposed_ru": "Экран %1 из %2",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "stats.screens_left",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "screens remaining",
+      "current_ru": "экр. осталось",
+      "status": "proposed",
+      "proposed_ru": "экр. осталось",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "stats.screen_left",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "screen remaining",
+      "current_ru": "экр. остался",
+      "status": "proposed",
+      "proposed_ru": "экр. остался",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "stats.count_words_in",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Book stats for",
+      "current_ru": "Область статистики книги",
+      "status": "agreed",
+      "proposed_ru": "Область статистики книги",
+      "changed_ru": false,
+      "note": "Согласованная правка в текущей ветке: сохранить без повторного перевода."
+    },
+    {
+      "key": "stats.count_words_in_title",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Book Stats For",
+      "current_ru": "Область статистики книги",
+      "status": "agreed",
+      "proposed_ru": "Область статистики книги",
+      "changed_ru": false,
+      "note": "Согласованная правка в текущей ветке: сохранить без повторного перевода."
+    },
+    {
+      "key": "stats.scope_hint",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Choose which pages, words and reading time the Book figures cover. This choice applies to all books.",
+      "current_ru": "Выберите, какие страницы, слова и время чтения учитываются в показателях книги. Выбор применяется ко всем книгам.",
+      "status": "proposed",
+      "proposed_ru": "Выберите, какую часть книги учитывать при подсчёте страниц, слов и времени чтения. Настройка действует для всех книг.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "stats.scope_main",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Main text",
+      "current_ru": "Основной текст",
+      "status": "proposed",
+      "proposed_ru": "Основной текст",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "stats.scope_main_hint",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "From the start to the end marked in Chapters or supplied by the book.",
+      "current_ru": "От начала до конца, отмеченных в разделе «Главы» или заданных книгой.",
+      "status": "proposed",
+      "proposed_ru": "От начала до конца основного текста: по меткам в книге или в разделе «Главы».",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "stats.scope_volume",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Whole volume",
+      "current_ru": "Весь том",
+      "status": "proposed",
+      "proposed_ru": "Весь том",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "stats.scope_volume_hint",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Include the front and back matter and every book in the volume.",
+      "current_ru": "Включать материалы до и после основного текста и все книги тома.",
+      "status": "proposed",
+      "proposed_ru": "Все книги тома, включая материалы до и после основного текста.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "stats.main_words",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Main text · %1",
+      "current_ru": "Основной текст · %1",
+      "status": "proposed",
+      "proposed_ru": "Основной текст · %1",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "stats.volume_words",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Volume · %1",
+      "current_ru": "Том · %1",
+      "status": "proposed",
+      "proposed_ru": "Том · %1",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "activity.copies",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Book copies",
+      "current_ru": "Копии книг",
+      "status": "proposed",
+      "proposed_ru": "Копии книг",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "activity.copies_count",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "%1 copies",
+      "current_ru": "Копий: %1",
+      "status": "proposed",
+      "proposed_ru": "Копий: %1",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "activity.chart_value",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "%1: %2",
+      "current_ru": "%1: %2",
+      "status": "proposed",
+      "proposed_ru": "%1: %2",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "activity.chart_dates",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "%1 to %2",
+      "current_ru": "%1 — %2",
+      "status": "proposed",
+      "proposed_ru": "%1 — %2",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "activity.under_minute",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Less than one minute",
+      "current_ru": "Менее минуты",
+      "status": "proposed",
+      "proposed_ru": "Менее минуты",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "activity.projected_finish",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Projected finish %1",
+      "current_ru": "Ожидаемое завершение: %1",
+      "status": "proposed",
+      "proposed_ru": "Предполагаемое завершение: %1",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "reader.international_supplemental_fonts",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Supplemental Fonts (International)",
+      "current_ru": "Дополнительные шрифты (международные)",
+      "status": "proposed",
+      "proposed_ru": "Шрифты других письменностей",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "reader.ui_fonts",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "UI Fonts",
+      "current_ru": "Шрифты интерфейса",
+      "status": "proposed",
+      "proposed_ru": "Шрифты интерфейса",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.cannot_activate_installed_dictionary",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Cannot activate installed dictionary.",
+      "current_ru": "Не удалось активировать установленный словарь.",
+      "status": "proposed",
+      "proposed_ru": "Не удалось активировать установленный словарь.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.cannot_create_dictionary_storage",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Cannot create dictionary storage.",
+      "current_ru": "Не удалось создать хранилище словарей.",
+      "status": "proposed",
+      "proposed_ru": "Не удалось создать хранилище словарей.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.cannot_install_this_dictionary",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Cannot install this dictionary.",
+      "current_ru": "Не удалось установить этот словарь.",
+      "status": "proposed",
+      "proposed_ru": "Не удалось установить этот словарь.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.cannot_read_dictionary_index",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Cannot read dictionary index.",
+      "current_ru": "Не удалось прочитать индекс словаря.",
+      "status": "proposed",
+      "proposed_ru": "Не удалось прочитать индекс словаря.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.cannot_remove_this_dictionary",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Cannot remove this dictionary.",
+      "current_ru": "Не удалось удалить этот словарь.",
+      "status": "proposed",
+      "proposed_ru": "Не удалось удалить этот словарь.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.cannot_save_dictionary_files",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Cannot save dictionary files.",
+      "current_ru": "Не удалось сохранить файлы словаря.",
+      "status": "proposed",
+      "proposed_ru": "Не удалось сохранить файлы словаря.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.cannot_save_dictionary_index",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Cannot save dictionary index.",
+      "current_ru": "Не удалось сохранить индекс словаря.",
+      "status": "proposed",
+      "proposed_ru": "Не удалось сохранить индекс словаря.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.cannot_save_dictionary_metadata",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Cannot save dictionary metadata.",
+      "current_ru": "Не удалось сохранить метаданные словаря.",
+      "status": "proposed",
+      "proposed_ru": "Не удалось сохранить метаданные словаря.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.cannot_save_the_download",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Cannot save the download.",
+      "current_ru": "Не удалось сохранить загруженный файл.",
+      "status": "agreed",
+      "proposed_ru": "Не удалось сохранить загруженный файл.",
+      "changed_ru": false,
+      "note": "Согласованная правка в текущей ветке: сохранить без повторного перевода."
+    },
+    {
+      "key": "dictionaries.dictionary_archive_is_damaged",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Dictionary archive is damaged.",
+      "current_ru": "Архив словаря повреждён.",
+      "status": "proposed",
+      "proposed_ru": "Архив словаря повреждён.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.dictionary_archive_is_missing_required_files",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Dictionary archive is missing required files.",
+      "current_ru": "В архиве словаря отсутствуют необходимые файлы.",
+      "status": "proposed",
+      "proposed_ru": "В архиве словаря отсутствуют необходимые файлы.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.dictionary_checksum_differs",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Dictionary checksum differs.",
+      "current_ru": "Контрольная сумма словаря не совпадает.",
+      "status": "proposed",
+      "proposed_ru": "Контрольная сумма словаря не совпадает с ожидаемой.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "dictionaries.dictionary_checksum_or_size_differs",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Dictionary checksum or size differs.",
+      "current_ru": "Контрольная сумма или размер словаря не совпадает.",
+      "status": "proposed",
+      "proposed_ru": "Контрольная сумма или размер словаря не соответствует ожидаемому значению.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "dictionaries.dictionary_definition_is_damaged",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Dictionary definition is damaged.",
+      "current_ru": "Словарная статья повреждена.",
+      "status": "proposed",
+      "proposed_ru": "Словарная статья повреждена.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.dictionary_download_is_incomplete",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Dictionary download is incomplete.",
+      "current_ru": "Словарь загружен не полностью.",
+      "status": "proposed",
+      "proposed_ru": "Словарь загружен не полностью.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.dictionary_index_is_damaged",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Dictionary index is damaged.",
+      "current_ru": "Индекс словаря повреждён.",
+      "status": "proposed",
+      "proposed_ru": "Индекс словаря повреждён.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.dictionary_index_is_too_large",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Dictionary index is too large.",
+      "current_ru": "Индекс словаря слишком велик.",
+      "status": "proposed",
+      "proposed_ru": "Индекс словаря слишком большой.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "dictionaries.dictionary_index_points_outside_its_data",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Dictionary index points outside its data.",
+      "current_ru": "Индекс словаря ссылается на данные за пределами файла.",
+      "status": "agreed",
+      "proposed_ru": "Индекс словаря ссылается на данные за пределами файла.",
+      "changed_ru": false,
+      "note": "Согласованная правка в текущей ветке: сохранить без повторного перевода."
+    },
+    {
+      "key": "dictionaries.dictionary_installed",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Dictionary installed.",
+      "current_ru": "Словарь установлен.",
+      "status": "proposed",
+      "proposed_ru": "Словарь установлен.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.dictionary_removed",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Dictionary removed.",
+      "current_ru": "Словарь удалён.",
+      "status": "proposed",
+      "proposed_ru": "Словарь удалён.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.download_cancelled",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Download cancelled.",
+      "current_ru": "Загрузка отменена.",
+      "status": "proposed",
+      "proposed_ru": "Загрузка отменена.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.download_size_or_storage_error",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Download size or storage error.",
+      "current_ru": "Ошибка размера загрузки или хранилища.",
+      "status": "proposed",
+      "proposed_ru": "Не удалось загрузить файл нужного размера или сохранить его.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "dictionaries.downloading_name",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Downloading %1",
+      "current_ru": "Загрузка: %1",
+      "status": "proposed",
+      "proposed_ru": "Загружается %1",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "dictionaries.downloading_progress",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Downloading %1 · %2",
+      "current_ru": "Загрузка: %1 · %2",
+      "status": "proposed",
+      "proposed_ru": "Загружается %1 · %2",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "dictionaries.installation_cancelled",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Installation cancelled.",
+      "current_ru": "Установка отменена.",
+      "status": "proposed",
+      "proposed_ru": "Установка отменена.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.installed_dictionary_is_damaged",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Installed dictionary is damaged.",
+      "current_ru": "Установленный словарь повреждён.",
+      "status": "proposed",
+      "proposed_ru": "Установленный словарь повреждён.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.installed_inflection_index_is_damaged",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Installed inflection index is damaged.",
+      "current_ru": "Установленный индекс словоформ повреждён.",
+      "status": "proposed",
+      "proposed_ru": "Индекс словоформ установленного словаря повреждён.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "dictionaries.installing_name",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Installing %1",
+      "current_ru": "Установка: %1",
+      "status": "proposed",
+      "proposed_ru": "Устанавливается %1",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "dictionaries.invalid_dictzip_data",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Invalid dictzip data.",
+      "current_ru": "Некорректные данные dictzip.",
+      "status": "proposed",
+      "proposed_ru": "Некорректные данные dictzip.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.invalid_stardict_index",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Invalid StarDict index.",
+      "current_ru": "Некорректный индекс StarDict.",
+      "status": "proposed",
+      "proposed_ru": "Некорректный индекс StarDict.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.invalid_stardict_metadata",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Invalid StarDict metadata.",
+      "current_ru": "Некорректные метаданные StarDict.",
+      "status": "proposed",
+      "proposed_ru": "Некорректные метаданные StarDict.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.missing_stardict_inflection_index",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Missing StarDict inflection index.",
+      "current_ru": "Отсутствует индекс словоформ StarDict.",
+      "status": "proposed",
+      "proposed_ru": "Отсутствует индекс словоформ StarDict.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.missing_stardict_metadata",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Missing StarDict metadata.",
+      "current_ru": "Отсутствуют метаданные StarDict.",
+      "status": "proposed",
+      "proposed_ru": "Отсутствуют метаданные StarDict.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.no_dictionary_installed",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "No dictionary installed.",
+      "current_ru": "Нет установленных словарей.",
+      "status": "proposed",
+      "proposed_ru": "Нет установленных словарей.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.not_enough_space_for_this_dictionary",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Not enough space for this dictionary.",
+      "current_ru": "Недостаточно места для этого словаря.",
+      "status": "proposed",
+      "proposed_ru": "Недостаточно места для этого словаря.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.stardict_index_size_differs",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "StarDict index size differs.",
+      "current_ru": "Размер индекса StarDict не совпадает.",
+      "status": "proposed",
+      "proposed_ru": "Размер индекса StarDict не совпадает с указанным.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "dictionaries.stardict_word_count_differs_from_its_index",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "StarDict word count differs from its index.",
+      "current_ru": "Число слов StarDict не совпадает с индексом.",
+      "status": "proposed",
+      "proposed_ru": "Заявленное число слов StarDict не совпадает с индексом.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "dictionaries.this_dictionary_is_not_available",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "This dictionary is not available.",
+      "current_ru": "Этот словарь недоступен.",
+      "status": "proposed",
+      "proposed_ru": "Этот словарь недоступен.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.this_dictionary_is_not_installed",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "This dictionary is not installed.",
+      "current_ru": "Этот словарь не установлен.",
+      "status": "proposed",
+      "proposed_ru": "Этот словарь не установлен.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.unsafe_download_redirect",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Unsafe download redirect.",
+      "current_ru": "Небезопасное перенаправление загрузки.",
+      "status": "proposed",
+      "proposed_ru": "Загрузка остановлена: небезопасное перенаправление.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "dictionaries.unsupported_stardict_format",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Unsupported StarDict format.",
+      "current_ru": "Неподдерживаемый формат StarDict.",
+      "status": "proposed",
+      "proposed_ru": "Неподдерживаемый формат StarDict.",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "dictionaries.wait_for_this_download_to_finish",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Wait for this download to finish.",
+      "current_ru": "Дождитесь завершения этой загрузки.",
+      "status": "proposed",
+      "proposed_ru": "Дождитесь окончания загрузки.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "dictionaries.download_timed_out",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "The dictionary download timed out.",
+      "current_ru": "Время ожидания загрузки словаря истекло.",
+      "status": "proposed",
+      "proposed_ru": "Истекло время ожидания загрузки словаря.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "annotations.add_note_title",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Add Note",
+      "current_ru": "Добавить заметку",
+      "status": "proposed",
+      "proposed_ru": "Добавить заметку",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "annotations.edit_note_title",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Edit Note",
+      "current_ru": "Изменить заметку",
+      "status": "proposed",
+      "proposed_ru": "Изменить заметку",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.theming",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Theming",
+      "current_ru": "Оформление",
+      "status": "proposed",
+      "proposed_ru": "Оформление",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.theme_selection",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Preset",
+      "current_ru": "Предустановка",
+      "status": "proposed",
+      "proposed_ru": "Готовая тема",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "settings.theme_details",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Detailed configuration",
+      "current_ru": "Подробная настройка",
+      "status": "proposed",
+      "proposed_ru": "Настроить оформление",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "settings.primary_typography",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Primary typography",
+      "current_ru": "Основные шрифты",
+      "status": "agreed",
+      "proposed_ru": "Основные шрифты",
+      "changed_ru": false,
+      "note": "Согласованная правка в текущей ветке: сохранить без повторного перевода."
+    },
+    {
+      "key": "settings.secondary_typography",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Secondary typography",
+      "current_ru": "Дополнительные шрифты",
+      "status": "agreed",
+      "proposed_ru": "Дополнительные шрифты",
+      "changed_ru": false,
+      "note": "Согласованная правка в текущей ветке: сохранить без повторного перевода."
+    },
+    {
+      "key": "settings.icon_monochrome",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Monochrome",
+      "current_ru": "Монохромные",
+      "status": "proposed",
+      "proposed_ru": "Монохромные",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.icon_color",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Color only",
+      "current_ru": "Только цвет",
+      "status": "proposed",
+      "proposed_ru": "Только цвет",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.icon_pastel",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Pastel tiles",
+      "current_ru": "Пастельные плитки",
+      "status": "proposed",
+      "proposed_ru": "Пастельные плитки",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.theme_preset",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Theme preset",
+      "current_ru": "Предустановка темы",
+      "status": "proposed",
+      "proposed_ru": "Готовая тема",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "settings.icon_theme",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Icon theme",
+      "current_ru": "Тема значков",
+      "status": "proposed",
+      "proposed_ru": "Тема значков",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.theme_classic",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Classic",
+      "current_ru": "Классическая",
+      "status": "proposed",
+      "proposed_ru": "Классическая",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.theme_playful",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Playful",
+      "current_ru": "Игровая",
+      "status": "proposed",
+      "proposed_ru": "Неформальная",
+      "changed_ru": true,
+      "note": "Название темы; «Неформальная» вместо буквального «Игровая», на согласование."
+    },
+    {
+      "key": "settings.theme_notebook",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Notebook",
+      "current_ru": "Блокнот",
+      "status": "proposed",
+      "proposed_ru": "Блокнот",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.icon_rings",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Color rings",
+      "current_ru": "Цветные кольца",
+      "status": "proposed",
+      "proposed_ru": "Цветные кольца",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.palette",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Color theme",
+      "current_ru": "Цветовая тема",
+      "status": "proposed",
+      "proposed_ru": "Цветовая тема",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.palette_grayscale",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Grayscale",
+      "current_ru": "Оттенки серого",
+      "status": "proposed",
+      "proposed_ru": "Оттенки серого",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.palette_blue",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Blue",
+      "current_ru": "Синяя",
+      "status": "proposed",
+      "proposed_ru": "Синяя",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.palette_sage",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Sage",
+      "current_ru": "Шалфейная",
+      "status": "proposed",
+      "proposed_ru": "Шалфейная",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.palette_sepia",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Sepia",
+      "current_ru": "Сепия",
+      "status": "proposed",
+      "proposed_ru": "Сепия",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.theme_custom",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Custom",
+      "current_ru": "Своя",
+      "status": "proposed",
+      "proposed_ru": "Своя",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.font_too_large",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Font disabled due to size limitations.",
+      "current_ru": "Шрифт отключён из-за ограничения размера.",
+      "status": "proposed",
+      "proposed_ru": "Шрифт недоступен из-за ограничений размера.",
+      "changed_ru": true,
+      "note": "Ограничение доступности шрифта для интерфейса; не уточняем в переводе вид ограничения."
+    },
+    {
+      "key": "settings.columns_description",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Column spacing is measured in multiples of the current text size.",
+      "current_ru": "Расстояние между колонками измеряется в долях текущего размера текста.",
+      "status": "proposed",
+      "proposed_ru": "Расстояние между колонками задаётся относительно текущего размера текста.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "settings.landscape_column_layout",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Multiple columns in landscape mode",
+      "current_ru": "Несколько колонок в альбомной ориентации",
+      "status": "proposed",
+      "proposed_ru": "Несколько колонок в альбомной ориентации",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.single_column",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Single column",
+      "current_ru": "Одна колонка",
+      "status": "proposed",
+      "proposed_ru": "Одна колонка",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.two_in_landscape",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Two in landscape",
+      "current_ru": "Две в альбомной ориентации",
+      "status": "proposed",
+      "proposed_ru": "Две в альбомной ориентации",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.chapter_spread",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Start chapters on a new spread",
+      "current_ru": "Начинать главы с нового разворота",
+      "status": "proposed",
+      "proposed_ru": "Начинать главы с нового разворота",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "settings.chapter_spread_description",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "When a chapter starts on a new page, show it in the first column.",
+      "current_ru": "Если глава начинается с новой страницы, показывать её в первой колонке.",
+      "status": "proposed",
+      "proposed_ru": "Если глава начинается с новой страницы, размещать её в первой колонке разворота.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "marks.row_action",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "%1: %2",
+      "current_ru": "%1: %2",
+      "status": "proposed",
+      "proposed_ru": "%1: %2",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "marks.page_range",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Pages %1 to %2",
+      "current_ru": "Страницы %1–%2",
+      "status": "proposed",
+      "proposed_ru": "Страницы %1–%2",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "marks.location_range",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "%1 to %2",
+      "current_ru": "%1 — %2",
+      "status": "proposed",
+      "proposed_ru": "%1 — %2",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "marks.screen_range",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Screens %1–%2",
+      "current_ru": "Экраны %1–%2",
+      "status": "proposed",
+      "proposed_ru": "Экраны %1–%2",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "marks.screen_range_description",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Screens %1 to %2",
+      "current_ru": "Экраны с %1 по %2",
+      "status": "proposed",
+      "proposed_ru": "Экраны с %1 по %2",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "annotations.numbered_entry",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Annotation %1",
+      "current_ru": "Аннотация %1",
+      "status": "proposed",
+      "proposed_ru": "Аннотация %1",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "bookmarks.numbered_entry",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Bookmark %1",
+      "current_ru": "Закладка %1",
+      "status": "proposed",
+      "proposed_ru": "Закладка %1",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "marks.sort_dialog_title",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Sort By",
+      "current_ru": "Сортировать по",
+      "status": "proposed",
+      "proposed_ru": "Сортировать по",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "kosync.device_name_title",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Device Name",
+      "current_ru": "Имя устройства",
+      "status": "proposed",
+      "proposed_ru": "Имя устройства",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "kosync.matching_title",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Document Matching",
+      "current_ru": "Сопоставление документов",
+      "status": "proposed",
+      "proposed_ru": "Сопоставление документов",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "kosync.screens_ahead",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "%1 screens ahead",
+      "current_ru": "Вперёд на %1 экр.",
+      "status": "proposed",
+      "proposed_ru": "Дальше на %1 экр.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "kosync.screens_ahead_one",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "1 screen ahead",
+      "current_ru": "Вперёд на 1 экр.",
+      "status": "proposed",
+      "proposed_ru": "Дальше на 1 экр.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "kosync.screens_back",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "%1 screens back",
+      "current_ru": "Назад на %1 экр.",
+      "status": "proposed",
+      "proposed_ru": "Раньше на %1 экр.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "kosync.screens_back_one",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "1 screen back",
+      "current_ru": "Назад на 1 экр.",
+      "status": "proposed",
+      "proposed_ru": "Раньше на 1 экр.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "buttons.invert_landscape",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Invert page buttons in landscape",
+      "current_ru": "Инвертировать кнопки в альбомной ориентации.",
+      "status": "agreed",
+      "proposed_ru": "Инвертировать кнопки в альбомной ориентации.",
+      "changed_ru": false,
+      "note": "Согласованная правка в текущей ветке: сохранить без повторного перевода."
+    },
+    {
+      "key": "buttons.invert_landscape_hint",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Turn this on if the buttons are reversed when you hold your device sideways.",
+      "current_ru": "Включите, если при повороте устройства набок кнопки работают наоборот.",
+      "status": "proposed",
+      "proposed_ru": "Включите, если в альбомной ориентации кнопки перелистывают в обратную сторону.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "features.activity",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Activity",
+      "current_ru": "Активность",
+      "status": "proposed",
+      "proposed_ru": "Активность",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "features.activity_description",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Hides the Activity section in Stats. Reading history continues.",
+      "current_ru": "Скрывает раздел «Активность» в статистике. История чтения продолжает сохраняться.",
+      "status": "proposed",
+      "proposed_ru": "Скрывает раздел «Активность» в статистике. История чтения сохраняется и дальше.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "words.go_to_screen",
+      "change": "added",
+      "english_beta9": null,
+      "english_beta10": "Go to screen %1",
+      "current_ru": "Перейти к экрану %1",
+      "status": "proposed",
+      "proposed_ru": "Перейти к экрану %1",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "bookmarks.custom_help_title",
+      "change": "changed",
+      "english_beta9": "Custom bookmark icons",
+      "english_beta10": "Custom Bookmark Icons",
+      "current_ru": "Свои значки закладок",
+      "status": "proposed",
+      "proposed_ru": "Свои значки закладок",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "bookmarks.custom_help_android",
+      "change": "changed",
+      "english_beta9": "In Library, open More > Resource folders and choose your custom icon folder.",
+      "english_beta10": "In Library, open More > Resource Folders and choose your custom icon folder.",
+      "current_ru": "В библиотеке откройте «Ещё» > «Папки ресурсов» и выберите папку своих значков.",
+      "status": "proposed",
+      "proposed_ru": "В библиотеке откройте «Ещё» > «Папки ресурсов» и выберите папку своих значков.",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "bookmarks.custom_errors_title",
+      "change": "changed",
+      "english_beta9": "Icons not loaded",
+      "english_beta10": "Icons Not Loaded",
+      "current_ru": "Значки не загружены",
+      "status": "proposed",
+      "proposed_ru": "Значки не загружены",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "kosync.resume_description",
+      "change": "changed",
+      "english_beta9": "Another device saved a position at %1% (%2). Choose which position to keep.",
+      "english_beta10": "Another device saved a position at %1 (%2). Choose which position to keep.",
+      "current_ru": "Другое устройство сохранило позицию %1 (%2). Выберите, какую позицию оставить.",
+      "status": "proposed",
+      "proposed_ru": "Другое устройство сохранило позицию %1 (%2). Выберите, какую позицию оставить.",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "library.remove_book_title",
+      "change": "changed",
+      "english_beta9": "Remove from library?",
+      "english_beta10": "Remove from Library?",
+      "current_ru": "Убрать из библиотеки?",
+      "status": "proposed",
+      "proposed_ru": "Убрать из библиотеки?",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "chapter_graph.book_progress",
+      "change": "changed",
+      "english_beta9": "Book progress: %1%",
+      "english_beta10": "Book progress: %1",
+      "current_ru": "Прогресс книги: %1",
+      "status": "proposed",
+      "proposed_ru": "Прогресс книги: %1",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "chapter_graph.chapter_progress",
+      "change": "changed",
+      "english_beta9": "Chapter progress: %1%",
+      "english_beta10": "Chapter progress: %1",
+      "current_ru": "Прогресс главы: %1",
+      "status": "proposed",
+      "proposed_ru": "Прогресс главы: %1",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "common.percent",
+      "change": "changed",
+      "english_beta9": "%1%",
+      "english_beta10": "%1",
+      "current_ru": "%1",
+      "status": "proposed",
+      "proposed_ru": "%1",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "header_footer.custom_hint",
+      "change": "changed",
+      "english_beta9": "You may customize six slots: tap one to customize it. Keep in mind that these changes are saved in the Custom preset, and are applied to all books that use it!",
+      "english_beta10": "Tap a slot to change it. Changes apply to every book that uses Custom.",
+      "current_ru": "Пресет «Свой» позволяет настроить все шесть ячеек верхнего и нижнего колонтитула — результат сразу виден на схеме выше. Нажмите на ячейку, чтобы изменить её содержимое.",
+      "status": "proposed",
+      "proposed_ru": "Нажмите на поле, чтобы изменить его. Изменения действуют во всех книгах, использующих вариант «Свой».",
+      "changed_ru": true,
+      "note": "Вернуть условие beta10: изменение применяется ко всем книгам с этим вариантом колонтитулов; старый тестовый текст его не передаёт."
+    },
+    {
+      "key": "header_footer.field_description.battery_warning",
+      "change": "changed",
+      "english_beta9": "Shows the battery only below %1%.",
+      "english_beta10": "Shows the battery only below %1.",
+      "current_ru": "Показывает батарею только ниже %1.",
+      "status": "proposed",
+      "proposed_ru": "Показывает заряд батареи, только когда он ниже %1.",
+      "changed_ru": true,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "reader.brightness",
+      "change": "changed",
+      "english_beta9": "Brightness %1%",
+      "english_beta10": "Brightness %1",
+      "current_ru": "Яркость %1",
+      "status": "proposed",
+      "proposed_ru": "Яркость %1",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "reader.built_in_fonts",
+      "change": "changed",
+      "english_beta9": "Built-in Fonts",
+      "english_beta10": "System Fonts",
+      "current_ru": "Встроенные шрифты",
+      "status": "proposed",
+      "proposed_ru": "Системные шрифты",
+      "changed_ru": true,
+      "note": "System Fonts — именно системные, не вся встроенная коллекция."
+    },
+    {
+      "key": "reader.settings_write_error",
+      "change": "changed",
+      "english_beta9": "Disk write error",
+      "english_beta10": "Disk Write Error",
+      "current_ru": "Ошибка записи на диск",
+      "status": "proposed",
+      "proposed_ru": "Ошибка записи на диск",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "settings.paragraph_spacing_description",
+      "change": "changed",
+      "english_beta9": "Values are percentages of the text size: with 12 pt text, a 100% indent is 12 pt. Applies to all books. Headings and special blocks keep their formatting.",
+      "english_beta10": "Values are percentages of the text size: with 12 pt text, a %1 indent is 12 pt. Applies to all books. Headings and special blocks keep their formatting.",
+      "current_ru": "Значения — в процентах от размера текста: при 12 пт отступ %1 равен 12 пт. Для всех книг. Заголовки и особые блоки сохраняют оформление.",
+      "status": "proposed",
+      "proposed_ru": "Значения — в процентах от размера текста: при 12 пт отступ %1 равен 12 пт. Для всех книг. Заголовки и особые блоки сохраняют оформление.",
+      "changed_ru": false,
+      "note": "%1 уже содержит знак процента; не дописывать % вручную."
+    },
+    {
+      "key": "reader.warmth",
+      "change": "changed",
+      "english_beta9": "Warmth %1%",
+      "english_beta10": "Warmth %1",
+      "current_ru": "Тёплый свет %1",
+      "status": "proposed",
+      "proposed_ru": "Тёплый свет %1",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "reader.your_reading_position_stays_the_same_the_defaults_apply_when_you_c",
+      "change": "changed",
+      "english_beta9": "Font, layout, and display preferences will be reset to their defaults. Your reading position will not change. The defaults apply when you close Settings.",
+      "english_beta10": "Theme, interface fonts, display preferences and the text of this book return to their defaults. Other books keep their text. Your reading position does not change. The defaults apply when you close Settings.",
+      "current_ru": "Настройки шрифта, раскладки и экрана будут сброшены к значениям по умолчанию. Позиция чтения не изменится. Значения по умолчанию применятся после закрытия настроек.",
+      "status": "proposed",
+      "proposed_ru": "Тема, шрифты интерфейса, настройки экрана и текста этой книги вернутся к исходным значениям. Текст других книг и позиция чтения не изменятся. Изменения применятся после закрытия настроек.",
+      "changed_ru": true,
+      "note": "В beta10 изменена область сброса: тема/интерфейс/экран и текст только этой книги. Важная смысловая правка."
+    },
+    {
+      "key": "settings.rendering_summary",
+      "change": "changed",
+      "english_beta9": "Hybrid opens books fast and prepares the whole book while you read.",
+      "english_beta10": "Hybrid opens books fast and prepares the whole book while you read. Once the whole book is prepared, it works the same as More accurate.",
+      "current_ru": "Гибридный режим быстро открывает книгу и рассчитывает её в фоне.",
+      "status": "proposed",
+      "proposed_ru": "Гибридный режим быстро открывает книгу и подготавливает полную вёрстку в фоне. После этого он работает так же, как режим «Точный».",
+      "changed_ru": true,
+      "note": "В beta10 добавлено равенство с точным режимом после готовности полной книги; восстановить пропущенную часть."
+    },
+    {
+      "key": "sleep.percent_read",
+      "change": "changed",
+      "english_beta9": "%1% read",
+      "english_beta10": "%1 read",
+      "current_ru": "прочитано %1",
+      "status": "proposed",
+      "proposed_ru": "прочитано %1",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "sleep.state_with_battery",
+      "change": "changed",
+      "english_beta9": "%1 (%2%)",
+      "english_beta10": "%1 (%2)",
+      "current_ru": "%1 (%2)",
+      "status": "proposed",
+      "proposed_ru": "%1 (%2)",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "sleep.battery_charged",
+      "change": "changed",
+      "english_beta9": "%1% charged",
+      "english_beta10": "%1 charged",
+      "current_ru": "Заряжено на %1",
+      "status": "proposed",
+      "proposed_ru": "Заряжено на %1",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "sleep.percent_through",
+      "change": "changed",
+      "english_beta9": "%1% through %2",
+      "english_beta10": "%1 through %2",
+      "current_ru": "%1 книги «%2»",
+      "status": "proposed",
+      "proposed_ru": "%1 книги «%2»",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "sleep.gallery_title",
+      "change": "changed",
+      "english_beta9": "Sleep and power-off screen",
+      "english_beta10": "Sleep and Power-Off Screen",
+      "current_ru": "Экран сна и выключения",
+      "status": "proposed",
+      "proposed_ru": "Экран сна и выключения",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "sleep.custom_title",
+      "change": "changed",
+      "english_beta9": "Customize Lock & Sleep Screen",
+      "english_beta10": "Customize Lock and Sleep Screen",
+      "current_ru": "Экран блокировки и сна",
+      "status": "proposed",
+      "proposed_ru": "Экран блокировки и сна",
+      "changed_ru": false,
+      "note": "Проверено по EN beta10: существующую формулировку предлагается оставить; это предложение, не прежнее согласование."
+    },
+    {
+      "key": "debug.evict_cache_title",
+      "change": "changed",
+      "english_beta9": "Evict Book Cache?",
+      "english_beta10": "Evict book cache?",
+      "current_ru": "Удалить кэш книги?",
+      "status": "proposed",
+      "proposed_ru": "Удалить кэш книги?",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "debug.clear_caches_title",
+      "change": "changed",
+      "english_beta9": "Clear All Caches?",
+      "english_beta10": "Clear all caches?",
+      "current_ru": "Очистить все кэши?",
+      "status": "proposed",
+      "proposed_ru": "Очистить все кэши?",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "sync.title",
+      "change": "changed",
+      "english_beta9": "Synced reading position",
+      "english_beta10": "Synced Reading Position",
+      "current_ru": "Синхронизированная позиция чтения",
+      "status": "proposed",
+      "proposed_ru": "Синхронизированная позиция чтения",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "activity.delete_title",
+      "change": "changed",
+      "english_beta9": "Delete Reading Activity?",
+      "english_beta10": "Delete reading activity?",
+      "current_ru": "Удалить историю чтения?",
+      "status": "proposed",
+      "proposed_ru": "Удалить историю чтения?",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "activity.welcome_description",
+      "change": "changed",
+      "english_beta9": "Activity shows your reading time and reading stats on this device. It doesn't sync, so if you also read on another device, your streaks and totals here won't include that reading.",
+      "english_beta10": "Activity only counts time you spend reading books in Kobalt on this device. Your streaks and totals are based on those sessions. Reading history doesn’t sync between devices.",
+      "current_ru": "Здесь показаны время и статистика чтения на этом устройстве. Эти данные не синхронизируются: чтение на других устройствах не входит в местные серии и итоги.",
+      "status": "proposed",
+      "proposed_ru": "Здесь учитывается только время чтения книг в Kobalt на этом устройстве. На этих сеансах основаны серии дней чтения и общие показатели. История чтения между устройствами не синхронизируется.",
+      "changed_ru": true,
+      "note": "Учитываются только сеансы Kobalt на этом устройстве, а не любое чтение на Kobo."
+    },
+    {
+      "key": "recovery.title",
+      "change": "changed",
+      "english_beta9": "Saved data reset",
+      "english_beta10": "Saved Data Reset",
+      "current_ru": "Сохранённые данные сброшены",
+      "status": "proposed",
+      "proposed_ru": "Сохранённые данные сброшены",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "reader.supplemental_fonts",
+      "change": "changed",
+      "english_beta9": "Supplemental Fonts",
+      "english_beta10": "Kobalt Collection",
+      "current_ru": "Дополнительные шрифты",
+      "status": "proposed",
+      "proposed_ru": "Коллекция Kobalt",
+      "changed_ru": true,
+      "note": "Теперь Kobalt Collection — название коллекции, не общая группа дополнительных шрифтов."
+    },
+    {
+      "key": "reader.bold_reading",
+      "change": "changed",
+      "english_beta9": "Bold reading",
+      "english_beta10": "Bold Mode",
+      "current_ru": "Бионическое чтение",
+      "status": "proposed",
+      "proposed_ru": "Бионическое чтение",
+      "changed_ru": false,
+      "note": "Оставлен существующий термин «Бионическое чтение»: beta10 по-прежнему выделяет начала слов, а не делает весь текст жирным."
+    },
+    {
+      "key": "reader.formatting_warning",
+      "change": "changed",
+      "english_beta9": "Formatting warning",
+      "english_beta10": "Formatting Warning",
+      "current_ru": "Предупреждение о форматировании",
+      "status": "proposed",
+      "proposed_ru": "Предупреждение о форматировании",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "annotations.export_format_title",
+      "change": "changed",
+      "english_beta9": "Export annotations as %1",
+      "english_beta10": "Export Annotations as %1",
+      "current_ru": "Экспорт аннотаций в %1",
+      "status": "proposed",
+      "proposed_ru": "Экспорт аннотаций в %1",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "settings.disable_reader_standby_description",
+      "change": "changed",
+      "english_beta9": "Keeps the device awake while reading. Uses more battery power.",
+      "english_beta10": "Keeps the device awake while reading. Uses more battery power, and is not recommended.",
+      "current_ru": "Не переходить в режим ожидания при чтении. Расходует больше заряда.",
+      "status": "proposed",
+      "proposed_ru": "Не даёт устройству переходить в режим ожидания во время чтения. Увеличивает расход батареи. Не рекомендуется.",
+      "changed_ru": true,
+      "note": ""
+    },
+    {
+      "key": "settings.zen_mode",
+      "change": "changed",
+      "english_beta9": "Zen mode",
+      "english_beta10": "Zen Mode",
+      "current_ru": "Режим дзен",
+      "status": "proposed",
+      "proposed_ru": "Режим дзен",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "settings.zen_leave",
+      "change": "changed",
+      "english_beta9": "Hold to leave Zen mode",
+      "english_beta10": "Hold to leave Zen Mode",
+      "current_ru": "Удерживайте для выхода из дзен",
+      "status": "proposed",
+      "proposed_ru": "Удерживайте для выхода из дзен",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "settings.zen_leave_note",
+      "change": "changed",
+      "english_beta9": "All settings return when Zen mode is off.",
+      "english_beta10": "All settings return when Zen Mode is off.",
+      "current_ru": "При выходе из дзен все настройки возвращаются.",
+      "status": "proposed",
+      "proposed_ru": "При выходе из дзен все настройки возвращаются.",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "settings.zen_leave_release",
+      "change": "changed",
+      "english_beta9": "Let go to stay in Zen mode.",
+      "english_beta10": "Let go to stay in Zen Mode.",
+      "current_ru": "Отпустите, чтобы остаться в дзен.",
+      "status": "proposed",
+      "proposed_ru": "Отпустите, чтобы остаться в дзен.",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "settings.word_spacing_narrow_description",
+      "change": "changed",
+      "english_beta9": "Use 80% of the normal space width.",
+      "english_beta10": "Use %1 of the normal space width.",
+      "current_ru": "Использовать %1 обычной ширины пробела.",
+      "status": "proposed",
+      "proposed_ru": "Использовать %1 обычной ширины пробела.",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "settings.word_spacing_normal_description",
+      "change": "changed",
+      "english_beta9": "Keep the font’s normal space width (100%).",
+      "english_beta10": "Keep the font’s normal space width (%1).",
+      "current_ru": "Сохранять обычную ширину пробела шрифта (%1).",
+      "status": "proposed",
+      "proposed_ru": "Сохранять обычную ширину пробела шрифта (%1).",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "settings.word_spacing_wide_description",
+      "change": "changed",
+      "english_beta9": "Use 120% of the normal space width.",
+      "english_beta10": "Use %1 of the normal space width.",
+      "current_ru": "Использовать %1 обычной ширины пробела.",
+      "status": "proposed",
+      "proposed_ru": "Использовать %1 обычной ширины пробела.",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "settings.vertical_spacing_center_description",
+      "change": "changed",
+      "english_beta9": "Center prose that occupies at least 90% of the reading height. Keep line spacing unchanged.",
+      "english_beta10": "Center prose that occupies at least %1 of the reading height. Keep line spacing unchanged.",
+      "current_ru": "Центрирует прозу, занимающую не менее %1 высоты чтения. Межстрочный интервал не меняется.",
+      "status": "proposed",
+      "proposed_ru": "Центрировать текст, занимающий не менее %1 высоты области чтения. Межстрочный интервал не меняется.",
+      "changed_ru": true,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "kosync.learn_more_title",
+      "change": "changed",
+      "english_beta9": "Kobo sync and KOSync",
+      "english_beta10": "Kobo Sync and KOSync",
+      "current_ru": "Синхронизация Kobo и KOSync",
+      "status": "proposed",
+      "proposed_ru": "Синхронизация Kobo и KOSync",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "kosync.percent",
+      "change": "changed",
+      "english_beta9": "%1%",
+      "english_beta10": "%1",
+      "current_ru": "%1",
+      "status": "proposed",
+      "proposed_ru": "%1",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "settings.percentage_whole_description",
+      "change": "changed",
+      "english_beta9": "For example, 8%",
+      "english_beta10": "For example, %1",
+      "current_ru": "Например, %1",
+      "status": "proposed",
+      "proposed_ru": "Например, %1",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "settings.percentage_decimal_description",
+      "change": "changed",
+      "english_beta9": "For example, 8.1%",
+      "english_beta10": "For example, %1",
+      "current_ru": "Например, %1",
+      "status": "proposed",
+      "proposed_ru": "Например, %1",
+      "changed_ru": false,
+      "note": "Проверено изменение исходника beta10 и формата аргументов; знак процента может приходить внутри аргумента."
+    },
+    {
+      "key": "buttons.upper",
+      "change": "changed",
+      "english_beta9": "Upper button",
+      "english_beta10": "Button 1",
+      "current_ru": "Верхняя кнопка",
+      "status": "proposed",
+      "proposed_ru": "Кнопка 1",
+      "changed_ru": true,
+      "note": "Upstream заменил положение кнопки на стабильный номер; работает и при повороте устройства."
+    },
+    {
+      "key": "buttons.lower",
+      "change": "changed",
+      "english_beta9": "Lower button",
+      "english_beta10": "Button 2",
+      "current_ru": "Нижняя кнопка",
+      "status": "proposed",
+      "proposed_ru": "Кнопка 2",
+      "changed_ru": true,
+      "note": "Парная строка Button 2, не привязывать к физическому низу."
+    },
+    {
+      "key": "text_presets.restore_prompt",
+      "change": "changed",
+      "english_beta9": "Restore Default Presets?",
+      "english_beta10": "Restore default presets?",
+      "current_ru": "Восстановить стандартные стили?",
+      "status": "proposed",
+      "proposed_ru": "Восстановить стандартные стили?",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "library.resource_folders",
+      "change": "changed",
+      "english_beta9": "Resource folders",
+      "english_beta10": "Resource Folders",
+      "current_ru": "Папки ресурсов",
+      "status": "proposed",
+      "proposed_ru": "Папки ресурсов",
+      "changed_ru": false,
+      "note": "В EN изменён только регистр; русский регистр не копируется механически. Смысл прежний."
+    },
+    {
+      "key": "sleep.letter_progress",
+      "change": "letter_followup",
+      "english_beta9": "I have gone to sleep. You were %1 of the way through %2%3.",
+      "english_beta10": "I have gone to sleep. You were %1 of the way through %2%3.",
+      "current_ru": "Я перешёл в спящий режим. Прочитано %1. Книга: %2%3.",
+      "status": "proposed",
+      "proposed_ru": "Я перешёл в спящий режим. Прочитано %1 книги «%2».%3",
+      "changed_ru": true,
+      "note": "Отдельное новое замечание пользователя; эти ключи не изменились между beta9 и beta10. %1 прогресса уже содержит %, %2 — название, %3 — необязательное предложение о главе."
+    },
+    {
+      "key": "sleep.letter_progress_off",
+      "change": "letter_followup",
+      "english_beta9": "I have switched off. You were %1 of the way through %2%3.",
+      "english_beta10": "I have switched off. You were %1 of the way through %2%3.",
+      "current_ru": "Я выключен. Прочитано %1. Книга: %2%3.",
+      "status": "proposed",
+      "proposed_ru": "Я выключен. Прочитано %1 книги «%2».%3",
+      "changed_ru": true,
+      "note": "Отдельное новое замечание пользователя; эти ключи не изменились между beta9 и beta10. %1 прогресса уже содержит %, %2 — название, %3 — необязательное предложение о главе."
+    },
+    {
+      "key": "sleep.letter_chapter",
+      "change": "letter_followup",
+      "english_beta9": ", in “%1”",
+      "english_beta10": ", in “%1”",
+      "current_ru": ", глава «%1»",
+      "status": "proposed",
+      "proposed_ru": " Текущая глава — «%1».",
+      "changed_ru": true,
+      "note": "Согласовать с новой конструкцией прогресса Letter; ведущий пробел chapter намеренный."
+    },
+    {
+      "key": "sleep.letter_finished",
+      "change": "letter_followup",
+      "english_beta9": "I have gone to sleep. You finished %1.",
+      "english_beta10": "I have gone to sleep. You finished %1.",
+      "current_ru": "Я перешёл в спящий режим. Чтение завершено: %1.",
+      "status": "proposed",
+      "proposed_ru": "Я перешёл в спящий режим. Книга «%1» прочитана.",
+      "changed_ru": true,
+      "note": "Согласовать с новой конструкцией прогресса Letter; ведущий пробел chapter намеренный."
+    },
+    {
+      "key": "sleep.letter_finished_off",
+      "change": "letter_followup",
+      "english_beta9": "I have switched off. You finished %1.",
+      "english_beta10": "I have switched off. You finished %1.",
+      "current_ru": "Я выключен. Чтение завершено: %1.",
+      "status": "proposed",
+      "proposed_ru": "Я выключен. Книга «%1» прочитана.",
+      "changed_ru": true,
+      "note": "Согласовать с новой конструкцией прогресса Letter; ведущий пробел chapter намеренный."
+    }
+  ],
+  "removed": [
+    {
+      "key": "error.publication_declares_vertical_writing",
+      "english_beta9": "This book uses an unsupported writing mode."
+    },
+    {
+      "key": "error.publication_layout_inspection_is_incomplete",
+      "english_beta9": "Publication layout inspection is incomplete"
+    },
+    {
+      "key": "error.publication_requires_right_to_left_page_navigation",
+      "english_beta9": "Publication requires right-to-left page navigation"
+    },
+    {
+      "key": "reader.updating_page_layout",
+      "english_beta9": "Updating page layout..."
+    },
+    {
+      "key": "stats.book_words",
+      "english_beta9": "Book · %1"
+    },
+    {
+      "key": "reader.dense_graph",
+      "english_beta9": "Compact chapter graphs"
+    },
+    {
+      "key": "settings.dense_graph_description",
+      "english_beta9": "When turned on, the Stats panel shows more chapters at once. If you want wider bars, turn this off."
+    },
+    {
+      "key": "reader.long_press_link",
+      "english_beta9": "Long press a link to see its options."
+    },
+    {
+      "key": "settings.section_graphs",
+      "english_beta9": "Graphs"
+    },
+    {
+      "key": "settings.column_spacing_description",
+      "english_beta9": "Gap between columns as a multiple of the current text size. Applies to all books."
+    }
+  ],
+  "preserved": [
+    {
+      "key": "about.fork",
+      "ru": "%1",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "about.fork_build",
+      "ru": "%1 · %2",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "activity.book_unit_few",
+      "ru": "книги",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "activity.book_unit_many",
+      "ru": "книг",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "activity.book_unit_one",
+      "ru": "книга",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "activity.hour_unit_few",
+      "ru": "часа",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "activity.hour_unit_many",
+      "ru": "часов",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "activity.hour_unit_one",
+      "ru": "час",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "annotations.actions_section",
+      "ru": "Действия",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "annotations.color_section",
+      "ru": "Цвет",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "annotations.style_section",
+      "ru": "Стиль",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "annotations.summary_few",
+      "ru": "Аннотации: %1",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "annotations.summary_many",
+      "ru": "Аннотаций: %1",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "annotations.summary_one",
+      "ru": "%1 аннотация",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "buttons.invert_landscape",
+      "ru": "Инвертировать кнопки в альбомной ориентации.",
+      "basis": "explicit prior review"
+    },
+    {
+      "key": "chapter_contents.summary_few",
+      "ru": "Содержание · главы: %1",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "chapter_contents.summary_many",
+      "ru": "Содержание · глав: %1",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "chapter_contents.summary_one",
+      "ru": "Содержание · %1 глава",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "debug.clear_caches_confirm_description",
+      "ru": "Kobalt закроется. При открытии каждая книга будет заново разобрана и свёрстана.",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "debug.clear_caches_description",
+      "ru": "Удалить разобранные копии всех книг и плитки предпросмотра, затем закрыть Kobalt. Данные чтения сохранятся.",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "debug.evict_cache_confirm_description",
+      "ru": "Kobalt закроется. При следующем открытии книга будет заново разобрана и свёрстана.",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "debug.evict_cache_description",
+      "ru": "Удалить разобранную копию и страницы этой книги, затем закрыть Kobalt. Место чтения, закладки и аннотации сохранятся.",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "debug.language_automatic",
+      "ru": "Автоматически (язык устройства)",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "debug.language_failed",
+      "ru": "Не удалось сохранить язык. Проверьте папку diagnostics и повторите попытку.",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "debug.language_restart",
+      "ru": "Выберите язык для следующего запуска ридера. Текущий интерфейс не изменится.",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "debug.language_saved",
+      "ru": "Сохранено. Выйдите из Kobalt и снова откройте книгу, чтобы применить язык.",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "debug.language_title",
+      "ru": "Язык интерфейса",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "dictionaries.cannot_save_the_download",
+      "ru": "Не удалось сохранить загруженный файл.",
+      "basis": "explicit prior review"
+    },
+    {
+      "key": "dictionaries.dictionary_index_points_outside_its_data",
+      "ru": "Индекс словаря ссылается на данные за пределами файла.",
+      "basis": "explicit prior review"
+    },
+    {
+      "key": "features.comics",
+      "ru": "Переключатель режима комиксов",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "features.comics_description",
+      "ru": "Скрывает переключатель режима комиксов в меню чтения. Текущий режим чтения сохраняется.",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "features.dark_mode",
+      "ru": "Переключатель тёмной темы",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "features.dark_mode_description",
+      "ru": "Скрывает переключатель тёмной темы в меню чтения. Текущая тема сохраняется.",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "library.count_few",
+      "ru": "%1 книги",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "library.count_many",
+      "ru": "%1 книг",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "library.count_one",
+      "ru": "%1 книга",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "opening.reopening",
+      "ru": "Подготовка к чтению",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "reader.comics_reading_mode",
+      "ru": "Режим чтения комиксов",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "reader.comics_reading_mode_description",
+      "ru": "Убирает поля и колонтитулы, игнорируя текущие настройки раскладки.",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "reader.exit",
+      "ru": "Закрыть Kobalt",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "reader.link_dictionary",
+      "ru": "Словарь",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "reader.restore_book_defaults_detail",
+      "ru": "Шрифт, размер, межстрочный интервал, выравнивание, насыщенность и переносы этой книги вернутся к настройкам «Текст новых книг» либо к варианту «Как в книге», если выбрано «Как в прошлой книге». Другие книги и настройки не изменятся. Настройки применятся после закрытия раздела «Настройки».",
+      "basis": "explicit prior review"
+    },
+    {
+      "key": "settings.about",
+      "ru": "О программе",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "settings.brightness_gesture_feedback",
+      "ru": "Индикация регулировки яркости",
+      "basis": "explicit prior review"
+    },
+    {
+      "key": "settings.defaults",
+      "ru": "Стандартные",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "settings.primary_typography",
+      "ru": "Основные шрифты",
+      "basis": "explicit prior review"
+    },
+    {
+      "key": "settings.rendering_fast",
+      "ru": "Быстро",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "settings.secondary_typography",
+      "ru": "Дополнительные шрифты",
+      "basis": "explicit prior review"
+    },
+    {
+      "key": "settings.session_timeout_0",
+      "ru": "Продолжать прежний сеанс",
+      "basis": "explicit prior review"
+    },
+    {
+      "key": "settings.session_timeout_description",
+      "ru": "Если устройство спало не меньше выбранного времени, после пробуждения время текущего сеанса чтения начнётся с нуля. Позиция в книге и общая статистика сохраняются.",
+      "basis": "explicit prior review"
+    },
+    {
+      "key": "settings.session_timeout_never_description",
+      "ru": "После сна любой длительности время текущего сеанса продолжает отсчитываться с прежнего значения. Время сна не учитывается как чтение.",
+      "basis": "explicit prior review"
+    },
+    {
+      "key": "sleep.letter_remaining",
+      "ru": "Осталось читать примерно %1.",
+      "basis": "post-initial-control refinement or fork-only addition"
+    },
+    {
+      "key": "stats.count_words_in",
+      "ru": "Область статистики книги",
+      "basis": "explicit prior review"
+    },
+    {
+      "key": "stats.count_words_in_title",
+      "ru": "Область статистики книги",
+      "basis": "explicit prior review"
+    },
+    {
+      "key": "stats.session",
+      "ru": "Сеанс",
+      "basis": "explicit prior review"
+    }
+  ]
+}

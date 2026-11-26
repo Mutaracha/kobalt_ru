@@ -1,0 +1,467 @@
+/* PROPOSAL ONLY. Partial beta9 -> beta10 delta plus Letter follow-up. Not applied. */
+/* added */
+"bookmarks.pin_title" = "Закрепить закладку";
+/* added */
+"bookmarks.modify_title" = "Изменить закреплённую закладку";
+/* added */
+"chapter_contents.additional_actions" = "Дополнительные действия";
+/* added */
+"chapter_contents.enter_printed_page" = "Введите номер страницы печатного издания.";
+/* added */
+"chapter_contents.other_labels" = "Другие обозначения страниц";
+/* added */
+"chapter_contents.more" = "Другие способы перехода";
+/* added */
+"chapter_contents.go_to_printed_page" = "К печатной странице";
+/* added */
+"chapter_contents.no_printed_pages" = "В книге не указаны номера страниц печатного издания.";
+/* added */
+"chapter_contents.view_landmarks" = "К основным разделам книги";
+/* added */
+"chapter_contents.landmarks" = "Основные разделы";
+/* added */
+"chapter_contents.landmark_count" = "Основные разделы · %1";
+/* added */
+"chapter_contents.preview_image" = "Посмотреть иллюстрацию: %1";
+/* added */
+"chapter_contents.illustrated_entry" = "Пункт с иллюстрацией: %1";
+/* added */
+"chapter_contents.printed_pages" = "Печатные страницы";
+/* added */
+"chapter_contents.printed_count" = "Печатные страницы · %1";
+/* added */
+"chapter_contents.mark_start" = "Отметить как начало";
+/* added */
+"chapter_contents.mark_end" = "Отметить как конец";
+/* added */
+"chapter_contents.reset_start" = "Восстановить начало";
+/* added */
+"chapter_contents.reset_end" = "Восстановить конец";
+/* added */
+"chapter_contents.start" = "Начало";
+/* added */
+"chapter_contents.end" = "Конец";
+/* added */
+"chapter_contents.both" = "Начало и конец";
+/* added */
+"common.screen" = "экран";
+/* added */
+"common.screens" = "экраны";
+/* added */
+"header_footer.header_off_hint" = "Нажмите на поле нижнего колонтитула, чтобы изменить его. Для настройки верхнего колонтитула сначала включите его.";
+/* added */
+"header_footer.footer_off_hint" = "Нажмите на поле верхнего колонтитула, чтобы изменить его. Для настройки нижнего колонтитула сначала включите его.";
+/* added */
+"header_footer.both_off_hint" = "Включите верхний или нижний колонтитул, затем нажмите на нужное поле.";
+/* added */
+"header_footer.progress_bar_bottom" = "Снизу";
+/* added */
+"header_footer.progress_bar_top" = "Сверху";
+/* added */
+"header_footer.progress_ticks" = "Метки глав";
+/* added */
+"header_footer.field.chapter_screen" = "Экран в главе";
+/* added */
+"header_footer.field.chapter_screens_left" = "Осталось экранов в главе";
+/* added */
+"header_footer.field.chapter_and_screen" = "Глава и экран в главе";
+/* added */
+"shutdown.shutting_down" = "Выключение";
+/* added */
+"shutdown.restarting" = "Перезапуск";
+/* added */
+"shutdown.saving" = "Сначала сохраняем данные чтения…";
+/* added */
+"closing.sync_title" = "Синхронизация Kobo";
+/* added */
+"closing.wait_for_sync" = "Дождаться синхронизации";
+/* added */
+"closing.waiting_for_sync" = "Ожидание синхронизации…";
+/* added */
+"closing.sync_detail" = "Kobalt закроется после завершения синхронизации. Если на Kobo сохранена другая позиция чтения, вы сможете выбрать, какую оставить. Нажмите вне сообщения, чтобы продолжить чтение.";
+/* added */
+"closing.local_only" = "Выйти без отправки прогресса";
+/* added */
+"reader.applying_theme" = "Применяем тему…";
+/* added */
+"reader.zoom_screen_range" = "Экраны с %1 по %2 из %3";
+/* added */
+"reader.strip_padding" = "Отступы";
+/* added */
+"reader.text_preview_sample" = "На этой странице нет текста. Образец показывает, как будут выглядеть выбранные настройки.";
+/* added */
+"reader.text_preview_lifted" = "Предпросмотр начинается под иллюстрацией, чтобы были видны изменения текста.";
+/* added */
+"reader.menu_screen_of" = "ЭКРАН %1 ИЗ %2";
+/* added */
+"reader.restore_book_defaults" = "Восстановить настройки книги по умолчанию";
+/* added */
+"reader.restore_book_defaults_prompt" = "Восстановить настройки книги по умолчанию?";
+/* added */
+"reader.book_defaults_selected" = "Выбраны настройки книги по умолчанию";
+/* added */
+"reader.return_screen" = "Вернуться к экрану %1";
+/* added */
+"reader.counting_pages" = "Подсчёт страниц";
+/* added */
+"reader.counting_screens" = "Подсчёт экранов";
+/* added */
+"reader.strip_size_value" = "%1 пикс.";
+/* added */
+"search_panel.screen_detail" = "Экран %1: %2";
+/* added */
+"settings.dark_mode" = "Тёмный режим";
+/* added */
+"settings.night_mode_description" = "Также известен как ночной режим. Показывает светлый текст на тёмном фоне и инвертирует некоторые цвета.";
+/* added */
+"settings.secondary_numbers" = "Нумерация вне основного текста";
+/* added */
+"settings.secondary_numbers_hint" = "Как нумеровать страницы до и после основного текста. Настройка действует для всех книг.";
+/* added */
+"settings.secondary_roman" = "Римские строчные";
+/* added */
+"settings.secondary_arabic" = "Арабские цифры";
+/* added */
+"settings.secondary_letters" = "Строчные буквы";
+/* added */
+"settings.secondary_prefixed" = "С префиксом раздела";
+/* added */
+"settings.secondary_upper_roman" = "Римские прописные";
+/* added */
+"settings.secondary_preview" = "До текста  %1   ·   После текста  %2";
+/* added */
+"settings.publisher_page_numbers" = "Номера страниц издателя";
+/* added */
+"settings.publisher_page_numbers_description" = "Всегда показывать номера страниц печатного издания, если они есть. Страницы собственной вёрстки Kobalt называет экранами.";
+/* added */
+"settings.sideloaded_fonts_first" = "Сначала пользовательские шрифты";
+/* added */
+"settings.sideloaded_fonts_first_description" = "Во всех списках выбора показывать ваши шрифты перед рекомендуемыми.";
+/* added */
+"sleep.status_random" = "Случайный вариант";
+/* added */
+"reader.screen_number" = "Экран %1";
+/* added */
+"bookmarks.remove_screen_detail" = "Экран %1 · %2";
+/* added */
+"chapter_contents.location" = "Позиция";
+/* added */
+"search_panel.screen_chapter" = "Экран %1 · %2";
+/* added */
+"stats.screen_of" = "Экран %1 из %2";
+/* added */
+"stats.screens_left" = "экр. осталось";
+/* added */
+"stats.screen_left" = "экр. остался";
+/* added */
+"stats.scope_hint" = "Выберите, какую часть книги учитывать при подсчёте страниц, слов и времени чтения. Настройка действует для всех книг.";
+/* added */
+"stats.scope_main" = "Основной текст";
+/* added */
+"stats.scope_main_hint" = "От начала до конца основного текста: по меткам в книге или в разделе «Главы».";
+/* added */
+"stats.scope_volume" = "Весь том";
+/* added */
+"stats.scope_volume_hint" = "Все книги тома, включая материалы до и после основного текста.";
+/* added */
+"stats.main_words" = "Основной текст · %1";
+/* added */
+"stats.volume_words" = "Том · %1";
+/* added */
+"activity.copies" = "Копии книг";
+/* added */
+"activity.copies_count" = "Копий: %1";
+/* added */
+"activity.chart_value" = "%1: %2";
+/* added */
+"activity.chart_dates" = "%1 — %2";
+/* added */
+"activity.under_minute" = "Менее минуты";
+/* added */
+"activity.projected_finish" = "Предполагаемое завершение: %1";
+/* added */
+"reader.international_supplemental_fonts" = "Шрифты других письменностей";
+/* added */
+"reader.ui_fonts" = "Шрифты интерфейса";
+/* added */
+"dictionaries.cannot_activate_installed_dictionary" = "Не удалось активировать установленный словарь.";
+/* added */
+"dictionaries.cannot_create_dictionary_storage" = "Не удалось создать хранилище словарей.";
+/* added */
+"dictionaries.cannot_install_this_dictionary" = "Не удалось установить этот словарь.";
+/* added */
+"dictionaries.cannot_read_dictionary_index" = "Не удалось прочитать индекс словаря.";
+/* added */
+"dictionaries.cannot_remove_this_dictionary" = "Не удалось удалить этот словарь.";
+/* added */
+"dictionaries.cannot_save_dictionary_files" = "Не удалось сохранить файлы словаря.";
+/* added */
+"dictionaries.cannot_save_dictionary_index" = "Не удалось сохранить индекс словаря.";
+/* added */
+"dictionaries.cannot_save_dictionary_metadata" = "Не удалось сохранить метаданные словаря.";
+/* added */
+"dictionaries.dictionary_archive_is_damaged" = "Архив словаря повреждён.";
+/* added */
+"dictionaries.dictionary_archive_is_missing_required_files" = "В архиве словаря отсутствуют необходимые файлы.";
+/* added */
+"dictionaries.dictionary_checksum_differs" = "Контрольная сумма словаря не совпадает с ожидаемой.";
+/* added */
+"dictionaries.dictionary_checksum_or_size_differs" = "Контрольная сумма или размер словаря не соответствует ожидаемому значению.";
+/* added */
+"dictionaries.dictionary_definition_is_damaged" = "Словарная статья повреждена.";
+/* added */
+"dictionaries.dictionary_download_is_incomplete" = "Словарь загружен не полностью.";
+/* added */
+"dictionaries.dictionary_index_is_damaged" = "Индекс словаря повреждён.";
+/* added */
+"dictionaries.dictionary_index_is_too_large" = "Индекс словаря слишком большой.";
+/* added */
+"dictionaries.dictionary_installed" = "Словарь установлен.";
+/* added */
+"dictionaries.dictionary_removed" = "Словарь удалён.";
+/* added */
+"dictionaries.download_cancelled" = "Загрузка отменена.";
+/* added */
+"dictionaries.download_size_or_storage_error" = "Не удалось загрузить файл нужного размера или сохранить его.";
+/* added */
+"dictionaries.downloading_name" = "Загружается %1";
+/* added */
+"dictionaries.downloading_progress" = "Загружается %1 · %2";
+/* added */
+"dictionaries.installation_cancelled" = "Установка отменена.";
+/* added */
+"dictionaries.installed_dictionary_is_damaged" = "Установленный словарь повреждён.";
+/* added */
+"dictionaries.installed_inflection_index_is_damaged" = "Индекс словоформ установленного словаря повреждён.";
+/* added */
+"dictionaries.installing_name" = "Устанавливается %1";
+/* added */
+"dictionaries.invalid_dictzip_data" = "Некорректные данные dictzip.";
+/* added */
+"dictionaries.invalid_stardict_index" = "Некорректный индекс StarDict.";
+/* added */
+"dictionaries.invalid_stardict_metadata" = "Некорректные метаданные StarDict.";
+/* added */
+"dictionaries.missing_stardict_inflection_index" = "Отсутствует индекс словоформ StarDict.";
+/* added */
+"dictionaries.missing_stardict_metadata" = "Отсутствуют метаданные StarDict.";
+/* added */
+"dictionaries.no_dictionary_installed" = "Нет установленных словарей.";
+/* added */
+"dictionaries.not_enough_space_for_this_dictionary" = "Недостаточно места для этого словаря.";
+/* added */
+"dictionaries.stardict_index_size_differs" = "Размер индекса StarDict не совпадает с указанным.";
+/* added */
+"dictionaries.stardict_word_count_differs_from_its_index" = "Заявленное число слов StarDict не совпадает с индексом.";
+/* added */
+"dictionaries.this_dictionary_is_not_available" = "Этот словарь недоступен.";
+/* added */
+"dictionaries.this_dictionary_is_not_installed" = "Этот словарь не установлен.";
+/* added */
+"dictionaries.unsafe_download_redirect" = "Загрузка остановлена: небезопасное перенаправление.";
+/* added */
+"dictionaries.unsupported_stardict_format" = "Неподдерживаемый формат StarDict.";
+/* added */
+"dictionaries.wait_for_this_download_to_finish" = "Дождитесь окончания загрузки.";
+/* added */
+"dictionaries.download_timed_out" = "Истекло время ожидания загрузки словаря.";
+/* added */
+"annotations.add_note_title" = "Добавить заметку";
+/* added */
+"annotations.edit_note_title" = "Изменить заметку";
+/* added */
+"settings.theming" = "Оформление";
+/* added */
+"settings.theme_selection" = "Готовая тема";
+/* added */
+"settings.theme_details" = "Настроить оформление";
+/* added */
+"settings.icon_monochrome" = "Монохромные";
+/* added */
+"settings.icon_color" = "Только цвет";
+/* added */
+"settings.icon_pastel" = "Пастельные плитки";
+/* added */
+"settings.theme_preset" = "Готовая тема";
+/* added */
+"settings.icon_theme" = "Тема значков";
+/* added */
+"settings.theme_classic" = "Классическая";
+/* added */
+"settings.theme_playful" = "Неформальная";
+/* added */
+"settings.theme_notebook" = "Блокнот";
+/* added */
+"settings.icon_rings" = "Цветные кольца";
+/* added */
+"settings.palette" = "Цветовая тема";
+/* added */
+"settings.palette_grayscale" = "Оттенки серого";
+/* added */
+"settings.palette_blue" = "Синяя";
+/* added */
+"settings.palette_sage" = "Шалфейная";
+/* added */
+"settings.palette_sepia" = "Сепия";
+/* added */
+"settings.theme_custom" = "Своя";
+/* added */
+"settings.font_too_large" = "Шрифт недоступен из-за ограничений размера.";
+/* added */
+"settings.columns_description" = "Расстояние между колонками задаётся относительно текущего размера текста.";
+/* added */
+"settings.landscape_column_layout" = "Несколько колонок в альбомной ориентации";
+/* added */
+"settings.single_column" = "Одна колонка";
+/* added */
+"settings.two_in_landscape" = "Две в альбомной ориентации";
+/* added */
+"settings.chapter_spread" = "Начинать главы с нового разворота";
+/* added */
+"settings.chapter_spread_description" = "Если глава начинается с новой страницы, размещать её в первой колонке разворота.";
+/* added */
+"marks.row_action" = "%1: %2";
+/* added */
+"marks.page_range" = "Страницы %1–%2";
+/* added */
+"marks.location_range" = "%1 — %2";
+/* added */
+"marks.screen_range" = "Экраны %1–%2";
+/* added */
+"marks.screen_range_description" = "Экраны с %1 по %2";
+/* added */
+"annotations.numbered_entry" = "Аннотация %1";
+/* added */
+"bookmarks.numbered_entry" = "Закладка %1";
+/* added */
+"marks.sort_dialog_title" = "Сортировать по";
+/* added */
+"kosync.device_name_title" = "Имя устройства";
+/* added */
+"kosync.matching_title" = "Сопоставление документов";
+/* added */
+"kosync.screens_ahead" = "Дальше на %1 экр.";
+/* added */
+"kosync.screens_ahead_one" = "Дальше на 1 экр.";
+/* added */
+"kosync.screens_back" = "Раньше на %1 экр.";
+/* added */
+"kosync.screens_back_one" = "Раньше на 1 экр.";
+/* added */
+"buttons.invert_landscape_hint" = "Включите, если в альбомной ориентации кнопки перелистывают в обратную сторону.";
+/* added */
+"features.activity" = "Активность";
+/* added */
+"features.activity_description" = "Скрывает раздел «Активность» в статистике. История чтения сохраняется и дальше.";
+/* added */
+"words.go_to_screen" = "Перейти к экрану %1";
+/* changed */
+"bookmarks.custom_help_title" = "Свои значки закладок";
+/* changed */
+"bookmarks.custom_help_android" = "В библиотеке откройте «Ещё» > «Папки ресурсов» и выберите папку своих значков.";
+/* changed */
+"bookmarks.custom_errors_title" = "Значки не загружены";
+/* changed */
+"kosync.resume_description" = "Другое устройство сохранило позицию %1 (%2). Выберите, какую позицию оставить.";
+/* changed */
+"library.remove_book_title" = "Убрать из библиотеки?";
+/* changed */
+"chapter_graph.book_progress" = "Прогресс книги: %1";
+/* changed */
+"chapter_graph.chapter_progress" = "Прогресс главы: %1";
+/* changed */
+"common.percent" = "%1";
+/* changed */
+"header_footer.custom_hint" = "Нажмите на поле, чтобы изменить его. Изменения действуют во всех книгах, использующих вариант «Свой».";
+/* changed */
+"header_footer.field_description.battery_warning" = "Показывает заряд батареи, только когда он ниже %1.";
+/* changed */
+"reader.brightness" = "Яркость %1";
+/* changed */
+"reader.built_in_fonts" = "Системные шрифты";
+/* changed */
+"reader.settings_write_error" = "Ошибка записи на диск";
+/* changed */
+"settings.paragraph_spacing_description" = "Значения — в процентах от размера текста: при 12 пт отступ %1 равен 12 пт. Для всех книг. Заголовки и особые блоки сохраняют оформление.";
+/* changed */
+"reader.warmth" = "Тёплый свет %1";
+/* changed */
+"reader.your_reading_position_stays_the_same_the_defaults_apply_when_you_c" = "Тема, шрифты интерфейса, настройки экрана и текста этой книги вернутся к исходным значениям. Текст других книг и позиция чтения не изменятся. Изменения применятся после закрытия настроек.";
+/* changed */
+"settings.rendering_summary" = "Гибридный режим быстро открывает книгу и подготавливает полную вёрстку в фоне. После этого он работает так же, как режим «Точный».";
+/* changed */
+"sleep.percent_read" = "прочитано %1";
+/* changed */
+"sleep.state_with_battery" = "%1 (%2)";
+/* changed */
+"sleep.battery_charged" = "Заряжено на %1";
+/* changed */
+"sleep.percent_through" = "%1 книги «%2»";
+/* changed */
+"sleep.gallery_title" = "Экран сна и выключения";
+/* changed */
+"sleep.custom_title" = "Экран блокировки и сна";
+/* changed */
+"debug.evict_cache_title" = "Удалить кэш книги?";
+/* changed */
+"debug.clear_caches_title" = "Очистить все кэши?";
+/* changed */
+"sync.title" = "Синхронизированная позиция чтения";
+/* changed */
+"activity.delete_title" = "Удалить историю чтения?";
+/* changed */
+"activity.welcome_description" = "Здесь учитывается только время чтения книг в Kobalt на этом устройстве. На этих сеансах основаны серии дней чтения и общие показатели. История чтения между устройствами не синхронизируется.";
+/* changed */
+"recovery.title" = "Сохранённые данные сброшены";
+/* changed */
+"reader.supplemental_fonts" = "Коллекция Kobalt";
+/* changed */
+"reader.bold_reading" = "Бионическое чтение";
+/* changed */
+"reader.formatting_warning" = "Предупреждение о форматировании";
+/* changed */
+"annotations.export_format_title" = "Экспорт аннотаций в %1";
+/* changed */
+"settings.disable_reader_standby_description" = "Не даёт устройству переходить в режим ожидания во время чтения. Увеличивает расход батареи. Не рекомендуется.";
+/* changed */
+"settings.zen_mode" = "Режим дзен";
+/* changed */
+"settings.zen_leave" = "Удерживайте для выхода из дзен";
+/* changed */
+"settings.zen_leave_note" = "При выходе из дзен все настройки возвращаются.";
+/* changed */
+"settings.zen_leave_release" = "Отпустите, чтобы остаться в дзен.";
+/* changed */
+"settings.word_spacing_narrow_description" = "Использовать %1 обычной ширины пробела.";
+/* changed */
+"settings.word_spacing_normal_description" = "Сохранять обычную ширину пробела шрифта (%1).";
+/* changed */
+"settings.word_spacing_wide_description" = "Использовать %1 обычной ширины пробела.";
+/* changed */
+"settings.vertical_spacing_center_description" = "Центрировать текст, занимающий не менее %1 высоты области чтения. Межстрочный интервал не меняется.";
+/* changed */
+"kosync.learn_more_title" = "Синхронизация Kobo и KOSync";
+/* changed */
+"kosync.percent" = "%1";
+/* changed */
+"settings.percentage_whole_description" = "Например, %1";
+/* changed */
+"settings.percentage_decimal_description" = "Например, %1";
+/* changed */
+"buttons.upper" = "Кнопка 1";
+/* changed */
+"buttons.lower" = "Кнопка 2";
+/* changed */
+"text_presets.restore_prompt" = "Восстановить стандартные стили?";
+/* changed */
+"library.resource_folders" = "Папки ресурсов";
+/* letter_followup */
+"sleep.letter_progress" = "Я перешёл в спящий режим. Прочитано %1 книги «%2».%3";
+/* letter_followup */
+"sleep.letter_progress_off" = "Я выключен. Прочитано %1 книги «%2».%3";
+/* letter_followup */
+"sleep.letter_chapter" = " Текущая глава — «%1».";
+/* letter_followup */
+"sleep.letter_finished" = "Я перешёл в спящий режим. Книга «%1» прочитана.";
+/* letter_followup */
+"sleep.letter_finished_off" = "Я выключен. Книга «%1» прочитана.";
