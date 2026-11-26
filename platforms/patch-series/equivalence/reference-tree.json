@@ -4247,8 +4247,8 @@
     },
     "src/assets/font_catalog.cpp": {
       "mode": "100644",
-      "sha256": "09f0a7d566abb9360a5621a3dff7c7e7da41616c12a1d08dc651c059eae7e2e5",
-      "size": 14441
+      "size": 14905,
+      "sha256": "daa7effa473538b8bc4f7b35b04e6ede025bca192296a1da6dea763553581cdd"
     },
     "src/assets/font_catalog.h": {
       "mode": "100644",
@@ -7407,8 +7407,8 @@
     },
     "tests/model/ru_control_ui.cpp": {
       "mode": "100644",
-      "sha256": "a9126b43dbf4e02c234bb06779bb77bf6880b570c8b057c28af660c717b09949",
-      "size": 14223
+      "size": 16075,
+      "sha256": "adab30cc50b3473eb75e905824390ed8036675ee381f8d2a23137ecd164d5158"
     },
     "tests/model/save_wait.cpp": {
       "mode": "100644",
@@ -7911,6 +7911,26 @@
       },
       "basis": "R05: move unchanged effective menu-status serialization/toggle into existing model helper; preserve save callback and fallbacks.",
       "review": "doc/reports/patch-series/062-menu-status-refactor.md"
+    },
+    {
+      "paths": [
+        "src/assets/font_catalog.cpp",
+        "tests/model/ru_control_ui.cpp"
+      ],
+      "previous": {
+        "src/assets/font_catalog.cpp": {
+          "mode": "100644",
+          "sha256": "09f0a7d566abb9360a5621a3dff7c7e7da41616c12a1d08dc651c059eae7e2e5",
+          "size": 14441
+        },
+        "tests/model/ru_control_ui.cpp": {
+          "mode": "100644",
+          "sha256": "a9126b43dbf4e02c234bb06779bb77bf6880b570c8b057c28af660c717b09949",
+          "size": 14223
+        }
+      },
+      "basis": "R06: isolate unchanged per-file Russian glyph probe with explicit unknown/missing/supported states; preserve family aggregation/cache keys.",
+      "review": "doc/reports/patch-series/063-font-coverage-refactor.md"
     }
   ]
 }

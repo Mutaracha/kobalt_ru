@@ -56,6 +56,9 @@ R05 объединяет правила сериализации/toggle стат
 writer/callback. [Область](../../doc/reports/patch-series/062-menu-status-refactor.md).
 На будущее beta11: [согласование font-cache upstream fix](../../doc/reports/patch-series/beta11-upgrade-checklist.md).
 
+R06 отделяет tri-state cmap probe от политики RU picker/cache без изменения
+правил. [Область и тесты](../../doc/reports/patch-series/063-font-coverage-refactor.md).
+
 ## Проверка эквивалентности
 
 Эталон — полная прежняя серия runtime `5b45f2c74857180f0689f80b5e48a9134f58bec7`.

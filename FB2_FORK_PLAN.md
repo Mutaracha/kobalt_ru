@@ -6,12 +6,22 @@
 Последний CI-проверенный бинарник: **7d13ec2c**, [CI45815527684](https://github.com/Mutaracha/kobalt_ru/actions/runs/45815527684),
 [пакет Qt5](https://github.com/Mutaracha/kobalt_ru/actions/runs/45815527684/artifacts/15114663890).
 Все 3 jobs PASS: series/export, selected native/Linux, Qt5/package, archived FB2 replay.
-R01–R03 приняты пользователем на устройстве; аппаратная приёмка R04/R05 открыта.
+R01–R03 приняты; пользователь подтвердил проверку шрифтов и строки статуса
+на последней сборке. Полный custom-preset/EN-RU чек-лист R04 не заявляется.
 Docs-only обновления не меняют этот бинарник.
 
 ## Текущий шаг
 
-**R05 — статус меню: implemented, CI PASS, device pending.** Сериализация эффективного
+**R06 — cmap probe: implemented, CI/device pending.** Файловая FreeType-проверка
+отделена от cache/list policy с явным Unknown/Missing/Supported. Правила агрегации,
+EN и кэш вёрстки не меняются. 15 локальных Python tests PASS; native cases расширены.
+Следующий шаг: CI и [чек-лист R06](doc/reports/patch-series/063-font-coverage-refactor.md).
+
+**Проверка устройства R04/R05:** пользователь сообщил «проверил изменение шрифтов
+и сноску в статусбаре. можно переходить дальше». Фиксируем положительный результат
+этого scope, не приписывая ему полную проверку EN/RU/пользовательских имён стилей.
+
+**R05 — статус меню: implemented, CI PASS, device checked (reported scope).** Сериализация эффективного
 режима и чистая операция toggle перенесены в существующий menustatus модуль.
 UI writer/callback и глобальный выбор сохраняются. 15 локальных Python tests PASS,
 новые native cases выполнены CI45815527684 (все 3 jobs PASS). Следующий шаг: [чек-лист R05](doc/reports/patch-series/062-menu-status-refactor.md).

@@ -28656,7 +28656,7 @@ index 62bd50b0..6d83052d 100644
          add(file(QString("fonts/") + QLatin1String(name)));
      return result;
 diff --git a/src/assets/font_catalog.cpp b/src/assets/font_catalog.cpp
-index 4c67f679..b704bab9 100644
+index 4c67f679..a3d50b25 100644
 --- a/src/assets/font_catalog.cpp
 +++ b/src/assets/font_catalog.cpp
 @@ -1,4 +1,6 @@
@@ -28676,11 +28676,33 @@ index 4c67f679..b704bab9 100644
          return FontSection::Ui;
      if (font.origin == FontOrigin::BuiltIn)
          return FontSection::BuiltIn;
-@@ -53,11 +56,46 @@ void sortFontSections(QVector<ReadingFont> &fonts, bool sideloadedFirst)
+@@ -53,11 +56,60 @@ void sortFontSections(QVector<ReadingFont> &fonts, bool sideloadedFirst)
      });
  }
  
 +namespace {
++enum class RussianCoverage { Unknown, Missing, Supported };
++
++// Inspect one file independently of picker policy and its metadata-keyed cache.
++// Failure to inspect is not evidence that the font lacks Russian letters.
++RussianCoverage russianCoverage(const QString &path)
++{
++    FT_Library library = nullptr;
++    FT_Face face = nullptr;
++    if (FT_Init_FreeType(&library))
++        return RussianCoverage::Unknown;
++    if (FT_New_Face(library, QFile::encodeName(path).constData(), 0, &face)) {
++        FT_Done_FreeType(library);
++        return RussianCoverage::Unknown;
++    }
++    bool supported = FT_Get_Char_Index(face, 0x401) && FT_Get_Char_Index(face, 0x451);
++    for (unsigned c = 0x410; c <= 0x44f && supported; ++c)
++        supported = FT_Get_Char_Index(face, c) != 0;
++    FT_Done_Face(face);
++    FT_Done_FreeType(library);
++    return supported ? RussianCoverage::Supported : RussianCoverage::Missing;
++}
++
 +// Picker-only cmap check: never unregister engine faces or fallback resources.
 +bool lacksRussianLetters(const ReadingFont &font)
 +{
@@ -28692,18 +28714,10 @@ index 4c67f679..b704bab9 100644
 +        const auto key = path + ':' + QString::number(info.size()) + ':'
 +                + QString::number(info.lastModified().toMSecsSinceEpoch());
 +        if (!coverage.contains(key)) {
-+            FT_Library library = nullptr;
-+            FT_Face face = nullptr;
-+            if (FT_Init_FreeType(&library)) continue;
-+            if (FT_New_Face(library, QFile::encodeName(path).constData(), 0, &face)) {
-+                FT_Done_FreeType(library);
-+                continue; // Unknown/unreadable does not prove missing glyphs.
-+            }
-+            bool supported = FT_Get_Char_Index(face, 0x401) && FT_Get_Char_Index(face, 0x451);
-+            for (unsigned c = 0x410; c <= 0x44f && supported; ++c)
-+                supported = FT_Get_Char_Index(face, c) != 0;
-+            FT_Done_Face(face);
-+            FT_Done_FreeType(library);
++            const auto result = russianCoverage(path);
++            if (result == RussianCoverage::Unknown)
++                continue;
++            const bool supported = result == RussianCoverage::Supported;
 +            if (coverage.size() > 2048) coverage.clear();
 +            coverage.insert(key, supported);
 +        }
@@ -28723,7 +28737,7 @@ index 4c67f679..b704bab9 100644
                                     if (!font.family.startsWith("KF ")
                                         || selected.contains(font.family, Qt::CaseInsensitive))
                                         return false;
-@@ -83,8 +121,8 @@ QVector<ReadingFont> orderedReadingFonts(QVector<ReadingFont> fonts, const QStri
+@@ -83,8 +135,8 @@ QVector<ReadingFont> orderedReadingFonts(QVector<ReadingFont> fonts, const QStri
      std::stable_sort(fonts.begin(), fonts.end(), [](const auto &a, const auto &b) {
          if (a.origin != b.origin)
              return a.origin < b.origin;
@@ -29434,10 +29448,10 @@ index 32602ff5..f8b4ff0a 100644
                      && !largeHtml.contains(">Annotation 001</a>"),
 diff --git a/tests/model/ru_control_ui.cpp b/tests/model/ru_control_ui.cpp
 new file mode 100644
-index 00000000..5562dc8a
+index 00000000..0b68c870
 --- /dev/null
 +++ b/tests/model/ru_control_ui.cpp
-@@ -0,0 +1,239 @@
+@@ -0,0 +1,270 @@
 +#include "check.h"
 +#include "reader_inputs.h"
 +#include "support/percentage_text.h"
@@ -29455,6 +29469,8 @@ index 00000000..5562dc8a
 +#include "reading/text_presets.h"
 +#include "reading/menu_status.h"
 +#include <QFileInfo>
++#include <QFile>
++#include <QTemporaryDir>
 +#include <QLabel>
 +#include <QApplication>
 +#include <QDir>
@@ -29552,6 +29568,35 @@ index 00000000..5562dc8a
 +    const ReadingFont cyrillic{"Cyrillic sample", {test::readerAssets().file("fonts/ebook-core/NV_Literata-Regular.ttf")}, FontOrigin::Interface, {}, {}};
 +    require(orderedReadingFonts({latin, cyrillic}).size() == (ru ? 1 : 2),
 +            "actual cmap filter missing or leaked into English");
++
++    {
++        QTemporaryDir temporary;
++        require(temporary.isValid(), "Cannot create cmap probe test directory");
++        const auto absent = temporary.filePath(QStringLiteral("absent.ttf"));
++        const auto invalid = temporary.filePath(QStringLiteral("invalid.ttf"));
++        QFile broken(invalid);
++        require(broken.open(QIODevice::WriteOnly) && broken.write("not a font") == 10,
++                "Cannot write invalid font fixture");
++        broken.close();
++        const auto visibleCount = [](const QStringList &files) {
++            return orderedReadingFonts({ReadingFont{QStringLiteral("Probe sample"), files,
++                                                    FontOrigin::Interface, {}, {}}}).size();
++        };
++        // Repeat to cover known-result cache hits as well as fresh inspections.
++        for (int repeat = 0; repeat < 3; ++repeat) {
++            require(visibleCount({}) == 1 && visibleCount({absent}) == 1
++                            && visibleCount({invalid}) == 1 && visibleCount({absent, invalid}) == 1,
++                    "Unknown coverage was incorrectly treated as missing Russian glyphs");
++            require(visibleCount(latin.files) == (ru ? 0 : 1),
++                    "Known missing coverage changed or affected English");
++            require(visibleCount({absent, latin.files.first(), invalid}) == (ru ? 0 : 1),
++                    "Unknown files changed a known missing result");
++            require(visibleCount({latin.files.first(), cyrillic.files.first()}) == 1
++                            && visibleCount({cyrillic.files.first(), latin.files.first()}) == 1
++                            && visibleCount({absent, cyrillic.files.first(), invalid}) == 1,
++                    "Family with a Russian-capable file was hidden or order-dependent");
++        }
++    }
 +
 +    {
 +        const auto presets = textpresets::load({});
