@@ -1477,10 +1477,10 @@ index 00000000..9ebefe6f
 +    std::puts("PASS: quick action ownership, feature independence and state glyphs");
 +}
 diff --git a/tests/reader_lifecycle.cpp b/tests/reader_lifecycle.cpp
-index d49d638d..13ef911e 100644
+index d49d638d..56715f24 100644
 --- a/tests/reader_lifecycle.cpp
 +++ b/tests/reader_lifecycle.cpp
-@@ -1229,6 +1229,88 @@ private slots:
+@@ -1229,6 +1229,89 @@ private slots:
                   "Opening the chooser in landscape clips its card");
      }
  
@@ -1492,6 +1492,7 @@ index d49d638d..13ef911e 100644
 +            QTest::newRow("device-book") << true;
 +    }
 +
++    // Checks visible FB2 Layout preview text through repeated comics on/off edits.
 +    void fb2ComicsPreviewRoundTrip()
 +    {
 +        QFETCH(bool, archived);
@@ -1569,7 +1570,7 @@ index d49d638d..13ef911e 100644
      void appearanceTeardownStopsPanelCallbacks_data()
      {
          QTest::addColumn<QString>("buttonName");
-@@ -7572,6 +7654,78 @@ private slots:
+@@ -7572,6 +7655,78 @@ private slots:
      }
  
      // Uses the real reading clock and Settings checklist to hide session text without stopping time collection.
@@ -1648,7 +1649,7 @@ index d49d638d..13ef911e 100644
      void readingTimeStatsVisibility_data()
      {
          QTest::addColumn<bool>("hidden");
-@@ -7710,7 +7864,7 @@ private slots:
+@@ -7710,7 +7865,7 @@ private slots:
          QCOMPARE(host.book()->sessionReadingMilliseconds(), qint64(12 * 60000));
      }
  
@@ -1657,7 +1658,7 @@ index d49d638d..13ef911e 100644
      void readingTimeStatus_data()
      {
          QTest::addColumn<bool>("dark");
-@@ -7804,15 +7958,18 @@ private slots:
+@@ -7804,15 +7959,18 @@ private slots:
                      QVERIFY(session->x() >= clock->geometry().right() + 1);
                      QVERIFY(session->geometry().right() < right->x());
                  }
@@ -1685,7 +1686,7 @@ index d49d638d..13ef911e 100644
                  if (radios == 3) {
                      QCOMPARE(bluetooth->geometry(), bluetoothBounds);
                      QCOMPARE(wifi->geometry(), wifiBounds);
-@@ -7848,12 +8005,14 @@ private slots:
+@@ -7848,12 +8006,14 @@ private slots:
          QVERIFY(QMetaObject::invokeMethod(timer, "timeout", Qt::DirectConnection));
          QCOMPARE(clock->text(), clockText);
          QCOMPARE(clock->width(), clock->sizeHint().width());

@@ -29,7 +29,7 @@ index 69a70d14..9fda861d 100644
  
  file(GLOB_RECURSE shared CONFIGURE_DEPENDS "${source}/*.cpp" "${source}/*.h")
 diff --git a/platforms/desktop/CMakeLists.txt b/platforms/desktop/CMakeLists.txt
-index 08d4f7ee..7814cd41 100644
+index 08d4f7ee..ceb578a4 100644
 --- a/platforms/desktop/CMakeLists.txt
 +++ b/platforms/desktop/CMakeLists.txt
 @@ -107,7 +107,10 @@ add_library(kobalt-core OBJECT ${shared} display.cpp ../standalone/native_image.
@@ -111,6 +111,15 @@ index 08d4f7ee..7814cd41 100644
          "library:^(desktop\\.(library.*|resourceFolders|restartFinishedBooks)|ui\\.library.*|model\\.library)$"
          "input:^(ui\\.(paged.*|pageTurnTapFilter|pageTurnFilterSeparatesInputClocks|hold.*|fontHoldCancellation|canvas.*|cancelledCanvasTouchRestoresSlider|listPressFeedback|optionAndSwatchPressFeedback)|desktop\\.(navigation|swipeChoices|pageSwipes|buttonMapping|buttonMappingActions|buttonMappingFollowsRotation|buttonMappingUnavailable|largeToc|chapterGroups|contentsReturn|mainTextBoundaries|mainTextChapterAnchors|mainTextSplitChapterEnd|illustratedNavigation|printedPageNavigation|hardwarePageButtons\\..*|wordSelection\\..*|touchCursor.*|annotationTwoFingerTapConsumesWholeSequence|annotationRightClickRejectsChords)|lifecycle\\.(pageTurnTimingIgnoresNoopNavigation|pageButtonsAfterTouchUseDeliveryTime|pageFrameDuringHold|pageImageDuringHold|pageGestureBurstIgnoresRapidTurns|remoteKeyActivityRequiresActiveReading))$"
          "links:^(desktop\\.(links|inpageFootnotes|footnote.*|revealedLinkPress|linkDiscoveryStrip|tappableLinks|bookmarkCornerLinks)|engine\\.(links|search|word-selection)|lifecycle\\.(staleSearchReplyIgnored|searchScopesAndPagination|searchSurvivesReflow|searchHighlightClearsOnReflow))$"
+@@ -859,7 +868,7 @@ if(BUILD_TESTING)
+         "sleep:^(lifecycle\\.(sleep.*|readerStandbySetting|readerUsesSelectedSleepScreen|closedReaderDoesNotSaveSleepScreen|usb.*|persistedSleepScreen.*|homeSleepScreen.*|pageTurnsResumeWhenReaderIsShownAfterSleep|shutdownFinalSave.*|teardownRemovesApplicationFilter)|platform\\.(shutdown|sleep-persistence|kobo-power-screen|usb-removal|native-lifecycle)|desktop\\.(deviceEmulation|sleepRandomStatusSelection)|model\\.engine-activity)$"
+         "diagnostics:^(model\\.(diagnostics|crash-reports)|desktop\\.(engineMonitor|engineMonitorSlowdown|engineMonitorReading|fastConsecutiveChapterJumps|diagnostics|storageDiagnostics|settingChangesLogged)|lifecycle\\.developmentStateReports|platform\\.standby-(input|diagnostics))$"
+         "kobo:^(platform\\.(startup-recovery|native-startup-wait|screensaver-loader|native-dialog-overlay|nickel-.*)|lifecycle\\.nativeOpeningStatus|model\\.qt-compat)$"
+-        "settings:^(desktop\\.(settings.*|backgroundStyleSamplesYieldToReader|lightDarkModeShortcut|themeChanges|themeApplyProgress|prototypeThemeKeys)|lifecycle\\.(settingsTeardownReleasesConfirmation|settingsChoiceSheetReusesRows|settingsFontSheetReusesRows|interfaceFontSections|settingsChoiceFitsAfterResize|appearance.*|textPresetsWithoutOpeningWait|panelsAfterBackgroundWork|uneditedPanelTransitions|overflowClosesCurrentPanel|turnSkipsHiddenControls)|model\\.(appearance-settings|text-presets|style-sample-cache|preview-store)|component\\.(ui|acknowledgments)|ui\\.(openingCoverDisabled|regularIconWeight|connectedModalFooter|modalFitsCompletedContentsOnShow|modalListDividers|modalClosesOnBackdropOnly|choiceSheetListFillsCard|paletteSwitchKeepsSheetColors))$"
++        "settings:^(desktop\\.(settings.*|backgroundStyleSamplesYieldToReader|lightDarkModeShortcut|themeChanges|themeApplyProgress|prototypeThemeKeys)|lifecycle\\.(settingsTeardownReleasesConfirmation|settingsChoiceSheetReusesRows|settingsFontSheetReusesRows|interfaceFontSections|settingsChoiceFitsAfterResize|fb2ComicsPreviewRoundTrip|appearance.*|textPresetsWithoutOpeningWait|panelsAfterBackgroundWork|uneditedPanelTransitions|overflowClosesCurrentPanel|turnSkipsHiddenControls)|model\\.(appearance-settings|text-presets|style-sample-cache|preview-store)|component\\.(ui|acknowledgments)|ui\\.(openingCoverDisabled|regularIconWeight|connectedModalFooter|modalFitsCompletedContentsOnShow|modalListDividers|modalClosesOnBackdropOnly|choiceSheetListFillsCard|paletteSwitchKeepsSheetColors))$"
+         "layout:^(engine\\..*|corpus\\..*|desktop\\.(columns|globalLayout|advancedText|verticalJustification|stylesheet)|model\\.layout-(cache|compatibility))$"
+         "reading:^(desktop\\.(startup|reading|openingProgressStages|standaloneOpeningPassageFollowsRequest|errors|formattingWarning|features)|lifecycle\\.preloadedBookOpensWithFreshHost|ui\\.openingCover(Layout|Upgrade|Disabled)|session\\.reader-session|model\\.(local-resources|zip-resource|resource-cache|plain-archive))$"
+         "build:^build\\..*$")
 diff --git a/platforms/kobo/CMakeLists.txt b/platforms/kobo/CMakeLists.txt
 index 79b65064..e1fed1cf 100644
 --- a/platforms/kobo/CMakeLists.txt

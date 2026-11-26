@@ -2472,8 +2472,8 @@
     },
     "platforms/desktop/CMakeLists.txt": {
       "mode": "100644",
-      "size": 79247,
-      "sha256": "c79efd0687fcf6d66bc69b1ac8e3659923bd0a2f1ccd00df6eca8a66a0df9b86"
+      "size": 79273,
+      "sha256": "7a030249187d3d0be4c71b973939ba12cc76b1ffbf59b6e24b1b86b9390a51f2"
     },
     "platforms/desktop/CMakePresets.json": {
       "mode": "100644",
@@ -7617,8 +7617,8 @@
     },
     "tests/reader_lifecycle.cpp": {
       "mode": "100644",
-      "size": 695601,
-      "sha256": "8684db17fb57932a156fd94f4bfffafcb446eac4349492f94648289a054c77eb"
+      "size": 695685,
+      "sha256": "9adb4595e0cf42db9650e520aa2e5322e3048314ba7f0228f30cd4c86404cff4"
     },
     "tests/reader_ui.cpp": {
       "mode": "100644",
@@ -8087,6 +8087,26 @@
           "mode": "100644",
           "sha256": "cd9852a60d6dc87b06c1463332952c528c3e7652256672b5ca5be7504467933e",
           "size": 79221
+        }
+      },
+      "basis": "Targeted post-R09 FB2 fixes/regressions: zero-fraction restart preserves startup prefix; investigate comics preview round-trip.",
+      "review": "doc/reports/patch-series/068-preview-and-hybrid-device-findings.md"
+    },
+    {
+      "paths": [
+        "platforms/desktop/CMakeLists.txt",
+        "tests/reader_lifecycle.cpp"
+      ],
+      "previous": {
+        "platforms/desktop/CMakeLists.txt": {
+          "mode": "100644",
+          "size": 79247,
+          "sha256": "c79efd0687fcf6d66bc69b1ac8e3659923bd0a2f1ccd00df6eca8a66a0df9b86"
+        },
+        "tests/reader_lifecycle.cpp": {
+          "mode": "100644",
+          "size": 695601,
+          "sha256": "8684db17fb57932a156fd94f4bfffafcb446eac4349492f94648289a054c77eb"
         }
       },
       "basis": "Targeted post-R09 FB2 fixes/regressions: zero-fraction restart preserves startup prefix; investigate comics preview round-trip.",
