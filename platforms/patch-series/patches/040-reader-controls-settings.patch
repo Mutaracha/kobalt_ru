@@ -150,7 +150,7 @@ index c11b5026..156346e5 100644
                          .arg(height)
                          .arg("palette(light)")
 -                        .arg(list ? int(chrome::inset) : int(chrome::railInset))
-+                        .arg(list ? int(chrome::inset) : qRound(int(chrome::railInset) * .8))
++                        .arg(list ? int(chrome::inset) : qRound(int(chrome::railInset) * .5))
                          .arg(int(metrics::control::border))
                          .arg(list ? QString()
                                    : QString("border-right:%1px solid palette(window-text);")
@@ -168,7 +168,7 @@ index c11b5026..156346e5 100644
                                    + (shortRail ? int(chrome::tabIcon) + int(chrome::inset) : 0));
          }
 -    tabRail->setFixedWidth(widest + 2 * chrome::railInset);
-+    tabRail->setFixedWidth(widest + 2 * qRound(int(chrome::railInset) * .8));
++    tabRail->setFixedWidth(widest + 2 * qRound(int(chrome::railInset) * .5));
  }
  
  } // namespace kobalt::reader

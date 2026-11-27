@@ -3957,8 +3957,8 @@
     },
     "src/app/reader/settings/settings_panel.cpp": {
       "mode": "100644",
-      "sha256": "13e085d6f6df8cb6e31a038d5552fd42604f837d6e868a251b243e43877a4824",
-      "size": 157092
+      "size": 157092,
+      "sha256": "97e3deac60a3b0d6bed7dce456d5e8ec13c627b30e163b56f24457344cbd8ac8"
     },
     "src/app/reader/settings/settings_panel.h": {
       "mode": "100644",
@@ -8191,6 +8191,20 @@
       },
       "basis": "Rename close regression to describe clean-cover exception.",
       "review": "doc/reports/patch-series/070-home-sleep-cover-fallback.md"
+    },
+    {
+      "paths": [
+        "src/app/reader/settings/settings_panel.cpp"
+      ],
+      "previous": {
+        "src/app/reader/settings/settings_panel.cpp": {
+          "mode": "100644",
+          "sha256": "13e085d6f6df8cb6e31a038d5552fd42604f837d6e868a251b243e43877a4824",
+          "size": 157092
+        }
+      },
+      "basis": "User requested narrower Settings rail: keep horizontal label padding but reduce it from 80% to 50% of railInset, consistently in styling and measured width.",
+      "review": "doc/reports/patch-series/071-settings-rail-padding.md"
     }
   ]
 }
