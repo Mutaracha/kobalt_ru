@@ -20,7 +20,7 @@ jobs:
   check-ready-prefix:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Fetch fixed comparison objects
         run: |
           git fetch --no-tags https://github.com/nicoverbruggen/kobalt.git 1796a32559dbb2912bd565990d1c7a0ca7ac4e52 be47258850ffdc3295257475afdf8b8f6cb53176
@@ -42,7 +42,7 @@ jobs:
       matrix:
         sdk: [linux, qt5]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Fetch upstream and export complete ready series
         run: |
           git fetch --no-tags https://github.com/nicoverbruggen/kobalt.git 1796a32559dbb2912bd565990d1c7a0ca7ac4e52
@@ -89,7 +89,7 @@ jobs:
                   exit 1
                 fi
                 QT_QPA_PLATFORM=offscreen /work/build/desktop-linux/kobalt-reader-lifecycle-tests sleepDesignsRepaintOnlyTheirStatus:letter-light sleepDesignsRepaintOnlyTheirStatus:letter-dark
-                KOBALT_CACHE_PROBE_OUTPUT=/work/build/cache-probe QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^((model|platform)\.(font-sources|system-fonts|nickel-book-menu|kobo-power-screen|appearance-settings|resource-cache|fb2-cache-session|strings-locale|text-presets)|engine\.(comics-layout|comics|columns|chapter-parity)|component\.(comics-ui|reader-controls|debug-language-ui|fork-presentation|ru-control-ui))$"
+                QT_QPA_PLATFORM=offscreen ctest --test-dir /work/build/desktop-linux --output-on-failure --no-tests=error -R "^((model|platform)\.(font-sources|system-fonts|nickel-book-menu|kobo-power-screen|appearance-settings|resource-cache|fb2-cache-session|strings-locale|text-presets)|engine\.(comics-layout|comics|columns|chapter-parity)|component\.(comics-ui|reader-controls|debug-language-ui|fork-presentation|ru-control-ui))$"
               else
                 cd platforms/kobo
                 cmake --preset qt5 -DKOBALT_FORK_NAME=kobalt_ru -DKOBALT_COMMIT="$SOURCE_COMMIT" -DKOBALT_COMMIT_MODIFIED=OFF -DKOBALT_VERBOSE_DIAGNOSTICS=OFF -DKOBALT_BUILD_TESTS=ON -DKOBALT_DEPENDENCY_CACHE=/dependency-cache -DKOBALT_DEPENDENCY_JOBS=4
@@ -107,61 +107,6 @@ jobs:
             echo "::error::$message"
           fi
           exit "$result"
-      - name: Replay archived Accurate FB2 sources with uploaded Kobo fonts
-        if: matrix.sdk == 'linux'
-        run: |
-          python3 - <<'PYCODE'
-          import json, zipfile, shutil
-          from pathlib import Path
-          root = Path('build/prepared-prefix/build/fb2-replay')
-          root.mkdir(parents=True, exist_ok=True)
-          with zipfile.ZipFile('test & diagnostic/FB2-034-test-inputs.zip') as z:
-              for name in ('034-1-ACCURATE.fb2', '034-2-ACCURATE.fb2'):
-                  (root / name).write_bytes(z.read(name))
-          with zipfile.ZipFile('test & diagnostic/1da4445c/diagnostics.zip') as z:
-              state = json.loads(z.read('state.json'))
-          keys = ('font_face', 'font_pixels', 'font_weight', 'font_optical_size', 'weight_steps',
-                  'line_spacing', 'line_spacing_version', 'reading_ppi', 'word_spacing',
-                  'hyphenation', 'text_alignment', 'margin_pixels', 'top_margin_pixels',
-                  'bottom_margin_pixels', 'rendering_mode', 'vertical_justification',
-                  'vertical_spacing_scope', 'paragraph_indent', 'paragraph_spacing',
-                  'inpage_footnotes', 'normalize_page_margins', 'reduce_chapter_spacing')
-          settings = {k: state.get(k, state.get('display_settings', {}).get(k)) for k in keys}
-          settings = {k: v for k, v in settings.items() if v is not None}
-          (root / 'settings.json').write_text(json.dumps(settings))
-          shutil.copytree('test & diagnostic/fonts/Kobo/fonts', root / 'fonts', dirs_exist_ok=True)
-          PYCODE
-          root="$PWD/build/prepared-prefix"
-          image=$(sh "$root/platforms/sdk-image.sh" linux)
-          for book in 1 2; do
-            docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -e QT_QPA_PLATFORM=offscreen \
-              -e KOBALT_FB2_REPLAY_SOURCE="/work/build/fb2-replay/034-$book-ACCURATE.fb2" \
-              -e KOBALT_FB2_REPLAY_SETTINGS=/work/build/fb2-replay/settings.json \
-              -e KOBALT_FB2_REPLAY_FONTS=/work/build/fb2-replay/fonts \
-              -e KOBALT_CACHE_PROBE_OUTPUT="/work/build/cache-probe/A$book" \
-              -v "$root:/work" -w /work "$image" \
-              /work/build/desktop-linux/kobalt-fb2-cache-session-tests
-          done
-      - name: Report host cache probe evidence
-        if: always() && matrix.sdk == 'linux'
-        run: |
-          python3 - <<'PYCODE'
-          import json
-          from pathlib import Path
-          for path in sorted(Path('build/prepared-prefix/build/cache-probe').rglob('*.json')):
-              result = json.loads(path.read_text())
-              summary = json.dumps({'label': str(path.relative_to('build/prepared-prefix/build/cache-probe')), 'layout': result['stats'].get('model_layout_check'), 'trace': result['hash_trace']}, ensure_ascii=True)
-              summary = summary.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
-              print('::notice title=FB2 process cache probe::' + summary)
-          PYCODE
-      - name: Upload host cache probe evidence
-        if: always() && matrix.sdk == 'linux'
-        uses: actions/upload-artifact@v7
-        with:
-          name: FB2-host-cache-probe
-          path: build/prepared-prefix/build/cache-probe/
-          if-no-files-found: warn
-          retention-days: 30
       - name: Collect verified complete-series hardware test package
         if: matrix.sdk == 'qt5'
         run: python3 platforms/patch-series/package.py collect build/prepared-prefix build/series-device-artifact
