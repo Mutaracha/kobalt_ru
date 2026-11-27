@@ -12,5 +12,7 @@ round(railInset * .5): при базовом railInset=28 это 22 → 14 ед�
 Изменения включены в основной 040; hash и reference amendment обновлены.
 
 Локальные проверки: все 15 series/package/equivalence tests PASS;
-1552 runtime files identical. Нативная сборка и тесты запускаются в CI;
-визуальная приёмка на устройстве pending.
+1552 runtime files identical. Нативная сборка и тесты PASS:
+https://github.com/Mutaracha/kobalt_ru/actions/runs/45963000261 .
+Пользователь подтвердил: «интерфейс проверил, выглядит хорошо».
+Статус: accepted. Новая установка для docs-only cleanup не нужна.

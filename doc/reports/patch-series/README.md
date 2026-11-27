@@ -15,6 +15,14 @@
 | 46614c78 | Instrument Serif exit-wordmark/switchable diagnostics; native и Qt5 проверки прошли, collection не прошёл из-за имени ZIP. Не конечный пакет. |
 | eafb6161 | Collector исправлен; CI45456569246 все jobs PASS, [artifact14952120554](https://github.com/Mutaracha/kobalt_ru/actions/runs/45456569246/artifacts/14952120554). Последний проверенный пакет, device UI/log-toggle pending. |
 
+## Текущий итог
+
+- [072: закрытие цикла, уборка и аудит перехода по номеру](072-cleanup-and-navigation-audit.md).
+- [071: более узкие вкладки](071-settings-rail-padding.md) — CI PASS, пользователь принял.
+- [070: обложка вне ридера](070-home-sleep-cover-fallback.md) — CI PASS, пользователь принял.
+- Кэш закрыт пользователем; временный probe удалён. Старые uploads доступны
+  в истории Git на40ec2610, а не в текущем дереве. Ниже — исторический журнал.
+
 ## Последние пакеты
 
 - [056: консолидация](056-patch-consolidation.md):29→7, без runtime-изменений; byte/mode equivalence1551 файлов и CI45693243999 PASS; runtime без изменений.

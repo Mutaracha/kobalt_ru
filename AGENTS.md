@@ -21,7 +21,7 @@ and verified environment caveats, not feature decisions, a changelog or a task l
   observation, confirmed mechanism, hypothesis and proposed remedy.
 - `doc/`: maintained technical/user guides; update the affected area guide for
   user-visible changes. The user owns root `README.md` edits.
-- `test & diagnostic/`: original user screenshots, uploads and diagnostic logs;
+- `test & diagnostic/`: retained CI FB2 input archive and its checksums; historical screenshots/uploads/logs were removed after acceptance and remain in Git at `40ec2610`;
   preserve bytes and add a context/provenance README. Curated `tests/manual/`
   materials and portable `tests/fixtures/` keep their existing ownership/paths.
 - `doc/archive/`: historical records only, explicitly labeled superseded. Never

@@ -1,3 +1,5 @@
+> Старые архивы диагностики удалены из текущего дерева после приёмки; ссылки ниже доступны в истории Git на `40ec2610`. Сохранённые manual fixtures не удалены.
+
 # Device evaluation data
 
 Historical beta5 runs moved byte-for-byte to
